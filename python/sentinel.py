@@ -30,10 +30,15 @@ if __name__ == '__main__':
 
     arpDict = getArps()
 
-    conn = sqlite3.connect('db/sentinel.db') 
-    cur = conn.cursor()
-    cur.execute('''CREATE TABLE IF NOT EXISTS arp (mac TEXT NOT NULL,ip TEXT,data TEXT);''')
-    cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_mac ON arp (mac);''')
+    db = 'db/sentinel.db'
+    if not os.path.isfile(db):
+        conn = sqlite3.connect(db) 
+        cur = conn.cursor()
+        cur.execute('''CREATE TABLE IF NOT EXISTS arp (mac TEXT NOT NULL,ip TEXT,data TEXT);''')
+        cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_mac ON arp (mac);''')
+    else:
+        conn = sqlite3.connect(db) 
+        cur = conn.cursor()
 
     for ip,mac in arpDict.items():
 
