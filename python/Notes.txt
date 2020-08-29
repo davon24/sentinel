@@ -1,0 +1,10 @@
+
+https://gitlab.com/wireshark/wireshark/raw/master/manuf
+
+---
+
+new 1:0:5e:0:0:1 (224.0.0.1)
+new 1:0:5e:7f:ff:ff (225.255.255.255)
+
+
+
