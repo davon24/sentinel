@@ -44,8 +44,8 @@ for line in data:
     #data = ' '.join(data_)
     #print(mac, name, data)
 
-    if len(mac) == 8:
-        mac = mac + ':00:00:00'
+    #if len(mac) == 8:
+    #    mac = mac + ':00:00:00'
     if len(mac) == 20:
         mac = mac.split('/')[0]
     #print(str(len(mac)), mac)
@@ -74,26 +74,27 @@ print(_mac)
 print('---')
 
 
-def match_3octets(mac):
+def match_octets(mac, n):
+    mac = _mac.split(':')
+    n = int(n)
     matches = []
-    mac3 = _mac.split(':')
-    _m3 = mac3[0]
+    m = mac[0]
     c = 0
-    for i in mac3[1:]:
+    for i in mac[1:]:
         c += 1
-        if c < 3:
+        if c < n:
             #print(c)
-            _m3 = _m3 + ':' + i
+            m = m + ':' + i
 
-    print(_m3)
+    #print(m)
     for k,v in manufDict.items():
-        if _m3 in k:
+        if m in k:
            print(k,v)
            matches.append(v)
     return matches
-          
+         
 
-m3 = match_3octets(_mac)
+m3 = match_octets(_mac, 3)
 #print(m3)
 
 print(len(m3))
@@ -106,6 +107,17 @@ elif len(m3) == 1:
     sys.exit(0)
 else:
     print('Multiples ' + str(len(m3)))
+    #m4 = match_4octets(_mac)
+    m4 = match_octets(_mac, 4)
+    if len(m4) == 0:
+        print('NoMatch')
+        sys.exit(0)
+    elif len(m4) == 1:
+        print('Match ' + ''.join(m4))
+        sys.exit(0)
+    else:
+        print('Multiples ' + str(len(m4)))
+
 
 
 
