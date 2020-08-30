@@ -6,9 +6,19 @@ https://gitlab.com/wireshark/wireshark/raw/master/manuf
 new 1:0:5e:0:0:1 (224.0.0.1)
 new 1:0:5e:7f:ff:ff (225.255.255.255)
 
+-
+
 new cc:66:a:a0:0:fc (192.168.0.106)
 🐕 krink@Karls-MacBook-Pro db % grep -i cc:66 manuf
 CC:66:0A	Apple	Apple, Inc.
 CC:66:B2	Nokia
+
+sqlite> select rowid,mac,name from manuf where mac like 'cc:66:%a';
+36746|cc:66:0a|Apple
+
+-
+IANA mac addr https://www.iana.org/assignments/ethernet-numbers/ethernet-numbers.txt
+01:00:5e
+
 
 
