@@ -12,11 +12,12 @@ print(_mac)
 
 def even_up(mac_):
     #rLst = []
-    rmac = ''
     mac_ = mac_.split(':')
     #print(type(mac_))
+
+    rmac = mac_[0]
     c = len(mac_)
-    for i in mac_:
+    for i in mac_[1:]:
         c -= 1
         print(c)
         #print(i)
