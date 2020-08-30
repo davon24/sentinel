@@ -21,4 +21,18 @@ IANA mac addr https://www.iana.org/assignments/ethernet-numbers/ethernet-numbers
 01:00:5e
 
 
+data sample,
+04:D1:6E        IEEERegi        IEEE Registration Authority
+04:D1:6E:00:00:00/28    INTRIPLE        INTRIPLE, a.s.
+04:D1:6E:10:00:00/28    LaunchTe        Launch Tech Co., Ltd.
+
+
+---
+
+8 e4:1d:2d
+8 e4:1e:0a
+20 e4:1e:0a:00:00:00/28
+20 e4:1e:0a:10:00:00/28
+
+
 
