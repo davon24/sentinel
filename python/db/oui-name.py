@@ -11,18 +11,23 @@ _mac = sys.argv[1].lower()
 print(_mac)
 
 def even_up(mac_):
-    rLst = [] 
+    #rLst = []
+    rmac = ''
     mac_ = mac_.split(':')
     #print(type(mac_))
+    c = len(mac_)
     for i in mac_:
-        print(i)
+        c -= 1
+        print(c)
+        #print(i)
         #print(len(i))
         if len(i) == 1:
             i = '0' + i
-        print(i)
-        rLst.append(i)
-    return rLst
+        #print(i)
+        #rLst.append(i)
+        rmac = rmac + ':' + i
 
+    return rmac
 
 _mac = even_up(_mac)
 print(_mac)
