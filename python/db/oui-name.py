@@ -4,38 +4,22 @@ import os
 import sys
 
 _mac = sys.argv[1].lower()
+#print(_mac)
 
-#mLst = [_mac.split(':')]
-#print(len(mLst))
-#print(mLst)
-print(_mac)
-
-def even_up(mac_):
-    #rLst = []
-    mac_ = mac_.split(':')
-    #print(type(mac_))
-
-    rmac = mac_[0]
-    c = len(mac_)
-    for i in mac_[1:]:
-        c -= 1
-        print(c)
+def even_up(mac):
+    mac = mac.split(':')
+    mac_ = mac[0]
+    for i in mac[1:]:
         #print(i)
         #print(len(i))
         if len(i) == 1:
             i = '0' + i
         #print(i)
-        #rLst.append(i)
-        rmac = rmac + ':' + i
-
-    return rmac
+        mac_ = mac_ + ':' + i
+    return mac_
 
 _mac = even_up(_mac)
-print(_mac)
-
-print('---')
-
-sys.exit(1)
+#print('even_up_mac: ' + _mac)
 
 db_file = 'manuf'
 with open(db_file, 'r') as f:
@@ -71,13 +55,12 @@ for line in data:
 #8 e4:1e:0a
 #20 e4:1e:0a:00:00:00/28
 
-
 #ret = [val for key, val in manufDict.items() if _mac in key] 
 #print(ret)
 
-for k,v in manufDict.items():
-    if _mac in k:
-        print(k,v)
+#for k,v in manufDict.items():
+#    if _mac in k:
+#        print(k,v)
 
 #def get_oui_vals(mac):
 #    mac = mac.split(':')
@@ -85,4 +68,46 @@ for k,v in manufDict.items():
 #    octet1 = mac[1]
 #    octet2 = mac[2]
 #    return (octet0, octet1, octet2)
+
+# try search/mach first 3 octets
+print(_mac)
+print('---')
+
+
+def match_3octets(mac):
+    matches = []
+    mac3 = _mac.split(':')
+    _m3 = mac3[0]
+    c = 0
+    for i in mac3[1:]:
+        c += 1
+        if c < 3:
+            #print(c)
+            _m3 = _m3 + ':' + i
+
+    print(_m3)
+    for k,v in manufDict.items():
+        if _m3 in k:
+           print(k,v)
+           matches.append(v)
+    return matches
+          
+
+m3 = match_3octets(_mac)
+#print(m3)
+
+print(len(m3))
+
+if len(m3) == 0:
+    print('NoMatch')
+    sys.exit(0)
+elif len(m3) == 1:
+    print('Match ' + ''.join(m3))
+    sys.exit(0)
+else:
+    print('Multiples ' + str(len(m3)))
+
+
+
+
 
