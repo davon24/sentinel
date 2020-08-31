@@ -55,20 +55,6 @@ for line in data:
 #8 e4:1e:0a
 #20 e4:1e:0a:00:00:00/28
 
-#ret = [val for key, val in manufDict.items() if _mac in key] 
-#print(ret)
-
-#for k,v in manufDict.items():
-#    if _mac in k:
-#        print(k,v)
-
-#def get_oui_vals(mac):
-#    mac = mac.split(':')
-#    octet0 = mac[0]
-#    octet1 = mac[1]
-#    octet2 = mac[2]
-#    return (octet0, octet1, octet2)
-
 # try search/mach first 3 octets
 print(_mac)
 print('---')
@@ -95,70 +81,72 @@ def match_octets(mac, n):
          
 #######################
 
-#m3 = match_octets(_mac, 3)
-#print(m3)
-#print(len(m3))
-#if len(m3) == 0:
-#    print('NoMatch')
-#    sys.exit(0)
-#elif len(m3) == 1:
-#    print('Match ' + ''.join(m3))
-#    sys.exit(0)
-#else:
-#    print('Multiples ' + str(len(m3)))
-#    #m4 = match_4octets(_mac)
-#    m4 = match_octets(_mac, 4)
-#    if len(m4) == 0:
-#        print('NoMatch')
-#        sys.exit(0)
-#    elif len(m4) == 1:
-#        print('Match ' + ''.join(m4))
-#        sys.exit(0)
-#    else:
-#        print('Multiples ' + str(len(m4)))
-
 def match(mac):
     mac = _mac.split(':')
-    #n = len(mac)
     #print(n)
     #print(mac)
 
-    m = match_octets(mac, 3)
-    if len(m) == 0:
-        return 'NoMatch'
-    elif len(m) == 1:
-        return ''.join(m)
-    else:
-        m = match_octets(mac, 4)
+    #n = len(mac)
+    #for i in range(0, 4):
+        
+
+    print(len(mac))
+
+    c = 2
+    for i in range(0, len(mac)):
+        c += 1
+        print(i, c)
+        m = match_octets(mac, c)
+
+        if len(m) == 0:
+            return 'NoMatch'
+        elif len(m) == 1:
+            return ''.join(m)
+        elif i >= 5:
+            return 'MultiMatch: ' + str(m)
+
+
+        #if i > 1:
+        #    print('Greater Than 4')
+        #    return 'MultiMatch: ' + str(m)
+
+
+
+    #m = match_octets(mac, 3)
+    #if len(m) == 0:
+    #    return 'NoMatch'
+    #elif len(m) == 1:
+    #    return ''.join(m)
+    #else:
+    #    m = match_octets(mac, 4)
 
     #print(m)
-    if len(m) == 0:
-        return 'NoMatch'
-    elif len(m) == 1:
-        return ''.join(m)
-    else:
-        m = match_octets(mac, 5)
-    #print(m)    
+    #if len(m) == 0:
+    #    return 'NoMatch'
+    #elif len(m) == 1:
+    #    return ''.join(m)
+    #else:
+    #    m = match_octets(mac, 5)
+    ##print(m)    
+#
+#    if len(m) == 0:
+#        return 'NoMatch'
+#    elif len(m) == 1:
+#        return ''.join(m)
+#    else:
+#        m = match_octets(mac, 6)
+#
+#    #print(m)
+#
+#    if len(m) == 0:
+#        return 'NoMatch'
+#    elif len(m) == 1:
+#        return ''.join(m)
+#    else:
+#        #return 'MultiMatch'
+#        return 'MultiMatch: ' + str(m)
 
-    if len(m) == 0:
-        return 'NoMatch'
-    elif len(m) == 1:
-        return ''.join(m)
-    else:
-        m = match_octets(mac, 6)
 
-    #print(m)
-
-    if len(m) == 0:
-        return 'NoMatch'
-    elif len(m) == 1:
-        return ''.join(m)
-    else:
-        #return 'MultiMatch'
-        return 'MultiMatch: ' + str(m)
-
-
-    #if len(m3) == 0:
     #for i in range(0, 3):
     #    print(mac[i])
         
