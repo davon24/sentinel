@@ -3,6 +3,11 @@ https://gitlab.com/wireshark/wireshark/raw/master/manuf
 
 ./sentinel.py manuf dc:a6:32:be:68:36
 
+```
+🐕 karl.rink@Karl-MacBook-Pro python % ./sentinel.py manuf f8:ff:c2:42:47:63
+Apple (Apple, Inc.)
+```
+
 ---
 
 new 1:0:5e:0:0:1 (224.0.0.1)

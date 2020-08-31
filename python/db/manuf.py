@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+#https://gitlab.com/wireshark/wireshark/raw/master/manuf
+
 import os
 import sys
 
