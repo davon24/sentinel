@@ -3,9 +3,6 @@
 import os
 import sys
 
-#_mac = sys.argv[1].lower()
-#print(_mac)
-
 def even_up(mac):
     mac = mac.split(':')
     mac_ = mac[0]
@@ -17,9 +14,6 @@ def even_up(mac):
         #print(i)
         mac_ = mac_ + ':' + i
     return mac_
-
-#_mac = even_up(_mac)
-#print('even_up_mac: ' + _mac)
 
 def get_manufDict(db_file):
     mfDict = {}
@@ -79,14 +73,14 @@ def match_octets(mac, n, mfDict):
     return matches
          
 def match(mac, mfDict):
-    #mac = mac.split(':')
-    #print(len(mac))
-
     c = 2
     for i in range(0, len(mac)):
         c += 1
         #print(i, c)
         m = match_octets(mac, c, mfDict)
+
+        #print(str(type(m)))
+        #print(m)
 
         if len(m) == 0:
             return 'NoMatch'

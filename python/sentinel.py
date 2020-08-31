@@ -26,11 +26,11 @@ def getArps():
     return arpDict
 
 
-if __name__ == '__main__':
+def update_arp_data(db):
 
     arpDict = getArps()
 
-    db = 'db/sentinel.db'
+    #db = 'db/sentinel.db'
     if not os.path.isfile(db):
         conn = sqlite3.connect(db) 
         cur = conn.cursor()
@@ -96,8 +96,28 @@ if __name__ == '__main__':
                 cur.execute("UPDATE arp SET ip=? WHERE mac=?", (_ip, mac))
                 conn.commit()
                 print('updated1 ' + str(mac) + ' ' + str(_ip))
-
+    return True
     ##########################################################
 
+def get_manuf(mac):
+    db_file = 'db/manuf'
+    mac = mf.even_up(mac.lower())
+    manufDict = mf.get_manufDict(db_file)
+    manuf = mf.match(mac, manufDict)
+    return manuf
+
+
+import db.manuf as mf
+
+
+if __name__ == '__main__':
+
+    update = update_arp_data('db/sentinel.db')
+
+    if sys.argv[1:]:
+        if sys.argv[1] == "manuf":
+            mac = sys.argv[2]
+            m = get_manuf(mac)
+            print(m)
 
 
