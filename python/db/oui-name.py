@@ -89,7 +89,7 @@ def match_octets(mac, n):
     #print(m)
     for k,v in manufDict.items():
         if m in k:
-           print(k,v)
+           #print(k,v)
            matches.append(v)
     return matches
          
@@ -119,8 +119,9 @@ def match_octets(mac, n):
 
 def match(mac):
     mac = _mac.split(':')
-    print(len(mac))
-    print(mac)
+    #n = len(mac)
+    #print(n)
+    #print(mac)
 
     m = match_octets(mac, 3)
     if len(m) == 0:
@@ -130,14 +131,31 @@ def match(mac):
     else:
         m = match_octets(mac, 4)
 
-    print(m)
+    #print(m)
     if len(m) == 0:
         return 'NoMatch'
     elif len(m) == 1:
         return ''.join(m)
     else:
         m = match_octets(mac, 5)
-    print(m)    
+    #print(m)    
+
+    if len(m) == 0:
+        return 'NoMatch'
+    elif len(m) == 1:
+        return ''.join(m)
+    else:
+        m = match_octets(mac, 6)
+
+    #print(m)
+
+    if len(m) == 0:
+        return 'NoMatch'
+    elif len(m) == 1:
+        return ''.join(m)
+    else:
+        #return 'MultiMatch'
+        return 'MultiMatch: ' + str(m)
 
 
     #if len(m3) == 0:
