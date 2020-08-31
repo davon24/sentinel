@@ -35,8 +35,8 @@ def get_manufDict(db_file):
 
         mac = line[0].lower()
         name = line[1]
-        #data_ = line[2:]
-        #data = ' '.join(data_)
+        data_ = line[2:]
+        data = ' '.join(data_)
         #print(mac, name, data)
 
         #if len(mac) == 8:
@@ -45,7 +45,7 @@ def get_manufDict(db_file):
             mac = mac.split('/')[0]
         #print(str(len(mac)), mac)
         #print(mac)
-        mfDict[mac] = name
+        mfDict[mac] = name + ' (' + data + ')'
 
     #8 e4:1e:0a
     #20 e4:1e:0a:00:00:00/28

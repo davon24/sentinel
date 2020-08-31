@@ -106,7 +106,6 @@ def get_manuf(mac):
     manuf = mf.match(mac, manufDict)
     return manuf
 
-
 import db.manuf as mf
 
 
