@@ -93,30 +93,63 @@ def match_octets(mac, n):
            matches.append(v)
     return matches
          
+#######################
 
-m3 = match_octets(_mac, 3)
+#m3 = match_octets(_mac, 3)
 #print(m3)
+#print(len(m3))
+#if len(m3) == 0:
+#    print('NoMatch')
+#    sys.exit(0)
+#elif len(m3) == 1:
+#    print('Match ' + ''.join(m3))
+#    sys.exit(0)
+#else:
+#    print('Multiples ' + str(len(m3)))
+#    #m4 = match_4octets(_mac)
+#    m4 = match_octets(_mac, 4)
+#    if len(m4) == 0:
+#        print('NoMatch')
+#        sys.exit(0)
+#    elif len(m4) == 1:
+#        print('Match ' + ''.join(m4))
+#        sys.exit(0)
+#    else:
+#        print('Multiples ' + str(len(m4)))
 
-print(len(m3))
+def match(mac):
+    mac = _mac.split(':')
+    print(len(mac))
+    print(mac)
 
-if len(m3) == 0:
-    print('NoMatch')
-    sys.exit(0)
-elif len(m3) == 1:
-    print('Match ' + ''.join(m3))
-    sys.exit(0)
-else:
-    print('Multiples ' + str(len(m3)))
-    #m4 = match_4octets(_mac)
-    m4 = match_octets(_mac, 4)
-    if len(m4) == 0:
-        print('NoMatch')
-        sys.exit(0)
-    elif len(m4) == 1:
-        print('Match ' + ''.join(m4))
-        sys.exit(0)
+    m = match_octets(mac, 3)
+    if len(m) == 0:
+        return 'NoMatch'
+    elif len(m) == 1:
+        return ''.join(m)
     else:
-        print('Multiples ' + str(len(m4)))
+        m = match_octets(mac, 4)
+
+    print(m)
+    if len(m) == 0:
+        return 'NoMatch'
+    elif len(m) == 1:
+        return ''.join(m)
+    else:
+        m = match_octets(mac, 5)
+    print(m)    
+
+
+    #if len(m3) == 0:
+    #for i in range(0, 3):
+    #    print(mac[i])
+        
+
+
+
+m = match(_mac)
+print(m)
+
 
 
 
