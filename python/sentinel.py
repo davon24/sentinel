@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0a'
+__version__ = 'v0.0.0b'
 
 import os
 from subprocess import Popen, PIPE
@@ -36,8 +36,10 @@ def get_manuf(mac):
 
 if __name__ == '__main__':
 
+    db_file = 'db/sentinel.db'
+
     arpDict = getArps()
-    update = db.update_arp_data('db/sentinel.db', arpDict)
+    update = db.update_arp_data(db_file, arpDict)
     #print(update)
 
     if sys.argv[1:]:
@@ -45,9 +47,7 @@ if __name__ == '__main__':
             mac = sys.argv[2]
             m = get_manuf(mac)
             print(m)
-        #if sys.argv[1] == "update_manuf_db":
+        if sys.argv[1] == "list":
+            db.print_all(db_file)
             
-
-
-
 

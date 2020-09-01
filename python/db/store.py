@@ -2,6 +2,7 @@
 
 import sqlite3
 import os
+import time
 
 def sql_connection(db_file):
 
@@ -79,6 +80,18 @@ def update_arp_data(db_file, arpDict):
                 print('updated1 ' + str(mac) + ' ' + str(_ip))
     return True
 
+def select_all(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT * FROM arp')
+    rows = cur.fetchall()
+    return rows
+
+def print_all(db_file):
+    rows = select_all(db_file)
+    for row in rows:
+        print(row)
+    return True
 
 def insert_table(con):
     cur = con.cursor()
