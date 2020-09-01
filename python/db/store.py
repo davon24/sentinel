@@ -5,6 +5,8 @@ import os
 import time
 import json
 
+import manuf
+
 def sql_connection(db_file):
 
     if not os.path.isfile(db_file):
@@ -58,6 +60,8 @@ def update_arp_data(db_file, arpDict):
         _result = cur.fetchone()
         #print(_mac, _ip, _data)
         if not _result:
+            #m = mf.get_manuf(mac, 'manuf')
+            #print(m)
             data = '{"created":"' + time.strftime("%Y-%m-%dT%H:%M:%SZ") + '"}'
             cur.execute("INSERT INTO arp VALUES (?, ?, ?)", (mac, ip, data))
             con.commit()
@@ -115,13 +119,15 @@ def update_data_manuf(mac, manuf, db_file):
     update = json.dumps(jdata)
     cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
     con.commit()
-    print('updated1 ' + str(mac) + ' ' + str(update))
+    print('updated3 ' + str(mac) + ' ' + str(update))
     return True
 
 if __name__ == '__main__':
 
-    con = sql_connection('test.db')
-    update = insert_table(con)
-    print(update)
+    #con = sql_connection('test.db')
+    #update = insert_table(con)
+    #print(update)
+    pass
+
 
 
