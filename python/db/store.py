@@ -4,7 +4,7 @@ import sqlite3
 import os
 import time
 import json
-from subprocess import Popen, PIPE
+#from subprocess import Popen, PIPE
 
 import manuf as mf
 
@@ -22,24 +22,24 @@ def sql_connection(db_file):
     return con
 
 
-def getArps():
-    arpDict = {}
-    cmd = 'arp -an'
-    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
-    out = proc.stdout.readlines()
-    for line in out:
-        line = line.decode('utf-8').strip('\n').split()
-        try:
-            ip = line[1]
-        except IndexError:
-            ip = 'Empty'
-        try:
-            mac = line[3].lower()
-        except IndexError:
-            mac = 'Empty'
-
-        arpDict[ip] = mac
-    return arpDict
+#def getArps():
+#    arpDict = {}
+#    cmd = 'arp -an'
+#    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+#    out = proc.stdout.readlines()
+#    for line in out:
+#        line = line.decode('utf-8').strip('\n').split()
+#        try:
+#            ip = line[1]
+#        except IndexError:
+#            ip = 'Empty'
+#        try:
+#            mac = line[3].lower()
+#        except IndexError:
+#            mac = 'Empty'
+#
+#        arpDict[ip] = mac
+#    return arpDict
 
 
 def update_arp_data(db_file, arpDict):
