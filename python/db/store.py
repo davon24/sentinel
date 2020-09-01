@@ -20,7 +20,7 @@ def insert_table(con):
     cur = con.cursor()
     cur.execute("INSERT INTO arp VALUES('ff:ff:ff:ff:ff:ff', '(192.168.0.255)', '{}')")
     con.commit()
-
+    return True
 
 
 if __name__ == '__main__':
@@ -28,4 +28,5 @@ if __name__ == '__main__':
     con = sql_connection('test.db')
     update = insert_table(con)
     print(update)
+
 

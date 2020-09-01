@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
+__version__ = 'v0.0.0'
+
 import os
 from subprocess import Popen, PIPE
 import sys
 import sqlite3
 import time
+
+import db.manuf as mf
+import db.store as db
 
 def getArps():
     arpDict = {}
@@ -26,19 +31,22 @@ def getArps():
     return arpDict
 
 
-def update_arp_data(db):
+def update_arp_data(db_file):
 
     arpDict = getArps()
 
     #db = 'db/sentinel.db'
-    if not os.path.isfile(db):
-        conn = sqlite3.connect(db) 
-        cur = conn.cursor()
-        cur.execute('''CREATE TABLE IF NOT EXISTS arp (mac TEXT NOT NULL,ip TEXT,data TEXT);''')
-        cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_mac ON arp (mac);''')
-    else:
-        conn = sqlite3.connect(db) 
-        cur = conn.cursor()
+    #if not os.path.isfile(db):
+    #    conn = sqlite3.connect(db) 
+    #    cur = conn.cursor()
+    #    cur.execute('''CREATE TABLE IF NOT EXISTS arp (mac TEXT NOT NULL,ip TEXT,data TEXT);''')
+    #    cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_mac ON arp (mac);''')
+    #else:
+    #    conn = sqlite3.connect(db) 
+    #    cur = conn.cursor()
+
+    conn = db.sql_connection(db_file)
+    cur = conn.cursor()
 
     for ip,mac in arpDict.items():
 
@@ -106,7 +114,6 @@ def get_manuf(mac):
     manuf = mf.match(mac, manufDict)
     return manuf
 
-import db.manuf as mf
 
 
 if __name__ == '__main__':
@@ -118,5 +125,9 @@ if __name__ == '__main__':
             mac = sys.argv[2]
             m = get_manuf(mac)
             print(m)
+        #if sys.argv[1] == "update_manuf_db":
+            
+
+
 
 
