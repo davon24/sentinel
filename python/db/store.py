@@ -4,8 +4,9 @@ import sqlite3
 import os
 import time
 import json
+from subprocess import Popen, PIPE
 
-import manuf
+import manuf as mf
 
 def sql_connection(db_file):
 
@@ -19,6 +20,27 @@ def sql_connection(db_file):
         con = sqlite3.connect(db_file)
 
     return con
+
+
+def getArps():
+    arpDict = {}
+    cmd = 'arp -an'
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        line = line.decode('utf-8').strip('\n').split()
+        try:
+            ip = line[1]
+        except IndexError:
+            ip = 'Empty'
+        try:
+            mac = line[3].lower()
+        except IndexError:
+            mac = 'Empty'
+
+        arpDict[ip] = mac
+    return arpDict
+
 
 def update_arp_data(db_file, arpDict):
 
@@ -60,12 +82,13 @@ def update_arp_data(db_file, arpDict):
         _result = cur.fetchone()
         #print(_mac, _ip, _data)
         if not _result:
-            #m = mf.get_manuf(mac, 'manuf')
+            t = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+            m = mf.get_manuf(mac, 'db/manuf')
             #print(m)
-            data = '{"created":"' + time.strftime("%Y-%m-%dT%H:%M:%SZ") + '"}'
+            data = '{"created":"' + t + '","manuf":"' + m + '"}'
             cur.execute("INSERT INTO arp VALUES (?, ?, ?)", (mac, ip, data))
             con.commit()
-            print('new ' + str(mac) + ' ' + str(ip))
+            print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
         else:
             #print(ip, _result[0]) #tuple _result
             if ip not in _result[0]:
@@ -85,6 +108,7 @@ def update_arp_data(db_file, arpDict):
                 print('updated1 ' + str(mac) + ' ' + str(_ip))
     return True
 
+
 def select_all(db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
@@ -92,11 +116,13 @@ def select_all(db_file):
     rows = cur.fetchall()
     return rows
 
+
 def print_all(db_file):
     rows = select_all(db_file)
     for row in rows:
         print(row)
     return True
+
 
 def insert_table(con):
     cur = con.cursor()
@@ -104,7 +130,8 @@ def insert_table(con):
     con.commit()
     return True
 
-def update_data_manuf(mac, manuf, db_file):
+
+def update_data_manuf(mac, mfname, db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
     #cur.execute("SELECT data FROM arp WHERE mac='" + str(mac) + "';")
@@ -114,7 +141,7 @@ def update_data_manuf(mac, manuf, db_file):
         return None
     #print(record[0])
     jdata = json.loads(record[0])
-    jdata['manuf'] = manuf
+    jdata['manuf'] = mfname
     #print(json.dumps(jdata))
     update = json.dumps(jdata)
     cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
@@ -122,12 +149,24 @@ def update_data_manuf(mac, manuf, db_file):
     print('updated3 ' + str(mac) + ' ' + str(update))
     return True
 
+
+def get_manuf(mac, manuf_file):
+    #manuf = mf.get_manuf(mac, 'db/manuf')
+    manuf = mf.get_manuf(mac, manuf_file)
+    return manuf
+
+
+def update_manuf(mac, manuf_file, db_file):
+    mfname = get_manuf(mac, manuf_file)
+    update = update_data_manuf(mac, mfname, db_file)
+    return update
+
+
 if __name__ == '__main__':
 
-    #con = sql_connection('test.db')
-    #update = insert_table(con)
-    #print(update)
-    pass
+    con = sql_connection('test.db')
+    insert = insert_table(con)
+    print(insert)
 
 
 
