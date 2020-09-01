@@ -91,6 +91,13 @@ def match(mac, mfDict):
         elif i >= 5:
             return 'MultiMatch: ' + str(m)
 
+def get_manuf(mac, db_file):
+    mac = even_up(mac.lower())
+    manufDict = get_manufDict(db_file)
+    manuf = match(mac, manufDict)
+    return manuf
+
+
 if __name__ == '__main__':
 
     mac = sys.argv[1].lower()
