@@ -3,6 +3,7 @@
 import sqlite3
 import os
 import time
+import json
 
 def sql_connection(db_file):
 
@@ -99,6 +100,23 @@ def insert_table(con):
     con.commit()
     return True
 
+def update_data_manuf(mac, manuf, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    #cur.execute("SELECT data FROM arp WHERE mac='" + str(mac) + "';")
+    cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
+    record = cur.fetchone()
+    if record is None:
+        return None
+    #print(record[0])
+    jdata = json.loads(record[0])
+    jdata['manuf'] = manuf
+    #print(json.dumps(jdata))
+    update = json.dumps(jdata)
+    cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
+    con.commit()
+    print('updated1 ' + str(mac) + ' ' + str(update))
+    return True
 
 if __name__ == '__main__':
 
