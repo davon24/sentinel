@@ -10,7 +10,7 @@ import threading
 import manuf as mf
 import tools
 
-class dnsUpDateTask:
+class DNSUpDateTask:
     def __init__(self):
         self._running = True
 
@@ -21,6 +21,14 @@ class dnsUpDateTask:
         print(mac, ip, db_file)
         dnsname = tools.getDNSName(ip)
         print(dnsname)
+        con = self.sql_connection(db_file)
+        cur = con.cursor()
+        cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
+        record = cur.fetchone()
+        if record is None:
+            return None
+        print(record[0])
+
 
 
 def sql_connection(db_file):
@@ -84,8 +92,9 @@ def update_arp_data(db_file, arpDict):
             con.commit()
             print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
             # launch dns thread update async
-            dns = dnsUpDateTask()
+            dns = DNSUpDateTask()
             t = threading.Thread(target=dns.run, args=(1,))
+            print('t.start')
             t.start()
         else:
             #print(ip, _result[0]) #tuple _result
@@ -198,12 +207,12 @@ if __name__ == '__main__':
 
     mac = '70:8b:cd:d0:67:10'
     ip  = '192.168.0.1'
-    db_file = 'sentinel.db'
+    db_file = 'db/sentinel.db'
 
-    dns = dnsUpDateTask()
+    dns = DNSUpDateTask()
     t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
-    print('t.start')
     t.start()
+    print('t.start')
 
 
 
