@@ -5,8 +5,24 @@ import os
 import time
 import json
 #from subprocess import Popen, PIPE
+import threading
 
 import manuf as mf
+
+from .. import tools
+
+class dnsUpDateTask:
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def run(self, mac, ip, db_file):
+        print(mac, ip, db_file)
+        dnsname = tools.getDNSName(ip)
+        print(dnsname)
+
 
 def sql_connection(db_file):
 
@@ -20,7 +36,6 @@ def sql_connection(db_file):
         con = sqlite3.connect(db_file)
 
     return con
-
 
 def update_arp_data(db_file, arpDict):
 
@@ -69,6 +84,10 @@ def update_arp_data(db_file, arpDict):
             cur.execute("INSERT INTO arp VALUES (?, ?, ?)", (mac, ip, data))
             con.commit()
             print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
+            # launch dns thread update async
+            dns = dnsUpDateTask()
+            t = threading.Thread(target=dns.run, args=(1,))
+            t.start()
         else:
             #print(ip, _result[0]) #tuple _result
             if ip not in _result[0]:
@@ -146,6 +165,18 @@ def update_data_dns(mac, dnsname, db_file):
     print('updated.dns ' + str(mac) + ' ' + str(update))
     return True
 
+def get_data(mac, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
+    record = cur.fetchone()
+    if record is None:
+        return None
+    #print(record[0])
+    jdata = json.loads(record[0])
+    return jdata
+
+
 def get_manuf(mac, manuf_file):
     #manuf = mf.get_manuf(mac, 'db/manuf')
     manuf = mf.get_manuf(mac, manuf_file)
@@ -160,9 +191,22 @@ def get_manuf(mac, manuf_file):
 
 if __name__ == '__main__':
 
-    con = sql_connection('test.db')
-    insert = insert_table(con)
-    print(insert)
+    #con = sql_connection('test.db')
+    #insert = insert_table(con)
+    #print(insert)
+
+    #print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
+
+    mac = '70:8b:cd:d0:67:10'
+    ip  = '192.168.0.1'
+    db_file = 'sentinel.db'
+
+    dns = dnsUpDateTask()
+    t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
+    print('t.start')
+    t.start()
+
+
 
 
 
