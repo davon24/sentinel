@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k.2'
+__version__ = 'v0.0.0k.3'
 
 import sys
 #sys.path.insert(0,'db')
@@ -41,6 +41,11 @@ if __name__ == '__main__':
             dns = store.DNSUpDateTask()
             t = threading.Thread(target=dns.run, args=(mac,ip,db_store,))
             t.start()
-            print(t)
+            #print(t)
+        if sys.argv[1] == 'ping-net':
+            ip = sys.argv[2]
+            pn = tools.pingNet(ip)
+            print(pn)
+
             
 
