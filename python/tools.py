@@ -21,12 +21,12 @@ def getArps():
         arpDict[ip] = mac
     return arpDict
 
-def getDNSName(ip): 
+def getDNSNamesLst(ip):
     #dns can take several seconds to time out
     nameLst = []
-    print(ip)
+    #print(ip)
     cmd = 'nmap -sL ' + ip
-    print(cmd)
+    #print(cmd)
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     out = proc.stdout.readlines()
     c = 0
@@ -51,6 +51,20 @@ def getDNSName(ip):
     #else:
     #    return str(nameLst)
     return nameLst
+
+def getDNSName(ip):
+    nameLst = getDNSNamesLst(ip)
+    #print(len(nameLst))
+    if len(nameLst) == 0:
+        return str('None')
+    if len(nameLst) == 1:
+        #return str(''.join(nameLst))
+        fullname = ''.join(nameLst)
+        name = fullname.split('.')[0]
+        return str(name)
+    else:
+        #return str(nameLst)
+        return str('WillNotPerformMultiples')
 
 
 

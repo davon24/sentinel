@@ -152,10 +152,10 @@ def get_manuf(mac, manuf_file):
     return manuf
 
 
-def update_manuf(mac, manuf_file, db_file):
-    mfname = get_manuf(mac, manuf_file)
-    update = update_data_manuf(mac, mfname, db_file)
-    return update
+#def update_manuf(mac, manuf_file, db_file):
+#    mfname = get_manuf(mac, manuf_file)
+#    update = update_data_manuf(mac, mfname, db_file)
+#    return update
 
 
 if __name__ == '__main__':
