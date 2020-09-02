@@ -8,8 +8,7 @@ import json
 import threading
 
 import manuf as mf
-
-from .. import tools
+import tools
 
 class dnsUpDateTask:
     def __init__(self):

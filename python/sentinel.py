@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0i'
+__version__ = 'v0.0.0j'
 
 import sys
-sys.path.insert(0,'db')
+#sys.path.insert(0,'db')
 import tools
-from db import store
+import store
 
 if __name__ == '__main__':
 
