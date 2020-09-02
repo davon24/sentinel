@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k.4'
+__version__ = 'v0.0.0k.5'
 
 import sys
 #sys.path.insert(0,'db')
@@ -26,6 +26,15 @@ def usage():
 
     ''')
 
+
+def printArps():
+    arpTbl = tools.getArps()
+    for k,v in arpTbl.items():
+        if v == '(incomplete)':
+            continue
+        print(v,k)
+    return True
+
 def main():
         arpTbl = tools.getArps()
         update = store.update_arp_data(db_store, arpTbl)
@@ -44,9 +53,7 @@ if __name__ == '__main__':
             print(mfname)
             sys.exit(0)
         if sys.argv[1] == 'list':
-            arpTbl = tools.getArps()
-            for k,v in arpTbl.items():
-                print(v,k)
+            printArps()
             sys.exit(0)
         if sys.argv[1] == 'list-db':
             store.print_all(db_store)
