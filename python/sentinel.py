@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0f'
+__version__ = 'v0.0.0g'
 
 import sys
 sys.path.insert(0,'db')
@@ -31,5 +31,10 @@ if __name__ == '__main__':
             ip = sys.argv[2]
             dnsname = tools.getDNSName(ip)
             print(dnsname)
+        if sys.argv[1] == 'update-dns':
+            mac = sys.argv[2]
+            dnsname = sys.argv[3]
+            update = store.update_data_dns(mac, dnsname, db_store)
+            print(update)
             
 

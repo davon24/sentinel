@@ -22,26 +22,6 @@ def sql_connection(db_file):
     return con
 
 
-#def getArps():
-#    arpDict = {}
-#    cmd = 'arp -an'
-#    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
-#    out = proc.stdout.readlines()
-#    for line in out:
-#        line = line.decode('utf-8').strip('\n').split()
-#        try:
-#            ip = line[1]
-#        except IndexError:
-#            ip = 'Empty'
-#        try:
-#            mac = line[3].lower()
-#        except IndexError:
-#            mac = 'Empty'
-#
-#        arpDict[ip] = mac
-#    return arpDict
-
-
 def update_arp_data(db_file, arpDict):
 
     con = sql_connection(db_file)
@@ -74,7 +54,7 @@ def update_arp_data(db_file, arpDict):
                 #print(l)
                 cur.execute("UPDATE arp SET ip=? WHERE mac=?", (l, _mac))
                 con.commit()
-                print('updated2 ' + str(_mac) + ' ' + str(l))
+                print('updated.2 ' + str(_mac) + ' ' + str(l))
             continue #print('SKIP (incomplete)')
 
         cur.execute("SELECT ip FROM arp WHERE mac='" + mac + "'")
@@ -105,7 +85,7 @@ def update_arp_data(db_file, arpDict):
 
                 cur.execute("UPDATE arp SET ip=? WHERE mac=?", (_ip, mac))
                 con.commit()
-                print('updated1 ' + str(mac) + ' ' + str(_ip))
+                print('updated.1 ' + str(mac) + ' ' + str(_ip))
     return True
 
 
@@ -146,9 +126,25 @@ def update_data_manuf(mac, mfname, db_file):
     update = json.dumps(jdata)
     cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
     con.commit()
-    print('updated3 ' + str(mac) + ' ' + str(update))
+    print('updated.manuf ' + str(mac) + ' ' + str(update))
     return True
 
+def update_data_dns(mac, dnsname, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
+    record = cur.fetchone()
+    if record is None:
+        return None
+    #print(record[0])
+    jdata = json.loads(record[0])
+    jdata['dns'] = dnsname
+    #print(json.dumps(jdata))
+    update = json.dumps(jdata)
+    cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
+    con.commit()
+    print('updated.dns ' + str(mac) + ' ' + str(update))
+    return True
 
 def get_manuf(mac, manuf_file):
     #manuf = mf.get_manuf(mac, 'db/manuf')
