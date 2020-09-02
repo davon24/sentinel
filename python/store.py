@@ -63,7 +63,8 @@ def update_arp_data(db_file, arpDict):
 
     for ip,mac in arpDict.items():
 
-        if mac == '(incomplete)':
+        #if mac == '(incomplete)':
+        if (mac == '(incomplete)') or (mac == '<incomplete>'):
             #print('SKIP (incomplete) ' + ip)
             #check if leftover ip,
             cur.execute("SELECT mac,ip FROM arp WHERE ip LIKE '%" + ip + "%'")

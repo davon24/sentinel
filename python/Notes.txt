@@ -1,4 +1,14 @@
 
+
+linux,
+
+('<incomplete>', '(172.16.191.153),(172.16.191.234)
+
+sqlite> delete from arp where mac='<incomplete>';
+
+
+---
+
 https://gitlab.com/wireshark/wireshark/raw/master/manuf
 
 ./sentinel.py manuf dc:a6:32:be:68:36

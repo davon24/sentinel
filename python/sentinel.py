@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k.5'
+__version__ = 'v0.0.0k.6'
 
 import sys
 #sys.path.insert(0,'db')
@@ -30,7 +30,7 @@ def usage():
 def printArps():
     arpTbl = tools.getArps()
     for k,v in arpTbl.items():
-        if v == '(incomplete)':
+        if (v == '(incomplete)') or (v == '<incomplete>'):
             continue
         print(v,k)
     return True
