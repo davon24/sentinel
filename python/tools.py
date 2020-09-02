@@ -1,6 +1,63 @@
 #!/usr/bin/env python3
 
 from subprocess import Popen, PIPE
+import threading
+
+#class PingNet:
+#    def __init__(self):
+#        self._running = True
+#
+#    def terminate(self):
+#        self._running = False
+#
+#    def run(self, ip):
+#
+#        ipL = ip.split('.')
+#        ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
+#        for i in range(1, 255):
+#            print(i)
+#
+#        print('PingNet: ' + ipn)
+#        #cmd = 'ping -c 1 ' + ip
+#        return True
+
+class PingIp:
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def run(self, ip):
+        #print(ip)
+        cmd = 'ping -c 1 ' + ip
+        proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+        out = proc.stdout.readlines()
+        for line in out:
+            line = line.decode('utf-8').strip('\n')
+            #print(line)
+            match = '1 packets transmitted'
+            if line.startswith(match, 0, len(match)):
+                line = line.split()
+                #print(line)
+                rcv = line[3]
+        # 1 is True, 0 is False here
+        #print(str(rcv))
+        return int(rcv)
+
+def pingNet(ip):
+        ipL = ip.split('.')
+        ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
+        print('PingNet: ' + ipn)
+
+        for i in range(1, 255):
+            _ip = ipn + str(i)
+            #print(_ip)
+            ping = PingIp()
+            t = threading.Thread(target=ping.run, args=(_ip,))
+            t.start()
+
+        return True
 
 def getArps():
     arpDict = {}
@@ -69,7 +126,28 @@ def getDNSName(ip):
 
 
 if __name__ == '__main__':
-    pass
 
-# requires cli line tools: arp, nmap
+    ip = '192.168.0.1'
+    pn = pingNet(ip)
+    print(pn)
+
+    #import sys
+
+    #if sys.argv[1:]:
+    #    ip = sys.argv[1]
+    #else:
+    #    ip = '192.168.0.1'
+
+    #ping = PingIp()
+    #t = threading.Thread(target=ping.run, args=(ip,))
+    #t.start()
+    ##t.join()
+    #print('exit')
+    #sys.exit(0)
+
+
+
+
+
+# requires cli line tools: arp, ping, nmap
 
