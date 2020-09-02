@@ -3,24 +3,6 @@
 from subprocess import Popen, PIPE
 import threading
 
-#class PingNet:
-#    def __init__(self):
-#        self._running = True
-#
-#    def terminate(self):
-#        self._running = False
-#
-#    def run(self, ip):
-#
-#        ipL = ip.split('.')
-#        ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
-#        for i in range(1, 255):
-#            print(i)
-#
-#        print('PingNet: ' + ipn)
-#        #cmd = 'ping -c 1 ' + ip
-#        return True
-
 class PingIp:
     def __init__(self):
         self._running = True
@@ -48,7 +30,7 @@ class PingIp:
 def pingNet(ip):
         ipL = ip.split('.')
         ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
-        print('PingNet: ' + ipn)
+        print('PingNet: ' + ipn + '{1..254}')
 
         for i in range(1, 255):
             _ip = ipn + str(i)
@@ -126,10 +108,11 @@ def getDNSName(ip):
 
 
 if __name__ == '__main__':
+    pass
 
-    ip = '192.168.0.1'
-    pn = pingNet(ip)
-    print(pn)
+    #ip = '192.168.0.1'
+    #pn = pingNet(ip)
+    #print(pn)
 
     #import sys
 
