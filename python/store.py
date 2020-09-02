@@ -4,7 +4,6 @@ import sqlite3
 import os
 import time
 import json
-#from subprocess import Popen, PIPE
 import threading
 
 import manuf as mf
@@ -17,18 +16,31 @@ class DNSUpDateTask:
     def terminate(self):
         self._running = False
 
+    def sql_connection(self, db_file):
+        con = sqlite3.connect(db_file)
+        return con
+
     def run(self, mac, ip, db_file):
-        print(mac, ip, db_file)
+        #print(mac, ip, db_file)
+        ip = ip.strip('(')
+        ip = ip.strip(')')
+        #print('IP: ' + ip)
         dnsname = tools.getDNSName(ip)
-        print(dnsname)
+        #print('DNS: ' + dnsname)
         con = self.sql_connection(db_file)
         cur = con.cursor()
         cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
         record = cur.fetchone()
         if record is None:
             return None
-        print(record[0])
-
+        #print(record[0])
+        jdata = json.loads(record[0])
+        jdata['dns'] = dnsname
+        update = json.dumps(jdata)
+        cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
+        con.commit()
+        print('t.updated.dns ' + str(mac) + ' ' + str(update))
+        return True
 
 
 def sql_connection(db_file):
@@ -93,8 +105,8 @@ def update_arp_data(db_file, arpDict):
             print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
             # launch dns thread update async
             dns = DNSUpDateTask()
-            t = threading.Thread(target=dns.run, args=(1,))
-            print('t.start')
+            t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
+            #print('t.start')
             t.start()
         else:
             #print(ip, _result[0]) #tuple _result
@@ -212,7 +224,7 @@ if __name__ == '__main__':
     dns = DNSUpDateTask()
     t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
     t.start()
-    print('t.start')
+    #print('t.start')
 
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k'
+__version__ = 'v0.0.0k.1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -35,8 +35,12 @@ if __name__ == '__main__':
         if sys.argv[1] == 'update-dns':
             mac = sys.argv[2]
             ip = sys.argv[3]
-            dnsname = tools.getDNSName(ip)
-            update = store.update_data_dns(mac, dnsname, db_store)
-            print(update)
+            #dnsname = tools.getDNSName(ip)
+            #update = store.update_data_dns(mac, dnsname, db_store)
+            import threading
+            dns = store.DNSUpDateTask()
+            t = threading.Thread(target=dns.run, args=(mac,ip,db_store,))
+            t.start()
+            print(t)
             
 
