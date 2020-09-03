@@ -65,7 +65,7 @@ class NmapSN:
     def run(self, ip):
         ipL = []
         #cmd = 'nmap -sn -n --min-parallelism 256 192.168.0.0/24'
-        cmd = 'nmap -sn -n --min-parallelism 256 ' + ip
+        cmd = 'nmap -sn -n ' + ip
         proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
         out = proc.stdout.readlines()
         for line in out:
@@ -81,18 +81,18 @@ class NmapSN:
 
         return ipL
 
-def pingNet(ip):
-        ipL = ip.split('.')
-        ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
-        print('PingNet: ' + ipn + '{1..254}')
-
-        for i in range(1, 255):
-            _ip = ipn + str(i)
-            #print(_ip)
-            ping = PingIp()
-            t = threading.Thread(target=ping.run, args=(_ip,))
-            t.start()
-        return True
+#def pingNet(ip):
+#        ipL = ip.split('.')
+#        ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
+#        print('PingNet: ' + ipn + '{1..254}')
+#
+#        for i in range(1, 255):
+#            _ip = ipn + str(i)
+#            #print(_ip)
+#            ping = PingIp()
+#            t = threading.Thread(target=ping.run, args=(_ip,))
+#            t.start()
+#        return True
 
 def getArps():
     arpDict = {}
@@ -163,15 +163,40 @@ def getDNSName(ip):
 
 
 if __name__ == '__main__':
+
+    import sys
+
+    ip = sys.argv[1]
+
+    ipL = ip.split('.')
+    ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
+    print('PingNet: ' + ipn + '{1..254}')
+
+    threads = []
+    for i in range(1, 255):
+        _ip = ipn + str(i)
+        #print(_ip)
+        ping = PingIp()
+        t = ThreadWithReturnValue(target=ping.run, args=(_ip,))
+        threads.append(t)
+
+    for t in threads: t.start()
+    for t in threads:
+        ret = t.join()
+        print(ret)
+
+    #t = ThreadWithReturnValue(target=scan.run, args=(ip,))
+    #ret = t.join()
+    #print(ret)
   
-    ip = '192.168.0.1/24'
-    scan = NmapSN()
-    #t = threadWithReturn(target=scan.run, args=(ip,))
-    t = ThreadWithReturnValue(target=scan.run, args=(ip,))
-    t.start()
-    #ret,e = t.join()
-    ret = t.join()
-    print(ret)
+    #ip = '192.168.0.1/24'
+    #scan = NmapSN()
+    ##t = threadWithReturn(target=scan.run, args=(ip,))
+    #t = ThreadWithReturnValue(target=scan.run, args=(ip,))
+    #t.start()
+    ##ret,e = t.join()
+    #ret = t.join()
+    #print(ret)
 
     #t = threading.Thread(target=scan.run, args=(ip,))
     #t.start()
