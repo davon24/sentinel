@@ -52,7 +52,9 @@ class PingIp:
                 rcv = line[3]
         # 1 is True, 0 is False here
         #print(str(rcv))
-        return int(rcv)
+        #return int(rcv)
+        #return str(ip) + ' ' + str(rcv)
+        return str(rcv) + ' ' + str(ip)
 
 # nmap -sn (No port scan) - hosts that responded to the host discovery probes.
 class NmapSN:
@@ -172,6 +174,7 @@ if __name__ == '__main__':
     ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
     print('PingNet: ' + ipn + '{1..254}')
 
+    tDct = {}
     threads = []
     for i in range(1, 255):
         _ip = ipn + str(i)
@@ -183,7 +186,56 @@ if __name__ == '__main__':
     for t in threads: t.start()
     for t in threads:
         ret = t.join()
-        print(ret)
+        #print(ret)
+        vL = ret.split(' ')
+        v = vL[0]
+        i = vL[1]
+        if int(v) == 1:
+            print(v, i)
+
+    #########################
+
+    #ip = '192.168.0.1/24'
+    scan = NmapSN()
+    ##t = threadWithReturn(target=scan.run, args=(ip,))
+    t = ThreadWithReturnValue(target=scan.run, args=(ip,))
+    t.start()
+    ##ret,e = t.join()
+    ret = t.join()
+    print(ret)
+
+
+
+    #threadsDct = {}
+    #for i in range(1, 255):
+    #    _ip = ipn + str(i)
+    #    print(_ip)
+    #    ping = PingIp()
+    #    t = ThreadWithReturnValue(target=ping.run, args=(_ip,))
+    #    threadsDct[ip] = t
+    #    t.start()
+
+    #for t in threads: t.start()
+    #for key in threadsDct: t.start()
+
+    #for i,t in threadsDct.items():
+    #    ret = t.join()
+    #    print(ret, i)
+
+
+
+    #threads = []
+    #for i in range(1, 255):
+    #    _ip = ipn + str(i)
+    #    #print(_ip)
+    #    ping = PingIp()
+    #    t = ThreadWithReturnValue(target=ping.run, args=(_ip,))
+    #    threads.append(t)
+#
+#    for t in threads: t.start()
+#    for t in threads:
+#        ret = t.join()
+#        print(ret)
 
     #t = ThreadWithReturnValue(target=scan.run, args=(ip,))
     #ret = t.join()
