@@ -1,4 +1,33 @@
 
+-sn (No port scan)
+
+ip scan
+
+% nmap -sn 192.168.1.0/24
+Starting Nmap 7.80 ( https://nmap.org ) at 2020-09-02 17:50 PDT
+Nmap done: 256 IP addresses (0 hosts up) scanned in 104.31 seconds
+
+nmap --max-retries 1 -sn 192.168.1.0/24 #no change
+
+% nmap --min-parallelism 256 -sn 192.168.1.0/24
+Warning: Your --min-parallelism option is pretty high!  This can hurt reliability.
+Starting Nmap 7.80 ( https://nmap.org ) at 2020-09-02 17:54 PDT
+Nmap done: 256 IP addresses (0 hosts up) scanned in 5.05 seconds
+
+https://superuser.com/questions/1463784/what-are-nmaps-default-timing-values
+
+
+---
+
+rdns-scan
+nmap -sL 192.168.2.0/24
+
+list - current arps
+list-db - db entries
+
+
+---
+
 
 linux,
 

@@ -3,6 +3,33 @@
 from subprocess import Popen, PIPE
 import threading
 
+class ThreadWithReturnValue(threading.Thread):
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs={}, Verbose=None):
+        threading.Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+    def run(self):
+        #print(type(self._target))
+        if self._target is not None:
+            self._return = self._target(*self._args,
+                                                **self._kwargs)
+    def join(self, *args):
+        threading.Thread.join(self, *args)
+        return self._return
+
+#class threadWithReturn(threading.Thread):
+#    def __init__(self, *args, **kwargs):
+#        super(threadWithReturn, self).__init__(*args, **kwargs)
+#        self._return = None
+#
+#    def run(self):
+#        if self._Thread__target is not None:
+#            self._return = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+#
+#    def join(self, *args, **kwargs):
+#        super(threadWithReturn, self).join(*args, **kwargs)
+#        return self._return
+
 class PingIp:
     def __init__(self):
         self._running = True
@@ -27,6 +54,33 @@ class PingIp:
         #print(str(rcv))
         return int(rcv)
 
+# nmap -sn (No port scan) - hosts that responded to the host discovery probes.
+class NmapSN:
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def run(self, ip):
+        ipL = []
+        #cmd = 'nmap -sn -n --min-parallelism 256 192.168.0.0/24'
+        cmd = 'nmap -sn -n --min-parallelism 256 ' + ip
+        proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+        out = proc.stdout.readlines()
+        for line in out:
+            line = line.decode('utf-8').strip('\n')
+            #print(line)
+            match = 'Nmap scan report for'
+            if line.startswith(match, 0, len(match)):
+                line = line.split()
+                #print(line)
+                ip = line[4]
+                #print(ip)
+                ipL.append(ip)
+
+        return ipL
+
 def pingNet(ip):
         ipL = ip.split('.')
         ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
@@ -38,7 +92,6 @@ def pingNet(ip):
             ping = PingIp()
             t = threading.Thread(target=ping.run, args=(_ip,))
             t.start()
-
         return True
 
 def getArps():
@@ -64,6 +117,8 @@ def getDNSNamesLst(ip):
     #dns can take several seconds to time out
     nameLst = []
     #print(ip)
+    # nmap -sL (List Scan) - without sending any packets to the target hosts.
+    # does reverse-DNS resolution on the hosts
     cmd = 'nmap -sL ' + ip
     #print(cmd)
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
@@ -108,7 +163,37 @@ def getDNSName(ip):
 
 
 if __name__ == '__main__':
-    pass
+  
+    ip = '192.168.0.1/24'
+    scan = NmapSN()
+    #t = threadWithReturn(target=scan.run, args=(ip,))
+    t = ThreadWithReturnValue(target=scan.run, args=(ip,))
+    t.start()
+    #ret,e = t.join()
+    ret = t.join()
+    print(ret)
+
+    #t = threading.Thread(target=scan.run, args=(ip,))
+    #t.start()
+    #t.join()
+    #print(t)
+    #sys.exit(0)
+
+
+    #cmd = 'nmap -sn -n --min-parallelism 256 192.168.0.0/24'
+    #proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    #out = proc.stdout.readlines()
+    #for line in out:
+    #    line = line.decode('utf-8').strip('\n')
+    #    #print(line)
+    #    match = 'Nmap scan report for'
+    #    if line.startswith(match, 0, len(match)):
+    #        line = line.split()
+    #        #print(line)
+    #        ip = line[4]
+    #        print(ip)
+
+
 
     #ip = '192.168.0.1'
     #pn = pingNet(ip)
