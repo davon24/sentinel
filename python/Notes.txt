@@ -1,4 +1,10 @@
 
+
+
+watch ip
+
+---
+
 -sn (No port scan)
 
 ip scan

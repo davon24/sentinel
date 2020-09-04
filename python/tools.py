@@ -3,6 +3,8 @@
 from subprocess import Popen, PIPE
 import threading
 
+import time
+
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs={}, Verbose=None):
@@ -187,6 +189,7 @@ if __name__ == '__main__':
 
     threads = []
     for _ip in hosts:
+        #time.sleep(0.05)
         #print(_ip)
         ping = PingIp()
         t = ThreadWithReturnValue(target=ping.run, args=(_ip,))
