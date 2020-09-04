@@ -171,19 +171,33 @@ if __name__ == '__main__':
     ip = sys.argv[1]
 
     ipL = ip.split('.')
-    ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
-    print('PingNet: ' + ipn + '{1..254}')
+    #ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
+    net = ipL[0] + '.' + ipL[1] + '.'
+    print('PingNet: ' + net + '{1..254}.{1..254}')
 
-    tDct = {}
-    threads = []
+    p = []
+
+
+    hosts = []
     for i in range(1, 255):
-        _ip = ipn + str(i)
+        _net = net + str(i) + '.'
+        for j in range(1, 255):
+            hosts.append(_net + str(j))
+
+
+    threads = []
+    for _ip in hosts:
         #print(_ip)
         ping = PingIp()
         t = ThreadWithReturnValue(target=ping.run, args=(_ip,))
         threads.append(t)
 
+    #perhaps delay between here
     for t in threads: t.start()
+#Exception in thread Thread-1281:
+#File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+#OSError: [Errno 24] Too many open files
+
     for t in threads:
         ret = t.join()
         #print(ret)
@@ -193,16 +207,18 @@ if __name__ == '__main__':
         if int(v) == 1:
             print(v, i)
 
+    print('justified')
+
     #########################
 
     #ip = '192.168.0.1/24'
-    scan = NmapSN()
+    #scan = NmapSN()
     ##t = threadWithReturn(target=scan.run, args=(ip,))
-    t = ThreadWithReturnValue(target=scan.run, args=(ip,))
-    t.start()
+    #t = ThreadWithReturnValue(target=scan.run, args=(ip,))
+    #t.start()
     ##ret,e = t.join()
-    ret = t.join()
-    print(ret)
+    #ret = t.join()
+    #print(ret)
 
 
 
