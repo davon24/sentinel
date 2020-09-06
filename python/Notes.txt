@@ -1,4 +1,33 @@
 
+🍁 krink@Karls-MacBook-Pro python % sudo ./tools.py
+Password:
+57621   Spotify   krink   TCP   IPv4   559
+6443   com.docke   krink   TCP   IPv4   662
+6443   com.docke   krink   TCP   IPv4   662
+6443   com.docke   krink   TCP   IPv4   677
+49170   com.docke   krink   TCP   IPv4   661
+9000   php-fpm   krink   TCP   IPv4   525
+9000   php-fpm   krink   TCP   IPv4   659
+9000   php-fpm   krink   TCP   IPv4   660
+6379   redis-ser   krink   TCP   IPv6   518
+6379   redis-ser   krink   TCP   IPv4   518
+49160   rapportd   krink   TCP   IPv4   431
+631   cupsd   root   TCP   IPv4   357
+631   cupsd   root   TCP   IPv6   357
+49157   UserEvent   root   TCP   IPv6   126
+49157   PowerChim   krink   TCP   IPv6   2230
+49156   UserEvent   root   TCP   IPv6   126
+49156   SubmitDia   root   TCP   IPv6   361
+49155   UserEvent   root   TCP   IPv6   126
+49154   UserEvent   root   TCP   IPv6   126
+49154   lskdd   _fpsd   TCP   IPv6   2330
+49153   UserEvent   root   TCP   IPv6   126
+49153   lskdd   _fpsd   TCP   IPv6   2330
+7505   openvpn   root   TCP   IPv4   185
+🍁 krink@Karls-MacBook-Pro python %
+
+
+---
 
 
 watch ip

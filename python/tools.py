@@ -164,55 +164,172 @@ def getDNSName(ip):
         #return str(nameLst)
         return str('WillNotPerformMultiples')
 
+def splitAddr(addrport):
+    _list = addrport.split('.')
+    port = _list[-1]
+    addr = _list[:-1]
+    return port, addr
+
+
+def getNetStat():
+
+    listen = {}
+    established = {}
+    time_wait = {}
+
+    cmd = 'netstat -na'
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        line = line.decode('utf-8').strip('\n').split()
+        #print(line)
+        try:
+            if line[5] == 'LISTEN':
+                proto = line[0]
+                laddr  = line[3]
+                listen[laddr] = proto
+        except IndexError:
+            continue
+        try:
+            if line[5] == 'ESTABLISHED':
+                proto = line[0]
+                laddr  = line[3]
+                faddr  = line[4]
+                established[laddr] = proto
+        except IndexError:
+            continue
+        try:
+            if line[5] == 'TIME_WAIT':
+                proto = line[0]
+                laddr  = line[3]
+                faddr  = line[4]
+                time_wait[laddr] = proto
+        except IndexError:
+            continue
+    return listen, established, time_wait
+
+def listenPortsLst():
+    listen, established, time_wait = getNetStat()
+    lports = []
+    for k,v in listen.items():
+        #print(k,v)
+        port, addr = splitAddr(k)
+        proto = v
+        #print(port, addr)
+        lports.append(proto + ':' + port)
+    return lports
+
+
+def lsof_protoport(protoport):
+    #lsof on ports < 1024 require root
+    # pname, pids, puser
+
+    proto = protoport.split(':')[0]
+    port  = protoport.split(':')[1]
+
+    #match = '1 packets transmitted'
+    #if line.startswith(match, 0, len(match)):
+
+
+    if proto.startswith('tcp4', 0, len('tcp4')):
+        proto = '4tcp'
+    if proto.startswith('tcp6', 0, len('tcp6')):
+        proto = '6tcp'
+
+    cmd = 'lsof -n -i' + proto + ':' + port
+    #print(cmd)
+
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    #print(str(len(out)) + ' ' + str(out))
+    #print(str(len(out)))
+
+    if len(out) == 0:
+        return False
+    else:
+        for line in out:
+            line = line.decode('utf-8').strip('\n').split()
+            #['COMMAND', 'PID', 'USER', 'FD', 'TYPE', 'DEVICE', 'SIZE/OFF', 'NODE', 'NAME']
+            #print(str(len(line)) + ' ' + str(line))
+
+            if line[0] == 'COMMAND':
+                continue
+
+            pname = line[0]
+            pid   = line[1]
+            puser = line[2]
+            ptype = line[4]
+            pnode = line[7]
+            #print(line)
+            #print(str(len(line)) + ' ' + str(line))
+            #print(pname, ' ', pid, ' ', puser, ' ' , ptype, ' ', pnode, ' ' , port)
+            print(port, ' ', pname, ' ', puser, ' ' ,  pnode, ' ', ptype, ' ', pid)
+                
+
+    return True
+    # sudo lsof -i TCP:631
+    # 'tcp4:631', 'tcp6:631'
+    #sudo lsof -n  -i4tcp:631 
+    #sudo lsof -n  -i6tcp:631 
 
 
 if __name__ == '__main__':
 
-    import sys
+    lports = listenPortsLst()
+    #print(lports)
 
-    ip = sys.argv[1]
-
-    ipL = ip.split('.')
-    #ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
-    net = ipL[0] + '.' + ipL[1] + '.'
-    print('PingNet: ' + net + '{1..254}.{1..254}')
-
-    p = []
+    for pp in lports:
+        lsof = lsof_protoport(pp)
+        #print(lsof)
 
 
-    hosts = []
-    for i in range(1, 255):
-        _net = net + str(i) + '.'
-        for j in range(1, 255):
-            hosts.append(_net + str(j))
+
+# requires cli line tools: arp, ping, nmap
 
 
-    threads = []
-    for _ip in hosts:
-        #time.sleep(0.05)
-        #print(_ip)
-        ping = PingIp()
-        t = ThreadWithReturnValue(target=ping.run, args=(_ip,))
-        threads.append(t)
-
-    #perhaps delay between here
-    for t in threads: t.start()
-#Exception in thread Thread-1281:
-#File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/threading.py", line 932, in _bootstrap_inner
-#OSError: [Errno 24] Too many open files
-
-    for t in threads:
-        ret = t.join()
-        #print(ret)
-        vL = ret.split(' ')
-        v = vL[0]
-        i = vL[1]
-        if int(v) == 1:
-            print(v, i)
-
-    print('justified')
-
-    #########################
+#    import sys
+#    ip = sys.argv[1]
+#    ipL = ip.split('.')
+#    #ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
+#    net = ipL[0] + '.' + ipL[1] + '.'
+#    print('PingNet: ' + net + '{1..254}.{1..254}')
+#
+#    p = []
+#
+#
+#    hosts = []
+#    for i in range(1, 255):
+#        _net = net + str(i) + '.'
+#        for j in range(1, 255):
+#            hosts.append(_net + str(j))
+#
+#
+#    threads = []
+#    for _ip in hosts:
+#        #time.sleep(0.05)
+#        #print(_ip)
+#        ping = PingIp()
+#        t = ThreadWithReturnValue(target=ping.run, args=(_ip,))
+#        threads.append(t)
+#
+#    #perhaps delay between here
+#    for t in threads: t.start()
+##Exception in thread Thread-1281:
+##File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+##OSError: [Errno 24] Too many open files
+#
+#    for t in threads:
+#        ret = t.join()
+#        #print(ret)
+#        vL = ret.split(' ')
+#        v = vL[0]
+#        i = vL[1]
+#        if int(v) == 1:
+#            print(v, i)
+#
+#    print('justified')
+#
+#    #########################
 
     #ip = '192.168.0.1/24'
     #scan = NmapSN()
@@ -313,5 +430,4 @@ if __name__ == '__main__':
 
 
 
-# requires cli line tools: arp, ping, nmap
 
