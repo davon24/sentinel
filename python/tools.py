@@ -210,19 +210,20 @@ def getNetStat():
 
 def listenPortsLst():
     listen, established, time_wait = getNetStat()
-    lports = []
+    portsLst = []
     for k,v in listen.items():
         #print(k,v)
         port, addr = splitAddr(k)
         proto = v
         #print(port, addr)
-        lports.append(proto + ':' + port)
-    return lports
+        portsLst.append(proto + ':' + port)
+    return portsLst
 
 
 def lsof_protoport(protoport):
     #lsof on ports < 1024 require root
-    # pname, pids, puser
+    
+    lsofDct = {}
 
     proto = protoport.split(':')[0]
     port  = protoport.split(':')[1]
@@ -244,8 +245,10 @@ def lsof_protoport(protoport):
     #print(str(len(out)) + ' ' + str(out))
     #print(str(len(out)))
 
+    c = 0
+
     if len(out) == 0:
-        return False
+        return lsofDct
     else:
         for line in out:
             line = line.decode('utf-8').strip('\n').split()
@@ -262,26 +265,71 @@ def lsof_protoport(protoport):
             pnode = line[7]
             #print(line)
             #print(str(len(line)) + ' ' + str(line))
-            #print(pname, ' ', pid, ' ', puser, ' ' , ptype, ' ', pnode, ' ' , port)
-            print(port, ' ', pname, ' ', puser, ' ' ,  pnode, ' ', ptype, ' ', pid)
-                
+            #print(port, ' ', pname, ' ', puser, ' ' ,  pnode, ' ', ptype, ' ', pid)
+            _line = port + ' ' + pname + ' ' + puser + ' ' +  pnode + ' ' + ptype + ' ' + pid
+            c += 1
+            lsofDct[c] = _line
 
-    return True
+    #print(len(lsofDct))
+
+    #if len(lsofDct) > 1:
+    #    #print('Yes, Multiples exist')
+    #    mpids = []
+    #    for k,v in lsofDct.items():
+    #        print(' multi ' + str(v))
+    #        _p = v.split(' ')[5]
+    #        print(' mpid ' + _p)
+    #        mpids.append(_p)
+
+    return lsofDct
     # sudo lsof -i TCP:631
     # 'tcp4:631', 'tcp6:631'
     #sudo lsof -n  -i4tcp:631 
     #sudo lsof -n  -i6tcp:631 
 
 
-if __name__ == '__main__':
-
-    lports = listenPortsLst()
+def getLsOf():
+    portsLst = listenPortsLst()
     #print(lports)
 
-    for pp in lports:
-        lsof = lsof_protoport(pp)
-        #print(lsof)
+    for protoport in portsLst:
+        lsofDct = lsof_protoport(protoport)
+        #print(len(lsofDct))
 
+        for k,v in lsofDct.items():
+            print(v)
+
+        #if len(lsofDct) == 0:
+        #    #needs root
+        #    print('needs.root')
+        #elif len(lsofDct) == 1:
+        #    print('single')
+        #    for k,v in lsofDct.items():
+        #        print(v)
+        #else:
+        #    print('multiple')
+        #    print(v)
+        #    pids = []
+        #    for k,v in lsofDct.items():
+        #        print(v)
+
+
+        #print(lsofDct)
+        #x = 0
+        #pids = []
+        #for k,v in lsofDct.items():
+        #    x += 1
+        #    #print(v.split(' ')[5])
+        #    #_port = v.split(' ')[0]
+        #    #_name = 
+        #    #pids.append()
+        #    print(str(x) + ' ' + str(v))
+
+
+
+if __name__ == '__main__':
+
+    run = getLsOf()
 
 
 # requires cli line tools: arp, ping, nmap
