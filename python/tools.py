@@ -2,7 +2,7 @@
 
 from subprocess import Popen, PIPE
 import threading
-
+import sys
 import time
 
 class ThreadWithReturnValue(threading.Thread):
@@ -19,18 +19,28 @@ class ThreadWithReturnValue(threading.Thread):
         threading.Thread.join(self, *args)
         return self._return
 
-#class threadWithReturn(threading.Thread):
-#    def __init__(self, *args, **kwargs):
-#        super(threadWithReturn, self).__init__(*args, **kwargs)
-#        self._return = None
-#
-#    def run(self):
-#        if self._Thread__target is not None:
-#            self._return = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
-#
-#    def join(self, *args, **kwargs):
-#        super(threadWithReturn, self).join(*args, **kwargs)
-#        return self._return
+def getPlatform():
+    #>>> import sys
+    #>>> sys.platform
+    #'win32'  # 'linux', 'linux2, 'darwin', 'freebsd8' etc
+
+    if sys.platform == 'linux' or sys.platform == 'linux2':
+        # linux
+        return 'linux'
+    elif sys.platform == 'darwin':
+        # MAC OS X
+        return sys.platform
+    elif sys.platform == 'win32':
+        # Windows
+        return sys.platform
+    elif sys.platform == 'win64':
+        # Windows 64-bit
+        return sys.platform
+    elif sys.platform == 'cygwin':
+        # Windows DLL GNU
+        return sys.platform
+    else:
+        return sys.platform
 
 class PingIp:
     def __init__(self):
@@ -165,10 +175,25 @@ def getDNSName(ip):
         return str('WillNotPerformMultiples')
 
 def splitAddr(addrport):
-    _list = addrport.split('.')
-    port = _list[-1]
-    addr = _list[:-1]
-    return port, addr
+
+    if str(sys.platform).startswith('linux'):
+        #print('linux')
+        _list = addrport.split(':')
+        #print(list)
+        port = _list[-1]
+        addr = _list[:-1]
+        return port, addr
+
+
+    elif sys.platform == 'darwin':
+        _list = addrport.split('.')
+        port = _list[-1]
+        addr = _list[:-1]
+        return port, addr
+
+    else:
+        port, addr = ''
+        return port, addr
 
 
 def getNetStat():
@@ -224,6 +249,8 @@ def lsof_protoport(protoport):
     #lsof on ports < 1024 require root
     
     lsofDct = {}
+
+    #print(protoport)
 
     proto = protoport.split(':')[0]
     port  = protoport.split(':')[1]
@@ -296,34 +323,21 @@ def getLsOf():
         lsofDct = lsof_protoport(protoport)
         #print(len(lsofDct))
 
-        for k,v in lsofDct.items():
-            print(v)
-
-        #if len(lsofDct) == 0:
-        #    #needs root
-        #    print('needs.root')
-        #elif len(lsofDct) == 1:
-        #    print('single')
-        #    for k,v in lsofDct.items():
-        #        print(v)
-        #else:
-        #    print('multiple')
-        #    print(v)
-        #    pids = []
-        #    for k,v in lsofDct.items():
-        #        print(v)
-
-
-        #print(lsofDct)
-        #x = 0
-        #pids = []
         #for k,v in lsofDct.items():
-        #    x += 1
-        #    #print(v.split(' ')[5])
-        #    #_port = v.split(' ')[0]
-        #    #_name = 
-        #    #pids.append()
-        #    print(str(x) + ' ' + str(v))
+        #    print(v)
+
+        if len(lsofDct) == 0:
+            #needs root
+            print('needs.root')
+        elif len(lsofDct) == 1:
+            #print('single')
+            for k,v in lsofDct.items():
+                print(v)
+        else:
+            #print('multiple')
+            pids = []
+            for k,v in lsofDct.items():
+                print(v)
 
 
 
