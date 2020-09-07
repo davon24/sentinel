@@ -258,13 +258,13 @@ def lsof_protoport(protoport):
     #match = '1 packets transmitted'
     #if line.startswith(match, 0, len(match)):
 
-
+    #print(proto)
     if proto.startswith('tcp4', 0, len('tcp4')):
-        proto = '4tcp'
+        _proto = '4tcp'
     if proto.startswith('tcp6', 0, len('tcp6')):
-        proto = '6tcp'
+        _proto = '6tcp'
 
-    cmd = 'lsof -n -i' + proto + ':' + port
+    cmd = 'lsof -n -i' + _proto + ':' + port
     #print(cmd)
 
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
@@ -274,8 +274,12 @@ def lsof_protoport(protoport):
 
     c = 0
 
+    #print(out)
+
     if len(out) == 0:
-        return lsofDct
+        _line = port + ' () root ' + proto + ' () ()'
+        lsofDct[c] = _line
+        #return lsofDct
     else:
         for line in out:
             line = line.decode('utf-8').strip('\n').split()
@@ -323,21 +327,21 @@ def getLsOf():
         lsofDct = lsof_protoport(protoport)
         #print(len(lsofDct))
 
-        #for k,v in lsofDct.items():
-        #    print(v)
+        for k,v in lsofDct.items():
+            print(v)
 
-        if len(lsofDct) == 0:
-            #needs root
-            print('needs.root')
-        elif len(lsofDct) == 1:
-            #print('single')
-            for k,v in lsofDct.items():
-                print(v)
-        else:
-            #print('multiple')
-            pids = []
-            for k,v in lsofDct.items():
-                print(v)
+        #if len(lsofDct) == 0:
+        #    #needs root
+        #    print('needs.root')
+        #elif len(lsofDct) == 1:
+        #    #print('single')
+        #    for k,v in lsofDct.items():
+        #        print(v)
+        #else:
+        #    #print('multiple')
+        #    pids = []
+        #    for k,v in lsofDct.items():
+        #        print(v)
 
 
 
