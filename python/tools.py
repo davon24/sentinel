@@ -319,16 +319,22 @@ def lsof_protoport(protoport):
     #sudo lsof -n  -i6tcp:631 
 
 
-def getLsOf():
+def getLsOfDct():
+    retDct = {}
     portsLst = listenPortsLst()
     #print(lports)
 
+    c = 0
     for protoport in portsLst:
-        lsofDct = lsof_protoport(protoport)
+        _lsofDct = lsof_protoport(protoport)
         #print(len(lsofDct))
 
-        for k,v in lsofDct.items():
-            print(v)
+        for k,v in _lsofDct.items():
+            c += 1
+            retDct[c] = v
+            #print(v)
+
+    return retDct
 
         #if len(lsofDct) == 0:
         #    #needs root
@@ -343,13 +349,18 @@ def getLsOf():
         #    for k,v in lsofDct.items():
         #        print(v)
 
-
+def printLsOfdetailed():
+    lsofDct = getLsOfDct()
+    for k,v in lsofDct.items():
+        print(v)
+    return True 
 
 if __name__ == '__main__':
 
-    run = getLsOf()
+    run = printLsOfdetailed()
+    print(run)
 
 
-# requires cli line tools: arp, ping, nmap
+# requires cli line tools: arp, ping, lsof, nmap
 
 
