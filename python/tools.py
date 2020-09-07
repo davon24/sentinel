@@ -196,16 +196,25 @@ def splitAddr(addrport):
         port, addr = ''
         return port, addr
 
-
 def getNetStat():
+    cmd = 'netstat -na'
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    return out
 
+
+def getNetStatDcts():
+
+    #udp, listen, established, time_wait = {}
+
+    udp = {}
     listen = {}
     established = {}
     time_wait = {}
 
-    cmd = 'netstat -na'
-    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
-    out = proc.stdout.readlines()
+    out = getNetStat()
+    #print(out)
+
     for line in out:
         line = line.decode('utf-8').strip('\n').split()
         #print(line)
@@ -216,6 +225,9 @@ def getNetStat():
                 listen[laddr] = proto
         except IndexError:
             continue
+
+    for line in out:
+        line = line.decode('utf-8').strip('\n').split()
         try:
             if line[5] == 'ESTABLISHED':
                 proto = line[0]
@@ -224,6 +236,9 @@ def getNetStat():
                 established[laddr] = proto
         except IndexError:
             continue
+
+    for line in out:
+        line = line.decode('utf-8').strip('\n').split()
         try:
             if line[5] == 'TIME_WAIT':
                 proto = line[0]
@@ -232,17 +247,40 @@ def getNetStat():
                 time_wait[laddr] = proto
         except IndexError:
             continue
-    return listen, established, time_wait
+
+    for line in out:
+        line = line.decode('utf-8').strip('\n').split()
+        try:
+            if str(line[0]).startswith('udp'):
+                print(line)
+                proto = line[0]
+                laddr  = line[3]
+                faddr  = line[4]
+                udp[laddr] = proto
+        except IndexError:
+            continue
+
+    return udp, listen, established, time_wait
+
 
 def listenPortsLst():
-    listen, established, time_wait = getNetStat()
+    udp, listen, established, time_wait = getNetStatDcts()
     portsLst = []
     for k,v in listen.items():
         #print(k,v)
         port, addr = splitAddr(k)
         proto = v
-        #print(port, addr)
+        #print('TCP')
         portsLst.append(proto + ':' + port)
+
+    for k,v in udp.items():
+        print('UDP')
+        print(k,v)
+
+    #for k,v in established.items():
+    #    print('ESTAB')
+    #    print(k,v)
+
     return portsLst
 
 
@@ -302,6 +340,7 @@ def lsofProtoPort(protoport):
             #print(port, ' ', pname, ' ', puser, ' ' ,  pnode, ' ', ptype, ' ', pid)
             #_line = port + ' ' + pname + ' ' + puser + ' ' +  pnode + ' ' + ptype + ' ' + pid
             _line = port + ' ' + pname + ' ' + puser + ' ' +  proto + ' ' + ptype + ' ' + pid
+            #_line = port + ' ' + proto + ' ' + pname + ' ' + puser  + ' ' + ptype + ' ' + pid
             #print(_line)
             c += 1
             lsofDct[c] = _line
@@ -386,7 +425,6 @@ def printLsOfdetailed():
 if __name__ == '__main__':
 
     cntDct = cntLsOf()
-
     for k,v in sorted(cntDct.items()):
         print(k,v)
 
