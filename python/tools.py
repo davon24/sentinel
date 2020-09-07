@@ -262,8 +262,10 @@ def lsofProtoPort(protoport):
     #print(proto)
     if proto.startswith('tcp4', 0, len('tcp4')):
         _proto = '4tcp'
-    if proto.startswith('tcp6', 0, len('tcp6')):
+    elif proto.startswith('tcp6', 0, len('tcp6')):
         _proto = '6tcp'
+    else:
+        _proto = proto
 
     cmd = 'lsof -n -i' + _proto + ':' + port
     #print(cmd)
