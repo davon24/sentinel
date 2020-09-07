@@ -4,6 +4,7 @@ from subprocess import Popen, PIPE
 import threading
 import sys
 import time
+import collections
 
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -245,7 +246,7 @@ def listenPortsLst():
     return portsLst
 
 
-def lsof_protoport(protoport):
+def lsofProtoPort(protoport):
     #lsof on ports < 1024 require root
     
     lsofDct = {}
@@ -297,7 +298,9 @@ def lsof_protoport(protoport):
             #print(line)
             #print(str(len(line)) + ' ' + str(line))
             #print(port, ' ', pname, ' ', puser, ' ' ,  pnode, ' ', ptype, ' ', pid)
-            _line = port + ' ' + pname + ' ' + puser + ' ' +  pnode + ' ' + ptype + ' ' + pid
+            #_line = port + ' ' + pname + ' ' + puser + ' ' +  pnode + ' ' + ptype + ' ' + pid
+            _line = port + ' ' + pname + ' ' + puser + ' ' +  proto + ' ' + ptype + ' ' + pid
+            #print(_line)
             c += 1
             lsofDct[c] = _line
 
@@ -326,7 +329,7 @@ def getLsOfDct():
 
     c = 0
     for protoport in portsLst:
-        _lsofDct = lsof_protoport(protoport)
+        _lsofDct = lsofProtoPort(protoport)
         #print(len(lsofDct))
 
         for k,v in _lsofDct.items():
@@ -349,6 +352,29 @@ def getLsOfDct():
         #    for k,v in lsofDct.items():
         #        print(v)
 
+def cntLsOf():
+    Dct = {}
+    lsofDct = getLsOfDct()
+    #print(lsofDct)
+    c = 0
+    for k,v in lsofDct.items():
+        c += 1
+        _port  = v.split(' ')[0]
+        _proto = v.split(' ')[3]
+        #Dct[c] = int(v.split(' ')[0])
+        Dct[c] = _port + ' ' + _proto
+
+    cntDct = collections.Counter(Dct.values())
+
+    rtnDct = {}
+    for key in cntDct:
+        _k = int(key.split(' ')[0])
+        #_v = str(key.split(' ')[1]).lower()
+        _v = str(key.split(' ')[1])
+        rtnDct[_k] = _v
+
+    return rtnDct
+
 def printLsOfdetailed():
     lsofDct = getLsOfDct()
     for k,v in lsofDct.items():
@@ -357,8 +383,25 @@ def printLsOfdetailed():
 
 if __name__ == '__main__':
 
-    run = printLsOfdetailed()
-    print(run)
+    cntDct = cntLsOf()
+
+    for k,v in sorted(cntDct.items()):
+        print(k,v)
+
+    #print(cntDct)
+    #for k,v in cntDct.items():
+    #    print(k, v)
+    #    #print(v.split(' '))
+
+
+
+    #for k,v in sorted(cntDct.items()):
+    #    print(k)
+    #od = collections.OrderedDict(sorted(cntDct.items(), reverse=False))
+    #for k, v in od.items(): print(k, v)
+    #for k in od: print(k)
+    #for k,v in od: print(v)
+
 
 
 # requires cli line tools: arp, ping, lsof, nmap

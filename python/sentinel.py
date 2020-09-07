@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k7j'
+__version__ = 'v0.0.0k7k'
 
 import sys
 #sys.path.insert(0,'db')
@@ -24,6 +24,8 @@ def usage():
 
         ping-net ip
 
+        listening
+
     ''')
 
 
@@ -35,7 +37,13 @@ def printArps():
         print(v,k)
     return True
 
-def main():
+def printListening():
+    cntDct = cntLsOf()
+    for k,v in sorted(cntDct.items()):
+        print(k,v)
+    return True
+
+def run():
         arpTbl = tools.getArps()
         update = store.update_arp_data(db_store, arpTbl)
         print(update)
@@ -85,11 +93,15 @@ if __name__ == '__main__':
             pn = tools.pingNet(ip)
             print(pn)
             sys.exit(0)
+        if sys.argv[1] == 'listening':
+            cntDct = tools.cntLsOf()
+            for k,v in sorted(cntDct.items()):
+                print(k,v)
         else:
             usage()
             sys.exit(0)
     else:
-        sys.exit(main())
+        sys.exit(run())
 
             
 
