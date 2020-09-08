@@ -430,13 +430,39 @@ def printLsOfdetailed():
     lsofDct = getLsOfDct()
     for k,v in lsofDct.items():
         print(v)
-    return True 
+    return True
+
+def getListenPortsDct():
+    portsLst = listenPortsLst()
+    #print(portsLst)
+    Dct = {}
+    for protoport in portsLst:
+        #print(protoport)
+        proto = protoport.split(':')[0]
+        port  = int(protoport.split(':')[1])
+        Dct[port] = proto
+    return Dct
+
+def printListenPorts():
+    open_ports = getListenPortsDct()
+    for k,v in sorted(open_ports.items()):
+        print(k,v)
+    return True
 
 if __name__ == '__main__':
 
-    cntDct = cntLsOf()
-    for k,v in sorted(cntDct.items()):
-        print(k,v)
+
+    open_ports = printListenPorts()
+
+    #portsLst = listenPortsLst()
+    #print(portsLst)
+
+    #lsofDct = getLsOfDct()
+    #print(lsofDct)
+
+    #cntDct = cntLsOf()
+    #for k,v in sorted(cntDct.items()):
+    #    print(k,v)
 
     #print(cntDct)
     #for k,v in cntDct.items():
