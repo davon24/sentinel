@@ -185,7 +185,6 @@ def splitAddr(addrport):
         addr = _list[:-1]
         return port, addr
 
-
     elif sys.platform == 'darwin':
         _list = addrport.split('.')
         port = _list[-1]
@@ -212,6 +211,8 @@ def getNetStatDcts():
     established = {}
     time_wait = {}
 
+    #udp = listen = established = time_wait = {}
+
     out = getNetStat()
     #print(out)
 
@@ -220,6 +221,7 @@ def getNetStatDcts():
         #print(line)
         try:
             if line[5] == 'LISTEN':
+                #print(line)
                 proto = line[0]
                 laddr  = line[3]
                 listen[laddr] = proto
@@ -252,7 +254,7 @@ def getNetStatDcts():
         line = line.decode('utf-8').strip('\n').split()
         try:
             if str(line[0]).startswith('udp'):
-                print(line)
+                #print(line)
                 proto = line[0]
                 laddr  = line[3]
                 faddr  = line[4]
@@ -266,16 +268,24 @@ def getNetStatDcts():
 def listenPortsLst():
     udp, listen, established, time_wait = getNetStatDcts()
     portsLst = []
-    for k,v in listen.items():
-        #print(k,v)
-        port, addr = splitAddr(k)
-        proto = v
-        #print('TCP')
+
+    for addrport,proto in listen.items():
+        #print('TCP1 ' + addrport,proto)
+        port, addr = splitAddr(addrport)
         portsLst.append(proto + ':' + port)
+        #print('TCP2 ' + proto + ':' + port)
 
     for k,v in udp.items():
-        print('UDP')
-        print(k,v)
+        #print('UDP1 ' + k,v)
+        #print(k,v)
+        if k == '*.*':
+            #print('skip it ' + str(k))
+            continue
+        port, addr = splitAddr(k)
+        #print(port, addr)
+        #print(proto, port)
+        portsLst.append(v + ':' + port)
+        #print('UDP2 ' + v + ':' + port)
 
     #for k,v in established.items():
     #    print('ESTAB')
