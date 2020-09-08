@@ -335,7 +335,7 @@ def lsofProtoPort(protoport):
 
     if len(out) == 0:
         #_line = port + ' () root ' + proto + ' () ()'
-        _line = port + ' ' + proto + ' () root () () ()'
+        _line = port + ' ' + proto + ' nopriv () () () ()'
         lsofDct[c] = _line
         #return lsofDct
     else:
