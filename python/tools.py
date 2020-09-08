@@ -312,6 +312,12 @@ def lsofProtoPort(protoport):
         _proto = '4tcp'
     elif proto.startswith('tcp6', 0, len('tcp6')):
         _proto = '6tcp'
+    elif proto.startswith('udp4', 0, len('udp4')):
+        _proto = '4udp'
+    elif proto.startswith('udp6', 0, len('udp6')):
+        _proto = '6udp'
+    elif proto.startswith('udp46', 0, len('udp46')):
+        _proto = '6udp'
     else:
         _proto = proto
 
@@ -328,7 +334,8 @@ def lsofProtoPort(protoport):
     #print(out)
 
     if len(out) == 0:
-        _line = port + ' () root ' + proto + ' () ()'
+        #_line = port + ' () root ' + proto + ' () ()'
+        _line = port + ' ' + proto + ' () root () () ()'
         lsofDct[c] = _line
         #return lsofDct
     else:
@@ -349,8 +356,8 @@ def lsofProtoPort(protoport):
             #print(str(len(line)) + ' ' + str(line))
             #print(port, ' ', pname, ' ', puser, ' ' ,  pnode, ' ', ptype, ' ', pid)
             #_line = port + ' ' + pname + ' ' + puser + ' ' +  pnode + ' ' + ptype + ' ' + pid
-            _line = port + ' ' + pname + ' ' + puser + ' ' +  proto + ' ' + ptype + ' ' + pid
-            #_line = port + ' ' + proto + ' ' + pname + ' ' + puser  + ' ' + ptype + ' ' + pid
+            #_line = port + ' ' + pname + ' ' + puser + ' ' +  proto + ' ' + ptype + ' ' + pid
+            _line = port + ' ' + proto + ' ' + pname + ' ' + puser  + ' ' + pnode + ' ' + ptype + ' ' + pid
             #print(_line)
             c += 1
             lsofDct[c] = _line
@@ -449,10 +456,24 @@ def printListenPorts():
         print(k,v)
     return True
 
+def printListenPortsDetailed():
+    open_ports = getListenPortsDct()
+    for k,v in sorted(open_ports.items()):
+        #print(k,v)
+        protoport = str(v) + ':' + str(k)
+        #print(protoport)
+        _lsofDct = lsofProtoPort(protoport)
+        #print(_lsofDct)
+        for k,v in _lsofDct.items():
+            print(v)
+    return True
+
 if __name__ == '__main__':
 
 
-    open_ports = printListenPorts()
+    open_ports_root = printListenPortsDetailed()
+
+    #open_ports = printListenPorts()
 
     #portsLst = listenPortsLst()
     #print(portsLst)

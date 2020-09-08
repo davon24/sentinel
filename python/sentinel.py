@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k7k4a'
+__version__ = 'v0.0.0k8'
 
 import sys
 #sys.path.insert(0,'db')
@@ -25,6 +25,7 @@ def usage():
         ping-net ip
 
         listening
+        listening-detailed
 
     ''')
 
@@ -95,6 +96,10 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'listening':
             p = tools.printListenPorts()
+            sys.exit(0)
+        if sys.argv[1] == 'listening-detailed':
+            p = tools.printListenPortsDetailed()
+            sys.exit(0)
         else:
             usage()
             sys.exit(0)
