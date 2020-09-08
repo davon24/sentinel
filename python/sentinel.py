@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k7k4'
+__version__ = 'v0.0.0k7k4a'
 
 import sys
 #sys.path.insert(0,'db')
@@ -94,9 +94,7 @@ if __name__ == '__main__':
             print(pn)
             sys.exit(0)
         if sys.argv[1] == 'listening':
-            cntDct = tools.cntLsOf()
-            for k,v in sorted(cntDct.items()):
-                print(k,v)
+            p = tools.printListenPorts()
         else:
             usage()
             sys.exit(0)
