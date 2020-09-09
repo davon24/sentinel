@@ -485,21 +485,39 @@ def printListenPortsDetails(port):
     #print(_lsofDct)
     pidLst = []
     for k,v in _lsofDct.items():
-        pid = v.split(' ')[6]
-        pidLst.append(pid)
+        _pid = v.split(' ')[6]
+        pidLst.append(_pid)
 
-    for p in pidLst:
-        print(p)
+    #print(len(pidLst))
+    #for p in pidLst:
+    #    print(p)
 
-    print('hit')
+    if len(pidLst) != 1:
+        return False
+    else:
+        pid = ''.join(pidLst)
+
+    #print('pid: ' + str(pid))
+
+    cmd = 'lsof -n -p ' + str(pid)
+    #print(cmd)
+
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        #line = line.decode('utf-8').strip('\n').split()
+        line = line.decode('utf-8').strip('\n')
+        print(line)
+
     return True
 
 
 
 if __name__ == '__main__':
+    pass
 
 
-    open_ports_root = printListenPortsDetailed()
+    #open_ports_root = printListenPortsDetailed()
 
     #open_ports = printListenPorts()
 
