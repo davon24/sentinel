@@ -468,6 +468,34 @@ def printListenPortsDetailed():
             print(v)
     return True
 
+
+def printListenPortsDetails(port):
+
+    pDct = getListenPortsDct()
+    #for k,v in pDct.items():
+    #    print(k,v)
+
+    _idx = int(port)
+    proto = pDct[_idx]
+    #print(proto)
+
+    protoport = str(proto) + ':' + str(port)
+
+    _lsofDct = lsofProtoPort(protoport)
+    #print(_lsofDct)
+    pidLst = []
+    for k,v in _lsofDct.items():
+        pid = v.split(' ')[6]
+        pidLst.append(pid)
+
+    for p in pidLst:
+        print(p)
+
+    print('hit')
+    return True
+
+
+
 if __name__ == '__main__':
 
 

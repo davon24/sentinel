@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k8e'
+__version__ = 'v0.0.0k8f'
 
 import sys
 #sys.path.insert(0,'db')
@@ -27,6 +27,7 @@ def usage():
         listening
         listening-detailed
         listening-allowed
+        listening-details port
         listening-allow port
         listening-remove port
         listening-alerts
@@ -103,6 +104,10 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'listening-detailed':
             p = tools.printListenPortsDetailed()
+            sys.exit(0)
+        if sys.argv[1] == 'listening-details':
+            port = sys.argv[2]
+            p = tools.printListenPortsDetails(port)
             sys.exit(0)
         if sys.argv[1] == 'listening-allowed':
             p = store.printListeningAllowed(db_store)
