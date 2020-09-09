@@ -229,6 +229,12 @@ def insertAllowedPort(port, db_file):
     con.commit()
     return True
 
+def printListeningAlerts(db_store):
+
+    print('hit')
+    return True
+
+
 
 if __name__ == '__main__':
     pass

@@ -1,0 +1,16 @@
+
+🍁 krink@Karls-MacBook-Pro python % sudo ./sentinel.py listening-detailed
+5353 udp4 mDNSRespo _mdnsresponder UDP IPv4 267
+7505 tcp4 openvpn root TCP IPv4 185
+
+sudo lsof -p 185
+COMMAND PID USER   FD   TYPE             DEVICE SIZE/OFF                NODE NAME
+openvpn 185 root  cwd    DIR                1,8      736                   2 /
+openvpn 185 root  txt    REG                1,8  3021600             3497627 /Applications/Avira Phantom VPN.app/Contents/Resources/OpenVPN/openvpn
+openvpn 185 root  txt    REG                1,8  1566832 1152921500312963650 /usr/lib/dyld
+openvpn 185 root    0r   CHR                3,2      0t0                 310 /dev/null
+openvpn 185 root    1w   REG                1,8      479             3498063 /Library/Application Support/Avira/VPN/openvpn.log
+openvpn 185 root    2w   REG                1,8      479             3498063 /Library/Application Support/Avira/VPN/openvpn.log
+openvpn 185 root    3u  IPv4 0xe3a7551f3b28a22f      0t0                 TCP localhost:7505 (LISTEN)
+
+

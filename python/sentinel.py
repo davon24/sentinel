@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k8b'
+__version__ = 'v0.0.0k8c'
 
 import sys
 #sys.path.insert(0,'db')
@@ -28,6 +28,8 @@ def usage():
         listening-detailed
         listening-allowed
         listening-allow port
+        listening-remove port
+        listening-alerts
 
     ''')
 
@@ -110,6 +112,13 @@ if __name__ == '__main__':
             insert = store.insertAllowedPort(port, db_store)
             print(insert)
             sys.exit(0)
+        if sys.argv[1] == 'listening-remove':
+            port = sys.argv[2]
+            remove = store.removeAllowedPort(port, db_store)
+            print(remove)
+            sys.exit(0)
+        if sys.argv[1] == 'listening-alerts':
+            alerts = store.printListeningAlerts(db_store)
         else:
             usage()
             sys.exit(0)
