@@ -222,6 +222,19 @@ def printListeningAllowed(db_file):
         print(row)
     return True
 
+def gettListeningAllowedLst(db_file):
+    portLst = []
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT port FROM ports')
+    rows = cur.fetchall()
+    for row in rows:
+        #print(row)
+        _row = row[0]
+        portLst.append(_row)
+    return portLst
+
+
 def insertAllowedPort(port, db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
@@ -229,10 +242,24 @@ def insertAllowedPort(port, db_file):
     con.commit()
     return True
 
-def printListeningAlerts(db_store):
+def getListenPortsLst():
+    open_portsLst = []
+    open_portsDct = tools.getListenPortsDct()
+    for open_port in open_portsDct:
+        open_portsLst.append(open_port)
+    return open_portsLst
 
-    print('hit')
+def printListeningAlerts(db_file):
+
+    open_portsLst = getListenPortsLst()
+    allow_portsLst = gettListeningAllowedLst(db_file)
+
+    diffLst = list(set(open_portsLst) - set(allow_portsLst))
+
+    print(sorted(diffLst))
+
     return True
+    #tools.listenPortsLst() #unsorted list tcp4:631, tcp6:631
 
 
 
