@@ -48,8 +48,12 @@ def sql_connection(db_file):
     if not os.path.isfile(db_file):
         con = sqlite3.connect(db_file)
         cur = con.cursor()
+
         cur.execute('''CREATE TABLE IF NOT EXISTS arp (mac TEXT PRIMARY KEY NOT NULL,ip TEXT,data TEXT);''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_mac ON arp (mac);''')
+
+        cur.execute('''CREATE TABLE IF NOT EXISTS ports (port INTEGER PRIMARY KEY NOT NULL,data TEXT);''')
+        cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_port ON ports (port);''')
         con.commit()
     else:
         con = sqlite3.connect(db_file)
@@ -211,6 +215,7 @@ def get_manuf(mac, manuf_file):
 
 
 if __name__ == '__main__':
+    pass
 
     #con = sql_connection('test.db')
     #insert = insert_table(con)
@@ -218,13 +223,13 @@ if __name__ == '__main__':
 
     #print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
 
-    mac = '70:8b:cd:d0:67:10'
-    ip  = '192.168.0.1'
-    db_file = 'db/sentinel.db'
+    #mac = '70:8b:cd:d0:67:10'
+    #ip  = '192.168.0.1'
+    #db_file = 'db/sentinel.db'
 
-    dns = DNSUpDateTask()
-    t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
-    t.start()
+    #dns = DNSUpDateTask()
+    #t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
+    #t.start()
     #print('t.start')
 
 
