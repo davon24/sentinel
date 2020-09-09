@@ -216,6 +216,7 @@ def getNetStatDcts():
     out = getNetStat()
     #print(out)
 
+
     for line in out:
         line = line.decode('utf-8').strip('\n').split()
         #print(line)
@@ -228,14 +229,19 @@ def getNetStatDcts():
         except IndexError:
             continue
 
+    c = 0
     for line in out:
         line = line.decode('utf-8').strip('\n').split()
         try:
             if line[5] == 'ESTABLISHED':
+                c += 1
                 proto = line[0]
-                laddr  = line[3]
+                #laddr  = line[3]
                 faddr  = line[4]
-                established[laddr] = proto
+                #established[laddr] = proto
+                #established[c] = line
+                _line = proto + ' ' + faddr
+                established[c] = _line
         except IndexError:
             continue
 
@@ -511,6 +517,39 @@ def printListenPortsDetails(port):
 
     return True
 
+def printEstablished():
+    udp, listen, established, time_wait = getNetStatDcts()
+
+    #for k,v in established.items():
+    #    print(k,v)
+
+    # Remove duplicate values in dictionary
+    t_ = []
+    r_ = {}
+    for k,v in established.items():
+        if v not in t_:
+            t_.append(v)
+            r_[k] = v
+
+    for k,v in r_.items():
+        #print(k,v)
+        #print(v)
+        proto = v.split(' ')[0]
+        addrport = v.split(' ')[1]
+        port, addr = splitAddr(addrport)
+        
+        #print(len(addr))
+        if len(addr) == 1:
+            addr = ''.join(addr)
+        else:
+            addr = '.'.join(addr)
+
+
+        _l = str(proto) + ' ' + str(port) + ' ' + str(addr)
+        print(_l)
+
+    return True
+    #tcp6 fe80::aede:48ff:.49210
 
 
 if __name__ == '__main__':

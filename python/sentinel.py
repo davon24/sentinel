@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k8g'
+__version__ = 'v0.0.0k8h'
 
 import sys
 #sys.path.insert(0,'db')
@@ -26,11 +26,13 @@ def usage():
 
         listening
         listening-detailed
-        listening-allowed
         listening-details port
+        listening-allowed
+        listening-alerts
         listening-allow port
         listening-remove port
-        listening-alerts
+
+        established
 
     ''')
 
@@ -124,6 +126,8 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'listening-alerts':
             alerts = store.printListeningAlerts(db_store)
+        if sys.argv[1] == 'established':
+            established = tools.printEstablished()
         else:
             usage()
             sys.exit(0)
