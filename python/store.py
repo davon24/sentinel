@@ -213,6 +213,22 @@ def get_manuf(mac, manuf_file):
 #    update = update_data_manuf(mac, mfname, db_file)
 #    return update
 
+def printListeningAllowed(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT * FROM ports')
+    rows = cur.fetchall()
+    for row in rows:
+        print(row)
+    return True
+
+def insertAllowedPort(port, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("INSERT INTO ports VALUES(?,?)", (port, '{}'))
+    con.commit()
+    return True
+
 
 if __name__ == '__main__':
     pass

@@ -1,0 +1,11 @@
+
+🍁 krink@Karls-MacBook-Pro python % sudo ./sentinel.py listening-detailed
+631 tcp6 cupsd root TCP IPv6 357
+
+
+```
+sudo launchctl unload /System/Library/LaunchDaemons/org.cups.cupsd.plist
+```
+
+#sudo launchctl remove /System/Library/LaunchDaemons/org.cups.cupsd.plist
+
