@@ -242,6 +242,13 @@ def insertAllowedPort(port, db_file):
     con.commit()
     return True
 
+def deleteAllowedPort(port, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM ports WHERE port=?", (port,))
+    con.commit()
+    return True
+
 def getListenPortsLst():
     open_portsLst = []
     open_portsDct = tools.getListenPortsDct()

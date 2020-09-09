@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k8d'
+__version__ = 'v0.0.0k8e'
 
 import sys
 #sys.path.insert(0,'db')
@@ -114,7 +114,7 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'listening-remove':
             port = sys.argv[2]
-            remove = store.removeAllowedPort(port, db_store)
+            remove = store.deleteAllowedPort(port, db_store)
             print(remove)
             sys.exit(0)
         if sys.argv[1] == 'listening-alerts':
