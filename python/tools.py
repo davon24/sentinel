@@ -161,6 +161,27 @@ def getDNSNamesLst(ip):
     #    return str(nameLst)
     return nameLst
 
+def getNSlookup(ip):
+
+    dnsname = None
+
+    cmd = 'nslookup ' + str(ip)
+    #print(cmd)
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        line = line.decode('utf-8').strip('\n').split()
+        #print(line)
+        try:
+            if line[2] == '=':
+                #print(line[3])
+                dnsname = line[3]
+        except IndexError:
+            continue
+
+    return dnsname
+
+
 def getDNSName(ip):
     nameLst = getDNSNamesLst(ip)
     #print(len(nameLst))
@@ -298,6 +319,24 @@ def listenPortsLst():
     #    print(k,v)
 
     return portsLst
+
+def printLsOfPort(port):
+
+    protoLst = [ '4tcp', '6tcp', '4udp', '6udp' ]
+
+    for proto in protoLst:
+        #print(proto)
+        cmd = 'lsof -n -i' + proto + ':' + port
+        proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+        out = proc.stdout.readlines()
+
+        for line in out:
+            #line = line.decode('utf-8').strip('\n').split()
+            line = line.decode('utf-8').strip('\n')
+            print(line)
+
+    #print('done')
+    return True
 
 
 def lsofProtoPort(protoport):
@@ -572,6 +611,7 @@ def getEstablishedDct():
 
 if __name__ == '__main__':
     pass
+# requires cli line tools: arp, ping, lsof, nslookup, nmap
 
 
     #open_ports_root = printListenPortsDetailed()
@@ -604,6 +644,5 @@ if __name__ == '__main__':
 
 
 
-# requires cli line tools: arp, ping, lsof, nmap
 
 

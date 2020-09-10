@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0l'
+__version__ = 'v0.0.0.l.a'
 
 import sys
 #sys.path.insert(0,'db')
@@ -18,6 +18,7 @@ def usage():
 
         manuf mac
         dns ip
+        lsof port
 
         update-manuf mac
         update-dns mac ip
@@ -86,7 +87,7 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'dns':
             ip = sys.argv[2]
-            dnsname = tools.getDNSName(ip)
+            dnsname = tools.getNSlookup(ip)
             print(dnsname)
             sys.exit(0)
         if sys.argv[1] == 'update-dns':
@@ -151,6 +152,10 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'established-alerts':
             print_alerts = store.printEstablishedAlerts(db_store)
+            sys.exit(0)
+        if sys.argv[1] == 'lsof':
+            port = sys.argv[2]
+            lsof = tools.printLsOfPort(port)
             sys.exit(0)
         else:
             usage()
