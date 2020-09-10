@@ -343,40 +343,39 @@ def printEstablishedAlerts(db_store):
 
     for k,v in _rlsDct.items():
         print('rule ' + str(v))
-        proto_r = v[0]
-        laddr_r = v[1]
-        lport_r = v[2]
-        faddr_r = v[3]
-        fport_r = v[4]
+        proto_r = str(v[0])
+        laddr_r = str(v[1])
+        lport_r = str(v[2])
+        faddr_r = str(v[3])
+        fport_r = str(v[4])
         #print(proto)
 
         for _k,_v in _estDct.items():
             #print(v)
-            _proto = _v[0]
-            _laddr = _v[1]
-            _lport = _v[2]
-            _faddr = _v[3]
-            _fport = _v[4]
+            _proto = str(_v[0])
+            _laddr = str(_v[1])
+            _lport = str(_v[2])
+            _faddr = str(_v[3])
+            _fport = str(_v[4])
 
             if (proto_r == _proto) or (proto_r == '*'):
-                print('match1 ' + str(_v))
-            if (laddr_r == _laddr) or (laddr_r == '*'):
-                print('match2 ' + str(_v))
-            if (lport_r == _lport) or (lport_r == '*'):
-                print('match3 ' + str(_v))
-            if (faddr_r == _faddr) or (faddr_r == '*'):
-                print(faddr_r, _faddr)
-                print('match4 ' + str(_v))
-            if (fport_r == _fport) or (fport_r == '*'):
-                print('match5 ' + str(_v))
+                #print('match1 ' + str(_v))
+                if (laddr_r == _laddr) or (laddr_r == '*'):
+                    #print('match2 ' + str(_v))
+                    if (lport_r == _lport) or (lport_r == '*'):
+                        #print('match3 ' + str(_v))
+                        if (faddr_r == _faddr) or (faddr_r == '*'):
+                            #print('match4 ' + str(_v))
+                            if (fport_r == _fport) or (fport_r == '*'):
+                                print('match5 ' + str(_v))
 
-            print(fport_r, _fport)
-            print(str(type(fport_r)), str(type(fport_r)))
-            if fport_r != _fport:
-                print('NO-MATCH', fport_r, _fport)
+            #print(fport_r, _fport)
+            #print(str(type(fport_r)), str(type(fport_r)))
+            #if fport_r != _fport:
+            #    print('NO-MATCH', fport_r, _fport)
 
-            if str(fport_r) == str(_fport):
-                print('STRING MATCH', fport_r, _fport)
+            #if str(fport_r) == str(_fport):
+            #    print('STRING MATCH', fport_r, _fport)
 
 
 
