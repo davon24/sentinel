@@ -236,11 +236,11 @@ def getNetStatDcts():
             if line[5] == 'ESTABLISHED':
                 c += 1
                 proto = line[0]
-                #laddr  = line[3]
+                laddr  = line[3]
                 faddr  = line[4]
                 #established[laddr] = proto
                 #established[c] = line
-                _line = proto + ' ' + faddr
+                _line = proto + ' ' + laddr + ' ' + faddr
                 established[c] = _line
         except IndexError:
             continue
@@ -535,17 +535,23 @@ def printEstablished():
         #print(k,v)
         #print(v)
         proto = v.split(' ')[0]
-        addrport = v.split(' ')[1]
-        port, addr = splitAddr(addrport)
+        laddrport = v.split(' ')[1]
+        lport, laddr = splitAddr(laddrport)
+        faddrport = v.split(' ')[2]
+        fport, faddr = splitAddr(faddrport)
         
         #print(len(addr))
-        if len(addr) == 1:
-            addr = ''.join(addr)
+        if len(laddr) == 1:
+            laddr = ''.join(laddr)
         else:
-            addr = '.'.join(addr)
+            laddr = '.'.join(laddr)
 
+        if len(faddr) == 1:
+            faddr = ''.join(faddr)
+        else:
+            faddr = '.'.join(faddr)
 
-        _l = str(proto) + ' ' + str(port) + ' ' + str(addr)
+        _l = str(proto) + ' ' + str(laddr) + ' ' + str(lport) + ' ' + str(faddr) + ' ' + str(fport)
         print(_l)
 
     return True
