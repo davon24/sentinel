@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k8i'
+__version__ = 'v0.0.0k8j'
 
 import sys
 #sys.path.insert(0,'db')
@@ -33,6 +33,8 @@ def usage():
         listening-remove port
 
         established
+        established-rules
+        established-rule proto laddr lport faddr fport
 
     ''')
 
@@ -126,8 +128,22 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'listening-alerts':
             alerts = store.printListeningAlerts(db_store)
+            sys.exit(0)
         if sys.argv[1] == 'established':
             established = tools.printEstablished()
+            sys.exit(0)
+        if sys.argv[1] == 'established-rules':
+            established_rules = store.printEstablishedRules(db_store)
+            sys.exit(0)
+        if sys.argv[1] == 'established-rule':
+            #established-rule proto laddr lport faddr fport
+            proto = sys.argv[2]
+            laddr = sys.argv[3]
+            lport = sys.argv[4]
+            faddr = sys.argv[5]
+            fport = sys.argv[6]
+            insert_rule = store.insertEstablishedRules(proto, laddr, lport, faddr, fport, db_store)
+            sys.exit(0)
         else:
             usage()
             sys.exit(0)

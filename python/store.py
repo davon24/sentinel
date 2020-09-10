@@ -54,6 +54,9 @@ def sql_connection(db_file):
 
         cur.execute('''CREATE TABLE IF NOT EXISTS ports (port INTEGER PRIMARY KEY NOT NULL,data TEXT);''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_port ON ports (port);''')
+
+        cur.execute('''CREATE TABLE IF NOT EXISTS established (id INTEGER PRIMARY KEY NOT NULL,proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER);''')
+        cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_id ON established (id);''')
         con.commit()
     else:
         con = sqlite3.connect(db_file)
@@ -262,11 +265,32 @@ def printListeningAlerts(db_file):
     allow_portsLst = gettListeningAllowedLst(db_file)
 
     diffLst = list(set(open_portsLst) - set(allow_portsLst))
-
     print(sorted(diffLst))
 
     return True
     #tools.listenPortsLst() #unsorted list tcp4:631, tcp6:631
+
+
+def printEstablishedRules(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT * FROM established')
+    rows = cur.fetchall()
+
+    print('id  proto  laddr  lport  faddr  fport')
+    for row in rows:
+        print(row)
+        #_row = row[0]
+        #portLst.append(_row)
+    #return portLst
+    return True
+
+def insertEstablishedRules(proto, laddr, lport, faddr, fport, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("INSERT INTO established VALUES(?,?,?,?,?,?)", (None, proto, laddr, lport, faddr, fport))
+    con.commit()
+    return True
 
 
 
