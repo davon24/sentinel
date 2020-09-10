@@ -518,8 +518,18 @@ def printListenPortsDetails(port):
     return True
 
 def printEstablished():
-    udp, listen, established, time_wait = getNetStatDcts()
 
+    Dct = getEstablishedDct()
+    for k,v in Dct.items():
+        print(v)
+
+    return True
+
+
+def getEstablishedDct():
+    udp, listen, established, time_wait = getNetStatDcts()
+    Dct = {}
+    c = 0
     #for k,v in established.items():
     #    print(k,v)
 
@@ -552,9 +562,11 @@ def printEstablished():
             faddr = '.'.join(faddr)
 
         _l = str(proto) + ' ' + str(laddr) + ' ' + str(lport) + ' ' + str(faddr) + ' ' + str(fport)
-        print(_l)
+        #print(_l)
+        c += 1
+        Dct[c] = _l
 
-    return True
+    return Dct
     #tcp6 fe80::aede:48ff:.49210
 
 

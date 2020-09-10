@@ -272,18 +272,32 @@ def printListeningAlerts(db_file):
 
 
 def printEstablishedRules(db_file):
+
+    print('id  proto  laddr  lport  faddr  fport')
+    Dct = getEstablishedRulesDct(db_file)
+    for k,v in Dct.items():
+        print(v)
+
+
+    return True
+
+def getEstablishedRulesDct(db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
     cur.execute('SELECT * FROM established')
     rows = cur.fetchall()
 
-    print('id  proto  laddr  lport  faddr  fport')
+    Dct = {}
+    c = 0
     for row in rows:
-        print(row)
+        #print(row)
+        c += 1
+        Dct[c] = row
         #_row = row[0]
         #portLst.append(_row)
     #return portLst
-    return True
+    #return True
+    return Dct
 
 def insertEstablishedRules(proto, laddr, lport, faddr, fport, db_file):
     con = sql_connection(db_file)
@@ -292,6 +306,78 @@ def insertEstablishedRules(proto, laddr, lport, faddr, fport, db_file):
     con.commit()
     return True
 
+def printEstablishedAlerts(db_store):
+    estDct = tools.getEstablishedDct()
+    _estDct = {}
+    e = 0
+    r = 0
+    for k,v in estDct.items():
+        #print(v)
+        proto_ = v.split(' ')[0]
+        laddr_ = v.split(' ')[1]
+        lport_ = v.split(' ')[2]
+        faddr_ = v.split(' ')[3]
+        fport_ = v.split(' ')[4]
+        #print(proto, laddr, lport, faddr, fport)
+        e += 1
+        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
+
+    print('split')
+
+    rlsDct = getEstablishedRulesDct(db_store)
+    _rlsDct = {}
+    for k,v in rlsDct.items():
+        #print(v)
+        _id   = v[0]
+        proto__ = v[1]
+        laddr__ = v[2]
+        lport__ = v[3]
+        faddr__ = v[4]
+        fport__ = v[5]
+        #print(proto, laddr, lport, faddr, fport)
+        r += 1
+        _rlsDct[r] = [ proto__, laddr__, lport__, faddr__, fport__ ]
+
+    #print(_estDct)
+    #print(_rlsDct)
+
+    for k,v in _rlsDct.items():
+        print('rule ' + str(v))
+        proto_r = v[0]
+        laddr_r = v[1]
+        lport_r = v[2]
+        faddr_r = v[3]
+        fport_r = v[4]
+        #print(proto)
+
+        for _k,_v in _estDct.items():
+            #print(v)
+            _proto = _v[0]
+            _laddr = _v[1]
+            _lport = _v[2]
+            _faddr = _v[3]
+            _fport = _v[4]
+
+            if (proto_r == _proto) or (proto_r == '*'):
+                #print('match1 ' + str(_v))
+                if (laddr_r == _laddr) or (laddr_r == '*'):
+                    print('match2 ' + str(_v))
+                    if (lport_r == str(_lport)) or (lport_r == '*'):
+                        print('match3 ' + str(_v))
+                        if (faddr_r == _faddr) or (faddr_r == '*'):
+                            print('match4 ' + str(_v))
+                            print(fport_r, _fport)
+                            if (fport_r == str(_fport)) or (fport_r == '*'):
+                                print('match5 ' + str(_v))
+
+
+
+
+
+
+
+    print('done')
+    return True
 
 
 if __name__ == '__main__':
