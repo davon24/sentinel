@@ -359,16 +359,24 @@ def printEstablishedAlerts(db_store):
             _fport = _v[4]
 
             if (proto_r == _proto) or (proto_r == '*'):
-                #print('match1 ' + str(_v))
-                if (laddr_r == _laddr) or (laddr_r == '*'):
-                    print('match2 ' + str(_v))
-                    if (lport_r == str(_lport)) or (lport_r == '*'):
-                        print('match3 ' + str(_v))
-                        if (faddr_r == _faddr) or (faddr_r == '*'):
-                            print('match4 ' + str(_v))
-                            print(fport_r, _fport)
-                            if (fport_r == str(_fport)) or (fport_r == '*'):
-                                print('match5 ' + str(_v))
+                print('match1 ' + str(_v))
+            if (laddr_r == _laddr) or (laddr_r == '*'):
+                print('match2 ' + str(_v))
+            if (lport_r == _lport) or (lport_r == '*'):
+                print('match3 ' + str(_v))
+            if (faddr_r == _faddr) or (faddr_r == '*'):
+                print(faddr_r, _faddr)
+                print('match4 ' + str(_v))
+            if (fport_r == _fport) or (fport_r == '*'):
+                print('match5 ' + str(_v))
+
+            print(fport_r, _fport)
+            print(str(type(fport_r)), str(type(fport_r)))
+            if fport_r != _fport:
+                print('NO-MATCH', fport_r, _fport)
+
+            if str(fport_r) == str(_fport):
+                print('STRING MATCH', fport_r, _fport)
 
 
 
