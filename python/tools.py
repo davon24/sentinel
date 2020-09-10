@@ -533,7 +533,7 @@ def getEstablishedDct():
     #for k,v in established.items():
     #    print(k,v)
 
-    # Remove duplicate values in dictionary
+    # Remove duplicate values in dictionary - deduped
     t_ = []
     r_ = {}
     for k,v in established.items():

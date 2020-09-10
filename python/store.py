@@ -272,13 +272,10 @@ def printListeningAlerts(db_file):
 
 
 def printEstablishedRules(db_file):
-
-    print('id  proto  laddr  lport  faddr  fport')
+    #print('id  proto  laddr  lport  faddr  fport')
     Dct = getEstablishedRulesDct(db_file)
     for k,v in Dct.items():
         print(v)
-
-
     return True
 
 def getEstablishedRulesDct(db_file):
@@ -306,7 +303,9 @@ def insertEstablishedRules(proto, laddr, lport, faddr, fport, db_file):
     con.commit()
     return True
 
-def printEstablishedAlerts(db_store):
+def getEstablishedRulesMatchDct(db_store):
+    rtnDct = {}
+
     estDct = tools.getEstablishedDct()
     _estDct = {}
     e = 0
@@ -322,7 +321,7 @@ def printEstablishedAlerts(db_store):
         e += 1
         _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
 
-    print('split')
+    #print('split')
 
     rlsDct = getEstablishedRulesDct(db_store)
     _rlsDct = {}
@@ -341,8 +340,9 @@ def printEstablishedAlerts(db_store):
     #print(_estDct)
     #print(_rlsDct)
 
+    c = 0
     for k,v in _rlsDct.items():
-        print('rule ' + str(v))
+        #print('rule  ' + str(v))
         proto_r = str(v[0])
         laddr_r = str(v[1])
         lport_r = str(v[2])
@@ -367,24 +367,130 @@ def printEstablishedAlerts(db_store):
                         if (faddr_r == _faddr) or (faddr_r == '*'):
                             #print('match4 ' + str(_v))
                             if (fport_r == _fport) or (fport_r == '*'):
-                                print('match5 ' + str(_v))
+                                #continue
+                                #break
+                                #print('match ' + str(_v))
+                                c += 1
+                                rtnDct[c] = _v
 
-            #print(fport_r, _fport)
-            #print(str(type(fport_r)), str(type(fport_r)))
-            #if fport_r != _fport:
-            #    print('NO-MATCH', fport_r, _fport)
+    #print('done')
+    return rtnDct
 
-            #if str(fport_r) == str(_fport):
-            #    print('STRING MATCH', fport_r, _fport)
+def printEstablishedRulesMatch(db_store):
+    estDct = tools.getEstablishedDct()
+    _estDct = {}
+    e = 0
+    r = 0
+    for k,v in estDct.items():
+        #print(v)
+        proto_ = v.split(' ')[0]
+        laddr_ = v.split(' ')[1]
+        lport_ = v.split(' ')[2]
+        faddr_ = v.split(' ')[3]
+        fport_ = v.split(' ')[4]
+        #print(proto, laddr, lport, faddr, fport)
+        e += 1
+        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
 
+    #print('split')
 
+    rlsDct = getEstablishedRulesDct(db_store)
+    _rlsDct = {}
+    for k,v in rlsDct.items():
+        #print(v)
+        _id   = v[0]
+        proto__ = v[1]
+        laddr__ = v[2]
+        lport__ = v[3]
+        faddr__ = v[4]
+        fport__ = v[5]
+        #print(proto, laddr, lport, faddr, fport)
+        r += 1
+        _rlsDct[r] = [ proto__, laddr__, lport__, faddr__, fport__ ]
 
+    #print(_estDct)
+    #print(_rlsDct)
 
+    for k,v in _rlsDct.items():
+        print('rule  ' + str(v))
+        proto_r = str(v[0])
+        laddr_r = str(v[1])
+        lport_r = str(v[2])
+        faddr_r = str(v[3])
+        fport_r = str(v[4])
+        #print(proto)
 
+        for _k,_v in _estDct.items():
+            #print(v)
+            _proto = str(_v[0])
+            _laddr = str(_v[1])
+            _lport = str(_v[2])
+            _faddr = str(_v[3])
+            _fport = str(_v[4])
 
-
-    print('done')
+            if (proto_r == _proto) or (proto_r == '*'):
+                #print('match1 ' + str(_v))
+                if (laddr_r == _laddr) or (laddr_r == '*'):
+                    #print('match2 ' + str(_v))
+                    if (lport_r == _lport) or (lport_r == '*'):
+                        #print('match3 ' + str(_v))
+                        if (faddr_r == _faddr) or (faddr_r == '*'):
+                            #print('match4 ' + str(_v))
+                            if (fport_r == _fport) or (fport_r == '*'):
+                                #print('match5 ' + str(_v))
+                                #continue
+                                #break
+                                print('match ' + str(_v))
+    #print('done')
     return True
+
+def printEstablishedAlerts(db_store):
+
+    estDct = tools.getEstablishedDct()
+    mDct = getEstablishedRulesMatchDct(db_store)
+
+    #for k,v in mDct.items():
+    #    print(k,v)
+
+    # Remove duplicate values in dictionary - deduped
+    # for loop
+    t_ = []
+    mDct_ = {}
+    for _k,_v in mDct.items():
+        if _v not in t_:
+            t_.append(_v)
+            mDct_[_k] = _v
+
+    # Remove duplicate values in dictionary - deduped
+    # dictionary comprehension
+    #temp_ = {val : key for key, val in mDct.items()}
+    #mDct_ = {val : key for key, val in temp_.items()}
+
+    #for k_,v_ in mDct_.items():
+    #    print(k_,v_)
+
+    estDct_ = {}
+    for ek,ev in estDct.items():
+        #print(k,v)
+        line = ev.split(' ')
+        estDct_[ek] = line
+
+    #for k_,v_ in estDct_.items():
+    #    print(k_,v_)
+
+    #mDct_, estDct_
+
+    returnDct = {}
+    for key,value in estDct_.items():
+        if value not in mDct_.values():
+            returnDct[key] = value
+
+    for k,v in returnDct.items():
+        #print(k,v)
+        print(v)
+
+    #print('done')
+    return returnDct
 
 
 if __name__ == '__main__':

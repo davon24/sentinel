@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0k8k1'
+__version__ = 'v0.0.0l'
 
 import sys
 #sys.path.insert(0,'db')
@@ -34,6 +34,7 @@ def usage():
 
         established
         established-rules
+        established-rules-matched
         established-rule proto laddr lport faddr fport
         established-alerts
 
@@ -144,6 +145,9 @@ if __name__ == '__main__':
             faddr = sys.argv[5]
             fport = sys.argv[6]
             insert_rule = store.insertEstablishedRules(proto, laddr, lport, faddr, fport, db_store)
+            sys.exit(0)
+        if sys.argv[1] == 'established-rules-matched':
+            print_alerts = store.printEstablishedRulesMatch(db_store)
             sys.exit(0)
         if sys.argv[1] == 'established-alerts':
             print_alerts = store.printEstablishedAlerts(db_store)
