@@ -55,8 +55,11 @@ def sql_connection(db_file):
         cur.execute('''CREATE TABLE IF NOT EXISTS ports (port INTEGER PRIMARY KEY NOT NULL,data TEXT);''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_port ON ports (port);''')
 
-        cur.execute('''CREATE TABLE IF NOT EXISTS established (id INTEGER PRIMARY KEY NOT NULL,proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER);''')
-        cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_id ON established (id);''')
+        #cur.execute('''CREATE TABLE IF NOT EXISTS established (id INTEGER PRIMARY KEY NOT NULL,proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER);''')
+        #cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_id ON established (id);''')
+
+        cur.execute('''CREATE TABLE IF NOT EXISTS established (rule TEXT CHECK(rule IN ('ALLOW','DENY')) NOT NULL DEFAULT 'ALLOW',proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER,UNIQUE(rule,proto,laddr,lport,faddr,fport));''')
+
         con.commit()
     else:
         con = sqlite3.connect(db_file)
@@ -296,15 +299,18 @@ def getEstablishedRulesDct(db_file):
     #return True
     return Dct
 
-def insertEstablishedRules(proto, laddr, lport, faddr, fport, db_file):
+def insertEstablishedRules(rule, proto, laddr, lport, faddr, fport, db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
-    cur.execute("INSERT INTO established VALUES(?,?,?,?,?,?)", (None, proto, laddr, lport, faddr, fport))
+    cur.execute("INSERT INTO established VALUES(?,?,?,?,?,?)", (rule, proto, laddr, lport, faddr, fport))
     con.commit()
     return True
 
 def getEstablishedRulesMatchDct(db_store):
-    rtnDct = {}
+
+    #rtnDct = {}
+    allowDct = {}
+    denyDct = {}
 
     estDct = tools.getEstablishedDct()
     _estDct = {}
@@ -327,7 +333,7 @@ def getEstablishedRulesMatchDct(db_store):
     _rlsDct = {}
     for k,v in rlsDct.items():
         #print(v)
-        _id   = v[0]
+        rule__  = v[0]
         proto__ = v[1]
         laddr__ = v[2]
         lport__ = v[3]
@@ -335,19 +341,21 @@ def getEstablishedRulesMatchDct(db_store):
         fport__ = v[5]
         #print(proto, laddr, lport, faddr, fport)
         r += 1
-        _rlsDct[r] = [ proto__, laddr__, lport__, faddr__, fport__ ]
+        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
 
     #print(_estDct)
     #print(_rlsDct)
 
     c = 0
     for k,v in _rlsDct.items():
+
         #print('rule  ' + str(v))
-        proto_r = str(v[0])
-        laddr_r = str(v[1])
-        lport_r = str(v[2])
-        faddr_r = str(v[3])
-        fport_r = str(v[4])
+        rule_r  = str(v[0])
+        proto_r = str(v[1])
+        laddr_r = str(v[2])
+        lport_r = str(v[3])
+        faddr_r = str(v[4])
+        fport_r = str(v[5])
         #print(proto)
 
         for _k,_v in _estDct.items():
@@ -371,10 +379,16 @@ def getEstablishedRulesMatchDct(db_store):
                                 #break
                                 #print('match ' + str(_v))
                                 c += 1
-                                rtnDct[c] = _v
+                                #rtnDct[c] = _v
+                                if rule_r == 'ALLOW':
+                                    allowDct[c] = _v
+
+                                if rule_r == 'DENY':
+                                    denyDct[c] = _v
 
     #print('done')
-    return rtnDct
+    #return rtnDct
+    return allowDct, denyDct
 
 def printEstablishedRulesMatch(db_store):
     estDct = tools.getEstablishedDct()
@@ -398,7 +412,7 @@ def printEstablishedRulesMatch(db_store):
     _rlsDct = {}
     for k,v in rlsDct.items():
         #print(v)
-        _id   = v[0]
+        rule__  = v[0]
         proto__ = v[1]
         laddr__ = v[2]
         lport__ = v[3]
@@ -406,19 +420,22 @@ def printEstablishedRulesMatch(db_store):
         fport__ = v[5]
         #print(proto, laddr, lport, faddr, fport)
         r += 1
-        _rlsDct[r] = [ proto__, laddr__, lport__, faddr__, fport__ ]
+        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
 
     #print(_estDct)
     #print(_rlsDct)
 
     for k,v in _rlsDct.items():
-        print('rule  ' + str(v))
-        proto_r = str(v[0])
-        laddr_r = str(v[1])
-        lport_r = str(v[2])
-        faddr_r = str(v[3])
-        fport_r = str(v[4])
+        #print('rule  ' + str(v))
+        rule_r  = str(v[0])
+        proto_r = str(v[1])
+        laddr_r = str(v[2])
+        lport_r = str(v[3])
+        faddr_r = str(v[4])
+        fport_r = str(v[5])
         #print(proto)
+        _l = [ proto_r, laddr_r, lport_r, faddr_r, fport_r ]
+        print(str(rule_r).lower() + ' ' + str(_l))
 
         for _k,_v in _estDct.items():
             #print(v)
@@ -445,9 +462,17 @@ def printEstablishedRulesMatch(db_store):
     return True
 
 def printEstablishedAlerts(db_store):
+    eaDct = getEstablishedAlertsDct(db_store)
+    for k,v in eaDct.items():
+        print(v)
+    return True
+
+
+def getEstablishedAlertsDct(db_store):
 
     estDct = tools.getEstablishedDct()
-    mDct = getEstablishedRulesMatchDct(db_store)
+    #mDct = getEstablishedRulesMatchDct(db_store)
+    allowDct, denyDct = getEstablishedRulesMatchDct(db_store)
 
     #for k,v in mDct.items():
     #    print(k,v)
@@ -455,11 +480,19 @@ def printEstablishedAlerts(db_store):
     # Remove duplicate values in dictionary - deduped
     # for loop
     t_ = []
-    mDct_ = {}
-    for _k,_v in mDct.items():
+    aDct_ = {}
+    for _k,_v in allowDct.items():
         if _v not in t_:
             t_.append(_v)
-            mDct_[_k] = _v
+            aDct_[_k] = _v
+
+
+    t_ = []
+    dDct_ = {}
+    for _k,_v in denyDct.items():
+        if _v not in t_:
+            t_.append(_v)
+            dDct_[_k] = _v
 
     # Remove duplicate values in dictionary - deduped
     # dictionary comprehension
@@ -480,17 +513,26 @@ def printEstablishedAlerts(db_store):
 
     #mDct_, estDct_
 
-    returnDct = {}
+    returnADct = {}
     for key,value in estDct_.items():
-        if value not in mDct_.values():
-            returnDct[key] = value
+        if value not in aDct_.values():
+            returnADct[key] = value
 
-    for k,v in returnDct.items():
+    returnDct = {}
+
+    #ALLOW
+    for k,v in returnADct.items():
         #print(k,v)
-        print(v)
+        returnDct[k] = v
+
+    #DENY
+    for k,v in dDct_.items():
+        #print(k,v)
+        returnDct[k] = v
 
     #print('done')
     return returnDct
+    #return True
 
 
 if __name__ == '__main__':
