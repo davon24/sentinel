@@ -25,7 +25,10 @@ class DNSUpDateTask:
         ip = ip.strip('(')
         ip = ip.strip(')')
         #print('IP: ' + ip)
-        dnsname = tools.getDNSName(ip)
+
+        #dnsname = tools.getDNSName(ip)
+        dnsname = str(tools.getNSlookup(ip))
+
         #print('DNS: ' + dnsname)
         con = self.sql_connection(db_file)
         cur = con.cursor()
