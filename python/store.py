@@ -469,6 +469,7 @@ def printEstablishedAlerts(db_store):
 
 
 def getEstablishedAlertsDct(db_store):
+#def printEstablishedAlerts(db_store):
 
     estDct = tools.getEstablishedDct()
     #mDct = getEstablishedRulesMatchDct(db_store)
@@ -479,20 +480,20 @@ def getEstablishedAlertsDct(db_store):
 
     # Remove duplicate values in dictionary - deduped
     # for loop
-    t_ = []
-    aDct_ = {}
-    for _k,_v in allowDct.items():
-        if _v not in t_:
-            t_.append(_v)
-            aDct_[_k] = _v
+    #t_ = []
+    #aDct_ = {}
+    #for _k,_v in allowDct.items():
+    #    if _v not in t_:
+    #        t_.append(_v)
+    #        aDct_[_k] = _v
 
 
-    t_ = []
-    dDct_ = {}
-    for _k,_v in denyDct.items():
-        if _v not in t_:
-            t_.append(_v)
-            dDct_[_k] = _v
+    #t_ = []
+    #dDct_ = {}
+    #for _k,_v in denyDct.items():
+    #    if _v not in t_:
+    #        t_.append(_v)
+    #        dDct_[_k] = _v
 
     # Remove duplicate values in dictionary - deduped
     # dictionary comprehension
@@ -508,30 +509,61 @@ def getEstablishedAlertsDct(db_store):
         line = ev.split(' ')
         estDct_[ek] = line
 
-    #for k_,v_ in estDct_.items():
-    #    print(k_,v_)
-
-    #mDct_, estDct_
+    #for k,v in allowDct.items():
+    #    print('allow')
+    #    print(k,v)
 
     returnADct = {}
     for key,value in estDct_.items():
-        if value not in aDct_.values():
+        if value not in allowDct.values():
             returnADct[key] = value
 
     returnDct = {}
+    c = 0
+
+    for k,v in returnADct.items():
+        #print('allow-now')
+        #print(k,v)
+        c += 1
+        returnDct[c] = v
+
+    for k,v in denyDct.items():
+        #print('deny')
+        #print(k,v)
+        c += 1
+        returnDct[c] = v
+
+    return returnDct
+
+    #for k_,v_ in estDct_.items():
+    #    print(k_,v_)
+
+#
+#    for k,v in returnADct.items():
+#        print(k,v)
+
+    #mDct_, estDct_
+
+    #returnADct = {}
+    #for key,value in estDct_.items():
+    #    if value not in aDct_.values():
+    #        returnADct[key] = value
+
+    #returnDct = {}
 
     #ALLOW
-    for k,v in returnADct.items():
-        #print(k,v)
-        returnDct[k] = v
+    #for k,v in returnADct.items():
+    #    #print(k,v)
+    #    returnDct[k] = v
 
     #DENY
-    for k,v in dDct_.items():
-        #print(k,v)
-        returnDct[k] = v
+    #for k,v in dDct_.items():
+    #for k,v in denyDct.items():
+    #    #print(k,v)
+    #    returnDct[k] = v
 
     #print('done')
-    return returnDct
+    #return returnDct
     #return True
 
 
