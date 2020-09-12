@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.m2'
+__version__ = 'v0.0.0.n.0'
 
 import sys
 #sys.path.insert(0,'db')
@@ -23,7 +23,7 @@ def usage():
         update-manuf mac
         update-dns mac ip
 
-        ping-net ip
+        ping-net ip/net
 
         listening
         listening-detailed
@@ -165,4 +165,3 @@ if __name__ == '__main__':
         sys.exit(run())
 
             
-

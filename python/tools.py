@@ -96,18 +96,18 @@ class NmapSN:
 
         return ipL
 
-#def pingNet(ip):
-#        ipL = ip.split('.')
-#        ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
-#        print('PingNet: ' + ipn + '{1..254}')
-#
-#        for i in range(1, 255):
-#            _ip = ipn + str(i)
-#            #print(_ip)
-#            ping = PingIp()
-#            t = threading.Thread(target=ping.run, args=(_ip,))
-#            t.start()
-#        return True
+def pingNet(ip):
+        ipL = ip.split('.')
+        ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
+        print('PingNet: ' + ipn + '{1..254}')
+
+        for i in range(1, 255):
+            _ip = ipn + str(i)
+            #print(_ip)
+            ping = PingIp()
+            t = threading.Thread(target=ping.run, args=(_ip,))
+            t.start()
+        return True
 
 def getArps():
     arpDict = {}
@@ -608,10 +608,25 @@ def getEstablishedDct():
     return Dct
     #tcp6 fe80::aede:48ff:.49210
 
+def getSelfIPLst():
+    import socket
+
+    ipLst_ = [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None)]
+    ipLst = list(dict.fromkeys(ipLst_)) #dedupe
+
+    #print(ipLst)
+    #remove localhost
+    ipLst.remove('::1')
+    ipLst.remove('127.0.0.1')
+    return ipLst
+
 
 if __name__ == '__main__':
-    pass
 # requires cli line tools: arp, ping, lsof, nslookup, nmap
+    #pass
+
+    my_ips = getSelfIPLst()
+    print(my_ips)
 
 
     #open_ports_root = printListenPortsDetailed()
