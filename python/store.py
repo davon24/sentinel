@@ -62,6 +62,11 @@ def sql_connection(db_file):
         create_established += "proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER,UNIQUE(rule,proto,laddr,lport,faddr,fport));"
         cur.execute(create_established)
 
+        create_nmap  = "CREATE TABLE IF NOT EXISTS nmap (ip TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+        create_nmapi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_nmap ON nmap (ip);"
+        cur.execute(create_nmap)
+        cur.execute(create_nmapi)
+
         create_ip  = "CREATE TABLE IF NOT EXISTS ips (ip TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
         create_ipi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_ip ON ips (ip);"
         cur.execute(create_ip)
@@ -549,6 +554,46 @@ def clearAllIPs(db_file):
     cur.execute("REINDEX ips;")
     con.commit()
     return True
+
+def deleteIPs(ip, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM ips WHERE ip=? ;", (ip,))
+    con.commit()
+    return True
+
+
+def getNmaps(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM nmap ORDER by rowid DESC;')
+    rows = cur.fetchall()
+    return rows
+
+def replaceNmaps(ip, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO nmap VALUES(?, DATETIME('now'), ?)", (ip, data))
+    con.commit()
+    return True
+
+def deleteNmaps(ip, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM nmap WHERE ip=? ;", (ip,))
+    con.commit()
+    return True
+
+def clearAllNmaps(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM nmap;")
+    cur.execute("REINDEX nmap;")
+    con.commit()
+    return True
+
+
+
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.o.5'
+__version__ = 'v0.0.0.o.6'
 
 import sys
 #sys.path.insert(0,'db')
@@ -17,7 +17,10 @@ def usage():
         ping-net ip/net
         nmap-net net
 
+        list-scans
         scan ip [level]
+        del-scan ip
+        clear-scans
 
         arps
         manuf mac
@@ -47,7 +50,6 @@ def usage():
         del-ip ip
         update-ip ip data
         clear-ips
-
 
     ''')
 
@@ -178,7 +180,7 @@ if __name__ == '__main__':
             try: level = sys.argv[3]
             except IndexError: level = 1
             scan = tools.nmapScan(ip, level)
-            update = store.replaceIPs(ip, scan, db_store)
+            update = store.replaceNmaps(ip, scan, db_store)
             print(str(update) + ' ' + str(scan))
             sys.exit(0)
         if sys.argv[1] == 'list-ips':
@@ -212,6 +214,21 @@ if __name__ == '__main__':
             run_discovery = tools.runDiscoverNet(ipnet, db_store)
             #print(run_discovery)
             sys.exit(0)
+        if sys.argv[1] == 'list-scans':
+            scans = store.getNmaps(db_store)
+            for row in scans:
+                print(row)
+            sys.exit(0)
+        if sys.argv[1] == 'del-scan':
+            ip = sys.argv[2]
+            del_ = store.deleteNmaps(ip, db_store)
+            print(del_)
+            sys.exit(0)
+        if sys.argv[1] == 'clear-scans':
+            clear = store.clearAllNmaps(db_store)
+            print(clear)
+            sys.exit(0)
+
         else:
             usage()
             sys.exit(0)

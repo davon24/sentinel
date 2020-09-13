@@ -780,7 +780,7 @@ def runDiscoverNet(ipnet, db_store):
         #print('['+k+']', v)
         #print('(' + k + ') ' + str(success) + ' ' + str(data))
         print('(' + k + ') ' + str(_data))
-        replace = store.replaceIPs(k, _data, db_store)
+        replace = store.replaceNmaps(k, _data, db_store)
 
     return True
 
