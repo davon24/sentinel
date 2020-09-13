@@ -695,9 +695,29 @@ def getSelfIPLst():
 
     #print(ipLst)
     #remove localhost
-    ipLst.remove('::1')
-    ipLst.remove('127.0.0.1')
+    try:
+        ipLst.remove('::1')
+        ipLst.remove('127.0.0.1')
+    except ValueError:
+        e = 1
+
     return ipLst
+
+def getSelfIPv4():
+    ipv4 = None
+    ipLst = getSelfIPLst()
+    #print(ipLst)
+    for item in ipLst:
+        i = item.split('.')
+        #print(len(i))
+        if len(i) == 4:
+            #print(item)
+            ipv4 = item
+            return ipv4 #just return the first occurance
+
+    return ipv4
+    #myIPv4 = tools.getSelfIPv4()
+    #print(myIPv4)
 
 def nmapNet(net):
     #nmap -sP 193.168.8.0/24 
@@ -716,6 +736,35 @@ def nmapNet(net):
 
     #print('done')
     return ipLst
+
+
+def runDiscoverNet(ipnet, db_store):
+
+    #ipnet values; '192.168.3.111', 'fe80::1c:8f5a:73ad:f0ea'
+    _ipnet = ipnet.split('.')
+    #print(len(_ipnet))
+    if len(_ipnet) == 4:
+        _ipv4 = ipnet
+        ipn = _ipnet[0] + '.' + _ipnet[1] + '.' + _ipnet[2] + '.{1-254}'
+        print('ping-net: ' + ipn)
+
+    #ping-net for discovery
+    hostLst = pingNet(ipnet)
+    print('found: ' + str(hostLst))
+
+    print('scan-ports:')
+    scanDct = {}
+    for ip in hostLst:
+        #print('nmap-scan: ' + ip)
+        scan = nmapScan(ip, 1)
+        #print(ip, ' ', scan)
+        scanDct[ip] = scan
+
+    for k,v in scanDct.items():
+        #print(k,v)
+        print('['+k+']', v)
+
+    return True
 
 if __name__ == '__main__':
 # requires cli line tools: arp, ping, lsof, nslookup, nmap

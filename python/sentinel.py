@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.o.1'
+__version__ = 'v0.0.0.o.2'
 
 import sys
 #sys.path.insert(0,'db')
@@ -47,6 +47,8 @@ def usage():
         del-ip ip
         update-ip ip data
         clear-ips
+
+        discover-net [ip/net]
 
     ''')
 
@@ -201,6 +203,14 @@ if __name__ == '__main__':
         if sys.argv[1] == 'clear-ips':
             clear = store.clearAllIPs(db_store)
             print(clear)
+            sys.exit(0)
+        if sys.argv[1] == 'discover-net':
+            #myIPv4 = tools.getSelfIPv4()
+            #print(myIPv4)
+            try: ipnet = sys.argv[2]
+            except IndexError: ipnet = tools.getSelfIPv4()
+            run_discovery = tools.runDiscoverNet(ipnet, db_store)
+            #print(run_discovery)
             sys.exit(0)
         else:
             usage()
