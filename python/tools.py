@@ -98,12 +98,36 @@ class NmapSN:
 
 def nmapScan(ip, level):
 
+    up = 0
+    c = 0
+    openDct = {}
+
     nmapDct = getNmapScanDct(ip, level)
 
     for k,v in nmapDct.items():
-        print(k,v)
+        #print(v)
+        line = v.split()
 
-    return True
+        if v.startswith('Host is up'):
+            #print(v.split())
+            up = 1
+
+        try:
+            if line[1] == 'open':
+                #print('line.open ' + str(line))
+                c += 1
+                #openDct[c] = line
+                openDct[c] = v
+        except IndexError:
+            c += 1
+            
+        #if v.startswith('Nmap done:'):
+        #    #print('yes')
+        #    up = v.split()[5].strip('(')
+        #    #print(up)
+
+    rtnStr = str(up) + ' ' + str(openDct)
+    return rtnStr
 
 def getNmapScanDct(ip, level):
 
@@ -127,7 +151,8 @@ def getNmapScanDct(ip, level):
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     out = proc.stdout.readlines()
     for line in out:
-        line =  line.decode('utf-8').strip('\n').split()
+        #line =  line.decode('utf-8').strip('\n').split()
+        line =  line.decode('utf-8').strip('\n')
         #print(line)
         c += 1
         rtnDct[c] = line
