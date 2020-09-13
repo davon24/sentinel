@@ -100,7 +100,8 @@ def nmapScan(ip, level):
 
     up = 0
     c = 0
-    openDct = {}
+    #openDct = {}
+    openLst = []
 
     nmapDct = getNmapScanDct(ip, level)
 
@@ -114,10 +115,13 @@ def nmapScan(ip, level):
 
         try:
             if line[1] == 'open':
-                #print('line.open ' + str(line))
-                c += 1
+                #print('line.open ' + str(v))
+                #c += 1
                 #openDct[c] = line
-                openDct[c] = v
+                #openDct[c] = v
+                #openDct[c] = str(v)
+                port = line[0]
+                openLst.append(port)
         except IndexError:
             c += 1
             
@@ -126,7 +130,9 @@ def nmapScan(ip, level):
         #    up = v.split()[5].strip('(')
         #    #print(up)
 
-    rtnStr = str(up) + ' ' + str(openDct)
+    #rtnStr = str(up) + ' ' + str(openDct)
+    #rtnStr = str(up) + ' ' + str(openLst)
+    rtnStr = str(up) + ' ' + ','.join(openLst)
     return rtnStr
 
 def getNmapScanDct(ip, level):
@@ -762,7 +768,21 @@ def runDiscoverNet(ipnet, db_store):
 
     for k,v in scanDct.items():
         #print(k,v)
-        print('['+k+']', v)
+        #success = v.split()[0]
+        #print('success ' + success)
+        #data = v.split()[1:]
+        #print('data ' + str(data))
+
+        line = v.split() 
+        #print('line: ' + str(line))
+        success = line[0]
+        try: data = line[1]
+        except IndexError: data = None
+        #print(data)
+        #if data not None:
+            
+        print('('+k+') ' + str(success) + ' ' + str(data))
+        #print('['+k+']', v)
 
     return True
 
