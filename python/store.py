@@ -535,6 +535,13 @@ def updateIPs(ip, data, db_file):
     con.commit()
     return True
 
+def clearAllIPs(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM ips;")
+    cur.execute("REINDEX ips;")
+    con.commit()
+    return True
 
 if __name__ == '__main__':
     pass

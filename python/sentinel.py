@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.o'
+__version__ = 'v0.0.0.o.1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -46,6 +46,7 @@ def usage():
         add-ip ip
         del-ip ip
         update-ip ip data
+        clear-ips
 
     ''')
 
@@ -196,6 +197,10 @@ if __name__ == '__main__':
             data = sys.argv[3]
             update = store.updateIPs(ip, data, db_store)
             print(update)
+            sys.exit(0)
+        if sys.argv[1] == 'clear-ips':
+            clear = store.clearAllIPs(db_store)
+            print(clear)
             sys.exit(0)
         else:
             usage()
