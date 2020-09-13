@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.o.7'
+__version__ = 'v0.0.0.o.8'
 
 import sys
 #sys.path.insert(0,'db')
@@ -175,7 +175,7 @@ if __name__ == '__main__':
             port = sys.argv[2]
             lsof = tools.printLsOfPort(port)
             sys.exit(0)
-        if sys.argv[1] == 'scan':
+        if sys.argv[1] == 'nmap':
             ip = sys.argv[2]
             try: level = sys.argv[3]
             except IndexError: level = 1
