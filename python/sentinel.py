@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.o.4'
+__version__ = 'v0.0.0.o.5'
 
 import sys
 #sys.path.insert(0,'db')
@@ -13,18 +13,18 @@ def usage():
 
     options:
 
+        discover-net [ip/net]
         ping-net ip/net
         nmap-net net
 
         scan ip [level]
 
-        list
-        list-db
-
+        arps
         manuf mac
-        dns ip
+        rdns ip
         lsof port
 
+        list-macs
         update-manuf mac
         update-dns mac ip
 
@@ -48,7 +48,6 @@ def usage():
         update-ip ip data
         clear-ips
 
-        discover-net [ip/net]
 
     ''')
 
@@ -84,10 +83,10 @@ if __name__ == '__main__':
             mfname = store.get_manuf(mac, db_manuf)
             print(mfname)
             sys.exit(0)
-        if sys.argv[1] == 'list':
+        if sys.argv[1] == 'arps':
             printArps()
             sys.exit(0)
-        if sys.argv[1] == 'list-db':
+        if sys.argv[1] == 'list-macs':
             store.print_all(db_store)
             sys.exit(0)
         if sys.argv[1] == 'update-manuf':
@@ -96,7 +95,7 @@ if __name__ == '__main__':
             update = store.update_data_manuf(mac, mfname, db_store)
             print(update)
             sys.exit(0)
-        if sys.argv[1] == 'dns':
+        if sys.argv[1] == 'rdns':
             ip = sys.argv[2]
             dnsname = tools.getNSlookup(ip)
             print(dnsname)

@@ -513,7 +513,7 @@ def printIPs(db_file):
 def getIPs(db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
-    cur.execute('SELECT rowid,* FROM ips')
+    cur.execute('SELECT rowid,* FROM ips ORDER by rowid DESC;')
     rows = cur.fetchall()
     return rows
 
