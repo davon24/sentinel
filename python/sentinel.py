@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.n.2'
+__version__ = 'v0.0.0.o'
 
 import sys
 #sys.path.insert(0,'db')
@@ -28,7 +28,6 @@ def usage():
         update-manuf mac
         update-dns mac ip
 
-
         listening
         listening-detailed
         listening-details port
@@ -42,6 +41,11 @@ def usage():
         established-rules-filter
         established-rule ALLOW|DENY proto laddr lport faddr fport
         established-alerts
+
+        list-ips
+        add-ip ip
+        del-ip ip
+        update-ip ip data
 
     ''')
 
@@ -173,6 +177,25 @@ if __name__ == '__main__':
             except IndexError: level = 1
             scan = tools.nmapScan(ip, level)
             print(scan)
+            sys.exit(0)
+        if sys.argv[1] == 'list-ips':
+            run = store.printIPs(db_store)
+            sys.exit(0)
+        if sys.argv[1] == 'add-ip':
+            ip = sys.argv[2]
+            insert = store.insertIPs(ip, db_store)
+            print(insert)
+            sys.exit(0)
+        if sys.argv[1] == 'del-ip':
+            ip = sys.argv[2]
+            insert = store.deleteIPs(ip, db_store)
+            print(insert)
+            sys.exit(0)
+        if sys.argv[1] == 'update-ip':
+            ip = sys.argv[2]
+            data = sys.argv[3]
+            update = store.updateIPs(ip, data, db_store)
+            print(update)
             sys.exit(0)
         else:
             usage()

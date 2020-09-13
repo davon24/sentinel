@@ -135,16 +135,16 @@ def getNmapScanDct(ip, level):
     #print('level ' + str(level))
 
     if level == '1':
-        cmd = 'nmap -n -F -T5 ' + ip 
-        print(cmd)
+        cmd = 'nmap -F -T5 ' + ip 
+        #print(cmd)
     elif level == '2':
         udp = 'U:53,111,137-139,514'
         tcp = 'T:21-25,53,80,137-139,443,445,465,631,993,995,8080,8443'
         cmd = 'nmap -n -sT -sU -T5 -p ' + udp + ',' + tcp + ' ' + ip 
-        print(cmd)
+        #print(cmd)
     else:
         cmd = 'nmap -F ' + ip
-        print(cmd)
+        #print(cmd)
 
     rtnDct = {}
     c = 0

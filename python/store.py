@@ -58,10 +58,14 @@ def sql_connection(db_file):
         cur.execute('''CREATE TABLE IF NOT EXISTS ports (port INTEGER PRIMARY KEY NOT NULL,data TEXT);''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_port ON ports (port);''')
 
-        #cur.execute('''CREATE TABLE IF NOT EXISTS established (id INTEGER PRIMARY KEY NOT NULL,proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER);''')
-        #cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_id ON established (id);''')
+        create_established =  "CREATE TABLE IF NOT EXISTS established (rule TEXT CHECK(rule IN ('ALLOW','DENY')) NOT NULL DEFAULT 'ALLOW',"
+        create_established += "proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER,UNIQUE(rule,proto,laddr,lport,faddr,fport));"
+        cur.execute(create_established)
 
-        cur.execute('''CREATE TABLE IF NOT EXISTS established (rule TEXT CHECK(rule IN ('ALLOW','DENY')) NOT NULL DEFAULT 'ALLOW',proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER,UNIQUE(rule,proto,laddr,lport,faddr,fport));''')
+        create_ip  = "CREATE TABLE IF NOT EXISTS ips (ip TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+        create_ipi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_ip ON ips (ip);"
+        cur.execute(create_ip)
+        cur.execute(create_ipi)
 
         con.commit()
     else:
@@ -472,49 +476,14 @@ def printEstablishedAlerts(db_store):
 
 
 def getEstablishedAlertsDct(db_store):
-#def printEstablishedAlerts(db_store):
 
     estDct = tools.getEstablishedDct()
-    #mDct = getEstablishedRulesMatchDct(db_store)
     allowDct, denyDct = getEstablishedRulesMatchDct(db_store)
-
-    #for k,v in mDct.items():
-    #    print(k,v)
-
-    # Remove duplicate values in dictionary - deduped
-    # for loop
-    #t_ = []
-    #aDct_ = {}
-    #for _k,_v in allowDct.items():
-    #    if _v not in t_:
-    #        t_.append(_v)
-    #        aDct_[_k] = _v
-
-
-    #t_ = []
-    #dDct_ = {}
-    #for _k,_v in denyDct.items():
-    #    if _v not in t_:
-    #        t_.append(_v)
-    #        dDct_[_k] = _v
-
-    # Remove duplicate values in dictionary - deduped
-    # dictionary comprehension
-    #temp_ = {val : key for key, val in mDct.items()}
-    #mDct_ = {val : key for key, val in temp_.items()}
-
-    #for k_,v_ in mDct_.items():
-    #    print(k_,v_)
 
     estDct_ = {}
     for ek,ev in estDct.items():
-        #print(k,v)
         line = ev.split(' ')
         estDct_[ek] = line
-
-    #for k,v in allowDct.items():
-    #    print('allow')
-    #    print(k,v)
 
     returnADct = {}
     for key,value in estDct_.items():
@@ -525,49 +494,46 @@ def getEstablishedAlertsDct(db_store):
     c = 0
 
     for k,v in returnADct.items():
-        #print('allow-now')
-        #print(k,v)
         c += 1
         returnDct[c] = v
 
     for k,v in denyDct.items():
-        #print('deny')
-        #print(k,v)
         c += 1
         returnDct[c] = v
 
     return returnDct
 
-    #for k_,v_ in estDct_.items():
-    #    print(k_,v_)
 
-#
-#    for k,v in returnADct.items():
-#        print(k,v)
+def printIPs(db_file):
+    rows = getIPs(db_file)
+    for row in rows:
+        print(row)
+    return True
 
-    #mDct_, estDct_
+def getIPs(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM ips')
+    rows = cur.fetchall()
+    return rows
 
-    #returnADct = {}
-    #for key,value in estDct_.items():
-    #    if value not in aDct_.values():
-    #        returnADct[key] = value
+def insertIPs(ip, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    #cur.execute("INSERT INTO ips VALUES(?, DATETIME('now'), ?)", (ip, None ))
+    cur.execute("INSERT INTO ips VALUES(?, DATETIME('now'), NULL)", (ip, ))
+    con.commit()
+    return True
 
-    #returnDct = {}
-
-    #ALLOW
-    #for k,v in returnADct.items():
-    #    #print(k,v)
-    #    returnDct[k] = v
-
-    #DENY
-    #for k,v in dDct_.items():
-    #for k,v in denyDct.items():
-    #    #print(k,v)
-    #    returnDct[k] = v
-
-    #print('done')
-    #return returnDct
-    #return True
+def updateIPs(ip, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    #print('UPDATE ' + ip + ' ' + data)
+    #cur.execute("UPDATE ips SET data=? WHERE ip=?", (ip, data))
+    sql = "UPDATE ips SET data='" + data + "', timestamp=DATETIME('now') WHERE ip='" + ip + "';"
+    cur.execute(sql)
+    con.commit()
+    return True
 
 
 if __name__ == '__main__':
@@ -576,19 +542,5 @@ if __name__ == '__main__':
     #con = sql_connection('test.db')
     #insert = insert_table(con)
     #print(insert)
-
-    #print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
-
-    #mac = '70:8b:cd:d0:67:10'
-    #ip  = '192.168.0.1'
-    #db_file = 'db/sentinel.db'
-
-    #dns = DNSUpDateTask()
-    #t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
-    #t.start()
-    #print('t.start')
-
-
-
 
 
