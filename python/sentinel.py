@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.o.6'
+__version__ = 'v0.0.0.o.7'
 
 import sys
 #sys.path.insert(0,'db')
@@ -17,10 +17,10 @@ def usage():
         ping-net ip/net
         nmap-net net
 
-        list-scans
-        scan ip [level]
-        del-scan ip
-        clear-scans
+        list-nmaps
+        nmap ip [level]
+        del-nmap ip
+        clear-nmaps
 
         arps
         manuf mac
@@ -214,17 +214,17 @@ if __name__ == '__main__':
             run_discovery = tools.runDiscoverNet(ipnet, db_store)
             #print(run_discovery)
             sys.exit(0)
-        if sys.argv[1] == 'list-scans':
+        if sys.argv[1] == 'list-nmaps':
             scans = store.getNmaps(db_store)
             for row in scans:
                 print(row)
             sys.exit(0)
-        if sys.argv[1] == 'del-scan':
+        if sys.argv[1] == 'del-nmap':
             ip = sys.argv[2]
             del_ = store.deleteNmaps(ip, db_store)
             print(del_)
             sys.exit(0)
-        if sys.argv[1] == 'clear-scans':
+        if sys.argv[1] == 'clear-nmaps':
             clear = store.clearAllNmaps(db_store)
             print(clear)
             sys.exit(0)
