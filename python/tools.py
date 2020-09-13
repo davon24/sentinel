@@ -6,6 +6,8 @@ import sys
 import time
 import collections
 
+import store
+
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs={}, Verbose=None):
@@ -767,24 +769,23 @@ def runDiscoverNet(ipnet, db_store):
         scanDct[ip] = scan
 
     for k,v in scanDct.items():
-        #print(k,v)
-        #success = v.split()[0]
-        #print('success ' + success)
-        #data = v.split()[1:]
-        #print('data ' + str(data))
-
-        line = v.split() 
+        line = v.split()
         #print('line: ' + str(line))
         success = line[0]
         try: data = line[1]
         except IndexError: data = None
-        #print(data)
-        #if data not None:
-            
-        print('('+k+') ' + str(success) + ' ' + str(data))
+
+        _data = str(success) + ' ' + str(data)
+
         #print('['+k+']', v)
+        #print('(' + k + ') ' + str(success) + ' ' + str(data))
+        print('(' + k + ') ' + str(_data))
+        replace = store.replaceIPs(k, _data, db_store)
 
     return True
+
+
+
 
 if __name__ == '__main__':
 # requires cli line tools: arp, ping, lsof, nslookup, nmap

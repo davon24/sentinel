@@ -535,6 +535,13 @@ def updateIPs(ip, data, db_file):
     con.commit()
     return True
 
+def replaceIPs(ip, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO ips VALUES(?, DATETIME('now'), ?)", (ip, data))
+    con.commit()
+    return True
+
 def clearAllIPs(db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
@@ -542,6 +549,7 @@ def clearAllIPs(db_file):
     cur.execute("REINDEX ips;")
     con.commit()
     return True
+
 
 if __name__ == '__main__':
     pass

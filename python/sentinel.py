@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.o.3'
+__version__ = 'v0.0.0.o.4'
 
 import sys
 #sys.path.insert(0,'db')
@@ -179,7 +179,8 @@ if __name__ == '__main__':
             try: level = sys.argv[3]
             except IndexError: level = 1
             scan = tools.nmapScan(ip, level)
-            print(scan)
+            update = store.replaceIPs(ip, scan, db_store)
+            print(str(update) + ' ' + str(scan))
             sys.exit(0)
         if sys.argv[1] == 'list-ips':
             run = store.printIPs(db_store)
