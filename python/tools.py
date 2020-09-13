@@ -96,18 +96,72 @@ class NmapSN:
 
         return ipL
 
+def nmapScan(ip, level):
+
+    nmapDct = getNmapScanDct(ip, level)
+
+    for k,v in nmapDct.items():
+        print(k,v)
+
+    return True
+
+def getNmapScanDct(ip, level):
+
+    level = str(level)
+    #print('level ' + str(level))
+
+    if level == '1':
+        cmd = 'nmap -n -F -T5 ' + ip 
+        print(cmd)
+    elif level == '2':
+        udp = 'U:53,111,137-139,514'
+        tcp = 'T:21-25,53,80,137-139,443,445,465,631,993,995,8080,8443'
+        cmd = 'nmap -n -sT -sU -T5 -p ' + udp + ',' + tcp + ' ' + ip 
+        print(cmd)
+    else:
+        cmd = 'nmap -F ' + ip
+        print(cmd)
+
+    rtnDct = {}
+    c = 0
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        line =  line.decode('utf-8').strip('\n').split()
+        #print(line)
+        c += 1
+        rtnDct[c] = line
+
+    return rtnDct
+
+
 def pingNet(ip):
+        rtnLst = []
+
         ipL = ip.split('.')
         ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
-        print('PingNet: ' + ipn + '{1..254}')
+        #print('PingNet: ' + ipn + '{1..254}')
 
+        threads = []
         for i in range(1, 255):
             _ip = ipn + str(i)
             #print(_ip)
             ping = PingIp()
-            t = threading.Thread(target=ping.run, args=(_ip,))
+            #t = threading.Thread(target=ping.run, args=(_ip,))
+            t = ThreadWithReturnValue(target=ping.run, args=(_ip,))
             t.start()
-        return True
+            threads.append(t)
+
+        for t in threads: 
+            out = t.join()
+            #print(o)
+            _up = out.split(' ')[0]
+            _ip = out.split(' ')[1]
+            if str(_up) == '1':
+                #print(out)
+                rtnLst.append(_ip) 
+
+        return rtnLst
 
 def getArps():
     arpDict = {}
@@ -620,13 +674,44 @@ def getSelfIPLst():
     ipLst.remove('127.0.0.1')
     return ipLst
 
+def nmapNet(net):
+    #nmap -sP 193.168.8.0/24 
+    ipLst = []
+    cmd = 'nmap -sP ' + str(net)
+    #print(cmd)
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        #line = line.decode('utf-8').strip('\n').split()
+        line = line.decode('utf-8').strip('\n')
+        #print(line)
+        if line.startswith('Nmap scan report for'):
+            ip = line.split()[4]
+            ipLst.append(ip)
+
+    #print('done')
+    return ipLst
 
 if __name__ == '__main__':
 # requires cli line tools: arp, ping, lsof, nslookup, nmap
-    #pass
+    pass
 
-    my_ips = getSelfIPLst()
-    print(my_ips)
+    #net = '192.168.8.0/24'
+    #ipLst = hostDiscoveryLst(net)
+    #print(ipLst)
+
+
+#https://nmap.org/docs/discovery.pdf
+    #ip = '192.168.8.1'
+    #hostLst = pingNet(ip)
+    #print(hostLst)
+
+    #net = '192.168.8.0/24'
+    #ips = hostDiscovery(net)
+    #print(ips)
+
+    #my_ips = getSelfIPLst()
+    #print(my_ips)
 
 
     #open_ports_root = printListenPortsDetailed()

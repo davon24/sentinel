@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.n.0'
+__version__ = 'v0.0.0.n.1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -13,6 +13,11 @@ def usage():
 
     options:
 
+        ping-net ip/net
+        nmap-net net
+
+        scan ip [level]
+
         list
         list-db
 
@@ -23,7 +28,6 @@ def usage():
         update-manuf mac
         update-dns mac ip
 
-        ping-net ip/net
 
         listening
         listening-detailed
@@ -106,6 +110,11 @@ if __name__ == '__main__':
             pn = tools.pingNet(ip)
             print(pn)
             sys.exit(0)
+        if sys.argv[1] == 'nmap-net':
+            ip = sys.argv[2]
+            pn = tools.nmapNet(ip)
+            print(pn)
+            sys.exit(0)
         if sys.argv[1] == 'listening':
             p = tools.printListenPorts()
             sys.exit(0)
@@ -157,6 +166,13 @@ if __name__ == '__main__':
         if sys.argv[1] == 'lsof':
             port = sys.argv[2]
             lsof = tools.printLsOfPort(port)
+            sys.exit(0)
+        if sys.argv[1] == 'scan':
+            ip = sys.argv[2]
+            try: level = sys.argv[3]
+            except IndexError: level = 1
+            scan = tools.nmapScan(ip, level)
+            print(scan)
             sys.exit(0)
         else:
             usage()
