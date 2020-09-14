@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.o.8'
+__version__ = 'v0.0.0.p'
 
 import sys
 #sys.path.insert(0,'db')
@@ -13,7 +13,7 @@ def usage():
 
     options:
 
-        discover-net [ip/net]
+        discover-net [ip/net] --level=1|2|3
         ping-net ip/net
         nmap-net net
 
@@ -207,13 +207,24 @@ if __name__ == '__main__':
             print(clear)
             sys.exit(0)
         if sys.argv[1] == 'discover-net':
-            #myIPv4 = tools.getSelfIPv4()
-            #print(myIPv4)
-            try: ipnet = sys.argv[2]
-            except IndexError: ipnet = tools.getSelfIPv4()
-            run_discovery = tools.runDiscoverNet(ipnet, db_store)
-            #print(run_discovery)
+            ipnet = None
+            level = 1
+            for arg in sys.argv[2:]:
+                #print('arg ' + arg)
+                if str(arg).startswith('--level='):
+                    #print('lvl arg: ' + arg)
+                    level = arg.split('=')[1]
+                else:
+                    ipnet = arg
+            if ipnet is None:
+                #ipnet = tools.getSelfIPv4()
+                ipnet = tools.getIfconfigIPv4()
+
+            #print(ipnet, level, db_store)
+            run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
+            print(run_discovery)
             sys.exit(0)
+
         if sys.argv[1] == 'list-nmaps':
             scans = store.getNmaps(db_store)
             for row in scans:

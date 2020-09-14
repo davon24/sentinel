@@ -5,6 +5,7 @@ import threading
 import sys
 import time
 import collections
+import socket
 
 import store
 
@@ -695,13 +696,14 @@ def getEstablishedDct():
     return Dct
     #tcp6 fe80::aede:48ff:.49210
 
-def getSelfIPLst():
-    import socket
+def getSelfIPLst(): #socket.gaierror: [Errno 8] nodename nor servname provided, or not known
 
     ipLst_ = [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None)]
+    #socket.gaierror: [Errno 8] nodename nor servname provided, or not known
+
     ipLst = list(dict.fromkeys(ipLst_)) #dedupe
 
-    #print(ipLst)
+    print(ipLst)
     #remove localhost
     try:
         ipLst.remove('::1')
@@ -727,6 +729,47 @@ def getSelfIPv4():
     #myIPv4 = tools.getSelfIPv4()
     #print(myIPv4)
 
+def getHostNameIP():
+    ip = None
+    try:
+        hostname = socket.gethostname() 
+        ip = socket.gethostbyname(hostname) 
+    except:
+        ip = None
+    return ip # returns a lot of 'None' (macosx)
+
+def getIfconfigIPv4():
+    e = 0
+    ipv4Lst = getIfconfigIPv4Lst()
+
+    #remove localhost
+    try:
+        ipv4Lst.remove('127.0.0.1')
+    except ValueError:
+        e = 1
+
+    for ip in ipv4Lst:
+        return ip
+    else:
+        return '127.0.0.1'
+
+def getIfconfigIPv4Lst(): #testing macosx now, linux later
+    ipv4Lst = []
+    cmd = 'ifconfig -a'
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+         line = line.decode('utf-8').strip('\n').lstrip()
+         #print(line)
+         if line.startswith('inet '):
+             #print(line)
+             _line = line.split()
+             _ip = _line[1]
+             #print(line)
+             ipv4Lst.append(_ip)
+    return ipv4Lst
+
+
 def nmapNet(net):
     #nmap -sP 193.168.8.0/24 
     ipLst = []
@@ -746,7 +789,7 @@ def nmapNet(net):
     return ipLst
 
 
-def runDiscoverNet(ipnet, db_store):
+def runDiscoverNet(ipnet, level, db_store):
 
     #ipnet values; '192.168.3.111', 'fe80::1c:8f5a:73ad:f0ea'
     _ipnet = ipnet.split('.')
@@ -764,7 +807,7 @@ def runDiscoverNet(ipnet, db_store):
     scanDct = {}
     for ip in hostLst:
         #print('nmap-scan: ' + ip)
-        scan = nmapScan(ip, 1)
+        scan = nmapScan(ip, level)
         #print(ip, ' ', scan)
         scanDct[ip] = scan
 
