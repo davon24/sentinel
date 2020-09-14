@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.p1'
+__version__ = 'v0.0.0.p2'
 
 import sys
 #sys.path.insert(0,'db')
@@ -13,7 +13,7 @@ def usage():
 
     options:
 
-        discover-net [ip/net] --level=1|2|3
+        discover-net [ip/net] [level]
         ping-net ip/net
         nmap-net net
 
@@ -24,9 +24,12 @@ def usage():
 
         arps
         manuf mac
-        rdns ip [srv]
         lsof port
+        rdns ip [srv]
         myip
+
+        udp ip port
+        tcp ip port
 
         list-macs
         update-manuf mac
@@ -211,17 +214,17 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'discover-net':
             ipnet = None
-            level = 1
-            for arg in sys.argv[2:]:
-                #print('arg ' + arg)
-                if str(arg).startswith('--level='):
-                    #print('lvl arg: ' + arg)
-                    level = arg.split('=')[1]
-                else:
-                    ipnet = arg
+            level = None
+            try:
+                ipnet = sys.argv[2]
+                level = sys.argv[3]
+            except IndexError: pass
+
             if ipnet is None:
-                #ipnet = tools.getSelfIPv4()
                 ipnet = tools.getIfconfigIPv4()
+
+            if level is None:
+                level = 1
 
             #print(ipnet, level, db_store)
             run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
@@ -245,6 +248,19 @@ if __name__ == '__main__':
         if sys.argv[1] == 'myip':
             myip = tools.getIfconfigIPv4()
             print(myip)
+            sys.exit(0)
+        if sys.argv[1] == 'udp':
+            ip = sys.argv[2]
+            port = sys.argv[3]
+            run = tools.nmapUDP(ip, port)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'tcp':
+            ip = sys.argv[2]
+            port = sys.argv[3]
+            run = tools.nmapTCP(ip, port)
+            print(run)
             sys.exit(0)
 
         else:

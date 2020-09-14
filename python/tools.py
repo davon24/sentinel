@@ -117,7 +117,7 @@ def nmapScan(ip, level):
             up = 1
 
         try:
-            if line[1] == 'open':
+            if (line[1] == 'open') or (str(line[1]).startswith('open')):
                 #print('line.open ' + str(v))
                 #c += 1
                 #openDct[c] = line
@@ -170,6 +170,29 @@ def getNmapScanDct(ip, level):
         rtnDct[c] = line
 
     return rtnDct
+
+def nmapUDP(ip, port):
+    #sudo nmap -n -T5 -sU -p 53,514 192.168.0.254
+    openLst = []
+    up = 0
+    cmd = 'nmap -n -T5 -sU -p ' + port + ' ' + ip
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        line =  line.decode('utf-8').strip('\n')
+        _line = line.split()
+        #print(line)
+        if line.startswith('Host is up'):
+            up = 1
+
+        try:
+            if (_line[1] == 'open') or (str(_line[1]).startswith('open')):
+                port = _line[0]
+                openLst.append(port)
+        except IndexError: pass
+
+    rtnStr = str(up) + ' ' + ','.join(openLst)
+    return rtnStr
 
 
 def pingNet(ip):
