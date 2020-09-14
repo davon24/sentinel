@@ -144,13 +144,16 @@ def getNmapScanDct(ip, level):
     #print('level ' + str(level))
 
     if level == '1':
-        cmd = 'nmap -F -T5 ' + ip 
-        #print(cmd)
+        cmd = 'nmap -n -F -T5 ' + ip 
     elif level == '2':
+        cmd = 'nmap -n -sT -sU -T5 –top-ports 100 ' + ip
+    elif level == '3':
+        cmd = 'nmap -n -sT -sU -T5 –top-ports 1000 ' + ip
+    elif level == '4':
         udp = 'U:53,111,137-139,514'
         tcp = 'T:21-25,53,80,137-139,443,445,465,631,993,995,8080,8443'
         cmd = 'nmap -n -sT -sU -T5 -p ' + udp + ',' + tcp + ' ' + ip 
-        #print(cmd)
+
     else:
         cmd = 'nmap -F ' + ip
         #print(cmd)
@@ -249,11 +252,42 @@ def getDNSNamesLst(ip):
     #    return str(nameLst)
     return nameLst
 
-def getNSlookup(ip):
+def getNSlookupMulti(ip):
+    name = None
+    rLst = getNSlookupMultiLst(ip)
+    for srv in rLst:
+        name = getNSlookup(ip, srv)
+        #print(name)
+        if name is not None:
+            return(name)
 
+    return name
+
+def getNSlookupMultiLst(ip):
+    rLst = []
+    try:
+        resolvfile = open('/etc/resolv.conf', 'r')
+        rlines = resolvfile.readlines()
+    except FileNotFoundError:
+        rlines = None
+
+    if rlines:
+        for rline in rlines:
+            #print(rline)
+            l_ = rline.split()
+            if l_[0] == 'nameserver':
+                _ip = l_[1]
+                rLst.append(_ip)
+    return rLst
+
+
+
+def getNSlookup(ip, srv=None):
     dnsname = None
+    if srv is None:
+        srv = ''
 
-    cmd = 'nslookup ' + str(ip)
+    cmd = 'nslookup ' + str(ip) + ' ' + srv
     #print(cmd)
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     out = proc.stdout.readlines()
@@ -265,7 +299,7 @@ def getNSlookup(ip):
                 #print(line[3])
                 dnsname = line[3]
         except IndexError:
-            continue
+            pass
 
     return dnsname
 

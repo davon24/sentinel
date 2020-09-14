@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.p'
+__version__ = 'v0.0.0.p1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -24,8 +24,9 @@ def usage():
 
         arps
         manuf mac
-        rdns ip
+        rdns ip [srv]
         lsof port
+        myip
 
         list-macs
         update-manuf mac
@@ -99,7 +100,9 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'rdns':
             ip = sys.argv[2]
-            dnsname = tools.getNSlookup(ip)
+            try: srv = sys.argv[3]
+            except IndexError: srv = None
+            dnsname = tools.getNSlookup(ip, srv)
             print(dnsname)
             sys.exit(0)
         if sys.argv[1] == 'update-dns':
@@ -238,6 +241,10 @@ if __name__ == '__main__':
         if sys.argv[1] == 'clear-nmaps':
             clear = store.clearAllNmaps(db_store)
             print(clear)
+            sys.exit(0)
+        if sys.argv[1] == 'myip':
+            myip = tools.getIfconfigIPv4()
+            print(myip)
             sys.exit(0)
 
         else:
