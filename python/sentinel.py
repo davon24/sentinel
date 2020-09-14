@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.p2'
+__version__ = 'v0.0.0.p2b'
 
 import sys
 #sys.path.insert(0,'db')
@@ -29,6 +29,7 @@ def usage():
         myip
 
         udp ip port
+        udpscan ip port
         tcp ip port
 
         list-macs
@@ -253,6 +254,17 @@ if __name__ == '__main__':
             ip = sys.argv[2]
             port = sys.argv[3]
             run = tools.nmapUDP(ip, port)
+            print(run)
+            sys.exit(0)
+        if sys.argv[1] == 'udpscan':
+            ip = port = None
+            try:
+                ip = sys.argv[2]
+                port = sys.argv[3]
+            except IndexError: pass
+
+            #print(ip, port)
+            run = tools.nmapUDPscan(ip, port)
             print(run)
             sys.exit(0)
 

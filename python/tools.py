@@ -117,7 +117,8 @@ def nmapScan(ip, level):
             up = 1
 
         try:
-            if (line[1] == 'open') or (str(line[1]).startswith('open')):
+            #if (line[1] == 'open') or (str(line[1]).startswith('open')):
+            if line[1] == 'open':
                 #print('line.open ' + str(v))
                 #c += 1
                 #openDct[c] = line
@@ -146,9 +147,9 @@ def getNmapScanDct(ip, level):
     if level == '1':
         cmd = 'nmap -n -F -T5 ' + ip 
     elif level == '2':
-        cmd = 'nmap -n -sT -sU -T5 –top-ports 100 ' + ip
+        cmd = 'nmap -n -sT -sU -T5 –-top-ports 20 ' + ip  #
     elif level == '3':
-        cmd = 'nmap -n -sT -sU -T5 –top-ports 1000 ' + ip
+        cmd = 'nmap -n -sT -sU -T5 –-top-ports 1000 ' + ip #
     elif level == '4':
         udp = 'U:53,111,137-139,514'
         tcp = 'T:21-25,53,80,137-139,443,445,465,631,993,995,8080,8443'
@@ -186,13 +187,31 @@ def nmapUDP(ip, port):
             up = 1
 
         try:
-            if (_line[1] == 'open') or (str(_line[1]).startswith('open')):
+            #if (_line[1] == 'open') or (str(_line[1]).startswith('open')):
+            if _line[1] == 'open':
                 port = _line[0]
                 openLst.append(port)
         except IndexError: pass
 
     rtnStr = str(up) + ' ' + ','.join(openLst)
     return rtnStr
+
+def nmapUDPscan(ip, ports=None):
+
+    #if port is None:
+    #    port = 
+
+    ports =  '1-65535'
+    for port in range(1,600):
+        #print(i)
+        s = nmapUDP(ip, str(port))
+        l = s.split()
+        try:
+            if l[1]:
+                print(s)
+        except IndexError: pass
+
+    return True
 
 
 def pingNet(ip):
