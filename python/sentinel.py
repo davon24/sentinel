@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.p2b'
+__version__ = 'v0.0.0.p2c'
 
 import sys
 #sys.path.insert(0,'db')
@@ -223,6 +223,16 @@ if __name__ == '__main__':
 
             if ipnet is None:
                 ipnet = tools.getIfconfigIPv4()
+            else:
+                i = ipnet.split('.')
+                
+                #print('i ' + str(i) + ' ' + str(len(i)))
+
+                if len(i) == 1:
+                    #level = ''.join(i)
+                    level = sys.argv[2]
+                    ipnet = tools.getIfconfigIPv4()
+                #if len(_i)  
 
             if level is None:
                 level = 1

@@ -118,7 +118,7 @@ def nmapScan(ip, level):
 
         try:
             #if (line[1] == 'open') or (str(line[1]).startswith('open')):
-            if line[1] == 'open':
+            if line[1] == 'open': #https://nmap.org/book/port-scanning.html #open, open|filtered
                 #print('line.open ' + str(v))
                 #c += 1
                 #openDct[c] = line
@@ -147,17 +147,17 @@ def getNmapScanDct(ip, level):
     if level == '1':
         cmd = 'nmap -n -F -T5 ' + ip 
     elif level == '2':
-        cmd = 'nmap -n -sT -sU -T5 –-top-ports 20 ' + ip  #
+        cmd = 'nmap -n -sT -sU -T5 –-top-ports 1000 ' + ip  #
     elif level == '3':
-        cmd = 'nmap -n -sT -sU -T5 –-top-ports 1000 ' + ip #
-    elif level == '4':
+        cmd = 'nmap -n -sT -sU -T5 -p- ' + ip #
+    elif level == '0':
         udp = 'U:53,111,137-139,514'
         tcp = 'T:21-25,53,80,137-139,443,445,465,631,993,995,8080,8443'
         cmd = 'nmap -n -sT -sU -T5 -p ' + udp + ',' + tcp + ' ' + ip 
 
     else:
-        cmd = 'nmap -F ' + ip
-        #print(cmd)
+        cmd = 'nmap ' + ip
+        print('level: ' + str(level) + ' ' + str(cmd))
 
     rtnDct = {}
     c = 0
