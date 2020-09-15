@@ -640,11 +640,13 @@ def insertVulns(ip, report, data, db_file):
     con.commit()
     return True
 
-
-
-
-
-
+def updateVulnsReport(vid, report, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    sql = "UPDATE vulns SET report='" + report + "' WHERE vid='" + str(vid) + "';"
+    cur.execute(sql)
+    con.commit()
+    return True
 
 if __name__ == '__main__':
     pass
@@ -653,4 +655,6 @@ if __name__ == '__main__':
     #insert = insert_table(con)
     #print(insert)
 
+    #update = updateVulnsReport(3, 'checked', 'db/sentinel.db') 
+    #print('.')
 
