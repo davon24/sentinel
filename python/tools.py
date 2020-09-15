@@ -990,7 +990,7 @@ def runDiscoverNetMultiProcess(ipnet, level, db_store):
         #print(out)
 
     return True
-
+    #https://stackoverflow.com/questions/26063877/python-multiprocessing-module-join-processes-with-timeout
 
 
 
