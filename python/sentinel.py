@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.p2c'
+__version__ = 'v0.0.0.p2d'
 
 import sys
 #sys.path.insert(0,'db')
@@ -238,7 +238,9 @@ if __name__ == '__main__':
                 level = 1
 
             #print(ipnet, level, db_store)
-            run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
+            #run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
+            #run_discovery = tools.runDiscoverNetThreaded(ipnet, level, db_store)
+            run_discovery = tools.runDiscoverNetMultiProcess(ipnet, level, db_store)
             print(run_discovery)
             sys.exit(0)
 
