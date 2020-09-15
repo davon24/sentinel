@@ -67,6 +67,11 @@ def sql_connection(db_file):
         cur.execute(create_nmap)
         cur.execute(create_nmapi)
 
+        create_vulns  = "CREATE TABLE IF NOT EXISTS vulns (vid INTEGER PRIMARY KEY NOT NULL,ip TEXT,timestamp TEXT,report TEXT,data TEXT,blob BLOB);"
+        create_vulnsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_vulns ON vulns (vid);"
+        cur.execute(create_vulns)
+        cur.execute(create_vulnsi)
+
         create_ip  = "CREATE TABLE IF NOT EXISTS ips (ip TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
         create_ipi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_ip ON ips (ip);"
         cur.execute(create_ip)
@@ -591,6 +596,51 @@ def clearAllNmaps(db_file):
     cur.execute("REINDEX nmap;")
     con.commit()
     return True
+
+def getNmapVuln(vid, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM vulns WHERE rowid=? ;', (vid,))
+    row = cur.fetchone()
+    return row
+
+def getAllNmapVulns(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM vulns ORDER by rowid DESC;')
+    rows = cur.fetchall()
+    return rows
+
+def replaceVulns(ip, data, blob, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO vulns VALUES(?,DATETIME('now'),?,?)", (ip, data, blob))
+    con.commit()
+    return True
+
+def clearAllVulns(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM vulns;")
+    cur.execute("REINDEX vulns;")
+    con.commit()
+    return True
+
+def deleteVulns(rowid, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM vulns WHERE rowid=? ;", (rowid,))
+    con.commit()
+    return True
+
+def insertVulns(ip, report, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("INSERT INTO vulns VALUES(NULL,?,DATETIME('now'),?,?,NULL)", (ip,report,data))
+    con.commit()
+    return True
+
+
 
 
 

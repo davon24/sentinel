@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.p2e'
+__version__ = 'v0.0.0.p2f'
 
 import sys
 #sys.path.insert(0,'db')
@@ -21,6 +21,11 @@ def usage():
         nmap ip [level]
         del-nmap ip
         clear-nmaps
+
+        list-vulns [id]
+        vuln-scan ip
+        del-vuln ip
+        clear-vulns
 
         arps
         manuf mac
@@ -238,9 +243,7 @@ if __name__ == '__main__':
                 level = 1
 
             #print(ipnet, level, db_store)
-            #run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
-            #run_discovery = tools.runDiscoverNetThreaded(ipnet, level, db_store)
-            run_discovery = tools.runDiscoverNetMultiProcess(ipnet, level, db_store)
+            run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
             print(run_discovery)
             sys.exit(0)
 
@@ -258,6 +261,35 @@ if __name__ == '__main__':
             clear = store.clearAllNmaps(db_store)
             print(clear)
             sys.exit(0)
+
+        if sys.argv[1] == 'list-vulns':
+            #scans = store.getNmapVulns(db_store)
+            #for row in scans:
+            #    print(row)
+            try: vid = sys.argv[2]
+            except IndexError: vid = None
+            #print('vid: ' + str(vid))
+            run = tools.printVulnScan(db_store, vid)
+            sys.exit(0)
+        if sys.argv[1] == 'del-vuln':
+            ip = sys.argv[2]
+            del_ = store.deleteVulns(ip, db_store)
+            print(del_)
+            sys.exit(0)
+        if sys.argv[1] == 'clear-vulns':
+            clear = store.clearAllVulns(db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'vuln-scan':
+            ip = sys.argv[2]
+            scan = tools.nmapVulnScanStore(ip, db_store)
+            print(str(scan))
+            #update = store.replaceVulns(ip, scan, db_store)
+            #print(str(update) + ' ' + str(scan))
+            sys.exit(0)
+
+
         if sys.argv[1] == 'myip':
             myip = tools.getIfconfigIPv4()
             print(myip)

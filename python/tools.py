@@ -2,7 +2,6 @@
 
 from subprocess import Popen, PIPE
 import threading
-import multiprocessing
 import sys
 import time
 import collections
@@ -100,6 +99,63 @@ class NmapSN:
 
         return ipL
 
+def nmapVulnScan(ip):
+    cmd = 'nmap -Pn --script=vuln ' + ip
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    return proc.stdout.readlines()
+
+def nmapVulnScanStore(ip, db_store):
+    data = ''
+    scan = nmapVulnScan(ip)
+    for line in scan:
+        #line = line.decode('utf-8').strip('\n')
+        line = line.decode('utf-8')
+        print(line.strip('\n'))
+        data += line
+
+    #print(str(type(scan)))
+    #print(str(scan))
+    #data = str(''.join(scan))
+    #update = store.replaceVulns(ip, data, None, db_store)
+    report = None
+    insert = store.insertVulns(ip, report, data, db_store)
+    return insert
+
+def printVulnScan(db_store, vid=None):
+    #print('vid.vid: ' + str(vid))
+    
+    if vid is None:
+        vulns = store.getAllNmapVulns(db_store)
+        for row in vulns:
+            #print(row)
+            rowid  = row[0]
+            _id    = row[1]
+            ip     = row[2]
+            tstamp = row[3]
+            report = row[4]
+            data   = row[5]
+            blob   = row[6]
+            print(str(_id) + ' ' + str(ip) + ' ' + str(tstamp) + ' ' + str(report))
+    else:
+        v_ = store.getNmapVuln(vid, db_store)
+        vulns = [ v_ ]
+
+        for row in vulns:
+            #print(row)
+            rowid  = row[0]
+            _id    = row[1]
+            ip     = row[2]
+            tstamp = row[3]
+            report = row[4]
+            data   = row[5]
+            blob   = row[6]
+            print(str(_id) + ' ' + str(ip) + ' ' + str(tstamp) + ' ' + str(report))
+            print(data)
+
+    return True
+
+
+
 def nmapScan(ip, level):
 
     up = 0
@@ -139,13 +195,6 @@ def nmapScan(ip, level):
     #rtnStr = str(up) + ' ' + str(openLst)
     rtnStr = str(up) + ' ' + ','.join(openLst)
     return rtnStr
-
-def nmapScanStore(ip, level, db_store):
-    data = nmapScan(ip, level)
-    print('(' + ip + ') ' + data)
-    replace = store.replaceNmaps(ip, data, db_store)
-    return True
-
 
 def getNmapScanDct(ip, level):
 
@@ -910,89 +959,6 @@ def runDiscoverNet(ipnet, level, db_store):
         replace = store.replaceNmaps(k, _data, db_store)
 
     return True
-
-def runDiscoverNetThreaded(ipnet, level, db_store):
-
-    _ipnet = ipnet.split('.')
-    if len(_ipnet) == 4:
-        _ipv4 = ipnet
-        ipn = _ipnet[0] + '.' + _ipnet[1] + '.' + _ipnet[2] + '.{1-254}'
-        print('ping-net: ' + ipn)
-
-    #ping-net for discovery
-    hostLst = pingNet(ipnet) #already threading ThreadWithReturnValue
-    #hostLst = ['192.168.8.1', '192.168.8.109']
-    print('found: ' + str(hostLst))
-
-    print('scan-ports:')
-    scanDct = {}
-    #threads = []
-    for ip in hostLst:
-        #print('nmap-scan: ' + ip)
-        #scan = nmapScan(ip, level)
-        #print(ip, ' ', scan)
-        #scanDct[ip] = scan
-        t = ThreadWithReturnValue(target=nmapScan, args=(ip, level))
-        t.start()
-        #threads.append(t)
-        scanDct[ip] = t
-
-    #for t in threads:
-    for k,t in scanDct.items():
-        out = t.join()
-        #print(out)
-        line = out.split()
-        success = line[0]
-        try: data = line[1]
-        except IndexError: data = None
-        _data = str(success) + ' ' + str(data)
-        print('(' + k + ') ' + str(_data))
-        replace = store.replaceNmaps(k, _data, db_store)
-
-    #for k,v in scanDct.items():
-    #    line = v.split()
-    #    #print('line: ' + str(line))
-    #    success = line[0]
-    #    try: data = line[1]
-    #    except IndexError: data = None
-#
-#        _data = str(success) + ' ' + str(data)
-#
-#        #print('['+k+']', v)
-#        #print('(' + k + ') ' + str(success) + ' ' + str(data))
-#        print('(' + k + ') ' + str(_data))
-#        replace = store.replaceNmaps(k, _data, db_store)
-
-    return True
-
-def runDiscoverNetMultiProcess(ipnet, level, db_store):
-
-    _ipnet = ipnet.split('.')
-    if len(_ipnet) == 4:
-        _ipv4 = ipnet
-        ipn = _ipnet[0] + '.' + _ipnet[1] + '.' + _ipnet[2] + '.{1-254}'
-        print('ping-net: ' + ipn)
-
-    #ping-net for discovery
-    hostLst = pingNet(ipnet) #already threading ThreadWithReturnValue
-    #hostLst = ['192.168.8.1', '192.168.8.109']
-    print('found: ' + str(hostLst))
-
-    print('scan-ports:')
-    scanDct = {}
-    for ip in hostLst:
-        p = multiprocessing.Process(target=nmapScanStore, args=(ip, level, db_store))
-        p.start()
-        scanDct[ip] = p
-
-    for k,p in scanDct.items():
-        out = p.join()
-        #print(out)
-
-    return True
-    #https://stackoverflow.com/questions/26063877/python-multiprocessing-module-join-processes-with-timeout
-
-
 
 
 
