@@ -116,10 +116,77 @@ class NmapSN:
 
         return ipL
 
+def nmapDetectScan(ip):
+    cmd = 'nmap -n -O -sV ' + ip
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    return proc.stdout.readlines()
+
+def nmapDetectScanStore(ip, db_store):
+    data = ''
+    report = None
+    scan = nmapDetectScan(ip)
+    for line in scan:
+        #line = line.decode('utf-8').strip('\n')
+        line = line.decode('utf-8')
+        if line.startswith('Nmap done:'):
+            report = line.split()[5].strip('(')
+        print(line.strip('\n'))
+        data += line
+
+    #print(str(type(scan)))
+    #print(str(scan))
+    #data = str(''.join(scan))
+    #update = store.replaceVulns(ip, data, None, db_store)
+    #report = ''
+
+    #report = processVulnData(data)
+    #print(len(scan))
+
+    if len(scan) == 0:
+        report = '-1'
+
+    insert = store.insertDetect(ip, report, data, db_store)
+    return insert
+
+def printDetectScan(db_store, did=None):
+    #print('vid.vid: ' + str(vid))
+
+    if did is None:
+        vulns = store.getAllNmapDetects(db_store)
+        for row in vulns:
+            #print(row)
+            rowid  = row[0]
+            _id    = row[1]
+            ip     = row[2]
+            tstamp = row[3]
+            report = row[4]
+            data   = row[5]
+            blob   = row[6]
+            print(str(_id) + ' ' + str(ip) + ' ' + str(tstamp) + ' ' + str(report))
+    else:
+        v_ = store.getNmapDetect(did, db_store)
+        vulns = [ v_ ]
+
+        for row in vulns:
+            #print(row)
+            rowid  = row[0]
+            _id    = row[1]
+            ip     = row[2]
+            tstamp = row[3]
+            report = row[4]
+            data   = row[5]
+            blob   = row[6]
+            print(str(_id) + ' ' + str(ip) + ' ' + str(tstamp) + ' ' + str(report))
+            print(data)
+
+    return True
+
+
+
 def nmapVulnScan(ip):
     cmd = 'nmap -Pn --script=vuln ' + ip
     #cmd = 'nmap --script=vuln ' + ip
-    #cmd = 'nmap -O -sV --script=vuln ' + ip
+    #cmd = 'nmap -O -sV --script=vuln ' + ip #needs root
     #cmd = 'nmap -O --script=vuln ' + ip
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     return proc.stdout.readlines()

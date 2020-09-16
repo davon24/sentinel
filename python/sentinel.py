@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.s2'
+__version__ = 'v0.0.0.t'
 
 import sys
 #sys.path.insert(0,'db')
@@ -31,7 +31,7 @@ def usage():
         list-detects [id]
         detect-scan ip
         del-detect id
-        clear-detect
+        clear-detects
 
         arps
         manuf mac
@@ -332,6 +332,31 @@ if __name__ == '__main__':
             run = tools.nmapTCP(ip, port)
             print(run)
             sys.exit(0)
+
+        if sys.argv[1] == 'list-detects':
+            try: id_ = sys.argv[2]
+            except IndexError: id_ = None
+            run = tools.printDetectScan(db_store, id_)
+            sys.exit(0)
+
+        if sys.argv[1] == 'detect-scan':
+            ip = sys.argv[2]
+            scan = tools.nmapDetectScanStore(ip, db_store)
+            print(str(scan))
+            sys.exit(0)
+
+        if sys.argv[1] == 'del-detect':
+            id_ = sys.argv[2]
+            del_ = store.deleteDetect(id_, db_store)
+            print(del_)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-detects':
+            clear = store.clearAllDetects(db_store)
+            print(clear)
+            sys.exit(0)
+
+
 
         else:
             usage()

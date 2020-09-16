@@ -660,6 +660,43 @@ def getVulnData(vid, db_file):
     row = cur.fetchone()
     return row
 
+def getNmapDetect(did, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM detect WHERE rowid=? ;', (did,))
+    row = cur.fetchone()
+    return row
+
+def getAllNmapDetects(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM detect ORDER by rowid DESC;')
+    rows = cur.fetchall()
+    return rows
+
+def insertDetect(ip, report, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("INSERT INTO detect VALUES(NULL,?,DATETIME('now'),?,?,NULL)", (ip,report,data))
+    con.commit()
+    return True
+
+def deleteDetect(rowid, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM detect WHERE rowid=? ;", (rowid,))
+    con.commit()
+    return True
+
+def clearAllDetects(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM detect;")
+    cur.execute("REINDEX detect;")
+    con.commit()
+    return True
+
+
 
 
 if __name__ == '__main__':

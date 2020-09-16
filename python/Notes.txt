@@ -1,4 +1,9 @@
-i
+
+|_clamav-exec: ERROR: Script execution failed (use -d to debug)
+/usr/local/share/nmap/scripts/clamav-exec.nse
+portrule = shortport.port_or_service{3310, "clam"} #typo/fix'd
+portrule = shortport.port_or_service(3310, "clam")
+
 🍁 krink@Karls-MacBook-Pro python % sudo nmap -O 192.168.4.115
 Password:
 Starting Nmap 7.80 ( https://nmap.org ) at 2020-09-15 21:48 PDT
