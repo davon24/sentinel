@@ -115,7 +115,9 @@ def nmapVulnScanStore(ip, db_store):
     #data = str(''.join(scan))
     #update = store.replaceVulns(ip, data, None, db_store)
     report = ''
+    data = processVulnData(data)
     insert = store.insertVulns(ip, report, data, db_store)
+    #processVulnData(data)
     return insert
 
 def printVulnScan(db_store, vid=None):
@@ -1044,15 +1046,11 @@ def runDiscoverNetMultiProcess(ipnet, level, db_store):
     #https://stackoverflow.com/questions/26063877/python-multiprocessing-module-join-processes-with-timeout
 
 
-
-
-
-
-def processVulnData(vid, db_store):
+def processVulnData(data):
     vulnerable = 0
     Dct = {}
-    data_ = store.getVulnData(vid, db_store)
-    data = data_[0].split('\n')
+    #data = store.getVulnData(vid, db_store)
+    data = data[0].split('\n')
 
     for line in data:
         #print('START ' + str(line))
@@ -1087,6 +1085,7 @@ if __name__ == '__main__':
 # requires cli line tools: arp, ping, lsof, nslookup, nmap
     pass
 
+    #data = store.getVulnData(vid, db_store)
     #run = processVulnData(1, 'db/sentinel.db')
     #print(len(run))
     #print(run)
