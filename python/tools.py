@@ -69,6 +69,26 @@ class PingIp:
         #return str(ip) + ' ' + str(rcv)
         return str(rcv) + ' ' + str(ip)
 
+def pingIp(ip):
+    #print(ip)
+    cmd = 'ping -c 1 ' + ip
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        line = line.decode('utf-8').strip('\n')
+        #print(line)
+        match = '1 packets transmitted'
+        if line.startswith(match, 0, len(match)):
+            line = line.split()
+            #print(line)
+            rcv = line[3]
+    # 1 is True, 0 is False here
+    #print(str(rcv))
+    #return int(rcv)
+    #return str(ip) + ' ' + str(rcv)
+    return str(rcv) + ' ' + str(ip)
+
+
 # nmap -sn (No port scan) - hosts that responded to the host discovery probes.
 class NmapSN:
     def __init__(self):
@@ -279,8 +299,25 @@ def nmapUDPscan(ip, ports=None):
 
     return True
 
-
 def pingNet(ip):
+    rtnLst = []
+
+    ipL = ip.split('.')
+    ipn = ipL[0] + '.' + ipL[1] + '.' + ipL[2] + '.'
+
+    print('PingNet: ' + ipn + '{1..254}')
+    for i in range(1, 255):
+        ip_ = ipn + str(i)
+        ping = pingIp(ip_)
+        _up = ping.split(' ')[0]
+        _ip = ping.split(' ')[1]
+        if str(_up) == '1':
+            rtnLst.append(_ip)
+    return rtnLst
+
+
+
+def pingNetThreaded(ip): #OSError: [Errno 24] Too many open files
         rtnLst = []
 
         ipL = ip.split('.')
@@ -915,7 +952,9 @@ def getIfconfigIPv4Lst(): #testing macosx now, linux later
 def nmapNet(net):
     #nmap -sP 193.168.8.0/24 
     ipLst = []
-    cmd = 'nmap -sP ' + str(net)
+    #cmd = 'nmap -sP ' + str(net)
+    # -sn: Ping Scan - disable port scan
+    cmd = 'nmap -n -sn ' + str(net)
     #print(cmd)
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     out = proc.stdout.readlines()
@@ -978,8 +1017,13 @@ def runDiscoverNetThreaded(ipnet, level, db_store):
         print('ping-net: ' + ipn)
 
     #ping-net for discovery
-    hostLst = pingNet(ipnet) #already threading ThreadWithReturnValue
+    hostLst = pingNet(ipnet) #already threading ThreadWithReturnValue 
+    #OSError: [Errno 24] Too many open files
     #hostLst = ['192.168.8.1', '192.168.8.109']
+
+    #print('namp -sn ' + str(ipnet))
+    #hostLst = nmapNet(ipnet)
+
     print('found: ' + str(hostLst))
 
     print('scan-ports:')
@@ -1028,15 +1072,19 @@ def runDiscoverNetMultiProcess(ipnet, level, db_store):
     _ipnet = ipnet.split('.')
     if len(_ipnet) == 4:
         _ipv4 = ipnet
-        ipn = _ipnet[0] + '.' + _ipnet[1] + '.' + _ipnet[2] + '.{1-254}'
-        print('ping-net: ' + ipn)
+        ipn = _ipnet[0] + '.' + _ipnet[1] + '.' + _ipnet[2] + '.1/24'
+        print('nmap-net: ' + ipn)
 
     #ping-net for discovery
-    hostLst = pingNet(ipnet) #already threading ThreadWithReturnValue
+    #hostLst = pingNet(ipnet) #already threading ThreadWithReturnValue
     #hostLst = ['192.168.8.1', '192.168.8.109']
+
+    #print('net: ' + str(ipn))
+    hostLst = nmapNet(ipn)
+
     print('found: ' + str(hostLst))
 
-    print('scan-ports:')
+    print('nmap-ports:')
     scanDct = {}
     for ip in hostLst:
         p = multiprocessing.Process(target=nmapScanStore, args=(ip, level, db_store))
