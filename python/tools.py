@@ -1165,6 +1165,53 @@ def runDiscoverNetMultiProcess(ipnet, level, db_store):
     return True
     #https://stackoverflow.com/questions/26063877/python-multiprocessing-module-join-processes-with-timeout
 
+def runDiscoverNetAll(ipnet, level, db_store):
+
+    level = int(level)
+
+    _ipnet = ipnet.split('.')
+    if len(_ipnet) == 4:
+        _ipv4 = ipnet
+        ipn = _ipnet[0] + '.' + _ipnet[1] + '.' + _ipnet[2] + '.1/24'
+        print('nmap-net: ' + ipn)
+
+    #hostLst = ['192.168.8.1', '192.168.8.109']
+    #print('net: ' + str(ipn))
+    hostLst = nmapNet(ipn)
+
+    print('found: ' + str(hostLst))
+
+    print('scan-level: ' + str(level))
+    nmapDct = {}
+    vulnDct = {}
+    detectDct = {}
+    for ip in hostLst:
+        p = multiprocessing.Process(target=nmapScanStore, args=(ip, level, db_store))
+        p.start()
+        nmapDct[ip] = p
+        if level > 1:
+            #print('level ' + str(level) + ' vuln-scan launch ')
+            p2 = multiprocessing.Process(target=nmapVulnScanStore, args=(ip, db_store))
+            p2.start()
+            vulnDct[ip] = p2
+
+            #print('level ' + str(level) + ' detect-scan launch ')
+            p3 = multiprocessing.Process(target=nmapDetectScanStore, args=(ip, db_store))
+            p3.start()
+            detectDct[ip] = p3
+
+    for k,p in nmapDct.items():
+        out = p.join()
+
+    for k,p in vulnDct.items():
+        out = p.join()
+
+    for k,p in detectDct.items():
+        out = p.join()
+
+    return True
+    #https://stackoverflow.com/questions/26063877/python-multiprocessing-module-join-processes-with-timeout
+
 
 def processVulnData(data):
     vulnerable = 0
