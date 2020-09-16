@@ -97,7 +97,10 @@ class NmapSN:
         return ipL
 
 def nmapVulnScan(ip):
-    cmd = 'nmap -Pn --script=vuln ' + ip
+    #cmd = 'nmap -Pn --script=vuln ' + ip
+    cmd = 'nmap --script=vuln ' + ip
+    #cmd = 'nmap -O -sV --script=vuln ' + ip
+    #cmd = 'nmap -O --script=vuln ' + ip
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     return proc.stdout.readlines()
 
