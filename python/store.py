@@ -648,6 +648,15 @@ def updateVulnsReport(vid, report, db_file):
     con.commit()
     return True
 
+def getVulnData(vid, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT data FROM vulns WHERE rowid=? ;', (vid,))
+    row = cur.fetchone()
+    return row
+
+
+
 if __name__ == '__main__':
     pass
 
