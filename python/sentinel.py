@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.s1'
+__version__ = 'v0.0.0.s2'
 
 import sys
 #sys.path.insert(0,'db')
@@ -23,10 +23,15 @@ def usage():
         clear-nmaps
 
         list-vulns [id]
-        check-vuln [id]
         vuln-scan ip
-        del-vuln ip
+        del-vuln id
         clear-vulns
+        check-vuln id
+
+        list-detects [id]
+        detect-scan ip
+        del-detect id
+        clear-detect
 
         arps
         manuf mac
