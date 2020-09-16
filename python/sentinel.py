@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.q3'
+__version__ = 'v0.0.0.r'
 
 import sys
 #sys.path.insert(0,'db')
@@ -23,6 +23,7 @@ def usage():
         clear-nmaps
 
         list-vulns [id]
+        check-vuln [id]
         vuln-scan ip
         del-vuln ip
         clear-vulns
@@ -288,6 +289,13 @@ if __name__ == '__main__':
             print(str(scan))
             #update = store.replaceVulns(ip, scan, db_store)
             #print(str(update) + ' ' + str(scan))
+            sys.exit(0)
+
+        if sys.argv[1] == 'check-vuln':
+            vid = sys.argv[2]
+            data = store.getVulnData(vid, db_store)
+            run = tools.processVulnData(data)
+            print(run)
             sys.exit(0)
 
 

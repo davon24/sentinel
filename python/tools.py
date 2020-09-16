@@ -114,8 +114,10 @@ def nmapVulnScanStore(ip, db_store):
     #print(str(scan))
     #data = str(''.join(scan))
     #update = store.replaceVulns(ip, data, None, db_store)
-    report = ''
-    data = processVulnData(data)
+    #report = ''
+    report = processVulnData(data)
+    if len(report) == 0:
+        report = '-'
     insert = store.insertVulns(ip, report, data, db_store)
     #processVulnData(data)
     return insert
@@ -1049,8 +1051,27 @@ def runDiscoverNetMultiProcess(ipnet, level, db_store):
 def processVulnData(data):
     vulnerable = 0
     Dct = {}
+
+    #print(str(type(data)))
+
+    #if isinstance(data, tuple):
+    if type(data) == tuple:
+        data = data[0].split('\n') #<class 'tuple'>
+    #elif isinstance(data, str):
+    elif type(data) == str:
+        data = data.split('\n')
+    else:
+        data = data.split('\n')
+
+    #if str(type(data)) == 'tuple':
+    #    data = data[0].split('\n')
+    #else:
+    #    data = data.split('\n') 
+
+    #print('type.data ' + str(type(data)))
     #data = store.getVulnData(vid, db_store)
-    data = data[0].split('\n')
+    #data = data[0].split('\n') #<class 'tuple'>
+    #<class 'str'>
 
     for line in data:
         #print('START ' + str(line))
@@ -1061,6 +1082,8 @@ def processVulnData(data):
         #print(line)
         #if 'VULNERABLE' in line:
         #    print(line)
+
+        #port = ''
 
         try:
             if _line[1] == 'open':
