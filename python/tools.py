@@ -2,6 +2,7 @@
 
 from subprocess import Popen, PIPE
 import threading
+import multiprocessing
 import sys
 import time
 import collections
@@ -150,6 +151,11 @@ def printVulnScan(db_store, vid=None):
 
     return True
 
+def nmapScanStore(ip, level, db_store):
+    data = nmapScan(ip, level)
+    print('(' + ip + ') ' + data)
+    replace = store.replaceNmaps(ip, data, db_store)
+    return True
 
 
 def nmapScan(ip, level):
@@ -1079,7 +1085,7 @@ def processVulnData(vid, db_store):
 
 if __name__ == '__main__':
 # requires cli line tools: arp, ping, lsof, nslookup, nmap
-    #pass
+    pass
 
     #run = processVulnData(1, 'db/sentinel.db')
     #print(len(run))
