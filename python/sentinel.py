@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.t1'
+__version__ = 'v0.0.0.u'
 
 import sys
 #sys.path.insert(0,'db')
@@ -13,23 +13,25 @@ def usage():
 
     options:
 
-        discover-net [ip/net] [level]
-        ping-net ip/net
         nmap-net net
+        ping-net ip/net
 
+        port-scan [ip/net] [level]
         list-nmaps
         nmap ip [level]
         del-nmap ip
         clear-nmaps
 
-        list-vulns [id]
+        vuln-scan-net [ip/net]
         vuln-scan ip
+        list-vulns [id]
         del-vuln id
         clear-vulns
         check-vuln id
 
-        list-detects [id]
+        detect-scan-net [ip/net]
         detect-scan ip
+        list-detects [id]
         del-detect id
         clear-detects
 
@@ -357,7 +359,41 @@ if __name__ == '__main__':
             print(clear)
             sys.exit(0)
 
+        if sys.argv[1] == 'port-scan':
+            ipnet = None
+            level = None
+            try:
+                ipnet = sys.argv[2]
+                level = sys.argv[3]
+            except IndexError: pass
 
+            if ipnet is None:
+                ipnet = tools.getIfconfigIPv4()
+            else:
+                i = ipnet.split('.')
+
+                #print('i ' + str(i) + ' ' + str(len(i)))
+
+                if len(i) == 1:
+                    #level = ''.join(i)
+                    level = sys.argv[2]
+                    ipnet = tools.getIfconfigIPv4()
+                #if len(_i)  
+
+            if level is None:
+                level = 1
+
+            #print(ipnet, level, db_store)
+            #run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
+            #run_discovery = tools.runDiscoverNetMultiProcess(ipnet, level, db_store)
+            #run_discovery = tools.runDiscoverNetAll(ipnet, level, db_store)
+
+            ipn = tools.getIpNet(ipnet)
+            hostLst = tools.nmapNet(ipn)
+
+            port_scan = tools.runDiscoverNetAll(hostLst, level, db_store)
+            print(port_scan)
+            sys.exit(0)
 
         else:
             usage()
