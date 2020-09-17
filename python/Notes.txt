@@ -1,4 +1,9 @@
 
+# min email settings...
+./sentinel.py update-config email '{"smtp_to":"root@localhost"}'
+
+
+
 ./sentinel.py update-config email '{"smtp_host":"127.0.0.1"}'
 
 
