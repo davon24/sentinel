@@ -82,6 +82,11 @@ def sql_connection(db_file):
         cur.execute(create_ip)
         cur.execute(create_ipi)
 
+        create_configs  = "CREATE TABLE IF NOT EXISTS configs (config TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+        create_configsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_config ON configs (config);"
+        cur.execute(create_configs)
+        cur.execute(create_configsi)
+
         con.commit()
     else:
         con = sqlite3.connect(db_file)
@@ -696,7 +701,54 @@ def clearAllDetects(db_file):
     con.commit()
     return True
 
+def getAllConfigs(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM configs;')
+    rows = cur.fetchall()
+    return rows
 
+def getConfig(name, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT data FROM configs WHERE config=? ;', (name,))
+    row = cur.fetchone()
+    return row
+
+def insertConfig(name, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("INSERT INTO configs VALUES(?,DATETIME('now'),?)", (name,data))
+    con.commit()
+    return True
+
+def replaceConfig(name, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO configs VALUES(?,DATETIME('now'),?)", (name, data))
+    con.commit()
+    return True
+
+def replaceINTO(tbl, item, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO " + str(tbl) + " VALUES(?,DATETIME('now'),?)", (item, data))
+    con.commit()
+    return True
+
+def deleteFrom(tbl, rowid, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM " + str(tbl) + " WHERE rowid=? ;", (rowid,))
+    con.commit()
+    return True
+
+def selectAll(tbl, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("SELECT rowid,* FROM " + str(tbl) + ";")
+    rows = cur.fetchall()
+    return rows
 
 
 if __name__ == '__main__':

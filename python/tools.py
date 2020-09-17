@@ -70,22 +70,16 @@ class PingIp:
         return str(rcv) + ' ' + str(ip)
 
 def pingIp(ip):
-    #print(ip)
     cmd = 'ping -c 1 ' + ip
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     out = proc.stdout.readlines()
     for line in out:
         line = line.decode('utf-8').strip('\n')
-        #print(line)
         match = '1 packets transmitted'
         if line.startswith(match, 0, len(match)):
             line = line.split()
-            #print(line)
             rcv = line[3]
     # 1 is True, 0 is False here
-    #print(str(rcv))
-    #return int(rcv)
-    #return str(ip) + ' ' + str(rcv)
     return str(rcv) + ' ' + str(ip)
 
 
@@ -185,9 +179,6 @@ def printDetectScan(db_store, did=None):
 
 def nmapVulnScan(ip):
     cmd = 'nmap -Pn --script=vuln ' + ip
-    #cmd = 'nmap --script=vuln ' + ip
-    #cmd = 'nmap -O -sV --script=vuln ' + ip #needs root
-    #cmd = 'nmap -O --script=vuln ' + ip
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     return proc.stdout.readlines()
 
@@ -1261,9 +1252,9 @@ def runNmapDetectMultiProcess(hostLst, db_store):
 
 def getIpNet(ip):
     ipn = None
-    _ipnet = ipnet.split('.')
+    _ipnet = ip.split('.')
     if len(_ipnet) == 4:
-        _ipv4 = ipnet
+        _ipv4 = ip
         ipn = _ipnet[0] + '.' + _ipnet[1] + '.' + _ipnet[2] + '.1/24'
         #print('ip-net: ' + ipn)
     return ipn
@@ -1326,6 +1317,38 @@ def processVulnData(data):
         Lst.append(k)
 
     return ','.join(Lst)
+
+
+def emailData(data, db_store):
+    print('Email Data')
+
+    smtp_host = None
+    smtp_port = None
+    smtp_user = None
+    smtp_pass = None
+    smtp_from = None
+    smtp_to   = None
+
+    conf = store.getConfig('email', db_store)
+
+    print('conf ' + str(conf))
+    if conf is None:
+        return 'no-config'
+    else:
+        conf = conf[0]
+
+    print('conf ' + str(conf))
+
+
+    return True
+
+
+def printConfigs(db_store):
+
+    configs = store.getAllConfigs(db_store)
+    for row in configs:
+        print(row)
+    return True
 
 
 if __name__ == '__main__':

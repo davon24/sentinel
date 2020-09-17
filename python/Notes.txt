@@ -1,4 +1,26 @@
 
+./sentinel.py update-config email '{"smtp_host":"127.0.0.1"}'
+
+
+% ./sentinel.py vuln-scan 192.168.0.1/24 # takes a long time
+
+% ./sentinel.py vuln-scan-net 192.168.0.1/24 # faster
+
+
+
+
+https://vulners.com/
+https://github.com/vulnersCom/nmap-vulners
+#NSE script using some well-known service to provide info on vulnerabilities. Note that it is already included into the standard nmap NSE library.
+
+nmap -sV -Pn 192.168.1.0/24 --script=vulners/vulerns.nse -p22,80,443,8080,8443
+
+standard: --script=vuln
+
+def nmapVulnScan(ip):
+    cmd = 'nmap -Pn --script=vuln ' + ip
+# default checks the top 1000 ports
+
 |_clamav-exec: ERROR: Script execution failed (use -d to debug)
 /usr/local/share/nmap/scripts/clamav-exec.nse
 portrule = shortport.port_or_service{3310, "clam"} #typo/fix'd

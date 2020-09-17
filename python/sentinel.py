@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.u'
+__version__ = 'v0.0.0.u1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -28,6 +28,7 @@ def usage():
         del-vuln id
         clear-vulns
         check-vuln id
+        email-vuln id
 
         detect-scan-net [ip/net]
         detect-scan ip
@@ -68,6 +69,10 @@ def usage():
         del-ip ip
         update-ip ip data
         clear-ips
+
+        list-configs
+        update-config name data
+        delete-config id
 
     ''')
 
@@ -294,9 +299,7 @@ if __name__ == '__main__':
         if sys.argv[1] == 'vuln-scan':
             ip = sys.argv[2]
             scan = tools.nmapVulnScanStore(ip, db_store)
-            print(str(scan))
-            #update = store.replaceVulns(ip, scan, db_store)
-            #print(str(update) + ' ' + str(scan))
+            print(scan)
             sys.exit(0)
 
         if sys.argv[1] == 'check-vuln':
@@ -304,6 +307,13 @@ if __name__ == '__main__':
             data = store.getVulnData(vid, db_store)
             run = tools.processVulnData(data)
             print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'email-vuln':
+            vid = sys.argv[2]
+            data = store.getVulnData(vid, db_store)
+            email = tools.emailData(data, db_store)
+            print(email)
             sys.exit(0)
 
 
@@ -372,6 +382,7 @@ if __name__ == '__main__':
             else:
                 i = ipnet.split('.')
 
+
                 #print('i ' + str(i) + ' ' + str(len(i)))
 
                 if len(i) == 1:
@@ -383,17 +394,58 @@ if __name__ == '__main__':
             if level is None:
                 level = 1
 
-            #print(ipnet, level, db_store)
-            #run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
-            #run_discovery = tools.runDiscoverNetMultiProcess(ipnet, level, db_store)
-            #run_discovery = tools.runDiscoverNetAll(ipnet, level, db_store)
+            #print('ip ' + ipnet)
+            ipn = tools.getIpNet(ipnet)
+            print('ipnet: ' + ipn)
+            hostLst = tools.nmapNet(ipn)
+            scan = tools.runNmapScanMultiProcess(hostLst, level, db_store)
+            print(scan)
+            sys.exit(0)
+
+        if sys.argv[1] == 'vuln-scan-net':
+            ipnet = None
+            try: ipnet = sys.argv[2]
+            except IndexError: pass
+
+            if ipnet is None:
+                ipnet = tools.getIfconfigIPv4()
 
             ipn = tools.getIpNet(ipnet)
+            print('ipnet: ' + ipn)
             hostLst = tools.nmapNet(ipn)
-
-            port_scan = tools.runDiscoverNetAll(hostLst, level, db_store)
-            print(port_scan)
+            scan = tools.runNmapVulnMultiProcess(hostLst, db_store)
+            print(scan)
             sys.exit(0)
+
+        if sys.argv[1] == 'detect-scan-net':
+            ipnet = None
+            try: ipnet = sys.argv[2]
+            except IndexError: pass
+            if ipnet is None:
+                ipnet = tools.getIfconfigIPv4()
+            ipn = tools.getIpNet(ipnet)
+            print('ipnet: ' + ipn)
+            hostLst = tools.nmapNet(ipn)
+            scan = tools.runNmapDetectMultiProcess(hostLst, db_store)
+            print(scan)
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-configs':
+            run = tools.printConfigs(db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'update-config':
+            name = sys.argv[2]
+            data = sys.argv[3]
+            run = store.replaceINTO('configs', name, data, db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-config':
+            rowid = sys.argv[2]
+            run = store.deleteFrom('configs', rowid, db_store)
+            print(run)
 
         else:
             usage()
