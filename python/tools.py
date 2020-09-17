@@ -9,6 +9,7 @@ import collections
 import socket
 import json
 
+
 import store
 
 class ThreadWithReturnValue(threading.Thread):
@@ -1409,9 +1410,38 @@ def sendEmail(subject, message, db_store):
     import os
     import smtplib
     import ssl
-    if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
-        getattr(ssl, '_create_unverified_context', None)):
-        ssl._create_default_https_context = ssl._create_unverified_context
+    #if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+    #    getattr(ssl, '_create_unverified_context', None)):
+    #    ssl._create_default_https_context = ssl._create_unverified_context
+
+    #try:
+    #    _create_unverified_https_context = ssl._create_unverified_context
+    #except AttributeError:
+    #    pass
+    #else:
+    #    ssl._create_default_https_context = _create_unverified_https_context
+
+    if sys.platform == 'darwin':
+        print('MACOSX made me do it this way...')
+
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ssl_context.verify_mode = ssl.CERT_REQUIRED
+        ssl_context.check_hostname = True
+        ssl_context.load_default_certs()
+
+        import certifi
+        #print(certifi.where())
+
+        openssl_dir, openssl_cafile = os.path.split(
+                ssl.get_default_verify_paths().openssl_cafile)
+
+        ssl_context.load_verify_locations(
+                cafile=os.path.relpath(certifi.where()),
+                capath=None,
+                cadata=None)
+    else:
+        ssl_context = ssl.create_default_context()
+
 
 
     #print(str(message))
@@ -1452,15 +1482,22 @@ def sendEmail(subject, message, db_store):
     smtp_user = jdata.get('smtp_user', None)
     smtp_pass = jdata.get('smtp_pass', None)
 
+    print(smtp_to, smtp_from, smtp_host, smtp_port, smtp_user)
+
     header =  ("From: %s\r\nTo: %s\r\n"
             % (smtp_from, ",".join(smtp_to)))
     header += ("Subject: %s\r\n\r\n" % (subject))
     msg = header + message
 
-    context = ssl.create_default_context()
+
+    #context = ssl.create_default_context()
+
+    #print('quick.exit')
+    #return True
+
     with smtplib.SMTP(smtp_host, smtp_port) as server:
         server.ehlo()
-        server.starttls(context=context)
+        server.starttls(context=ssl_context)
         server.ehlo()
         server.login(smtp_user, smtp_pass)
         server.sendmail(smtp_from, smtp_to, msg)
@@ -1468,6 +1505,7 @@ def sendEmail(subject, message, db_store):
     print('msg: ' + str(msg))
     return True
     #ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1108)
+    #smtplib.SMTPDataError: (554, b'Transaction failed: Missing local name')
 
 
 def printConfigs(db_store):
