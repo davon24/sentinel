@@ -1482,13 +1482,18 @@ def sendEmail(subject, message, db_store):
     smtp_user = jdata.get('smtp_user', None)
     smtp_pass = jdata.get('smtp_pass', None)
 
+    if smtp_to is None:
+        return 'smtp_to is None'
+
     print(smtp_to, smtp_from, smtp_host, smtp_port, smtp_user)
 
-    header =  ("From: %s\r\nTo: %s\r\n"
-            % (smtp_from, ",".join(smtp_to)))
-    header += ("Subject: %s\r\n\r\n" % (subject))
-    msg = header + message
+    #header =  ("From: %s\r\nTo: %s\r\n"
+    #        % (smtp_from, ",".join()))
+    #header += ("Subject: %s\r\n\r\n" % (subject))
+    #msg = header + str(message)
 
+    msg = 'Subject: ' + str(subject) + '\r\n\r\n'
+    msg += message
 
     #context = ssl.create_default_context()
 
@@ -1502,7 +1507,7 @@ def sendEmail(subject, message, db_store):
         server.login(smtp_user, smtp_pass)
         server.sendmail(smtp_from, smtp_to, msg)
     print('smtp_to: ' + str(smtp_to))
-    print('msg: ' + str(msg))
+    #print('msg: ' + str(msg))
     return True
     #ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1108)
     #smtplib.SMTPDataError: (554, b'Transaction failed: Missing local name')
