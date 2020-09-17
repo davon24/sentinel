@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = 'v0.0.0.u1.1'
+__version__ = 'v0.0.0.u1.1a'
 
 import sys
 #sys.path.insert(0,'db')
@@ -312,7 +312,8 @@ if __name__ == '__main__':
         if sys.argv[1] == 'email-vuln':
             vid = sys.argv[2]
             data = store.getVulnData(vid, db_store)
-            email = tools.emailData(data, db_store)
+            subject = 'sentinel vuln-scan'
+            email = tools.sendEmail(subject, data, db_store)
             print(email)
             sys.exit(0)
 

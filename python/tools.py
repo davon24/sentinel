@@ -1320,15 +1320,110 @@ def processVulnData(data):
     return ','.join(Lst)
 
 
-def emailData(data, db_store):
-    #print('Email Data')
+#def emailData(data, db_store):
+#    #print('Email Data')
+#
+#    #smtp_to   = None
+#    #smtp_from = None
+#    #smtp_host = None
+#    #smtp_port = None
+#    #smtp_user = None
+#    #smtp_pass = None
+#
+#    conf = store.getConfig('email', db_store)
+#
+#    #print('conf ' + str(conf))
+#    if conf is None:
+#        return 'email config is None'
+#    else:
+#        conf = conf[0]
+#
+#    #print('conf ' + str(conf))
+#
+#    try:
+#        jdata = json.loads(conf)
+#    except json.decoder.JSONDecodeError:
+#        return 'invalid json ' + str(conf)
+#
+#    #print('ok json... ' + str(jdata))
+#    #print(jdata['smtp_to'])
+#    #print(jdata.get('smtp_from', None))
+#
+#    smtp_to   = jdata.get('smtp_to', None)
+#    smtp_from = jdata.get('smtp_from', 'sentinel')
+#    smtp_host = jdata.get('smtp_host', '127.0.0.1')
+#    smtp_port = jdata.get('smtp_port', '25')
+#    smtp_user = jdata.get('smtp_user', None)
+#    smtp_pass = jdata.get('smtp_pass', None)
+#
+#    if smtp_to is None:
+#        return 'no smtp_to'
+#
+#    subject = 'sentinel'
+#    message =  str(data)
+#
+#    if smtp_user is None:
+#        use_ssl = None
+#        use_auth = None
+#    else:
+#        use_ssl = 1
+#        use_auth = 1
+#
+#
+#    #send = sendEmail(smtp_from, smtp_to, subject, message, smtp_host, 
+#    #        smtp_port, use_ssl, use_auth, smtp_user, smtp_pass)
+#
+#    return True
 
-    #smtp_to   = None
-    #smtp_from = None
-    #smtp_host = None
-    #smtp_port = None
-    #smtp_user = None
-    #smtp_pass = None
+#python2
+#def sendEmail(from_email, to_email, subject, message, smtp_server,
+#                smtp_port, use_ssl, use_auth, smtp_user, smtp_pass):
+#
+#    import smtplib, ssl
+#    try: from email.mime.text import MIMEText
+#    except ImportError:
+#        from email.MIMEText import MIMEText
+#
+#    msg = MIMEText(message)
+#
+#    msg['From'] = from_email
+#    msg['To'] = ', '.join(to_email)
+#    msg['Subject'] =  subject
+#
+#    if(use_ssl):
+#        mailer = smtplib.SMTP_SSL(smtp_server, smtp_port)
+#    else:
+#        mailer = smtplib.SMTP(smtp_server, smtp_port)
+#
+#    if(use_auth):
+#        mailer.login(smtp_user, smtp_pass)
+#
+#    mailer.sendmail(from_email, to_email, msg.as_string())
+#    mailer.close()
+#
+#    print("email sent: " + str(to_email))
+#    return True
+#ssl.SSLError: [SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1108)
+
+def sendEmail(subject, message, db_store):
+    import os
+    import smtplib
+    import ssl
+    if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+        getattr(ssl, '_create_unverified_context', None)):
+        ssl._create_default_https_context = ssl._create_unverified_context
+
+
+    #print(str(message))
+    #print(str(type(message)))
+
+    if type(message) == tuple:
+        message = message[0].split('\n')
+    if type(message) == list:
+        message = '\n'.join(message) 
+
+    #print(str(message))
+    #print(str(type(message)))
 
     conf = store.getConfig('email', db_store)
 
@@ -1349,6 +1444,7 @@ def emailData(data, db_store):
     #print(jdata['smtp_to'])
     #print(jdata.get('smtp_from', None))
 
+
     smtp_to   = jdata.get('smtp_to', None)
     smtp_from = jdata.get('smtp_from', 'sentinel')
     smtp_host = jdata.get('smtp_host', '127.0.0.1')
@@ -1356,47 +1452,22 @@ def emailData(data, db_store):
     smtp_user = jdata.get('smtp_user', None)
     smtp_pass = jdata.get('smtp_pass', None)
 
-    if smtp_to is None:
-        return 'no smtp_to'
+    header =  ("From: %s\r\nTo: %s\r\n"
+            % (smtp_from, ",".join(smtp_to)))
+    header += ("Subject: %s\r\n\r\n" % (subject))
+    msg = header + message
 
-    subject = 'sentinel '
-    message =  str(data)
-
-    if smtp_user is None:
-        use_ssl = None
-    else:
-        use_ssl = 1
-
-
-    send = sendEmail(smtp_from, smtp_to, subject, message, smtp_host, 
-            smtp_port, use_ssl, use_auth, smtp_user, smtp_pass)
-
+    context = ssl.create_default_context()
+    with smtplib.SMTP(smtp_host, smtp_port) as server:
+        server.ehlo()
+        server.starttls(context=context)
+        server.ehlo()
+        server.login(smtp_user, smtp_pass)
+        server.sendmail(smtp_from, smtp_to, msg)
+    print('smtp_to: ' + str(smtp_to))
+    print('msg: ' + str(msg))
     return True
-
-def sendEmail(from_email, to_email, subject, message, smtp_server,
-                smtp_port, use_ssl, use_auth, smtp_user, smtp_pass):
-
-    import smtplib, ssl
-
-    msg = MIMEText(message)
-
-    msg['From'] = from_email
-    msg['To'] = ', '.join(to_email)
-    msg['Subject'] =  subject
-
-    if(use_ssl):
-        mailer = smtplib.SMTP_SSL(smtp_server, smtp_port)
-    else:
-        mailer = smtplib.SMTP(smtp_server, smtp_port)
-
-    if(use_auth):
-        mailer.login(smtp_user, smtp_pass)
-
-    mailer.sendmail(from_email, to_email, msg.as_string())
-    mailer.close()
-
-    print("email sent: " + str(to_email))
-    return True
+    #ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1108)
 
 
 def printConfigs(db_store):
