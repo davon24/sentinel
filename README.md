@@ -1,3 +1,4 @@
+
 # sentinel
 
 noun.  a soldier or guard whose job is to stand and keep watch.
@@ -14,8 +15,8 @@ Python program for the automation of mundane security tasks.  Relies on command 
 ```
 nmap-net is using the open source tool nmap      https://nmap.org/     
 cmd = 'nmap -n -sn ' + net     
--n (No DNS resolution)
--sn (Ping Scan - disable port scan)
+-n (No DNS resolution)    
+-sn (Ping Scan - disable port scan)    
 The default host discovery done with -sn consists of an ICMP echo request, TCP SYN to port 443, TCP ACK to port 80, and an ICMP timestamp request by default. [man nmap]
 
 
@@ -23,18 +24,18 @@ The default host discovery done with -sn consists of an ICMP echo request, TCP S
 ```
 ./sentinel.py port-scan 192.168.0.1
 ```
-cmd = 'nmap -n -F -T5 ' + ip
--F (Fast mode - Scan fewer ports than the default scan)
-Nmap scans the most common 1,000 ports for each scanned protocol. With `-F`, this is reduced to 100.
--T5 (max-retries 2, max-rtt-timeout 300)
+cmd = 'nmap -n -F -T5 ' + ip   
+Nmap scans the most common 1,000 ports for each scanned protocol. With `-F`, this is reduced to 100.       
+-F (Fast mode - Scan fewer ports than the default scan)    
+-T5 (max-retries 2, max-rtt-timeout 300)    
 
 Advanced port scanning requires root privileges.  Running nmap as an unprivileged user is possible but requires additional setup.  Because of this, I have organized the port scanner with level options.
 
-level 1 - tcp only, top 100 ports
-level 2 - requires root, tcp+udp, top 1000 ports
-level 3 - requires root, tcp+udp, 1-65535 ports
+level 1 - tcp only, top 100 ports    
+level 2 - requires root, tcp+udp, top 1000 ports    
+level 3 - requires root, tcp+udp, 1-65535 ports    
 
-**`--top-ports`**
+**`--top-ports`**    
 While more than a hundred thousand (total) TCP and UDP ports exist, the vast majority of open ports fall within a much smaller set. According to our research, the top 10 TCP ports and top 1,075 UDP ports represent half of the open ports for their protocol. To catch 90% of the open ports, you need to scan 576 TCP ports and 11,307 UDP ports. By default, Nmap scans the top 1,000 ports for each scan protocol requested. This catches roughly 93% of the TCP ports and 49% of the UDP ports.
 ```
 port-scan [ip/net] [level]
@@ -57,14 +58,14 @@ The Nmap Scripting Engine (NSE) is one of Nmap's most powerful and flexible feat
 ```
 ./sentinel.py detect-scan 192.168.0.1
 ```
-cmd = 'nmap -n -O -sV ' + ip
- -O (Enable OS detection)
- -sV (Probe open ports to determine service/version info)
-This command requires root privileges. 
+cmd = 'nmap -n -O -sV ' + ip    
+-O (Enable OS detection)    
+-sV (Probe open ports to determine service/version info)    
+This command requires root privileges.     
 
 ---
 
-# Example vuln-scan
+# Example vuln-scan three hosts   
 
 We'll scan 3 hosts for vulnerabilities.
 ```
