@@ -1,4 +1,0 @@
-
-nmap -vv -O -P0 -sTUV –top-ports 1000 -oA target $target
-
-

@@ -36,7 +36,7 @@ level 2 - requires root, tcp+udp, top 1000 ports
 level 3 - requires root, tcp+udp, 1-65535 ports    
 
 **`--top-ports`**    
-While more than a hundred thousand (total) TCP and UDP ports exist, the vast majority of open ports fall within a much smaller set. According to our research, the top 10 TCP ports and top 1,075 UDP ports represent half of the open ports for their protocol. To catch 90% of the open ports, you need to scan 576 TCP ports and 11,307 UDP ports. By default, Nmap scans the top 1,000 ports for each scan protocol requested. This catches roughly 93% of the TCP ports and 49% of the UDP ports.
+While more than a hundred thousand (total) TCP and UDP ports exist, the vast majority of open ports fall within a much smaller set. According to our research, the top 10 TCP ports and top 1,075 UDP ports represent half of the open ports for their protocol. To catch 90% of the open ports, you need to scan 576 TCP ports and 11,307 UDP ports. By default, Nmap scans the top 1,000 ports for each scan protocol requested. This catches roughly 93% of the TCP ports and 49% of the UDP ports. [man nmap]     
 ```
 port-scan [ip/net] [level]
 ```
@@ -52,7 +52,7 @@ port-scan [ip/net] [level]
 This is a specialized nmap command that engages Nmap Scripting Engine (NSE). 
 cmd = 'nmap -Pn --script=vuln ' + ip
 
-The Nmap Scripting Engine (NSE) is one of Nmap's most powerful and flexible features. It allows users to write (and share) simple scripts (using the Lua programming language) to automate a wide variety of networking tasks.  Each script contains a field associating it with one or more categories. Currently defined categories are auth, broadcast, default.  discovery, dos, exploit, external, fuzzer, intrusive, malware, safe, version, and vuln. These are all described at https://nmap.org/book/nse-usage.html#nse-categories [man nmap]
+The Nmap Scripting Engine (NSE) is one of Nmap's most powerful and flexible features. It allows users to write (and share) simple scripts (using the Lua programming language) to automate a wide variety of networking tasks.  Each script contains a field associating it with one or more categories. Currently defined categories are auth, broadcast, default.  discovery, dos, exploit, external, fuzzer, intrusive, malware, safe, version, and vuln. These are all described at https://nmap.org/book/nse-usage.html#nse-categories [man nmap]    
 
 ## OS and Service Version Detection
 ```
@@ -67,21 +67,20 @@ This command requires root privileges.
 
 # Example vuln-scan three hosts   
 
-We'll scan 3 hosts for vulnerabilities.
+We'll scan 3 hosts for vulnerabilities.     
 ```
 ./sentinel.py vuln-scan 192.168.2.1
 ./sentinel.py vuln-scan 192.168.0.184
 ./sentinel.py vuln-scan 192.168.0.1
 ```
-Once a scan has finished, the output is saved to the sentinel database.  You can list the scans with the option `list-vulns`
-
+Once a scan has finished, the output is saved to the sentinel database.  You can list the scans with the option `list-vulns`      
 ```
 ./sentinel.py list-vulns 
 3 192.168.0.1 2020-09-18 05:43:40 8443/tcp
 2 192.168.0.184 2020-09-17 02:28:20 80/tcp,443/tcp,8873/tcp,22939/tcp
 1 192.168.2.1 2020-09-17 01:51:59 -
 ``` 
-In the above list-vulns we have one negative and two hosts with vulnerabilities.  The scan with id `3` has a vulnerability on `8443/tcp` , while scan id `1` is negative.  To view the details of the host with scan id `2` we can issue the following command:
+In the above list-vulns we have one negative and two hosts with vulnerabilities.  The scan with id `3` has a vulnerability on `8443/tcp` , while scan id `1` is negative.  To view the details of the host with scan id `2` we can issue the following command:    
 ```
 ./sentinel.py list-vulns 2
 2 192.168.0.184 2020-09-17 02:28:20 80/tcp,443/tcp,8873/tcp,22939/tcp
@@ -204,11 +203,11 @@ Nmap done: 1 IP address (1 host up) scanned in 187.29 seconds
 ```
 
 # Email Module
-sentinel can be configured to send email.  The following example shows how to configure and use.  Please store configuration as json.  Here is the minimum necessary to enable and get going with the defaults.  
+sentinel can be configured to send email.  The following example shows how to configure and use.  Please store configuration as json.  Here is the minimum necessary to enable and get going with the defaults.    
 ```
 ./sentinel.py update-config email '{"smtp_to":"root@localhost"}'
 ```
-A full list of options and their defaults,
+A full list of options and their defaults,    
 ```
     smtp_to   = jdata.get('smtp_to', None)
     smtp_from = jdata.get('smtp_from', 'sentinel')

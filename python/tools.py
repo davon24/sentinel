@@ -9,7 +9,6 @@ import collections
 import socket
 import json
 
-
 import store
 
 class ThreadWithReturnValue(threading.Thread):
@@ -1321,93 +1320,8 @@ def processVulnData(data):
     return ','.join(Lst)
 
 
-#def emailData(data, db_store):
-#    #print('Email Data')
-#
-#    #smtp_to   = None
-#    #smtp_from = None
-#    #smtp_host = None
-#    #smtp_port = None
-#    #smtp_user = None
-#    #smtp_pass = None
-#
-#    conf = store.getConfig('email', db_store)
-#
-#    #print('conf ' + str(conf))
-#    if conf is None:
-#        return 'email config is None'
-#    else:
-#        conf = conf[0]
-#
-#    #print('conf ' + str(conf))
-#
-#    try:
-#        jdata = json.loads(conf)
-#    except json.decoder.JSONDecodeError:
-#        return 'invalid json ' + str(conf)
-#
-#    #print('ok json... ' + str(jdata))
-#    #print(jdata['smtp_to'])
-#    #print(jdata.get('smtp_from', None))
-#
-#    smtp_to   = jdata.get('smtp_to', None)
-#    smtp_from = jdata.get('smtp_from', 'sentinel')
-#    smtp_host = jdata.get('smtp_host', '127.0.0.1')
-#    smtp_port = jdata.get('smtp_port', '25')
-#    smtp_user = jdata.get('smtp_user', None)
-#    smtp_pass = jdata.get('smtp_pass', None)
-#
-#    if smtp_to is None:
-#        return 'no smtp_to'
-#
-#    subject = 'sentinel'
-#    message =  str(data)
-#
-#    if smtp_user is None:
-#        use_ssl = None
-#        use_auth = None
-#    else:
-#        use_ssl = 1
-#        use_auth = 1
-#
-#
-#    #send = sendEmail(smtp_from, smtp_to, subject, message, smtp_host, 
-#    #        smtp_port, use_ssl, use_auth, smtp_user, smtp_pass)
-#
-#    return True
-
-#python2
-#def sendEmail(from_email, to_email, subject, message, smtp_server,
-#                smtp_port, use_ssl, use_auth, smtp_user, smtp_pass):
-#
-#    import smtplib, ssl
-#    try: from email.mime.text import MIMEText
-#    except ImportError:
-#        from email.MIMEText import MIMEText
-#
-#    msg = MIMEText(message)
-#
-#    msg['From'] = from_email
-#    msg['To'] = ', '.join(to_email)
-#    msg['Subject'] =  subject
-#
-#    if(use_ssl):
-#        mailer = smtplib.SMTP_SSL(smtp_server, smtp_port)
-#    else:
-#        mailer = smtplib.SMTP(smtp_server, smtp_port)
-#
-#    if(use_auth):
-#        mailer.login(smtp_user, smtp_pass)
-#
-#    mailer.sendmail(from_email, to_email, msg.as_string())
-#    mailer.close()
-#
-#    print("email sent: " + str(to_email))
-#    return True
-#ssl.SSLError: [SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1108)
-
 def sendEmail(subject, message, db_store):
-    import os
+    #import os
     import smtplib
     import ssl
     #if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
@@ -1422,6 +1336,7 @@ def sendEmail(subject, message, db_store):
     #    ssl._create_default_https_context = _create_unverified_https_context
 
     if sys.platform == 'darwin':
+        #ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1108)
         print('MACOSX made me do it this way...')
 
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
@@ -1442,27 +1357,21 @@ def sendEmail(subject, message, db_store):
     else:
         ssl_context = ssl.create_default_context()
 
-
-
-    #print(str(message))
-    #print(str(type(message)))
-
     if type(message) == tuple:
         message = message[0].split('\n')
     if type(message) == list:
         message = '\n'.join(message) 
 
-    #print(str(message))
     #print(str(type(message)))
+    #print(str(message))
 
     conf = store.getConfig('email', db_store)
-
     #print('conf ' + str(conf))
+
     if conf is None:
         return 'email config is None'
     else:
         conf = conf[0]
-
     #print('conf ' + str(conf))
 
     try:
@@ -1473,7 +1382,6 @@ def sendEmail(subject, message, db_store):
     #print('ok json... ' + str(jdata))
     #print(jdata['smtp_to'])
     #print(jdata.get('smtp_from', None))
-
 
     smtp_to   = jdata.get('smtp_to', None)
     smtp_from = jdata.get('smtp_from', 'sentinel')
@@ -1487,18 +1395,8 @@ def sendEmail(subject, message, db_store):
 
     print(smtp_to, smtp_from, smtp_host, smtp_port, smtp_user)
 
-    #header =  ("From: %s\r\nTo: %s\r\n"
-    #        % (smtp_from, ",".join()))
-    #header += ("Subject: %s\r\n\r\n" % (subject))
-    #msg = header + str(message)
-
     msg = 'Subject: ' + str(subject) + '\r\n\r\n'
     msg += message
-
-    #context = ssl.create_default_context()
-
-    #print('quick.exit')
-    #return True
 
     with smtplib.SMTP(smtp_host, smtp_port) as server:
         server.ehlo()
@@ -1507,10 +1405,7 @@ def sendEmail(subject, message, db_store):
         server.login(smtp_user, smtp_pass)
         server.sendmail(smtp_from, smtp_to, msg)
     print('smtp_to: ' + str(smtp_to))
-    #print('msg: ' + str(msg))
     return True
-    #ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1108)
-    #smtplib.SMTPDataError: (554, b'Transaction failed: Missing local name')
 
 
 def printConfigs(db_store):
@@ -1521,65 +1416,6 @@ def printConfigs(db_store):
 
 
 if __name__ == '__main__':
-# requires cli line tools: arp, ping, lsof, nslookup, nmap
+# requires cli tools: arp, ping, lsof, nslookup, nmap
     pass
-
-    #data = store.getVulnData(vid, db_store)
-    #run = processVulnData(1, 'db/sentinel.db')
-    #print(len(run))
-    #print(run)
-
-    #data = store.getVulnData(3, 'db/sentinel.db')
-    #for line in data:
-    #    print(line)
-
-    #net = '192.168.8.0/24'
-    #ipLst = hostDiscoveryLst(net)
-    #print(ipLst)
-
-
-#https://nmap.org/docs/discovery.pdf
-    #ip = '192.168.8.1'
-    #hostLst = pingNet(ip)
-    #print(hostLst)
-
-    #net = '192.168.8.0/24'
-    #ips = hostDiscovery(net)
-    #print(ips)
-
-    #my_ips = getSelfIPLst()
-    #print(my_ips)
-
-
-    #open_ports_root = printListenPortsDetailed()
-
-    #open_ports = printListenPorts()
-
-    #portsLst = listenPortsLst()
-    #print(portsLst)
-
-    #lsofDct = getLsOfDct()
-    #print(lsofDct)
-
-    #cntDct = cntLsOf()
-    #for k,v in sorted(cntDct.items()):
-    #    print(k,v)
-
-    #print(cntDct)
-    #for k,v in cntDct.items():
-    #    print(k, v)
-    #    #print(v.split(' '))
-
-
-
-    #for k,v in sorted(cntDct.items()):
-    #    print(k)
-    #od = collections.OrderedDict(sorted(cntDct.items(), reverse=False))
-    #for k, v in od.items(): print(k, v)
-    #for k in od: print(k)
-    #for k,v in od: print(v)
-
-
-
-
 

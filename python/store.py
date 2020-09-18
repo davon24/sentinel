@@ -752,12 +752,6 @@ def selectAll(tbl, db_file):
 
 
 if __name__ == '__main__':
+#uses built-in sqlite3
     pass
-
-    #con = sql_connection('test.db')
-    #insert = insert_table(con)
-    #print(insert)
-
-    #update = updateVulnsReport(3, 'checked', 'db/sentinel.db') 
-    #print('.')
 

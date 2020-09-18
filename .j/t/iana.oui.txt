@@ -1,8 +1,0 @@
-# https://www.iana.org/assignments/ethernet-numbers/ethernet-numbers.txt
-#
-# 
-00:00:5e    IANA-Unicast    IANA Unicast 48-bit Addresses RFC7042
-01:00:5e    IANA-Multicast    IANA Multicast 48-bit Addresses RFC7042
-02:00:5e    IANA-Unicast64    IANA Unicast 64-bit Addresses RFC7042
-03:00:5e    IANA-Multicast64    IANA Multicast 64-bit Addresses RFC7042
-#
