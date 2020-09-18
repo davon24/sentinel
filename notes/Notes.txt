@@ -1,4 +1,11 @@
 
+
+% ./sentinel.py list-jobs
+(1, 'vuln-scan-192.168.0.1', '2020-09-18 22:16:27', '{"time":"0","repeat":"5min","job":"vuln-scan","ips":["192.168.0.1"]}')
+
+./sentinel.py update-job vuln-scan-192.168.0.1 '{"time":"0","repeat":"5min","job":"vuln-scan","ips":["192.168.0.1"]}'
+
+
 # min email settings...
 ./sentinel.py update-config email '{"smtp_to":"root@localhost"}'
 

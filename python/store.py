@@ -87,6 +87,11 @@ def sql_connection(db_file):
         cur.execute(create_configs)
         cur.execute(create_configsi)
 
+        create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (job TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+        create_jobsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs ON jobs (job);"
+        cur.execute(create_jobs)
+        cur.execute(create_jobsi)
+
         con.commit()
     else:
         con = sqlite3.connect(db_file)

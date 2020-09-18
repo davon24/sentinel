@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.ft1'
+__version__ = '0.0.0.v1.2'
 
 import sys
 #sys.path.insert(0,'db')
+
+import json
+
 import tools
 import store
 
@@ -69,9 +72,15 @@ def usage():
         del-ip ip
         clear-ips
 
+        list-jobs
+        run-job id
+        update-job name data
+        delete-job
+
         list-configs
         update-config name data
         delete-config id
+
 
     ''')
 
@@ -439,6 +448,10 @@ if __name__ == '__main__':
         if sys.argv[1] == 'update-config':
             name = sys.argv[2]
             data = sys.argv[3]
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError: 
+                print('invalid json') 
+                sys.exit(1)
             run = store.replaceINTO('configs', name, data, db_store)
             print(run)
             sys.exit(0)
@@ -447,6 +460,35 @@ if __name__ == '__main__':
             rowid = sys.argv[2]
             run = store.deleteFrom('configs', rowid, db_store)
             print(run)
+
+        if sys.argv[1] == 'list-jobs':
+            #run = tools.printJobs(db_store)
+            rows = store.selectAll('jobs', db_store)
+            for row in rows:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'update-job':
+            name = sys.argv[2]
+            data = sys.argv[3]
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError: 
+                print('invalid json') 
+                sys.exit(1)
+            run = store.replaceINTO('jobs', name, data, db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-job':
+            rowid = sys.argv[2]
+            run = store.deleteFrom('jobs', rowid, db_store)
+            print(run)
+
+        if sys.argv[1] == 'run-job':
+            id_ = sys.argv[2]
+            run = tools.runJob(id_, db_store)
+            print(str(run))
+            sys.exit(0)
 
         else:
             usage()

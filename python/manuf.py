@@ -103,7 +103,7 @@ if __name__ == '__main__':
     mac = sys.argv[1].lower()
     mac = even_up(mac)
 
-    db_file = 'manuf'
+    db_file = 'db/manuf'
     manufDict = get_manufDict(db_file)
 
     m = match(mac, manufDict)
