@@ -49,7 +49,7 @@ port-scan [ip/net] [level]
 ```
 ./sentinel.py vuln-scan 192.168.0.1
 ```
-This is a specialized nmap command that engages Nmap Scripting Engine (NSE). 
+This is a specialized nmap command that engages Nmap Scripting Engine (NSE).  
 cmd = 'nmap -Pn --script=vuln ' + ip
 
 The Nmap Scripting Engine (NSE) is one of Nmap's most powerful and flexible features. It allows users to write (and share) simple scripts (using the Lua programming language) to automate a wide variety of networking tasks.  Each script contains a field associating it with one or more categories. Currently defined categories are auth, broadcast, default.  discovery, dos, exploit, external, fuzzer, intrusive, malware, safe, version, and vuln. These are all described at https://nmap.org/book/nse-usage.html#nse-categories [man nmap]    
