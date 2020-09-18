@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1'
+__version__ = '0.0.0.v1.ft1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -65,9 +65,8 @@ def usage():
         established-alerts
 
         list-ips
-        add-ip ip
-        del-ip ip
         update-ip ip data
+        del-ip ip
         clear-ips
 
         list-configs
@@ -224,8 +223,9 @@ if __name__ == '__main__':
         if sys.argv[1] == 'update-ip':
             ip = sys.argv[2]
             data = sys.argv[3]
-            update = store.updateIPs(ip, data, db_store)
-            print(update)
+            #update = store.updateIPs(ip, data, db_store)
+            replace = store.replaceINTO('ips', ip, data, db_store)
+            print(replace)
             sys.exit(0)
         if sys.argv[1] == 'clear-ips':
             clear = store.clearAllIPs(db_store)
