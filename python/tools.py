@@ -1415,12 +1415,36 @@ def printConfigs(db_store):
     return True
 
 
+def vulnScan(ips, db_store):
+    #ips type() list or str
+
+    if type(ips) == list:
+        run = runNmapVulnMultiProcess(ips, db_store)
+    if type(ips) == str:
+        run = nmapVulnScanStore(ips, db_store)
+    else:
+        return False
+    return True
+
+def portScan(ips, db_store):
+    pass
+def detectScan(ips, db_store):
+    pass
+
+#we'll move these into db config store later
+options = {
+ 'vuln-scan' : vulnScan,
+ 'port-scan' : portScan,
+ 'detect-scan' : detectScan,
+}
+#options[sys.argv[2]](sys.argv[3:])
+
 def runJob(name, db_store):
     job = store.getJob(name, db_store)
     if not job:
         print('no.job')
         return None
-    print(str(type(job)))
+    #print(str(type(job)))
     print(job)
 
     if type(job) == tuple:
@@ -1432,10 +1456,18 @@ def runJob(name, db_store):
         print('invalid json')
         return None
 
-    _var1 = jdata.get('scheduler', None) 
-    _var2 = jdata.get('repeat', None) 
-    _var3 = jdata.get('job', None) 
-    _var4 = jdata.get('ips', None) 
+    _time = jdata.get('time', None) 
+    _repeat = jdata.get('repeat', None) 
+    _job = jdata.get('job', None) 
+    _ips = jdata.get('ips', None) 
+
+    #if type(_ips) == list:
+    #if type(_ips) == str:
+        
+    #run = tools.runNmapVulnMultiProcess(hostLst, db_store)
+    #run = tools.nmapVulnScanStore(ip, db_store)
+
+    run = options[_job](_ips, db_store)
 
 
     return True
