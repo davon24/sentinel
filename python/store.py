@@ -755,6 +755,14 @@ def selectAll(tbl, db_file):
     rows = cur.fetchall()
     return rows
 
+def getJob(name, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT data FROM jobs WHERE job=? ;', (name,))
+    row = cur.fetchone()
+    #print(len(row))
+    return row
+
 
 if __name__ == '__main__':
 #uses built-in sqlite3

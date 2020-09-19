@@ -1415,6 +1415,32 @@ def printConfigs(db_store):
     return True
 
 
+def runJob(name, db_store):
+    job = store.getJob(name, db_store)
+    if not job:
+        print('no.job')
+        return None
+    print(str(type(job)))
+    print(job)
+
+    if type(job) == tuple:
+        job = job[0]
+
+    try:
+        jdata = json.loads(job)
+    except json.decoder.JSONDecodeError:
+        print('invalid json')
+        return None
+
+    _var1 = jdata.get('scheduler', None) 
+    _var2 = jdata.get('repeat', None) 
+    _var3 = jdata.get('job', None) 
+    _var4 = jdata.get('ips', None) 
+
+
+    return True
+
+
 if __name__ == '__main__':
 # requires cli tools: arp, ping, lsof, nslookup, nmap
     pass

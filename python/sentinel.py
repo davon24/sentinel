@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.2'
+__version__ = '0.0.0.v1.2a'
 
 import sys
 #sys.path.insert(0,'db')
@@ -73,7 +73,7 @@ def usage():
         clear-ips
 
         list-jobs
-        run-job id
+        run-job name
         update-job name data
         delete-job
 
@@ -485,8 +485,8 @@ if __name__ == '__main__':
             print(run)
 
         if sys.argv[1] == 'run-job':
-            id_ = sys.argv[2]
-            run = tools.runJob(id_, db_store)
+            name = sys.argv[2]
+            run = tools.runJob(name, db_store)
             print(str(run))
             sys.exit(0)
 
