@@ -9,6 +9,15 @@ import collections
 import socket
 import json
 
+#import smtplib
+#import ssl
+#import certifi
+
+#import logging
+#import atexit
+#import signal
+#sigterm = False
+
 import store
 
 class ThreadWithReturnValue(threading.Thread):
@@ -483,7 +492,6 @@ def getNSlookupMultiLst(ip):
                 _ip = l_[1]
                 rLst.append(_ip)
     return rLst
-
 
 
 def getNSlookup(ip, srv=None):
@@ -1469,6 +1477,53 @@ def runJob(name, db_store):
 
     run = options[_job](_ips, db_store)
 
+    return True
+
+def sentryProcessSchedule():
+    print('process Schedule')
+    return True
+
+def sentryScheduler():
+    sigterm = False
+    while (sigterm == False):
+        sentryProcessSchedule()
+        time.sleep(10)
+    return True
+
+def sentryCleanup():
+    import logging
+    logging.info("Cleanup:")
+    return True
+
+def sentryMode(db_store):
+    sigterm = False
+
+    import logging
+    import atexit
+    import signal
+
+    loglevel = logging.INFO
+    logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
+    datefmt = "%b %d %H:%M:%S"
+    logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
+    
+    atexit.register(sentryCleanup)
+    signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
+
+    logging.info("Sentry startup")
+    scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
+    scheduler.setDaemon(1)
+    scheduler.start()
+
+    while (sigterm == False):
+        try:
+            print('sentry mode')
+            time.sleep(60)
+        except (KeyboardInterrupt, SystemExit, Exception):
+            sigterm = True
+            scheduler.join()
+            logging.info("Sentry shutdown: " + str(sigterm))
+            sys.exit(1)
 
     return True
 

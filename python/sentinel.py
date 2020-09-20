@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.2a'
+__version__ = '0.0.0.v1.3'
 
 import sys
 #sys.path.insert(0,'db')
@@ -80,6 +80,8 @@ def usage():
         list-configs
         update-config name data
         delete-config id
+
+        sentry
 
 
     ''')
@@ -489,6 +491,12 @@ if __name__ == '__main__':
             run = tools.runJob(name, db_store)
             print(str(run))
             sys.exit(0)
+
+        if sys.argv[1] == 'sentry':
+            run = tools.sentryMode(db_store)
+            print(str(run))
+            sys.exit(0)
+
 
         else:
             usage()
