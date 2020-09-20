@@ -1471,8 +1471,16 @@ def runJob(name, db_store):
         print('invalid json')
         return None
 
+
+
     new_json = jdata
     new_json['start'] = start
+    #
+    # del element['hours']
+    try:
+        del new_json['done']
+    except KeyError:
+        pass
     update = updateJobsJson(name, json.dumps(new_json), db_store)
     print(update)
 
