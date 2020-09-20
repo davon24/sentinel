@@ -1451,6 +1451,10 @@ options = {
 #options[sys.argv[2]](sys.argv[3:])
 
 def runJob(name, db_store):
+    #-start
+    start = time.strftime("%Y-%m-%d %H:%M:%S")
+    #start = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+
     job = store.getJob(name, db_store)
     if not job:
         print('no.job')
@@ -1467,8 +1471,14 @@ def runJob(name, db_store):
         print('invalid json')
         return None
 
-    _time = jdata.get('time', None) 
-    _repeat = jdata.get('repeat', None) 
+    new_json = jdata
+    new_json['start'] = start
+    update = updateJobsJson(name, json.dumps(new_json), db_store)
+    print(update)
+
+    #_time = jdata.get('time', None) 
+    #_repeat = jdata.get('repeat', None) 
+
     _job = jdata.get('job', None) 
     _ips = jdata.get('ips', None) 
 
@@ -1480,7 +1490,39 @@ def runJob(name, db_store):
 
     run = options[_job](_ips, db_store)
 
+    #-done
+    done = time.strftime("%Y-%m-%d %H:%M:%S")
+    new_json['done'] = done
+    update = updateJobsJson(name, json.dumps(new_json), db_store)
+    print(update)
     return True
+
+def getDuration(_repeat):
+    #amt, scale = getDuration(_repeat)
+    #5m
+    import re
+
+    num = None
+    scale = None
+
+    reLst = re.split('(\d+)', _repeat)
+    for item in reLst:
+        if item.isnumeric():
+            num = int(item)
+        if item.isalpha():
+            scale = item
+
+    print(num, scale)
+
+    if scale == 'min':
+        amt = num
+    elif scale == 'hour':
+        amt = num * 60
+    else:
+        amt = 0
+        
+    return amt
+
 
 
 def sentryProcessSchedule(db_store):
@@ -1519,8 +1561,6 @@ def sentryProcessSchedule(db_store):
         #    # check last run
 
         now = time.strftime("%Y-%m-%d %H:%M:%S")
-        #print(now)
-        #print(str(type(now)))
         date1 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
         #date2 = datetime.datetime.strptime(t_last_time, "%Y-%m-%d %H:%M:%S")
         #diff = date1 - date2
@@ -1531,17 +1571,41 @@ def sentryProcessSchedule(db_store):
 
         if _repeat:
             #_go = True
+            amt = getDuration(_repeat)
+            print('amt ' + str(amt))
 
             if _start is None:
-                
-                date2 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-                new_json = jdata
-                #print(new_json)
-                new_json['start'] = now
-                print(json.dumps(new_json))
+                run = runJob(name, db_store)
+                print(run)
+            else:
+                if _done:
+                    date2 = datetime.datetime.strptime(_done, "%Y-%m-%d %H:%M:%S")
+                    diff = date1 - date2
+                    #print(str(diff))
+                    diff_minutes = str(diff).split(':')[1]
+                    print('diff minutes ' + str(diff_minutes))
 
-                update = updateJobsJson(name, json.dumps(new_json), db_store)
-                print(update)
+                    if int(diff_minutes) > int(amt):
+                        print('Over time.  need to go.run')
+                        #put a lock in.  running:True
+
+                    print(str(_repeat))
+                    
+
+
+                
+                #date2 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+                #new_json = jdata
+                ##print(new_json)
+                #new_json['start'] = now
+                ##print(json.dumps(new_json))
+
+                #update = updateJobsJson(name, json.dumps(new_json), db_store)
+                #print(update)
+                #
+                #print(run)
+
+
             #else:
             #    date2 = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
 

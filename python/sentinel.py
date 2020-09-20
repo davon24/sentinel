@@ -75,7 +75,7 @@ def usage():
         list-jobs
         run-job name
         update-job name data
-        delete-job
+        delete-job id
 
         list-configs
         update-config name data
@@ -462,6 +462,7 @@ if __name__ == '__main__':
             rowid = sys.argv[2]
             run = store.deleteFrom('configs', rowid, db_store)
             print(run)
+            sys.exit(0)
 
         if sys.argv[1] == 'list-jobs':
             #run = tools.printJobs(db_store)
@@ -485,6 +486,7 @@ if __name__ == '__main__':
             rowid = sys.argv[2]
             run = store.deleteFrom('jobs', rowid, db_store)
             print(run)
+            sys.exit(0)
 
         if sys.argv[1] == 'run-job':
             name = sys.argv[2]
