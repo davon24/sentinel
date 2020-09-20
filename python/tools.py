@@ -1424,6 +1424,8 @@ def printConfigs(db_store):
     return True
 
 
+
+
 def vulnScan(ips, db_store):
     #ips type() list or str
 
@@ -1490,8 +1492,8 @@ def sentryProcessSchedule(db_store):
 
     for job in jobs:
         #print(job)
-        #name = job[1]
-        #data = job[3]
+        name = job[1]
+        jdata = job[3]
         try:
             jdata = json.loads(job[3])
         except json.decoder.JSONDecodeError:
@@ -1505,13 +1507,13 @@ def sentryProcessSchedule(db_store):
             return None
 
         #when?
-        _last_run = jdata.get('last_run', None)
+        #_last_run = jdata.get('last_run', None)
+        _start = jdata.get('start', None)
+        _done = jdata.get('done', None)
         _repeat = jdata.get('repeat', None)
         _time = jdata.get('time', None)
 
-        #t_last_time = '2020-09-19T20:02:00Z'
-        #t_last_time = '2020-09-19 20:30:35.794481'
-        t_last_time = '2020-09-19 20:30:35'
+        #t_last_time = '2020-09-19 20:30:35'
 
         #if _repeat is not None:
         #    # check last run
@@ -1520,12 +1522,51 @@ def sentryProcessSchedule(db_store):
         #print(now)
         #print(str(type(now)))
         date1 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-        date2 = datetime.datetime.strptime(t_last_time, "%Y-%m-%d %H:%M:%S")
+        #date2 = datetime.datetime.strptime(t_last_time, "%Y-%m-%d %H:%M:%S")
+        #diff = date1 - date2
+        #print(str(diff))
 
-        diff = date1 - date2
-        print(str(diff))
+        # set go flag, time or repeat
+        _go = False
+
+        if _repeat:
+            #_go = True
+
+            if _start is None:
+                
+                date2 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+                new_json = jdata
+                #print(new_json)
+                new_json['start'] = now
+                print(json.dumps(new_json))
+
+                update = updateJobsJson(name, json.dumps(new_json), db_store)
+                print(update)
+            #else:
+            #    date2 = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
+
+            #diff = date1 - date2
+            #print(diff)
+
+            
+
+
+
+
+            #if _repeat == '5min':
+            #    # diff time 5
+            #    print('5min')
+
+
+        #if _done is None and _start is None and _go is True:
+        #    print('all none and go... is never run before.')
             
     return True
+
+def updateJobsJson(name, jdata, db_store):
+    #replaceINTO(tbl, item, data, db_file):
+    update = store.replaceINTO('jobs', name, jdata, db_store)
+    return update
 
 def sentryScheduler(db_store):
     sigterm = False
