@@ -5,6 +5,7 @@ import threading
 import multiprocessing
 import sys
 import time
+import datetime
 import collections
 import socket
 import json
@@ -1480,19 +1481,50 @@ def runJob(name, db_store):
     return True
 
 
-
-
-def pickUpJobs(db_store):
-    return store.selectAll('jobs', db_store)
-
 def sentryProcessSchedule(db_store):
     print('process Schedule')
 
-    jobs = pickUpJobs(db_store)
+    jobs = store.selectAll('jobs', db_store)
+    if jobs is None:
+        return None
+
     for job in jobs:
-        print(job)
+        #print(job)
+        #name = job[1]
+        #data = job[3]
+        try:
+            jdata = json.loads(job[3])
+        except json.decoder.JSONDecodeError:
+            print('invalid json')
+            return None
 
+        #what?
+        _job = jdata.get('job', None)
+        if _job is None:
+            print('job is None')
+            return None
 
+        #when?
+        _last_run = jdata.get('last_run', None)
+        _repeat = jdata.get('repeat', None)
+        _time = jdata.get('time', None)
+
+        #t_last_time = '2020-09-19T20:02:00Z'
+        #t_last_time = '2020-09-19 20:30:35.794481'
+        t_last_time = '2020-09-19 20:30:35'
+
+        #if _repeat is not None:
+        #    # check last run
+
+        now = time.strftime("%Y-%m-%d %H:%M:%S")
+        #print(now)
+        #print(str(type(now)))
+        date1 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+        date2 = datetime.datetime.strptime(t_last_time, "%Y-%m-%d %H:%M:%S")
+
+        diff = date1 - date2
+        print(str(diff))
+            
     return True
 
 def sentryScheduler(db_store):
