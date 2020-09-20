@@ -1479,14 +1479,26 @@ def runJob(name, db_store):
 
     return True
 
-def sentryProcessSchedule():
+
+
+
+def pickUpJobs(db_store):
+    return store.selectAll('jobs', db_store)
+
+def sentryProcessSchedule(db_store):
     print('process Schedule')
+
+    jobs = pickUpJobs(db_store)
+    for job in jobs:
+        print(job)
+
+
     return True
 
-def sentryScheduler():
+def sentryScheduler(db_store):
     sigterm = False
     while (sigterm == False):
-        sentryProcessSchedule()
+        run = sentryProcessSchedule(db_store)
         time.sleep(10)
     return True
 
@@ -1511,7 +1523,8 @@ def sentryMode(db_store):
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry startup")
-    scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
+    #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
+    scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="scheduler")
     scheduler.setDaemon(1)
     scheduler.start()
 
