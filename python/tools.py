@@ -1424,14 +1424,16 @@ def printConfigs(db_store):
     return True
 
 
-
-
 def vulnScan(ips, db_store):
     #ips type() list or str
 
+    #print('ips type is ' + str(type(ips)))
+
     if type(ips) == list:
+        #print('run.list ' + str(ips))
         run = runNmapVulnMultiProcess(ips, db_store)
     if type(ips) == str:
+        #print('run.str ' + str(ips))
         run = nmapVulnScanStore(ips, db_store)
     else:
         return False
@@ -1439,6 +1441,7 @@ def vulnScan(ips, db_store):
 
 def portScan(ips, db_store):
     pass
+
 def detectScan(ips, db_store):
     pass
 
@@ -1471,11 +1474,9 @@ def runJob(name, db_store):
         print('invalid json')
         return None
 
-
-
     new_json = jdata
     new_json['start'] = start
-    #
+    
     # del element['hours']
     try:
         del new_json['done']
@@ -1510,9 +1511,6 @@ def getDuration(_repeat):
     #5min, 1hour, 3day
     import re
 
-    #today = time.strftime("%Y-%m-%d")
-    #today_time = datetime.datetime.strptime(today, "%Y-%m-%d")
-
     num = None
     scale = None
 
@@ -1523,7 +1521,7 @@ def getDuration(_repeat):
         if item.isalpha():
             scale = item
 
-    print(num, scale)
+    #print(num, scale)
 
     if scale == 'min':
         scale = 'minutes'
@@ -1539,8 +1537,6 @@ def getDuration(_repeat):
         amt = 0
         
     return scale, amt
-
-
 
 def sentryProcessSchedule(db_store):
     print('process Schedule')
@@ -1566,49 +1562,43 @@ def sentryProcessSchedule(db_store):
             return None
 
         #when?
-        #_last_run = jdata.get('last_run', None)
         _start = jdata.get('start', None)
         _done = jdata.get('done', None)
         _repeat = jdata.get('repeat', None)
         _time = jdata.get('time', None)
 
-        #t_last_time = '2020-09-19 20:30:35'
-
-        #if _repeat is not None:
-        #    # check last run
 
         now = time.strftime("%Y-%m-%d %H:%M:%S")
         now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-        #now_minute = int(str(now_time).split()[1].split(':')[1])
-        #date2 = datetime.datetime.strptime(t_last_time, "%Y-%m-%d %H:%M:%S")
-        #diff = date1 - date2
-        #print(str(diff))
-
-        # set go flag, time or repeat
-        _go = False
 
         if _time:
             #run at time
             run_time = datetime.datetime.strptime(_time, "%Y-%m-%d %H:%M:%S")
 
-            if now_time > run_time:
-                print('Over time.  run_time')
-                run = runJob(name, db_store)
-                print(run)
+            #if now_time > run_time and _start is None and _done is None:
+            if now_time > run_time and _start is None:
+                #print('Over time and _start is None.  run_time')
+                #run = runJob(name, db_store)
+                #print(run)
+                r = multiprocessing.Process(target=runJob, args=(name, db_store))
+                #r.daemon = True #AssertionError: daemonic processes are not allowed to have children
+                r.start()
 
 
         if _repeat:
-            #_go = True
             scale, amt = getDuration(_repeat)
-            print(scale + ' amt ' + str(amt))
+            #print(scale + ' amt ' + str(amt))
             #amt_time = datetime.datetime.strptime(amt, "%H:%M:%S")
             #amt_time = datetime.datetime.strptime(amt, "%Y-%m-%d %H:%M:%S")
             #print('amt_time ' + str(amt_time))
 
             if _start is None:
-                print('run')
-                run = runJob(name, db_store)
-                print(run)
+                #print('run')
+                #run = runJob(name, db_store)
+                #print(run)
+                r = multiprocessing.Process(target=runJob, args=(name, db_store))
+                #r.daemon = True
+                r.start()
             else:
                 start_time = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
                 #start_minute = int(str(start_time).split()[1].split(':')[1])
@@ -1625,15 +1615,18 @@ def sentryProcessSchedule(db_store):
                     
                     arg_dict = {scale:amt}
                     delta_time = done_time + datetime.timedelta(**arg_dict)
-                    print('delta_time ' + str(delta_time))
-                    print('now        ' + str(now_time))
+                    #print('delta_time ' + str(delta_time))
+                    #print('now        ' + str(now_time))
 
                     if now_time > delta_time:
-                        print('Over time.  repeat_time')
-                        run = runJob(name, db_store)
-                        print(run)
+                        #print('Over time.  repeat_time')
+                        #run = runJob(name, db_store)
+                        #print(run)
+                        r = multiprocessing.Process(target=runJob, args=(name, db_store))
+                        #r.daemon = True
+                        r.start()
 
-                    print(str(_repeat))
+                    #print(str(_repeat))
                     
     return True
 
@@ -1646,7 +1639,7 @@ def sentryScheduler(db_store):
     sigterm = False
     while (sigterm == False):
         run = sentryProcessSchedule(db_store)
-        time.sleep(10)
+        time.sleep(5)
     return True
 
 def sentryCleanup():
