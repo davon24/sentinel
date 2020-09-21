@@ -1568,8 +1568,9 @@ def sentryProcessSchedule(db_store):
         #if _repeat is not None:
         #    # check last run
 
-        now = time.strftime("%Y-%m-%d %H:%M:%S")
-        date1 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+        now_time = time.strftime("%Y-%m-%d %H:%M:%S")
+        now_minute = int(str(now_time).split()[1].split(':')[1])
+        #date1 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
         #date2 = datetime.datetime.strptime(t_last_time, "%Y-%m-%d %H:%M:%S")
         #diff = date1 - date2
         #print(str(diff))
@@ -1586,16 +1587,27 @@ def sentryProcessSchedule(db_store):
                 run = runJob(name, db_store)
                 print(run)
             else:
+                start_time = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
+                start_minute = int(str(start_time).split()[1].split(':')[1])
+                print('start ' + str(start_time) + ' m: ' + str(start_minute))
                 if _done:
-                    date2 = datetime.datetime.strptime(_done, "%Y-%m-%d %H:%M:%S")
-                    diff = date1 - date2
-                    #print(str(diff))
-                    diff_minutes = str(diff).split(':')[1]
-                    print('diff minutes ' + str(diff_minutes))
+                    done_time = datetime.datetime.strptime(_done, "%Y-%m-%d %H:%M:%S")
+                    done_minute = int(str(done_time).split()[1].split(':')[1])
+                    print('done  ' + str(done_time))
+                    print('now   ' + str(now))
+                    #diff = done - start
+                    #print('diff.str ' + str(diff))
+                    #diff_minutes = str(diff).split(':')[1]
+                    #print('diff minutes ' + str(diff_minutes))
+
+                    diff_minutes = done_minute - start_minute
+                    print('diff_minutes ' + str(diff_minutes))
+
 
                     if int(diff_minutes) > int(amt):
                         print('Over time.  need to go.run')
-                        #put a lock in.  running:True
+                        #add/remove done for flag
+
 
                     print(str(_repeat))
                     
