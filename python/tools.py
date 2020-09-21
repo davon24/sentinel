@@ -1541,6 +1541,8 @@ def getDuration(_repeat):
 def sentryProcessSchedule(db_store):
     print('process Schedule')
 
+    rLst = []
+
     jobs = store.selectAll('jobs', db_store)
     if jobs is None:
         return None
@@ -1578,11 +1580,14 @@ def sentryProcessSchedule(db_store):
             #if now_time > run_time and _start is None and _done is None:
             if now_time > run_time and _start is None:
                 #print('Over time and _start is None.  run_time')
-                #run = runJob(name, db_store)
+                run = runJob(name, db_store)
                 #print(run)
-                r = multiprocessing.Process(target=runJob, args=(name, db_store))
+                #multiprocessing.set_start_method('spawn')
+                #r = multiprocessing.Process(target=runJob, args=(name, db_store))
                 #r.daemon = True #AssertionError: daemonic processes are not allowed to have children
-                r.start()
+                #r.start()
+                #rLst.append(r)
+
 
 
         if _repeat:
@@ -1594,11 +1599,14 @@ def sentryProcessSchedule(db_store):
 
             if _start is None:
                 #print('run')
-                #run = runJob(name, db_store)
+                run = runJob(name, db_store)
                 #print(run)
-                r = multiprocessing.Process(target=runJob, args=(name, db_store))
+                #multiprocessing.set_start_method('spawn')
+                #r = multiprocessing.Process(target=runJob, args=(name, db_store))
                 #r.daemon = True
-                r.start()
+                #r.start()
+                #rLst.append(r)
+
             else:
                 start_time = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
                 #start_minute = int(str(start_time).split()[1].split(':')[1])
@@ -1606,7 +1614,7 @@ def sentryProcessSchedule(db_store):
                 if _done:
                     done_time = datetime.datetime.strptime(_done, "%Y-%m-%d %H:%M:%S")
                     #done_minute = int(str(done_time).split()[1].split(':')[1])
-                    print('done       ' + str(done_time))
+                    #print('done       ' + str(done_time))
 
                     #td_time = done_time + datetime.timedelta(minutes=5)
                     #delta_time = done_time + datetime.timedelta(amt) #TypeError: unsupported type for timedelta days component: str
@@ -1615,19 +1623,24 @@ def sentryProcessSchedule(db_store):
                     
                     arg_dict = {scale:amt}
                     delta_time = done_time + datetime.timedelta(**arg_dict)
-                    #print('delta_time ' + str(delta_time))
-                    #print('now        ' + str(now_time))
+                    print('delta_time ' + str(delta_time))
+                    print('now        ' + str(now_time))
 
                     if now_time > delta_time:
                         #print('Over time.  repeat_time')
-                        #run = runJob(name, db_store)
+                        run = runJob(name, db_store)
                         #print(run)
-                        r = multiprocessing.Process(target=runJob, args=(name, db_store))
+                        #multiprocessing.set_start_method('spawn')
+                        #r = multiprocessing.Process(target=runJob, args=(name, db_store))
                         #r.daemon = True
-                        r.start()
+                        #r.start()
+                        #rLst.append(r)
 
                     #print(str(_repeat))
-                    
+    
+    #for r in rLst:
+    #    o = r.join()
+
     return True
 
 def updateJobsJson(name, jdata, db_store):
@@ -1638,8 +1651,14 @@ def updateJobsJson(name, jdata, db_store):
 def sentryScheduler(db_store):
     sigterm = False
     while (sigterm == False):
-        run = sentryProcessSchedule(db_store)
-        time.sleep(5)
+
+        #run = sentryProcessSchedule(db_store)
+        run = threading.Thread(target=sentryProcessSchedule, args=(db_store,))
+        run.setDaemon(1)
+        run.start()
+
+        time.sleep(3)
+
     return True
 
 def sentryCleanup():
