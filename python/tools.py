@@ -1507,8 +1507,11 @@ def runJob(name, db_store):
 
 def getDuration(_repeat):
     #amt, scale = getDuration(_repeat)
-    #5m
+    #5min, 1hour, 3day
     import re
+
+    #today = time.strftime("%Y-%m-%d")
+    #today_time = datetime.datetime.strptime(today, "%Y-%m-%d")
 
     num = None
     scale = None
@@ -1516,20 +1519,26 @@ def getDuration(_repeat):
     reLst = re.split('(\d+)', _repeat)
     for item in reLst:
         if item.isnumeric():
-            num = int(item)
+            num = item
         if item.isalpha():
             scale = item
 
     print(num, scale)
 
     if scale == 'min':
-        amt = num
+        scale = 'minutes'
+        amt = int(num)
     elif scale == 'hour':
-        amt = num * 60
+        scale = 'hours'
+        amt = int(num)
+    elif scale == 'day':
+        scale = 'days'
+        amt = int(num)
     else:
+        scale = 'None'
         amt = 0
         
-    return amt
+    return scale, amt
 
 
 
@@ -1568,9 +1577,9 @@ def sentryProcessSchedule(db_store):
         #if _repeat is not None:
         #    # check last run
 
-        now_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        now_minute = int(str(now_time).split()[1].split(':')[1])
-        #date1 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+        now = time.strftime("%Y-%m-%d %H:%M:%S")
+        now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+        #now_minute = int(str(now_time).split()[1].split(':')[1])
         #date2 = datetime.datetime.strptime(t_last_time, "%Y-%m-%d %H:%M:%S")
         #diff = date1 - date2
         #print(str(diff))
@@ -1580,33 +1589,50 @@ def sentryProcessSchedule(db_store):
 
         if _repeat:
             #_go = True
-            amt = getDuration(_repeat)
-            print('amt ' + str(amt))
+            scale, amt = getDuration(_repeat)
+            print(scale + ' amt ' + str(amt))
+            #amt_time = datetime.datetime.strptime(amt, "%H:%M:%S")
+            #amt_time = datetime.datetime.strptime(amt, "%Y-%m-%d %H:%M:%S")
+            #print('amt_time ' + str(amt_time))
 
             if _start is None:
                 run = runJob(name, db_store)
                 print(run)
             else:
                 start_time = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
-                start_minute = int(str(start_time).split()[1].split(':')[1])
-                print('start ' + str(start_time) + ' m: ' + str(start_minute))
+                #start_minute = int(str(start_time).split()[1].split(':')[1])
+                #print('start ' + str(start_time) + ' m: ' + str(start_minute))
                 if _done:
                     done_time = datetime.datetime.strptime(_done, "%Y-%m-%d %H:%M:%S")
-                    done_minute = int(str(done_time).split()[1].split(':')[1])
-                    print('done  ' + str(done_time))
-                    print('now   ' + str(now))
+                    #done_minute = int(str(done_time).split()[1].split(':')[1])
+                    print('done       ' + str(done_time))
+
+                    #td_time = done_time + datetime.timedelta(minutes=5)
+                    #delta_time = done_time + datetime.timedelta(amt) #TypeError: unsupported type for timedelta days component: str
+                    #delta_time = done_time + datetime.timedelta(minutes = 5)
+                    #delta_time = done_time + datetime.timedelta(scale = amt) #TypeError: 'scale' is an invalid keyword argument for __new__()
+                    
+                    arg_dict = {scale:amt}
+                    delta_time = done_time + datetime.timedelta(**arg_dict)
+                    print('delta_time ' + str(delta_time))
+
+                    print('now        ' + str(now_time))
+
+                    if now_time > delta_time:
+                        print('Over time.  need to go.run')
+
                     #diff = done - start
                     #print('diff.str ' + str(diff))
                     #diff_minutes = str(diff).split(':')[1]
                     #print('diff minutes ' + str(diff_minutes))
 
-                    diff_minutes = done_minute - start_minute
-                    print('diff_minutes ' + str(diff_minutes))
+                    #diff_time = now_time - done_time
+                    #print('diff_time ' + str(diff_time))
 
 
-                    if int(diff_minutes) > int(amt):
-                        print('Over time.  need to go.run')
-                        #add/remove done for flag
+                    #if diff_time > amt_time:
+                    #    print('Over time.  need to go.run')
+                    #    #add/remove done for flag
 
 
                     print(str(_repeat))
