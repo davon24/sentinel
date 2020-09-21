@@ -1535,7 +1535,7 @@ def getDuration(_repeat):
         scale = 'days'
         amt = int(num)
     else:
-        scale = 'None'
+        scale = 'seconds'
         amt = 0
         
     return scale, amt
@@ -1587,6 +1587,16 @@ def sentryProcessSchedule(db_store):
         # set go flag, time or repeat
         _go = False
 
+        if _time:
+            #run at time
+            run_time = datetime.datetime.strptime(_time, "%Y-%m-%d %H:%M:%S")
+
+            if now_time > run_time:
+                print('Over time.  run_time')
+                run = runJob(name, db_store)
+                print(run)
+
+
         if _repeat:
             #_go = True
             scale, amt = getDuration(_repeat)
@@ -1596,6 +1606,7 @@ def sentryProcessSchedule(db_store):
             #print('amt_time ' + str(amt_time))
 
             if _start is None:
+                print('run')
                 run = runJob(name, db_store)
                 print(run)
             else:
@@ -1615,62 +1626,15 @@ def sentryProcessSchedule(db_store):
                     arg_dict = {scale:amt}
                     delta_time = done_time + datetime.timedelta(**arg_dict)
                     print('delta_time ' + str(delta_time))
-
                     print('now        ' + str(now_time))
 
                     if now_time > delta_time:
-                        print('Over time.  need to go.run')
-
-                    #diff = done - start
-                    #print('diff.str ' + str(diff))
-                    #diff_minutes = str(diff).split(':')[1]
-                    #print('diff minutes ' + str(diff_minutes))
-
-                    #diff_time = now_time - done_time
-                    #print('diff_time ' + str(diff_time))
-
-
-                    #if diff_time > amt_time:
-                    #    print('Over time.  need to go.run')
-                    #    #add/remove done for flag
-
+                        print('Over time.  repeat_time')
+                        run = runJob(name, db_store)
+                        print(run)
 
                     print(str(_repeat))
                     
-
-
-                
-                #date2 = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-                #new_json = jdata
-                ##print(new_json)
-                #new_json['start'] = now
-                ##print(json.dumps(new_json))
-
-                #update = updateJobsJson(name, json.dumps(new_json), db_store)
-                #print(update)
-                #
-                #print(run)
-
-
-            #else:
-            #    date2 = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
-
-            #diff = date1 - date2
-            #print(diff)
-
-            
-
-
-
-
-            #if _repeat == '5min':
-            #    # diff time 5
-            #    print('5min')
-
-
-        #if _done is None and _start is None and _go is True:
-        #    print('all none and go... is never run before.')
-            
     return True
 
 def updateJobsJson(name, jdata, db_store):
