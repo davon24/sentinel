@@ -3,6 +3,9 @@
 from subprocess import Popen, PIPE
 import threading
 import multiprocessing
+
+import queue
+
 import sys
 import time
 import datetime
@@ -1540,6 +1543,8 @@ def getDuration(_repeat):
 
 def sentryProcessSchedule(db_store):
     print('process Schedule')
+    t_name = threading.current_thread().name
+    #gLst.append(t_name)
 
     rLst = []
 
@@ -1572,6 +1577,7 @@ def sentryProcessSchedule(db_store):
 
         now = time.strftime("%Y-%m-%d %H:%M:%S")
         now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+        print('now        ' + str(now_time))
 
         if _time:
             #run at time
@@ -1624,7 +1630,7 @@ def sentryProcessSchedule(db_store):
                     arg_dict = {scale:amt}
                     delta_time = done_time + datetime.timedelta(**arg_dict)
                     print('delta_time ' + str(delta_time))
-                    print('now        ' + str(now_time))
+                    #print('now        ' + str(now_time))
 
                     if now_time > delta_time:
                         #print('Over time.  repeat_time')
@@ -1648,19 +1654,22 @@ def updateJobsJson(name, jdata, db_store):
     update = store.replaceINTO('jobs', name, jdata, db_store)
     return update
 
-gLst = []
+gQ = queue.Queue()
+#gLst = []
+
 def sentryScheduler(db_store):
     sigterm = False
-    c = 0
+    #c = 0
     while (sigterm == False):
 
         #run = sentryProcessSchedule(db_store)
         #run = threading.Thread(target=sentryProcessSchedule, args=(db_store,), name = 'SentrySchduler')
         run = threading.Thread(target=sentryProcessSchedule, args=(db_store,))
-        run.setDaemon(1)
+        run.setDaemon(True)
+        #gLst.append(run)
         run.start()
-        c += 1
-        gLst.append(c)
+        #c += 1
+        #gQ.put(run)
         time.sleep(3)
 
     return True
@@ -1669,13 +1678,30 @@ def listRunningThreads():
 
     for t in threading.enumerate():
         #print(str(t.name))
-        print(str(t))
+        #print(str(t))
+        #if t is main_thread:
+        #    continue
+        #logging.debug('joining %s', t.getName())
+        #print(t.getName())
+        print(t.name)
+        #t.join()
 
     for p in multiprocessing.active_children():
-        print(str(p))
+        print(str(p.name))
 
-    for t in gLst:
-        print(str(t))
+    #print('gLst...')
+    #for i in gLst:
+    #    print(str(i))
+    #print('...')
+
+    #for t in gQ:
+    #    print(str(t))
+
+    #items = gQ.get()
+    #for i in items:
+    #    if item is None:
+    #        break
+    #    print(i)
 
     print('count ' + str(threading.active_count()))
 
@@ -1703,7 +1729,8 @@ def sentryMode(db_store):
     logging.info("Sentry startup")
     #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="scheduler")
-    scheduler.setDaemon(1)
+    scheduler.setDaemon(True)
+    #gLst.append(scheduler)
     scheduler.start()
 
     while (sigterm == False):
