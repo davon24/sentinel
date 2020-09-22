@@ -1541,12 +1541,12 @@ def getDuration(_repeat):
         
     return scale, amt
 
-def sentryProcessSchedule(db_store, gLst):
+def sentryProcessSchedule(db_store):
     print('process Schedule')
     t_name = threading.current_thread().name
     print(str(t_name))
     #gLst.append(t_name)
-    gLst.insert(t_name, 0)
+    #gLst.insert(t_name, 0)
     #qQ.put(t_name)
 
     rLst = []
@@ -1663,7 +1663,7 @@ def updateJobsJson(name, jdata, db_store):
 #qQ = queue.Queue()
 #gLst = []
 
-def sentryScheduler(db_store, gLst):
+def sentryScheduler(db_store):
 
     #gLst = []
 
@@ -1673,7 +1673,7 @@ def sentryScheduler(db_store, gLst):
 
         #run = sentryProcessSchedule(db_store)
         #run = threading.Thread(target=sentryProcessSchedule, args=(db_store,), name = 'SentrySchduler')
-        run = threading.Thread(target=sentryProcessSchedule, args=(db_store, gLst))
+        run = threading.Thread(target=sentryProcessSchedule, args=(db_store,))
         run.setDaemon(True)
         #gLst.append(run)
         run.start()
@@ -1683,7 +1683,7 @@ def sentryScheduler(db_store, gLst):
 
     return True
 
-def listRunningThreads(gLst):
+def listRunningThreads():
 
     for t in threading.enumerate():
         #print(str(t.name))
@@ -1698,10 +1698,10 @@ def listRunningThreads(gLst):
     for p in multiprocessing.active_children():
         print(str(p.name))
 
-    print('gLst...')
-    for i in gLst:
-        print(str(i))
-    print('...')
+    #print('gLst...')
+    #for i in gLst:
+    #    print(str(i))
+    #print('...')
 
     #for t in gQ:
     #    print(str(t))
@@ -1720,7 +1720,7 @@ def sentryCleanup():
     logging.info("Cleanup:")
     return True
 
-def sentryMode(db_store, gLst):
+def sentryMode(db_store):
 
     sigterm = False
 
@@ -1738,7 +1738,7 @@ def sentryMode(db_store, gLst):
 
     logging.info("Sentry startup")
     #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
-    scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gLst), name="scheduler")
+    scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="scheduler")
     scheduler.setDaemon(True)
     #gLst.append(scheduler)
     scheduler.start()

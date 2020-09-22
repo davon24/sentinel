@@ -10,8 +10,6 @@ import json
 import tools
 import store
 
-#gLst = []
-
 def usage():
     print(sys.argv[0] + ''' [option]
 
@@ -501,12 +499,12 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'sentry':
-            run = tools.sentryMode(db_store, gLst)
+            run = tools.sentryMode(db_store)
             print(str(run))
             sys.exit(0)
 
         if sys.argv[1] == 'list-jobs-running':
-            run = tools.listRunningThreads(gLst)
+            run = tools.listRunningThreads()
             sys.exit(0)
 
 
