@@ -1,4 +1,16 @@
 
+./sentinel.py update-job vuln-scan-1 '{"time": "2020-09-21 13:45:00", "job": "vuln-scan", "ips": ["192.168.0.81"]}'
+
+./sentinel.py update-job vuln-scan-2 '{"repeat": "5min", "job": "vuln-scan", "ips": ["192.168.0.1", "192.168.0.2"]}'
+
+
+
+
+
+./sentinel.py update-job vuln-scan-2 '{"time":"2020-09-21 12:30:00","job":"vuln-scan","ips":["192.168.0.2"]}'
+
+./sentinel.py update-job vuln-scan-1 '{"repeat":"5min","job":"vuln-scan","ips":["192.168.0.1"]}'
+
 
 % ./sentinel.py list-jobs
 (1, 'vuln-scan-192.168.0.1', '2020-09-18 22:16:27', '{"time":"0","repeat":"5min","job":"vuln-scan","ips":["192.168.0.1"]}')

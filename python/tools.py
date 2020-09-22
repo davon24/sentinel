@@ -1648,18 +1648,37 @@ def updateJobsJson(name, jdata, db_store):
     update = store.replaceINTO('jobs', name, jdata, db_store)
     return update
 
+gLst = []
 def sentryScheduler(db_store):
     sigterm = False
+    c = 0
     while (sigterm == False):
 
         #run = sentryProcessSchedule(db_store)
+        #run = threading.Thread(target=sentryProcessSchedule, args=(db_store,), name = 'SentrySchduler')
         run = threading.Thread(target=sentryProcessSchedule, args=(db_store,))
         run.setDaemon(1)
         run.start()
-
+        c += 1
+        gLst.append(c)
         time.sleep(3)
 
     return True
+
+def listRunningThreads():
+
+    for t in threading.enumerate():
+        #print(str(t.name))
+        print(str(t))
+
+    for p in multiprocessing.active_children():
+        print(str(p))
+
+    for t in gLst:
+        print(str(t))
+
+    print('count ' + str(threading.active_count()))
+
 
 def sentryCleanup():
     import logging

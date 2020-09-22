@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.3.a'
+__version__ = '0.0.0.v1.3.a1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -73,6 +73,7 @@ def usage():
         clear-ips
 
         list-jobs
+        list-jobs-running
         run-job name
         update-job name data
         delete-job id
@@ -470,6 +471,11 @@ if __name__ == '__main__':
             for row in rows:
                 print(row)
             sys.exit(0)
+
+        if sys.argv[1] == 'list-jobs-running':
+            run = tools.listRunningThreads()
+            sys.exit(0)
+
 
         if sys.argv[1] == 'update-job':
             name = sys.argv[2]
