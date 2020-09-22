@@ -10,6 +10,7 @@ import json
 import tools
 import store
 
+#gLst = []
 
 def usage():
     print(sys.argv[0] + ''' [option]
@@ -109,6 +110,8 @@ def run():
         return True
 
 if __name__ == '__main__':
+
+    gLst = []
 
     db_store = 'db/sentinel.db'
     db_manuf = 'db/manuf'
@@ -472,9 +475,6 @@ if __name__ == '__main__':
                 print(row)
             sys.exit(0)
 
-        if sys.argv[1] == 'list-jobs-running':
-            run = tools.listRunningThreads()
-            sys.exit(0)
 
 
         if sys.argv[1] == 'update-job':
@@ -501,8 +501,12 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'sentry':
-            run = tools.sentryMode(db_store)
+            run = tools.sentryMode(db_store, gLst)
             print(str(run))
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-jobs-running':
+            run = tools.listRunningThreads(gLst)
             sys.exit(0)
 
 
