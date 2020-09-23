@@ -1,0 +1,12 @@
+#file:/lib/systemd/system/sentinel.service
+[Unit]
+Description=Sentinel Sentry Service
+Documentation=
+
+[Service]
+Restart=always
+User=
+ExecStart=/opt/sentinel/python/sentinel.py sentry
+
+[Install]
+WantedBy=multi-user.target
