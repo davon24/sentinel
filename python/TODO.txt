@@ -1,0 +1,14 @@
+
+# activity monitor/top process, defunct  ps
+
+# validate dates
+ValueError: time data '0000-00-00 00:00:00' does not match format '%Y-%m-%d %H:%M:%S'
+process Schedule
+
+# delete-jobs by name (not _id) and don't show _id
+./sentinel.py list-jobs
+(4, 'vuln-scan-192.168.2.46', '2020-09-23 16:06:52',
+
+# timeout threads and processes
+
+

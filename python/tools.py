@@ -1485,8 +1485,8 @@ def runJob(name, db_store):
         del new_json['done']
     except KeyError:
         pass
-    update = updateJobsJson(name, json.dumps(new_json), db_store)
-    print(update)
+    replace = replaceJobsJson(name, json.dumps(new_json), db_store)
+    print(replace)
 
     #_time = jdata.get('time', None) 
     #_repeat = jdata.get('repeat', None) 
@@ -1655,10 +1655,16 @@ def sentryProcessSchedule(db_store):
     print('end')
     return True
 
+def replaceJobsJson(name, jdata, db_store):
+    #replaceINTO(tbl, item, data, db_file):
+    replace = store.replaceINTO('jobs', name, jdata, db_store)
+    return replace
+
 def updateJobsJson(name, jdata, db_store):
     #replaceINTO(tbl, item, data, db_file):
-    update = store.replaceINTO('jobs', name, jdata, db_store)
+    update = store.updateJobs(name, jdata, db_store)
     return update
+
 
 #qQ = queue.Queue()
 #gLst = []

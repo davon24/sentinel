@@ -795,6 +795,15 @@ def getAllCounts(db_file):
     rows = cur.fetchall()
     return rows
 
+def updateJobs(job, jdata, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    sql = "UPDATE jobs SET data='" + jdata + "' WHERE job='" + str(job) + "';"
+    cur.execute(sql)
+    con.commit()
+    return True
+
+
 
 
 if __name__ == '__main__':
