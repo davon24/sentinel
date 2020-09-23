@@ -1688,9 +1688,14 @@ def sentryScheduler(db_store):
         #    print(str(t.name))
         #print('count ' + str(threading.active_count()))
 
-        count = str(threading.active_count())
-        update = store.updateCounts('threads', count, db_store)
+        tcount = threading.active_count()
+        update = store.updateCounts('threads', str(tcount), db_store)
 
+        pcount = 0
+        for child in multiprocessing.active_children():
+            #print(str(child))
+            pcount += 1
+        update = store.updateCounts('process', str(pcount), db_store)
 
         time.sleep(3)
 
@@ -1707,7 +1712,8 @@ def listRunning(db_store):
 def sentryCleanup(db_store):
     import logging
     logging.info("Cleanup:")
-    update = store.replaceCounts('threads', str(0), db_store)
+    update1 = store.replaceCounts('threads', str(0), db_store)
+    update2 = store.replaceCounts('process', str(0), db_store)
     return True
 
 def sentryMode(db_store):
@@ -1727,7 +1733,8 @@ def sentryMode(db_store):
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry startup")
-    update = store.replaceCounts('threads', str(0), db_store)
+    update1 = store.replaceCounts('threads', str(0), db_store)
+    update2 = store.replaceCounts('process', str(0), db_store)
 
     #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="scheduler")
