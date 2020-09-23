@@ -1542,12 +1542,7 @@ def getDuration(_repeat):
     return scale, amt
 
 def sentryProcessSchedule(db_store):
-    print('process Schedule')
-    #t_name = threading.current_thread().name
-    #print(str(t_name))
-    #gLst.append(t_name)
-    #gLst.insert(t_name, 0)
-    #qQ.put(t_name)
+    #print('process Schedule')
 
     rLst = []
 
@@ -1557,13 +1552,13 @@ def sentryProcessSchedule(db_store):
 
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-    print('now .      ' + str(now_time))
+    #print('now .      ' + str(now_time))
 
     for job in jobs:
         #print(job)
         name = job[1]
         jdata = job[3]
-        print(name)
+        #print(name)
         try:
             jdata = json.loads(job[3])
         except json.decoder.JSONDecodeError:
@@ -1583,10 +1578,6 @@ def sentryProcessSchedule(db_store):
         _time = jdata.get('time', None)
 
 
-        #now = time.strftime("%Y-%m-%d %H:%M:%S")
-        #now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-        #print('now .      ' + str(now_time))
-
         if _time:
             #run at time
             run_time = datetime.datetime.strptime(_time, "%Y-%m-%d %H:%M:%S")
@@ -1596,28 +1587,14 @@ def sentryProcessSchedule(db_store):
                 #print('Over time and _start is None.  run_time')
                 run = runJob(name, db_store)
                 #print(run)
-                #multiprocessing.set_start_method('spawn')
-                #r = multiprocessing.Process(target=runJob, args=(name, db_store))
-                #r.daemon = True #AssertionError: daemonic processes are not allowed to have children
-                #r.start()
-                #rLst.append(r)
 
         if _repeat:
             scale, amt = getDuration(_repeat)
             #print(scale + ' amt ' + str(amt))
-            #amt_time = datetime.datetime.strptime(amt, "%H:%M:%S")
-            #amt_time = datetime.datetime.strptime(amt, "%Y-%m-%d %H:%M:%S")
-            #print('amt_time ' + str(amt_time))
 
             if _start is None:
-                #print('run')
                 run = runJob(name, db_store)
                 #print(run)
-                #multiprocessing.set_start_method('spawn')
-                #r = multiprocessing.Process(target=runJob, args=(name, db_store))
-                #r.daemon = True
-                #r.start()
-                #rLst.append(r)
 
             else:
                 start_time = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
@@ -1635,24 +1612,14 @@ def sentryProcessSchedule(db_store):
                     
                     arg_dict = {scale:amt}
                     delta_time = done_time + datetime.timedelta(**arg_dict)
-                    print('delta_time ' + str(delta_time))
-                    #print('now        ' + str(now_time))
+                    #print('delta_time ' + str(delta_time))
 
                     if now_time > delta_time:
                         #print('Over time.  repeat_time')
                         run = runJob(name, db_store)
                         #print(run)
-                        #multiprocessing.set_start_method('spawn')
-                        #r = multiprocessing.Process(target=runJob, args=(name, db_store))
-                        #r.daemon = True
-                        #r.start()
-                        #rLst.append(r)
-
-                    #print(str(_repeat))
     
-    #for r in rLst:
-    #    o = r.join()
-    print('end')
+    #print('end')
     return True
 
 def replaceJobsJson(name, jdata, db_store):
@@ -1666,29 +1633,16 @@ def updateJobsJson(name, jdata, db_store):
     return update
 
 
-#qQ = queue.Queue()
-#gLst = []
-
 def sentryScheduler(db_store):
 
-    #gLst = []
-
-    #global GList
-
-    #global gLst
-
     sigterm = False
-    #c = 0
     while (sigterm == False):
 
         #run = sentryProcessSchedule(db_store)
         #run = threading.Thread(target=sentryProcessSchedule, args=(db_store,), name = 'SentrySchduler')
         run = threading.Thread(target=sentryProcessSchedule, args=(db_store,))
         run.setDaemon(True)
-        #gLst.append(run)
         run.start()
-        #c += 1
-        #gQ.put(run)
 
         #for t in threading.enumerate():
         #    print(str(t.name))
@@ -1745,31 +1699,17 @@ def sentryMode(db_store):
     #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="scheduler")
     scheduler.setDaemon(True)
-    #gLst.append(scheduler)
     scheduler.start()
 
     while (sigterm == False):
         try:
-            print('sentry mode')
-            #time.sleep(60)
-
-            #for thread in threading.enumerate():
-            #    print(thread.name)
-            #for p in multiprocessing.active_children():
-            #    print(str(p.name))
-            #print('tcount ' + str(threading.active_count()))
-
-            #name  = str('count')
-            #count = int(threading.active_count())
-            #s = shared_memory.ShareableList([ name, count ])
-
+            #print('sentry mode')
             time.sleep(60)
         except (KeyboardInterrupt, SystemExit, Exception):
             sigterm = True
             scheduler.join()
             logging.info("Sentry shutdown: " + str(sigterm))
             sys.exit(1)
-
     return True
 
 
