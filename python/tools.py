@@ -3,6 +3,7 @@
 from subprocess import Popen, PIPE
 import threading
 import multiprocessing
+#from multiprocessing import shared_memory
 
 #import queue
 
@@ -1543,8 +1544,8 @@ def getDuration(_repeat):
 
 def sentryProcessSchedule(db_store):
     print('process Schedule')
-    t_name = threading.current_thread().name
-    print(str(t_name))
+    #t_name = threading.current_thread().name
+    #print(str(t_name))
     #gLst.append(t_name)
     #gLst.insert(t_name, 0)
     #qQ.put(t_name)
@@ -1667,6 +1668,10 @@ def sentryScheduler(db_store):
 
     #gLst = []
 
+    #global GList
+
+    global gLst
+
     sigterm = False
     #c = 0
     while (sigterm == False):
@@ -1714,6 +1719,11 @@ def listRunningThreads():
 
     print('count ' + str(threading.active_count()))
 
+    #r = shared_memory.ShareableList(name=s.shm.name)
+    #print('r...' + str(r))
+    print('done')
+
+    return True
 
 def sentryCleanup():
     import logging
@@ -1746,6 +1756,18 @@ def sentryMode(db_store):
     while (sigterm == False):
         try:
             print('sentry mode')
+            #time.sleep(60)
+
+            #for thread in threading.enumerate():
+            #    print(thread.name)
+            #for p in multiprocessing.active_children():
+            #    print(str(p.name))
+            #print('tcount ' + str(threading.active_count()))
+
+            #name  = str('count')
+            #count = int(threading.active_count())
+            #s = shared_memory.ShareableList([ name, count ])
+
             time.sleep(60)
         except (KeyboardInterrupt, SystemExit, Exception):
             sigterm = True
