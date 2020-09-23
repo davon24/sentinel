@@ -93,9 +93,7 @@ def sql_connection(db_file):
         cur.execute(create_jobsi)
 
         create_counts  = "CREATE TABLE IF NOT EXISTS counts (name TEXT PRIMARY KEY NOT NULL,count INTEGER) WITHOUT ROWID;"
-        create_countsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_counts ON counts (name);"
         cur.execute(create_counts)
-        cur.execute(create_countsi)
 
         con.commit()
     else:
@@ -767,6 +765,36 @@ def getJob(name, db_file):
     row = cur.fetchone()
     #print(len(row))
     return row
+
+def replaceCounts(name, count, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO counts VALUES(?,?)", (name, count))
+    con.commit()
+    return True
+
+def updateCounts(name, count, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    sql = "UPDATE counts SET count='" + count + "' WHERE name='" + str(name) + "';"
+    cur.execute(sql)
+    con.commit()
+    return True
+
+def getCount(name, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT count FROM counts WHERE name=? ;', (name,))
+    row = cur.fetchone()
+    return row
+
+def getAllCounts(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("SELECT * FROM counts;")
+    rows = cur.fetchall()
+    return rows
+
 
 
 if __name__ == '__main__':

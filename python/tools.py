@@ -1684,55 +1684,30 @@ def sentryScheduler(db_store):
         #c += 1
         #gQ.put(run)
 
-        for t in threading.enumerate():
-            print(str(t.name))
-        print('count ' + str(threading.active_count()))
+        #for t in threading.enumerate():
+        #    print(str(t.name))
+        #print('count ' + str(threading.active_count()))
+
+        count = str(threading.active_count())
+        update = store.updateCounts('threads', count, db_store)
 
 
         time.sleep(3)
 
     return True
 
-def listRunningThreads():
+def listRunning(db_store):
 
-    for t in threading.enumerate():
-        #print(str(t.name))
-        #print(str(t))
-        #if t is main_thread:
-        #    continue
-        #logging.debug('joining %s', t.getName())
-        #print(t.getName())
-        print(t.name)
-        #t.join()
-
-    for p in multiprocessing.active_children():
-        print(str(p.name))
-
-    #print('gLst...')
-    #for i in gLst:
-    #    print(str(i))
-    #print('...')
-
-    #for t in gQ:
-    #    print(str(t))
-
-    #items = qQ.get()
-    #for i in items:
-    #    if item is None:
-    #        break
-    #    print(i)
-
-    print('count ' + str(threading.active_count()))
-
-    #r = shared_memory.ShareableList(name=s.shm.name)
-    #print('r...' + str(r))
-    print('done')
+    rows = store.getAllCounts(db_store)
+    for row in rows:
+        print(row)
 
     return True
 
-def sentryCleanup():
+def sentryCleanup(db_store):
     import logging
     logging.info("Cleanup:")
+    update = store.replaceCounts('threads', str(0), db_store)
     return True
 
 def sentryMode(db_store):
@@ -1748,10 +1723,12 @@ def sentryMode(db_store):
     datefmt = "%b %d %H:%M:%S"
     logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
     
-    atexit.register(sentryCleanup)
+    atexit.register(sentryCleanup, db_store)
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry startup")
+    update = store.replaceCounts('threads', str(0), db_store)
+
     #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="scheduler")
     scheduler.setDaemon(True)

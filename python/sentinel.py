@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4'
+__version__ = '0.0.0.v1.4.t1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -504,7 +504,7 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-jobs-running':
-            run = tools.listRunningThreads()
+            run = tools.listRunning(db_store)
             sys.exit(0)
 
 
