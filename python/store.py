@@ -97,12 +97,7 @@ def sql_connection(db_file):
 
         con.commit()
     else:
-        try:
-            print('con.con')
-            con = sqlite3.connect(db_file)
-        except sqlite3.Error as e:
-            print(str(e))
-
+        con = sqlite3.connect(db_file)
 
     return con
 
@@ -772,26 +767,23 @@ def getJob(name, db_file):
     return row
 
 def deleteJob(name, db_file):
-    print('let us delete...')
-    try:
-        con = sql_connection(db_file)
-        cur = con.cursor()
-        run = cur.execute("DELETE FROM jobs WHERE job=? ;", (name,))
-        con.commit()
-    #except Error as e:
-    except sqlite3.Error as e:
-        print(str(e))
+    #print('let us delete...')
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM jobs WHERE job=? ;", (name,))
+    con.commit()
+    #print('cur.rowcount ' + str(cur.rowcount))
+    if cur.rowcount == 0:
         return False
-
-    print(cur.fetchone())
-    print(run)
-    print(str(type(run)))
-
-    print('cur.rowcount ' + str(cur.rowcount))
-
-    #con.commit()
     return True
 
+def clearAllJobs(db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM jobs;")
+    cur.execute("REINDEX jobs;")
+    con.commit()
+    return True
 
 def replaceCounts(name, count, db_file):
     con = sql_connection(db_file)

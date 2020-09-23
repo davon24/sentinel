@@ -494,6 +494,11 @@ if __name__ == '__main__':
             print(run)
             sys.exit(0)
 
+        if sys.argv[1] == 'clear-jobs':
+            clear = store.clearAllJobs(db_store)
+            print(clear)
+            sys.exit(0)
+
         if sys.argv[1] == 'run-job':
             name = sys.argv[2]
             run = tools.runJob(name, db_store)
