@@ -191,7 +191,6 @@ def printDetectScan(db_store, did=None):
     return True
 
 
-
 def nmapVulnScan(ip):
     cmd = 'nmap -Pn --script=vuln ' + ip
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
@@ -1670,7 +1669,7 @@ def sentryScheduler(db_store):
 
     #global GList
 
-    global gLst
+    #global gLst
 
     sigterm = False
     #c = 0
@@ -1684,6 +1683,12 @@ def sentryScheduler(db_store):
         run.start()
         #c += 1
         #gQ.put(run)
+
+        for t in threading.enumerate():
+            print(str(t.name))
+        print('count ' + str(threading.active_count()))
+
+
         time.sleep(3)
 
     return True

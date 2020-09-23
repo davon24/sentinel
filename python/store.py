@@ -92,6 +92,11 @@ def sql_connection(db_file):
         cur.execute(create_jobs)
         cur.execute(create_jobsi)
 
+        create_counts  = "CREATE TABLE IF NOT EXISTS counts (name TEXT PRIMARY KEY NOT NULL,count INTEGER) WITHOUT ROWID;"
+        create_countsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_counts ON counts (name);"
+        cur.execute(create_counts)
+        cur.execute(create_countsi)
+
         con.commit()
     else:
         con = sqlite3.connect(db_file)
