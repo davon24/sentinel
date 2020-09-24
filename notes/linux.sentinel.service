@@ -6,6 +6,7 @@ Documentation=
 [Service]
 Restart=always
 User=
+WorkingDirectory=/opt/sentinel/python
 ExecStart=/opt/sentinel/python/sentinel.py sentry
 
 [Install]
