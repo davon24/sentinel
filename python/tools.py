@@ -1233,7 +1233,7 @@ def runNmapScanMultiProcess(hostLst, level, db_store):
 
 def runNmapVulnMultiProcess(hostLst, db_store):
 
-    print('found: ' + str(hostLst))
+    print('hostLst: ' + str(hostLst))
 
     vulnDct = {}
     for ip in hostLst:
@@ -1428,18 +1428,8 @@ def printConfigs(db_store):
 
 
 def vulnScan(ips, db_store):
-    #ips type() list or str
-
-    #print('ips type is ' + str(type(ips)))
-
-    if type(ips) == list:
-        #print('run.list ' + str(ips))
-        run = runNmapVulnMultiProcess(ips, db_store)
-    if type(ips) == str:
-        #print('run.str ' + str(ips))
-        run = nmapVulnScanStore(ips, db_store)
-    else:
-        return False
+    hostLst = discoverHostLst(ips)
+    scan = runNmapVulnMultiProcess(hostLst, db_store)
     return True
 
 def portScan1(ips, db_store):
@@ -1451,11 +1441,15 @@ def portScan2(ips, db_store):
     return portScan(ips, level, db_store)
 
 def portScan(ips, level, db_store):
+    hostLst = discoverHostLst(ips)
+    if level is None:
+        level = 1
+    scan = runNmapScanMultiProcess(hostLst, level, db_store)
+    return True
 
+def discoverHostLst(ips):
     hostLst = []
-
     print('ips is... ' + str(type(ips)) + ' ' + str(ips))
-
     if type(ips) == str:
         ips = ips.split()
 
@@ -1487,15 +1481,7 @@ def portScan(ips, level, db_store):
 
     #print('hostLst is... ' + str(hostLst))
     print('discovered: ' + str(hostLst))
-
-    if level is None:
-        level = 1
-
-    #print('scan level ' + str(level))
-
-    scan = runNmapScanMultiProcess(hostLst, level, db_store)
-    return True
-
+    return hostLst
 
 def detectScan(ips, db_store):
     pass
