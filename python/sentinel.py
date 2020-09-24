@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.t6'
+__version__ = '0.0.0.v1.4.u1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -474,8 +474,6 @@ if __name__ == '__main__':
                 print(row)
             sys.exit(0)
 
-
-
         if sys.argv[1] == 'update-job':
             name = sys.argv[2]
             data = sys.argv[3]
@@ -511,7 +509,8 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-jobs-running':
-            run = tools.listRunning(db_store)
+            #run = tools.listRunning(db_store)
+            run = tools.listRunning()
             sys.exit(0)
 
 

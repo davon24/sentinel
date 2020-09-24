@@ -92,14 +92,24 @@ def sql_connection(db_file):
         cur.execute(create_jobs)
         cur.execute(create_jobsi)
 
-        create_counts  = "CREATE TABLE IF NOT EXISTS counts (name TEXT PRIMARY KEY NOT NULL,count INTEGER) WITHOUT ROWID;"
-        cur.execute(create_counts)
+        #create_counts  = "CREATE TABLE IF NOT EXISTS counts (name TEXT PRIMARY KEY NOT NULL,count INTEGER) WITHOUT ROWID;"
+        #cur.execute(create_counts)
 
         con.commit()
     else:
         con = sqlite3.connect(db_file)
 
     return con
+
+def createMemDB(memdb):
+    create_table  = "CREATE TABLE IF NOT EXISTS counts (name TEXT PRIMARY KEY NOT NULL,count INTEGER) WITHOUT ROWID;"
+    with memdb:
+        memdb.execute(create_table)
+        # Successful memdb.commit() is called automatically afterwards
+
+    return True
+
+
 
 def update_arp_data(db_file, arpDict):
 
@@ -791,6 +801,30 @@ def replaceCounts(name, count, db_file):
     cur.execute("REPLACE INTO counts VALUES(?,?)", (name, count))
     con.commit()
     return True
+
+def replaceMemDBCounts(name, count, memdb):
+    try:
+        with memdb:
+            cur = memdb.cursor()
+            cur.execute("REPLACE INTO counts VALUES(?,?)", (name, count))
+            return True
+    except Exception as e:
+        print(str(e))
+        return False
+
+def getAllMemDBCounts(memdb):
+    try:
+        with memdb:
+            cur = con.cursor()
+            cur.execute("SELECT * FROM counts;")
+            rows = cur.fetchall()
+            return rows
+    except Exception as e:
+        print(str(e))
+        return None
+    #Within one process it is possible to share an in-memory database if you use the file::memory:?cache=shared
+    #but this is still not accessible from other another process.
+
 
 def updateCounts(name, count, db_file):
     con = sql_connection(db_file)

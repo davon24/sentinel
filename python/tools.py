@@ -1679,34 +1679,43 @@ def sentryScheduler(db_store):
         #print('count ' + str(threading.active_count()))
 
         tcount = threading.active_count()
-        update = store.updateCounts('threads', str(tcount), db_store)
+        #update = store.updateCounts('threads', str(tcount), db_store)
 
         pcount = 0
         for child in multiprocessing.active_children():
             #print(str(child))
             pcount += 1
-        update = store.updateCounts('process', str(pcount), db_store)
+        #update = store.updateCounts('process', str(pcount), db_store)
 
         time.sleep(3)
 
     return True
 
-def listRunning(db_store):
+#def listRunning(db_store):
+#def listRunning(memdb):
+def listRunning():
+    import sqlite3
+    memdb = sqlite3.connect("file::memory:?cache=shared", uri=True)
 
-    rows = store.getAllCounts(db_store)
+    #rows = store.getAllCounts(db_store)
+    rows = store.getAllMemDBCounts(memdb)
     for row in rows:
         print(row)
 
     return True
 
-def sentryCleanup(db_store):
+#def sentryCleanup(db_store):
+def sentryCleanup():
     import logging
     logging.info("Cleanup:")
-    update1 = store.replaceCounts('threads', str(0), db_store)
-    update2 = store.replaceCounts('process', str(0), db_store)
+    #update1 = store.replaceCounts('threads', str(0), db_store)
+    #update2 = store.replaceCounts('process', str(0), db_store)
     return True
 
 def sentryMode(db_store):
+    import sqlite3
+    memdb = sqlite3.connect("file::memory:?cache=shared", uri=True)
+    create_tables = store.createMemDB(memdb) #but this is still not accessible from other another process.
 
     sigterm = False
 
@@ -1719,12 +1728,15 @@ def sentryMode(db_store):
     datefmt = "%b %d %H:%M:%S"
     logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
     
-    atexit.register(sentryCleanup, db_store)
+    #atexit.register(sentryCleanup, db_store)
+    atexit.register(sentryCleanup)
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry startup")
-    update1 = store.replaceCounts('threads', str(0), db_store)
-    update2 = store.replaceCounts('process', str(0), db_store)
+    #update1 = store.replaceCounts('threads', str(0), db_store)
+    #update2 = store.replaceCounts('process', str(0), db_store)
+    update1 = store.replaceMemDBCounts('threads', str(0), db_store)
+    update2 = store.replaceMemDBCounts('process', str(0), db_store)
 
     #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="scheduler")
