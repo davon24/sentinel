@@ -509,8 +509,7 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-jobs-running':
-            #run = tools.listRunning(db_store)
-            run = tools.listRunning()
+            run = tools.listRunning(db_store)
             sys.exit(0)
 
 

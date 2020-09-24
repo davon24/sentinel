@@ -1,4 +1,8 @@
 
+https://en.wikipedia.org/wiki/Simple_Service_Discovery_Protocol
+https://en.wikipedia.org/wiki/Neighbor_Discovery_Protocol
+
+
 ./sentinel.py update-job port-scan-1 '{"time": "2020-09-21 13:45:00", "job": "port-scan", "ips":[]}'
 
 ./sentinel.py update-job port-scan-2 '{"time": "2020-09-21 13:45:00", "job": "port-scan2", "ips": []}'
