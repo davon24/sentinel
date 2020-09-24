@@ -1,11 +1,15 @@
 
-https://en.wikipedia.org/wiki/Simple_Service_Discovery_Protocol
-https://en.wikipedia.org/wiki/Neighbor_Discovery_Protocol
+./sentinel.py update-job port-scan2-mutitples '{"time": "2020-09-20 00:00:00", "job": "port-scan2", "ips": ["192.168.0.1/24","192.168.2.1/24"]}'
 
+./sentinel.py update-job port-scan-192.168.0.1 '{"time": "2020-09-20 00:00:00", "job": "port-scan", "ips": ["192.168.0.1"]}'
 
-./sentinel.py update-job port-scan-1 '{"time": "2020-09-21 13:45:00", "job": "port-scan", "ips":[]}'
+./sentinel.py update-job port-scan-level2 '{"time": "2020-09-20 00:00:00", "job": "port-scan2", "ips": ["192.168.0.1/24"]}' #requires running root
 
-./sentinel.py update-job port-scan-2 '{"time": "2020-09-21 13:45:00", "job": "port-scan2", "ips": []}'
+./sentinel.py update-job port-scan-1 '{"time": "2020-09-20 00:00:00", "job": "port-scan", "ips":["192.168.0.1/24"]}'
+
+./sentinel.py update-job port-scan-1 '{"time": "2020-09-20 00:00:00", "job": "port-scan", "ips":[]}'
+
+./sentinel.py update-job port-scan-2 '{"time": "2020-09-20 00:00:00", "job": "port-scan2", "ips": []}'
 
 
 
@@ -27,6 +31,11 @@ https://en.wikipedia.org/wiki/Neighbor_Discovery_Protocol
 (1, 'vuln-scan-192.168.0.1', '2020-09-18 22:16:27', '{"time":"0","repeat":"5min","job":"vuln-scan","ips":["192.168.0.1"]}')
 
 ./sentinel.py update-job vuln-scan-192.168.0.1 '{"time":"0","repeat":"5min","job":"vuln-scan","ips":["192.168.0.1"]}'
+
+
+
+https://en.wikipedia.org/wiki/Simple_Service_Discovery_Protocol
+https://en.wikipedia.org/wiki/Neighbor_Discovery_Protocol
 
 
 # min email settings...

@@ -1217,9 +1217,9 @@ def runDiscoverNetAll(ipnet, level, db_store):
 
 def runNmapScanMultiProcess(hostLst, level, db_store):
 
-    print('found: ' + str(hostLst))
-
+    print('hostLst: ' + str(hostLst))
     print('scan-level: ' + str(level))
+
     nmapDct = {}
     for ip in hostLst:
         p = multiprocessing.Process(target=nmapScanStore, args=(ip, level, db_store))
@@ -1452,23 +1452,46 @@ def portScan2(ips, db_store):
 
 def portScan(ips, level, db_store):
 
-    if level is None:
-        level = 1
+    hostLst = []
 
-    if type(ips) == list:
-        #print('run.list ' + str(ips))
-        hostLst = ips
-    elif type(ips) == str:
-        #print('run.str ' + str(ips))
-        hostLst = ips.split()
-    else:
-        return False
+    print('ips is... ' + str(type(ips)) + ' ' + str(ips))
+
+    if type(ips) == str:
+        ips = ips.split()
+
+    #if type(ips) == list:
+    #elif type(ips) == str:
+
+    ipnet_ = []
+    for ip in ips:
+        try:
+            net = ip.split('/')[1]
+        except IndexError as e:
+            net = None
+        if net:
+            ipnet_.append(ip)
+        else:
+            hostLst.append(ip)
+
+    print('ipnet is ' + str(ipnet_))
+
+    for net in ipnet_:
+        discoveryLst =  nmapNet(net)
+        hostLst.extend(discoveryLst)
 
     if len(hostLst) == 0:
-        # print
+        print('try self discovery...')
         ipnet = getIfconfigIPv4()
         ipn = getIpNet(ipnet)
         hostLst = nmapNet(ipn)
+
+    #print('hostLst is... ' + str(hostLst))
+    print('discovered: ' + str(hostLst))
+
+    if level is None:
+        level = 1
+
+    #print('scan level ' + str(level))
 
     scan = runNmapScanMultiProcess(hostLst, level, db_store)
     return True
