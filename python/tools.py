@@ -1442,8 +1442,37 @@ def vulnScan(ips, db_store):
         return False
     return True
 
-def portScan(ips, db_store):
-    pass
+def portScan1(ips, db_store):
+    level = 1
+    return portScan(ips, level, db_store)
+
+def portScan2(ips, db_store):
+    level = 2
+    return portScan(ips, level, db_store)
+
+def portScan(ips, level, db_store):
+
+    if level is None:
+        level = 1
+
+    if type(ips) == list:
+        #print('run.list ' + str(ips))
+        hostLst = ips
+    elif type(ips) == str:
+        #print('run.str ' + str(ips))
+        hostLst = ips.split()
+    else:
+        return False
+
+    if len(hostLst) == 0:
+        # print
+        ipnet = getIfconfigIPv4()
+        ipn = getIpNet(ipnet)
+        hostLst = nmapNet(ipn)
+
+    scan = runNmapScanMultiProcess(hostLst, level, db_store)
+    return True
+
 
 def detectScan(ips, db_store):
     pass
@@ -1451,7 +1480,8 @@ def detectScan(ips, db_store):
 #we'll move these into db config store later
 options = {
  'vuln-scan' : vulnScan,
- 'port-scan' : portScan,
+ 'port-scan' : portScan1,
+ 'port-scan2' : portScan2,
  'detect-scan' : detectScan,
 }
 #options[sys.argv[2]](sys.argv[3:])

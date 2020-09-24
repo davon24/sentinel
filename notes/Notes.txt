@@ -1,4 +1,9 @@
 
+./sentinel.py update-job port-scan-1 '{"time": "2020-09-21 13:45:00", "job": "port-scan", "ips":[]}'
+
+./sentinel.py update-job port-scan-2 '{"time": "2020-09-21 13:45:00", "job": "port-scan2", "ips": []}'
+
+
 
 
 ./sentinel.py update-job vuln-scan-1 '{"time": "2020-09-21 13:45:00", "job": "vuln-scan", "ips": ["192.168.0.81"]}'

@@ -4,7 +4,7 @@
 <plist version="1.0">
   <dict>
     <key>Label</key>
-    <string>org.sentinel</string>
+    <string>sentry.sentinel</string>
     <key>Program</key>
     <string>/opt/sentinel/python/sentinel.py</string>
     <key>WorkingDirectory</key>
@@ -17,6 +17,20 @@
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
-    <true/>
+    <dict>
+      <key>SuccessfulExit</key>
+      <false/>
+    </dict> 
+<key>EnvironmentVariables</key>
+<dict>
+  <key>PATH</key>
+  <string>/usr/local/bin:/sbin:/usr/sbin:/bin:/usr/bin</string>
+  <key>PYTHONPATH</key>
+  <string>/opt/sentinel/python/site-packages</string>
+</dict>
+<key>StandardErrorPath</key>
+<string>/tmp/sentinel-error.log</string>
+<key>StandardOutPath</key>
+<string>/tmp/sentinel-info.log</string>
   </dict>
 </plist>
