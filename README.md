@@ -6,24 +6,23 @@ Python program for the automation of mundane security tasks.  Relies on command 
 
 ---
 
-Remote
-- Network Discovery
-- Port Scanner
-- Vulnerability Scanner
+Remote  
+- Network Discovery  
+- Port Scanner  
+- Vulnerability Scanner  
 
-Local
-- Listening Ports and Services
-- Established connections
-- File Integrity Monitoring //TODO-IN-PROGRESS
-- Virus Scanner //TODO (clam-av)
+Local  
+- Listening Ports and Services  
+- Established connections  
+- File Integrity Monitoring //TODO-IN-PROGRESS  
+- Virus Scanner //TODO (clam-av)  
 
 ---
 
 ```
 ./sentinel.py --help
-```
 
-```
+
 ./sentinel.py [option]
 
     options:
@@ -98,6 +97,8 @@ Local
         sentry
 
 ```
+
+---
 
 [man sentinel](/docs/README.man.md)
 
