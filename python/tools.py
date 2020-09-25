@@ -305,9 +305,9 @@ def getNmapScanDct(ip, level):
     if level == '1':
         cmd = 'nmap -n -F -T5 ' + ip 
     elif level == '2':
-        cmd = 'nmap -n -sT -sU -T5 –-top-ports 1000 ' + ip  #
+        cmd = 'nmap -n -sT -sU -T4 –-top-ports 1000 ' + ip  #
     elif level == '3':
-        cmd = 'nmap -n -sT -sU -T5 -p- ' + ip #
+        cmd = 'nmap -n -sT -sU -p- ' + ip #
     elif level == '0':
         udp = 'U:53,111,137-139,514'
         tcp = 'T:21-25,53,80,137-139,443,445,465,631,993,995,8080,8443'
@@ -1671,10 +1671,10 @@ def updateJobsJson(name, jdata, db_store):
     update = store.updateJobs(name, jdata, db_store)
     return update
 
-
 def sentryScheduler(db_store):
 
-    sigterm = False
+    #sigterm = False
+
     while (sigterm == False):
 
         #run = sentryProcessSchedule(db_store)
@@ -1683,18 +1683,34 @@ def sentryScheduler(db_store):
         run.setDaemon(True)
         run.start()
 
-        #for t in threading.enumerate():
-        #    print(str(t.name))
+        tcount = 0
+        threads = []
+        for thread in threading.enumerate():
+            #print(str(thread.name))
+            if thread.name == 'MainThread':
+                continue
+            if thread.name == 'Scheduler':
+                continue
+            #print(str(thread.name))
+            tcount += 1
+            threads.append(thread)
         #print('count ' + str(threading.active_count()))
-
-        tcount = threading.active_count()
-        update1 = store.updateCounts('threads', str(tcount), db_store)
+        #tcount = threading.active_count()
+        update1 = store.updateCounts('threads', tcount, db_store)
 
         pcount = 0
-        for child in multiprocessing.active_children():
-            #print(str(child))
+        process = []
+        for proc in multiprocessing.active_children():
+            #print(str(proc.name))
             pcount += 1
-        update2 = store.updateCounts('process', str(pcount), db_store)
+            process.append(proc)
+        update2 = store.updateCounts('process', pcount, db_store)
+
+        #for t in threads:
+        #    t.join()
+
+        #for p in process:
+        #    p.join()
 
         time.sleep(3)
 
@@ -1709,12 +1725,13 @@ def listRunning(db_store):
 def sentryCleanup(db_store):
     import logging
     logging.info("Cleanup:")
-    update1 = store.replaceCounts('threads', str(0), db_store)
-    update2 = store.replaceCounts('process', str(0), db_store)
+    update1 = store.replaceCounts('threads', 0, db_store)
+    update2 = store.replaceCounts('process', 0, db_store)
     return True
 
 def sentryMode(db_store):
 
+    global sigterm
     sigterm = False
 
     import logging
@@ -1730,11 +1747,11 @@ def sentryMode(db_store):
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry startup")
-    update1 = store.replaceCounts('threads', str(0), db_store)
-    update2 = store.replaceCounts('process', str(0), db_store)
+    update1 = store.replaceCounts('threads', 0, db_store)
+    update2 = store.replaceCounts('process', 0, db_store)
 
     #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
-    scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="scheduler")
+    scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="Scheduler")
     scheduler.setDaemon(True)
     scheduler.start()
 

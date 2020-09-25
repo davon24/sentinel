@@ -828,8 +828,10 @@ def replaceCounts(name, count, db_file):
 def updateCounts(name, count, db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
-    sql = "UPDATE counts SET count='" + count + "' WHERE name='" + str(name) + "';"
-    cur.execute(sql)
+    #sql = "UPDATE counts SET count='" + count + "' WHERE name='" + str(name) + "';" 
+    #cur.execute(sql)
+    #TypeError: can only concatenate str (not "int") to str
+    cur.execute("UPDATE counts SET count=? WHERE name=? ;", (count, name))
     con.commit()
     return True
 
