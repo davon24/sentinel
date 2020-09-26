@@ -36,6 +36,7 @@ sudo systemctl start sentinel
 
 - job name can be anything
 - date format "2020-09-20 00:00:00"
+- data must be json
 
 time and repeat
 
@@ -56,8 +57,6 @@ Some quick job examples...
 # vuln-scan two hosts.  run the job every 5 minutes.
 ./sentinel.py update-job vuln-scan-2 '{"repeat": "5min", "job": "vuln-scan", "ips": ["192.168.0.1", "192.168.0.2"]}'
 
-
-
 ```
 
 
@@ -68,6 +67,17 @@ Some quick job examples...
 ## Listening Ports and Services
 
 ## Established connections
+
+        established
+        established-rules
+        established-rules-filter
+        established-rule ALLOW|DENY proto laddr lport faddr fport
+        established-alerts
+
+```
+./sentinel.py established
+```
+
 
 ## FIM
 

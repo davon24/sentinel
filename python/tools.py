@@ -851,6 +851,9 @@ def printListenPortsDetailed():
             print(v)
     return True
 
+#def printPortDetails(port):
+#    _print = printLsOfPort(port)
+#    return True
 
 def printListenPortsDetails(port):
 

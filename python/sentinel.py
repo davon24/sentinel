@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.v1'
+__version__ = '0.0.0.v1.4.v2'
 
 import sys
 #sys.path.insert(0,'db')
@@ -24,8 +24,7 @@ def usage():
         del-nmap ip
         clear-nmaps
 
-        vuln-scan-net [ip/net]
-        vuln-scan ip
+        vuln-scan [ip/net]
         list-vulns [id]
         del-vuln id
         clear-vulns
@@ -169,7 +168,8 @@ if __name__ == '__main__':
             sys.exit(0)
         if sys.argv[1] == 'listening-details':
             port = sys.argv[2]
-            p = tools.printListenPortsDetails(port)
+            #p = tools.printListenPortsDetails(port)
+            p = tools.printLsOfPort(port)
             sys.exit(0)
         if sys.argv[1] == 'listening-allowed':
             p = store.printListeningAllowed(db_store)
@@ -310,11 +310,6 @@ if __name__ == '__main__':
             print(clear)
             sys.exit(0)
 
-        if sys.argv[1] == 'vuln-scan':
-            ip = sys.argv[2]
-            scan = tools.nmapVulnScanStore(ip, db_store)
-            print(scan)
-            sys.exit(0)
 
         if sys.argv[1] == 'check-vuln':
             vid = sys.argv[2]
@@ -395,7 +390,7 @@ if __name__ == '__main__':
             if ipnet is None:
                 myip = tools.getIfconfigIPv4()
                 ipn = tools.getIpNet(myip)
-                #print('discover net1: ' + str(ipn))
+                print('discover net: ' + str(ipn))
                 ipnet = tools.nmapNet(ipn)
             else:
                 i = ipnet.split('.')
@@ -406,11 +401,11 @@ if __name__ == '__main__':
                     level = sys.argv[2]
                     myip = tools.getIfconfigIPv4()
                     ipn = tools.getIpNet(myip)
-                    #print('discover net2: ' + str(ipn))
+                    print('discover net: ' + str(ipn))
                     ipnet = tools.nmapNet(ipn)
                 else:
                     if tools.isNet(ipnet):
-                        #print('discover net3: ' + str(ipnet))
+                        print('discover net: ' + str(ipnet))
                         ipnet = tools.nmapNet(ipnet)
             
             if type(ipnet) == str:
@@ -422,18 +417,31 @@ if __name__ == '__main__':
             print(scan)
             sys.exit(0)
 
-        if sys.argv[1] == 'vuln-scan-net':
-            ipnet = None
+        #if sys.argv[1] == 'vuln-scan':
+        #    ip = sys.argv[2]
+        #    scan = tools.nmapVulnScanStore(ip, db_store)
+        #    print(scan)
+        #    sys.exit(0)
+
+        if sys.argv[1] == 'vuln-scan':
             try: ipnet = sys.argv[2]
-            except IndexError: pass
+            except IndexError: ipnet = None
 
             if ipnet is None:
-                ipnet = tools.getIfconfigIPv4()
+                myip = tools.getIfconfigIPv4()
+                ipn = tools.getIpNet(myip)
+                print('discover net: ' + str(ipn))
+                ipnet = tools.nmapNet(ipn)
+            else:
+                if tools.isNet(ipnet):
+                    print('discover net: ' + str(ipnet))
+                    ipnet = tools.nmapNet(ipnet)
 
-            ipn = tools.getIpNet(ipnet)
-            print('ipnet: ' + ipn)
-            hostLst = tools.nmapNet(ipn)
-            scan = tools.runNmapVulnMultiProcess(hostLst, db_store)
+            if type(ipnet) == str:
+                ipnet = ipnet.split()
+
+            #print(str(ipnet))
+            scan = tools.runNmapVulnMultiProcess(ipnet, db_store)
             print(scan)
             sys.exit(0)
 
