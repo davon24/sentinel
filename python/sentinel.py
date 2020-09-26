@@ -82,11 +82,12 @@ def usage():
         delete-config id
 
         list-fims
-        run-fim name
+        check-fim name
+        b2sum-fim name
         update-fim name data
         delete-fim id
-        add-fim name /path/file
-        del-fim name /path/file
+        add-fim name /dir/file
+        del-fim name /dir/file
 
         sentry
 
@@ -532,10 +533,15 @@ if __name__ == '__main__':
             run = tools.listRunning(db_store)
             sys.exit(0)
 
-        if sys.argv[1] == 'run-fim':
-            #run = tools.fimCreate()
+        if sys.argv[1] == 'b2sum-fim':
             name = sys.argv[2]
-            run = tools.runFim(name, db_store)
+            run = tools.b2sumFim(name, db_store)
+            print(str(run))
+            sys.exit(0)
+
+        if sys.argv[1] == 'check-fim':
+            name = sys.argv[2]
+            run = tools.checkFim(name, db_store)
             print(str(run))
             sys.exit(0)
 
@@ -543,6 +549,22 @@ if __name__ == '__main__':
             run = tools.printFims(db_store)
             print(run)
             sys.exit(0)
+
+        if sys.argv[1] == 'add-fim':
+            name = sys.argv[2]
+            _file = sys.argv[3]
+            add = tools.addFimFile(name, _file, db_store)
+            print(str(add))
+            sys.exit(0)
+
+        if sys.argv[1] == 'del-fim':
+            name = sys.argv[2]
+            _file = sys.argv[3]
+            add = tools.delFimFile(name, _file, db_store)
+            print(str(add))
+            sys.exit(0)
+
+
 
         if sys.argv[1] == 'update-fim':
             name = sys.argv[2]

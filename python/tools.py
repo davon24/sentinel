@@ -1571,7 +1571,7 @@ def fimScanJob(config, db_store):
 
     return True
 
-def runFim(name, db_store):
+def b2sumFim(name, db_store):
     fim = store.getFim(name, db_store)
     if fim is None:
         return str(name) + ' is None'
@@ -1596,6 +1596,74 @@ def runFim(name, db_store):
     #print(replace)
     #return True
     return replace
+
+def checkFim(name, db_store):
+    #print('checkFim')
+    fim = store.getFim(name, db_store)
+    if fim is None:
+        return str(name) + ' is None'
+    else:
+        fim = fim[0]
+
+    try:
+        jdata = json.loads(fim)
+    except json.decoder.JSONDecodeError:
+        return 'invalid json ' + str(fim)
+
+    for k,v in jdata.items():
+        b = b2sum(k)
+        if b != v:
+            print(k + ' CHANGED')
+
+    return True
+
+def addFimFile(name, _file, db_store):
+    fim = store.getFim(name, db_store)
+    if fim is None:
+        return str(name) + ' is None'
+    else:
+        fim = fim[0]
+
+    try:
+        jdata = json.loads(fim)
+    except json.decoder.JSONDecodeError:
+        return 'invalid json ' + str(fim)
+
+    jdata[_file] = ""
+
+    #print('new.jdata ' + str(jdata))
+    update = store.updateTbl('fims', name, json.dumps(jdata), db_store)
+    #update = store.updateFims(name, json.dumps(jdata), db_store)
+    #replace = store.replaceINTO('fims', name, json.dumps(jdata), db_store)
+    #print(update)
+
+    #return True
+    return update
+
+def delFimFile(name, _file, db_store):
+    fim = store.getFim(name, db_store)
+    if fim is None:
+        return str(name) + ' is None'
+    else:
+        fim = fim[0]
+
+    try:
+        jdata = json.loads(fim)
+    except json.decoder.JSONDecodeError:
+        return 'invalid json ' + str(fim)
+
+    #jdata[_file] = ""
+    try:
+        del jdata[_file]
+    #except KeyError: pass
+    except KeyError:
+        return 'not found ' + str(_file)
+
+    update = store.updateTbl('fims', name, json.dumps(jdata), db_store)
+    return update
+
+
+
 
 
 #we'll move these into db config store later

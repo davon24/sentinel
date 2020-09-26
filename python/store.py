@@ -87,8 +87,8 @@ def sql_connection(db_file):
         cur.execute(create_configs)
         cur.execute(create_configsi)
 
-        create_fims  = "CREATE TABLE IF NOT EXISTS fims (fim TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-        create_fimsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_fims ON fims (fim);"
+        create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+        create_fimsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_fims ON fims (name);"
         cur.execute(create_fims)
         cur.execute(create_fimsi)
 
@@ -760,11 +760,21 @@ def getConfig(name, db_file):
 def getFim(name, db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
-    cur.execute('SELECT data FROM fims WHERE fim=? ;', (name,))
+    cur.execute('SELECT data FROM fims WHERE name=? ;', (name,))
     row = cur.fetchone()
     if cur.rowcount == 0:
         return None
     return row
+
+def getData(tbl, name, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT data FROM ' + str(tbl) + ' WHERE name=? ;', (name,))
+    row = cur.fetchone()
+    if cur.rowcount == 0:
+        return None
+    return row
+
 
 #def replaceFim(name, data, db_file):
 #    con = sql_connection(db_file)
@@ -790,14 +800,35 @@ def replaceConfig(name, data, db_file):
         return False
     return True
 
-def replaceINTO(tbl, item, data, db_file):
+def replaceINTO(tbl, name, data, db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
-    cur.execute("REPLACE INTO " + str(tbl) + " VALUES(?,DATETIME('now'),?)", (item, data))
+    cur.execute("REPLACE INTO " + str(tbl) + " VALUES(?,DATETIME('now'),?)", (name, data))
     con.commit()
     if cur.rowcount == 0:
         return False
     return True
+
+# need to standardize on name, timestamp, data for all...
+# create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+def updateTbl(tbl, name, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("UPDATE " + str(tbl) + " SET data=?, timestamp=DATETIME('now') WHERE name=?", (data, name))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
+def updateFims(name, data, db_file): #not working?  ah, name,data...data,name
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("UPDATE fims SET data=?, timestamp=DATETIME('now') WHERE name=?", (data, name))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
 
 def deleteFrom(tbl, rowid, db_file):
     con = sql_connection(db_file)
