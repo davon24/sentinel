@@ -1,4 +1,9 @@
 
+for mac, integrate 'airport -s'
+for linux, integrate inotify
+for linux, integrate bpf tools
+
+
 # activity monitor/top process, defunct  ps
 
 # validate dates

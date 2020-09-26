@@ -1,5 +1,4 @@
 
-
 ---
 ./sentinel.py update-job vuln-scan-mutitples '{"time": "2020-09-20 00:00:00", "job": "vuln-scan", "ips": ["192.168.0.1/24","192.168.1.1/24","192.168.2.1/24"]}' #hangs on no-net 192.168.1.1/24
 ---

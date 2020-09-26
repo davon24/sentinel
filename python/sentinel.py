@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.v0'
+__version__ = '0.0.0.v1.4.v1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -386,34 +386,39 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'port-scan':
             ipnet = None
-            level = None
+            level = 1
             try:
                 ipnet = sys.argv[2]
                 level = sys.argv[3]
             except IndexError: pass
 
             if ipnet is None:
-                ipnet = tools.getIfconfigIPv4()
+                myip = tools.getIfconfigIPv4()
+                ipn = tools.getIpNet(myip)
+                #print('discover net1: ' + str(ipn))
+                ipnet = tools.nmapNet(ipn)
             else:
                 i = ipnet.split('.')
-
-
                 #print('i ' + str(i) + ' ' + str(len(i)))
 
                 if len(i) == 1:
                     #level = ''.join(i)
                     level = sys.argv[2]
-                    ipnet = tools.getIfconfigIPv4()
-                #if len(_i)  
+                    myip = tools.getIfconfigIPv4()
+                    ipn = tools.getIpNet(myip)
+                    #print('discover net2: ' + str(ipn))
+                    ipnet = tools.nmapNet(ipn)
+                else:
+                    if tools.isNet(ipnet):
+                        #print('discover net3: ' + str(ipnet))
+                        ipnet = tools.nmapNet(ipnet)
+            
+            if type(ipnet) == str:
+                ipnet = ipnet.split()
 
-            if level is None:
-                level = 1
-
-            #print('ip ' + ipnet)
-            ipn = tools.getIpNet(ipnet)
-            print('ipnet: ' + ipn)
-            hostLst = tools.nmapNet(ipn)
-            scan = tools.runNmapScanMultiProcess(hostLst, level, db_store)
+            #print(str(ipnet))
+            #print(str(level))
+            scan = tools.runNmapScanMultiProcess(ipnet, level, db_store)
             print(scan)
             sys.exit(0)
 

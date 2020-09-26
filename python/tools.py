@@ -1447,9 +1447,20 @@ def portScan(ips, level, db_store):
     scan = runNmapScanMultiProcess(hostLst, level, db_store)
     return True
 
+def isNet(ips):
+    try:
+        net = ips.split('/')[1]
+    except IndexError:
+        net = False
+    return net
+
+def isIPv6(ips):
+    pass
+
+
 def discoverHostLst(ips):
     hostLst = []
-    print('ips is... ' + str(type(ips)) + ' ' + str(ips))
+    #print('ips is... ' + str(type(ips)) + ' ' + str(ips))
     if type(ips) == str:
         ips = ips.split()
 
