@@ -87,6 +87,11 @@ def sql_connection(db_file):
         cur.execute(create_configs)
         cur.execute(create_configsi)
 
+        create_fims  = "CREATE TABLE IF NOT EXISTS fims (fim TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+        create_fimsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_fims ON fims (fim);"
+        cur.execute(create_fims)
+        cur.execute(create_fimsi)
+
         create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (job TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
         create_jobsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs ON jobs (job);"
         cur.execute(create_jobs)
@@ -725,12 +730,39 @@ def getAllConfigs(db_file):
     rows = cur.fetchall()
     return rows
 
+#def getAllFims(db_file):
+#    rows = getAll('fims', db_file)
+#    return rows
+
+def getAll(tbl, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM ' + str(tbl) + ';')
+    rows = cur.fetchall()
+    return rows
+
+
 def getConfig(name, db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
     cur.execute('SELECT data FROM configs WHERE config=? ;', (name,))
     row = cur.fetchone()
     return row
+
+def getFim(name, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT data FROM fims WHERE fim=? ;', (name,))
+    row = cur.fetchone()
+    return row
+
+def replaceFim(name, data, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO fims VALUES(?,DATETIME('now'),?)", (name, data))
+    con.commit()
+    return True
+
 
 def insertConfig(name, data, db_file):
     con = sql_connection(db_file)
@@ -848,6 +880,7 @@ def getAllCounts(db_file):
     cur.execute("SELECT * FROM counts;")
     rows = cur.fetchall()
     return rows
+
 
 def updateJobs(job, jdata, db_file):
     con = sql_connection(db_file)

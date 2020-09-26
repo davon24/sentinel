@@ -23,6 +23,8 @@ import json
 #import signal
 #sigterm = False
 
+from hashlib import blake2b, blake2s
+
 import store
 
 class ThreadWithReturnValue(threading.Thread):
@@ -39,24 +41,6 @@ class ThreadWithReturnValue(threading.Thread):
         threading.Thread.join(self, *args)
         return self._return
 
-def getPlatform():
-    if sys.platform == 'linux' or sys.platform == 'linux2':
-        # linux
-        return 'linux'
-    elif sys.platform == 'darwin':
-        # MAC OS X
-        return sys.platform
-    elif sys.platform == 'win32':
-        # Windows
-        return sys.platform
-    elif sys.platform == 'win64':
-        # Windows 64-bit
-        return sys.platform
-    elif sys.platform == 'cygwin':
-        # Windows DLL GNU
-        return sys.platform
-    else:
-        return sys.platform
 
 class PingIp:
     def __init__(self):
@@ -84,22 +68,8 @@ class PingIp:
         #return str(ip) + ' ' + str(rcv)
         return str(rcv) + ' ' + str(ip)
 
-def pingIp(ip):
-    cmd = 'ping -c 1 ' + ip
-    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
-    out = proc.stdout.readlines()
-    for line in out:
-        line = line.decode('utf-8').strip('\n')
-        match = '1 packets transmitted'
-        if line.startswith(match, 0, len(match)):
-            line = line.split()
-            rcv = line[3]
-    # 1 is True, 0 is False here
-    return str(rcv) + ' ' + str(ip)
-
-
-# nmap -sn (No port scan) - hosts that responded to the host discovery probes.
 class NmapSN:
+    # nmap -sn (No port scan) - hosts that responded to the host discovery probes.
     def __init__(self):
         self._running = True
 
@@ -124,6 +94,83 @@ class NmapSN:
                 ipL.append(ip)
 
         return ipL
+
+
+def getPlatform():
+    if sys.platform == 'linux' or sys.platform == 'linux2':
+        # linux
+        return 'linux'
+    elif sys.platform == 'darwin':
+        # MAC OS X
+        return sys.platform
+    elif sys.platform == 'win32':
+        # Windows
+        return sys.platform
+    elif sys.platform == 'win64':
+        # Windows 64-bit
+        return sys.platform
+    elif sys.platform == 'cygwin':
+        # Windows DLL GNU
+        return sys.platform
+    else:
+        return sys.platform
+
+
+#from hashlib import blake2b, blake2s
+def b2sum(_file):
+    is_64bits = sys.maxsize > 2**32
+    if is_64bits:
+        blake = blake2b(digest_size=20)
+    else:
+        blake = blake2s(digest_size=20)
+    try:
+        with open(_file, 'rb') as bfile:
+            _f = bfile.read()
+    except FileNotFoundError as e:
+        return str(e)
+
+    blake.update(_f)
+    return str(blake.hexdigest())
+
+def fimCreate():
+
+    conf = store.getFim('fim-1', 'db/sentinel.db')
+
+    if conf is None:
+        print('config is None')
+        return 'config is None'
+    else:
+        conf = conf[0]
+    #print('conf ' + str(conf))
+
+    try:
+        jdata = json.loads(conf)
+    except json.decoder.JSONDecodeError:
+        return 'invalid json ' + str(conf)
+
+    print(conf)
+
+
+    #for k,v in jdata.items():
+    #    b = b2sum(k)
+    #    print(k + ' ' + b)
+    #    jdata[k] = b
+    
+
+
+def pingIp(ip):
+    cmd = 'ping -c 1 ' + ip
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        line = line.decode('utf-8').strip('\n')
+        match = '1 packets transmitted'
+        if line.startswith(match, 0, len(match)):
+            line = line.split()
+            rcv = line[3]
+    # 1 is True, 0 is False here
+    return str(rcv) + ' ' + str(ip)
+
 
 def nmapDetectScan(ip):
     cmd = 'nmap -n -O -sV ' + ip
@@ -1429,6 +1476,13 @@ def printConfigs(db_store):
         print(row)
     return True
 
+def printFims(db_store):
+    #fims = store.getAllFims(db_store)
+    fims = store.getAll('fims', db_store)
+    for row in fims:
+        print(row)
+    return True
+
 
 def vulnScanJob(ips, db_store):
     hostLst = discoverHostLst(ips)
@@ -1502,7 +1556,8 @@ def detectScanJob(ips, db_store):
 
 def fimScanJob(config, db_store):
     print('get config... ' + str(config))
-    conf = store.getConfig(config, db_store)
+    #conf = store.getConfig(config, db_store)
+    conf = store.getFim(config, db_store)
     #print('conf is... ' + str(conf)) #None
 
     if conf is None:

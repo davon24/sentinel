@@ -81,6 +81,11 @@ def usage():
         update-config name data
         delete-config id
 
+        list-fims
+        update-fim name data
+        delete-fim id
+        run-fim
+
         sentry
 
 
@@ -524,6 +529,28 @@ if __name__ == '__main__':
         if sys.argv[1] == 'list-jobs-running':
             run = tools.listRunning(db_store)
             sys.exit(0)
+
+        if sys.argv[1] == 'run-fim':
+            run = tools.fimCreate()
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-fims':
+            run = tools.printFims(db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'update-fim':
+            name = sys.argv[2]
+            data = sys.argv[3]
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError:
+                print('invalid json')
+                sys.exit(1)
+            run = store.replaceINTO('fims', name, data, db_store)
+            print(run)
+            sys.exit(0)
+
+
 
 
         else:
