@@ -741,6 +741,14 @@ def getAll(tbl, db_file):
     rows = cur.fetchall()
     return rows
 
+def clearAll(tbl, db_file):
+    con = sql_connection(db_file)
+    cur = con.cursor()
+    cur.execute('DELETE FROM ' + str(tbl) + ';')
+    cur.execute('REINDEX ' + str(tbl) + ';')
+    con.commit()
+    return True
+
 
 def getConfig(name, db_file):
     con = sql_connection(db_file)
@@ -754,14 +762,16 @@ def getFim(name, db_file):
     cur = con.cursor()
     cur.execute('SELECT data FROM fims WHERE fim=? ;', (name,))
     row = cur.fetchone()
+    if cur.rowcount == 0:
+        return None
     return row
 
-def replaceFim(name, data, db_file):
-    con = sql_connection(db_file)
-    cur = con.cursor()
-    cur.execute("REPLACE INTO fims VALUES(?,DATETIME('now'),?)", (name, data))
-    con.commit()
-    return True
+#def replaceFim(name, data, db_file):
+#    con = sql_connection(db_file)
+#    cur = con.cursor()
+#    cur.execute("REPLACE INTO fims VALUES(?,DATETIME('now'),?)", (name, data))
+#    con.commit()
+#    return True
 
 
 def insertConfig(name, data, db_file):
@@ -776,6 +786,8 @@ def replaceConfig(name, data, db_file):
     cur = con.cursor()
     cur.execute("REPLACE INTO configs VALUES(?,DATETIME('now'),?)", (name, data))
     con.commit()
+    if cur.rowcount == 0:
+        return False
     return True
 
 def replaceINTO(tbl, item, data, db_file):
@@ -783,6 +795,8 @@ def replaceINTO(tbl, item, data, db_file):
     cur = con.cursor()
     cur.execute("REPLACE INTO " + str(tbl) + " VALUES(?,DATETIME('now'),?)", (item, data))
     con.commit()
+    if cur.rowcount == 0:
+        return False
     return True
 
 def deleteFrom(tbl, rowid, db_file):

@@ -82,9 +82,11 @@ def usage():
         delete-config id
 
         list-fims
+        run-fim name
         update-fim name data
         delete-fim id
-        run-fim
+        add-fim name /path/file
+        del-fim name /path/file
 
         sentry
 
@@ -531,7 +533,10 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'run-fim':
-            run = tools.fimCreate()
+            #run = tools.fimCreate()
+            name = sys.argv[2]
+            run = tools.runFim(name, db_store)
+            print(str(run))
             sys.exit(0)
 
         if sys.argv[1] == 'list-fims':

@@ -132,29 +132,25 @@ def b2sum(_file):
     blake.update(_f)
     return str(blake.hexdigest())
 
-def fimCreate():
-
-    conf = store.getFim('fim-1', 'db/sentinel.db')
-
-    if conf is None:
-        print('config is None')
-        return 'config is None'
-    else:
-        conf = conf[0]
-    #print('conf ' + str(conf))
-
-    try:
-        jdata = json.loads(conf)
-    except json.decoder.JSONDecodeError:
-        return 'invalid json ' + str(conf)
-
-    print(conf)
-
-
-    #for k,v in jdata.items():
-    #    b = b2sum(k)
-    #    print(k + ' ' + b)
-    #    jdata[k] = b
+#def fimCreate():
+#    conf = store.getFim('fim-1', 'db/sentinel.db')
+#    if conf is None:
+#        print('config is None')
+#        return 'config is None'
+#    else:
+#        conf = conf[0]
+#    #print('conf ' + str(conf))
+#
+#    try:
+#        jdata = json.loads(conf)
+#    except json.decoder.JSONDecodeError:
+#        return 'invalid json ' + str(conf)
+#    print(conf)
+#
+#    #for k,v in jdata.items():
+#    #    b = b2sum(k)
+#    #    print(k + ' ' + b)
+#    #    jdata[k] = b
     
 
 
@@ -1574,6 +1570,32 @@ def fimScanJob(config, db_store):
     print(str(conf))
 
     return True
+
+def runFim(name, db_store):
+    fim = store.getFim(name, db_store)
+    if fim is None:
+        return str(name) + ' is None'
+    else:
+        fim = fim[0]
+
+    try:
+        jdata = json.loads(fim)
+    except json.decoder.JSONDecodeError:
+        return 'invalid json ' + str(fim)
+
+    #print('run.fim.run ' + str(fim))
+    print(str(jdata)) 
+
+    for k,v in jdata.items():
+        b = b2sum(k)
+        print(k + ' ' + b)
+        jdata[k] = b
+
+    #replace = store.replaceFim( name, json.dumps(jdata), db_store)
+    replace = store.replaceINTO('fims', name, json.dumps(jdata), db_store)
+    #print(replace)
+    #return True
+    return replace
 
 
 #we'll move these into db config store later
