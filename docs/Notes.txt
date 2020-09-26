@@ -1,4 +1,23 @@
 
+
+
+
+
+missing or no config,
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-jobs                                                                      
+(55, 'fim-job-1', '2020-09-26 18:07:44', '{"repeat": "5min", "job": "fim-scan", "config": "fim-1", "start": "2020-09-26 11:07:44", "done": "2020-09-26 11:07:44", "success": "config is None"}')
+
+
+
+added "success" to "done" runJob
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py update-job fim-job-1 '{"repeat": "5min", "job": "fim-scan", "config": "fim-1"}'
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-jobs
+(45, 'fim-job-1', '2020-09-26 17:57:09', '{"repeat": "5min", "job": "fim-scan", "config": "fim-1", "start": "2020-09-26 10:57:09", "done": "2020-09-26 10:57:09", "success": false}')
+
+
+
 ---
 ./sentinel.py update-job vuln-scan-mutitples '{"time": "2020-09-20 00:00:00", "job": "vuln-scan", "ips": ["192.168.0.1/24","192.168.1.1/24","192.168.2.1/24"]}' #hangs on no-net 192.168.1.1/24
 ---

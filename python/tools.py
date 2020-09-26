@@ -1430,20 +1430,20 @@ def printConfigs(db_store):
     return True
 
 
-def vulnScan(ips, db_store):
+def vulnScanJob(ips, db_store):
     hostLst = discoverHostLst(ips)
     scan = runNmapVulnMultiProcess(hostLst, db_store)
     return True
 
-def portScan1(ips, db_store):
+def portScanJob1(ips, db_store):
     level = 1
-    return portScan(ips, level, db_store)
+    return portScanJob(ips, level, db_store)
 
-def portScan2(ips, db_store):
+def portScanJob2(ips, db_store):
     level = 2
-    return portScan(ips, level, db_store)
+    return portScanJob(ips, level, db_store)
 
-def portScan(ips, level, db_store):
+def portScanJob(ips, level, db_store):
     hostLst = discoverHostLst(ips)
     if level is None:
         level = 1
@@ -1497,15 +1497,37 @@ def discoverHostLst(ips):
     print('discovered: ' + str(hostLst))
     return hostLst
 
-def detectScan(ips, db_store):
+def detectScanJob(ips, db_store):
     pass
+
+def fimScanJob(config, db_store):
+    print('get config... ' + str(config))
+    conf = store.getConfig(config, db_store)
+    #print('conf is... ' + str(conf)) #None
+
+    if conf is None:
+        return 'config is None'
+    else:
+        conf = conf[0]
+    #print('conf ' + str(conf))
+
+    try:
+        jdata = json.loads(conf)
+    except json.decoder.JSONDecodeError:
+        return 'invalid json ' + str(conf)
+
+    print(str(conf))
+
+    return True
+
 
 #we'll move these into db config store later
 options = {
- 'vuln-scan' : vulnScan,
- 'port-scan' : portScan1,
- 'port-scan2' : portScan2,
- 'detect-scan' : detectScan,
+ 'vuln-scan' : vulnScanJob,
+ 'port-scan' : portScanJob1,
+ 'port-scan2' : portScanJob2,
+ 'detect-scan' : detectScanJob,
+ 'fim-scan' : fimScanJob,
 }
 #options[sys.argv[2]](sys.argv[3:])
 
@@ -1536,8 +1558,11 @@ def runJob(name, db_store):
     # del element['hours']
     try:
         del new_json['done']
-    except KeyError:
-        pass
+    except KeyError: pass
+    try:
+        del new_json['success']
+    except KeyError: pass
+
     replace = replaceJobsJson(name, json.dumps(new_json), db_store)
     print(replace)
 
@@ -1546,6 +1571,7 @@ def runJob(name, db_store):
 
     _job = jdata.get('job', None) 
     _ips = jdata.get('ips', None) 
+    _config = jdata.get('config', None) 
 
     #if type(_ips) == list:
     #if type(_ips) == str:
@@ -1553,14 +1579,26 @@ def runJob(name, db_store):
     #run = tools.runNmapVulnMultiProcess(hostLst, db_store)
     #run = tools.nmapVulnScanStore(ip, db_store)
 
-    run = options[_job](_ips, db_store)
+    #run = options[_job](_ips, db_store)
+
+    if _ips:
+        _data = _ips
+    elif _config:
+        _data = _config
+    else:
+        _data = None
+
+    run = options[_job](_data, db_store)
 
     #-done
     done = time.strftime("%Y-%m-%d %H:%M:%S")
     new_json['done'] = done
+    new_json['success'] = run
     update = updateJobsJson(name, json.dumps(new_json), db_store)
-    print(update)
-    return True
+    print('update was ' + str(update))
+    print('run was ' + str(run))
+    #return True
+    return run #lets get the return val here
 
 def getDuration(_repeat):
     #amt, scale = getDuration(_repeat)
@@ -1596,6 +1634,7 @@ def getDuration(_repeat):
 
 def sentryProcessSchedule(db_store):
     #print('process Schedule')
+    run = None
 
     rLst = []
 
@@ -1673,7 +1712,8 @@ def sentryProcessSchedule(db_store):
                         #print(run)
     
     #print('end')
-    return True
+    #return True
+    return run #lets get the return val here
 
 def replaceJobsJson(name, jdata, db_store):
     #replaceINTO(tbl, item, data, db_file):
@@ -1728,7 +1768,8 @@ def sentryScheduler(db_store):
 
         time.sleep(3)
 
-    return True
+    #return True
+    return run
 
 def listRunning(db_store):
     rows = store.getAllCounts(db_store)

@@ -1,4 +1,25 @@
 
+perhaps config driven programming...  
+the scheduler with the config make sentinel super flexible...  
+
+fim,  
+./sentinel update-jobs fim-job1 '{"repeat": "12hour", "job": "fim-scan", "config": "fim-1"}'  
+
+./sentinel.py list-configs  
+(1, 'fim-1', '2020-09-26 16:38:31', '{"key":"value"}')  
+
+
+---
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-jobs-running
+('process', 0)
+('threads', 0)
+
+want, (sentry down)
+('sentry', 0)
+
+---
+
 for mac, integrate 'airport -s'
 for linux, integrate inotify
 for linux, integrate bpf tools

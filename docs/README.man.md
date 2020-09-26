@@ -40,6 +40,13 @@ sudo systemctl start sentinel
 
 time and repeat
 
+repeat,
+    #amt, scale = getDuration(_repeat)
+    #5min, 1hour, 3day
+```
+./sentinel.py update-job job-1 '{"repeat": "5min", "job":
+```
+
 ## Jobs
 
  - vuln-scan
