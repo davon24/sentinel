@@ -82,8 +82,8 @@ def usage():
         delete-config id
 
         list-fims
-        check-fim name
-        b2sum-fim name
+        check-fim [name]
+        b2sum-fim [name]
         update-fim name data
         delete-fim id
         add-fim name /dir/file
@@ -534,15 +534,31 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'b2sum-fim':
-            name = sys.argv[2]
-            run = tools.b2sumFim(name, db_store)
-            print(str(run))
+            try: name = sys.argv[2]
+            except IndexError: name = None
+            if name is None:
+                fims = store.getAll('fims', db_store)
+                for i in fims:
+                    name = i[1]
+                    run = tools.b2sumFim(name, db_store)
+                    print(str(name) + ' ' + str(run))
+            else:
+                run = tools.b2sumFim(name, db_store)
+                print(str(run))
             sys.exit(0)
 
         if sys.argv[1] == 'check-fim':
-            name = sys.argv[2]
-            run = tools.checkFim(name, db_store)
-            print(str(run))
+            try: name = sys.argv[2]
+            except IndexError: name = None
+            if name is None:
+                fims = store.getAll('fims', db_store)
+                for i in fims:
+                    name = i[1]
+                    run = tools.checkFim(name, db_store)
+                    print(str(name) + ' ' + str(run))
+            else:
+                run = tools.checkFim(name, db_store)
+                print(str(run))
             sys.exit(0)
 
         if sys.argv[1] == 'list-fims':

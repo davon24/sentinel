@@ -1,6 +1,23 @@
 
 
 
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py add-fim fim-1 /etc/profile
+
+./sentinel.py update-fim fim-1 '{"/etc/hosts":"", "/etc/passwd":"", "/etc/group":"", "~/.ssh/authorized_keys":""}'
+
+
+
+---
+
+new/separate table... fim table...
+./sentinel update-fim fim-1 '{"/etc/hosts":"", "/etc/passwd":"", "/etc/group":"", "~/.ssh/authorized_keys":""}'
+
+dict or list...
+./sentinel update-configs fim-1 '{"/etc/hosts":"", "/etc/passwd":"", "/etc/group":"", "~/.ssh/authorized_keys":""}'
+
+./sentinel update-configs fim-1 '{["/etc/hosts","/etc/passwd","/etc/group","~/.ssh/authorized_keys"]}'
+
+
 
 
 missing or no config,
