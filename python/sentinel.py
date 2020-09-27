@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.w'
+__version__ = '0.0.0.v1.4.w1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -84,6 +84,7 @@ def usage():
         list-fims
         check-fim [name]
         b2sum-fim [name]
+        b2sum /dir/file
         update-fim name data
         delete-fim id
         add-fim name /dir/file
@@ -532,6 +533,13 @@ if __name__ == '__main__':
         if sys.argv[1] == 'list-jobs-running':
             run = tools.listRunning(db_store)
             sys.exit(0)
+
+        if sys.argv[1] == 'b2sum':
+            _file = sys.argv[2]
+            b2sum = tools.b2sum(_file)
+            print(_file + ' ' + b2sum)
+            sys.exit(0)
+
 
         if sys.argv[1] == 'b2sum-fim':
             try: name = sys.argv[2]

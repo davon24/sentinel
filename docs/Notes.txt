@@ -1,5 +1,8 @@
 
 
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py b2sum /etc/passwd
+/etc/passwd 14e6089b58703286399d670073a758014064c41a
+
 
 🍁 krink@Karls-MacBook-Pro python % ./sentinel.py add-fim fim-1 /etc/profile
 
