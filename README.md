@@ -13,14 +13,14 @@ Remote
 
 Local  
 - Listening Ports and Services  
-- Established connections  
-- File Integrity Monitoring //TODO-IN-PROGRESS  
+- Established Connections  
+- File Integrity Monitoring  
 - Virus Scanner //TODO (clam-av)  
 
 ---
 
 ```
-./sentinel.py --help
+./sentinel.py --help   
 
 
 ./sentinel.py [option]
@@ -36,8 +36,7 @@ Local
         del-nmap ip
         clear-nmaps
 
-        vuln-scan-net [ip/net]
-        vuln-scan ip
+        vuln-scan [ip/net]
         list-vulns [id]
         del-vuln id
         clear-vulns
@@ -94,7 +93,22 @@ Local
         update-config name data
         delete-config id
 
+        list-reports
+        delete-report id
+
+        list-fims
+        list-fims-changed
+        check-fim [name]
+        b2sum-fim [name]
+        b2sum /dir/file
+        update-fim name data
+        delete-fim id
+        add-fim name /dir/file
+        del-fim name /dir/file
+
         sentry
+
+
 
 ```
 

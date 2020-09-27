@@ -1,5 +1,77 @@
 
 
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-fims
+(12, 'fim-1', '2020-09-27 02:25:10', '{"/etc/hosts": "8ae3f882dfbd435f78551a84d85dd8394d6f05ac", "/etc/passwd": "14e6089b58703286399d670073a758014064c41a", "/etc/group": "0996309dc16b961e8f02c5d560a8c3aa607b0258", "/etc/profile": "993fe74f82d506d7afc63ba7a533cb4d30f96629"}')
+(13, 'fim-2', '2020-09-27 02:57:48', '{"/bin/zsh": "d06776162fd94081a881410f21fe6b564348af8c", "/etc/zshrc": ""}')
+True
+
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-jobs
+(95, 'fim-job-1', '2020-09-27 04:11:06', '{"repeat": "5min", "job": "fim-check", "config": "fim-1", "start": "2020-09-26 21:11:06", "done": "2020-09-26 21:11:06", "success": true}')
+
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-reports
+(4, 'fim-1', '2020-09-27 04:11:06', '{"/etc/hosts": "CHANGED"}')
+
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-fims-changed
+/etc/hosts CHANGED
+/etc/zshrc ADDED
+True
+
+---
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py update-job fim-job-2 '{"repeat": "10min", "job": "fim-check", "config": "fim-2"}'
+True
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-jobs
+(96, 'fim-job-1', '2020-09-27 04:16:07', '{"repeat": "5min", "job": "fim-check", "config": "fim-1", "start": "2020-09-26 21:16:07", "done": "2020-09-26 21:16:07", "success": true}')
+(98, 'fim-job-2', '2020-09-27 04:18:01', '{"repeat": "10min", "job": "fim-check", "config": "fim-2", "start": "2020-09-26 21:18:01", "done": "2020-09-26 21:18:01", "success": true}')
+
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-fims
+(12, 'fim-1', '2020-09-27 02:25:10', '{"/etc/hosts": "8ae3f882dfbd435f78551a84d85dd8394d6f05ac", "/etc/passwd": "14e6089b58703286399d670073a758014064c41a", "/etc/group": "0996309dc16b961e8f02c5d560a8c3aa607b0258", "/etc/profile": "993fe74f82d506d7afc63ba7a533cb4d30f96629"}')
+(13, 'fim-2', '2020-09-27 02:57:48', '{"/bin/zsh": "d06776162fd94081a881410f21fe6b564348af8c", "/etc/zshrc": ""}')
+True
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-fims-changed
+/etc/hosts CHANGED
+/etc/zshrc ADDED
+True
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-reports
+(5, 'fim-1', '2020-09-27 04:16:07', '{"/etc/hosts": "CHANGED"}')
+(6, 'fim-2', '2020-09-27 04:18:01', '{"/etc/zshrc": "ADDED"}')
+
+
+----
+
+
+./sentinel.py list-reports
+
+./sentinel.py list-reports will show the data...
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-reports
+(1, 'fim-1', '2020-09-27 03:56:01', '{"/etc/hosts": "CHANGED"}')
+
+remember to compare to w/ cli (non sql data)
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py check-fim fim-1
+/etc/hosts CHANGED
+True
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py check-fim
+/etc/hosts CHANGED
+fim-1 True
+/etc/zshrc ADDED
+fim-2 True
+
+
+
+
+./sentinel.py update-job fim-job-1 '{"repeat": "5min", "job": "fim-check", "config": "fim-1"}'
+
+
+
+
 🍁 krink@Karls-MacBook-Pro python % ./sentinel.py b2sum /etc/passwd
 /etc/passwd 14e6089b58703286399d670073a758014064c41a
 

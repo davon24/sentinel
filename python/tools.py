@@ -1501,7 +1501,11 @@ def printFim(name, db_store):
     fDct = getFimDct(name, db_store)
     for k,v in fDct.items():
         #print(k,v)
-        print(k, 'CHANGED')
+        #print(k, 'CHANGED')
+        if len(v) == 0:
+            print(k, 'ADDED')
+        else:
+            print(k, 'CHANGED')
     return True
 
 
