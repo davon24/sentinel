@@ -132,27 +132,6 @@ def b2sum(_file):
     blake.update(_f)
     return str(blake.hexdigest())
 
-#def fimCreate():
-#    conf = store.getFim('fim-1', 'db/sentinel.db')
-#    if conf is None:
-#        print('config is None')
-#        return 'config is None'
-#    else:
-#        conf = conf[0]
-#    #print('conf ' + str(conf))
-#
-#    try:
-#        jdata = json.loads(conf)
-#    except json.decoder.JSONDecodeError:
-#        return 'invalid json ' + str(conf)
-#    print(conf)
-#
-#    #for k,v in jdata.items():
-#    #    b = b2sum(k)
-#    #    print(k + ' ' + b)
-#    #    jdata[k] = b
-    
-
 
 def pingIp(ip):
     cmd = 'ping -c 1 ' + ip
@@ -606,18 +585,13 @@ def getNetStat():
 
 def getNetStatDcts():
 
-    #udp, listen, established, time_wait = {}
-
     udp = {}
     listen = {}
     established = {}
     time_wait = {}
 
-    #udp = listen = established = time_wait = {}
-
     out = getNetStat()
     #print(out)
-
 
     for line in out:
         line = line.decode('utf-8').strip('\n').split()
@@ -788,22 +762,8 @@ def lsofProtoPort(protoport):
             c += 1
             lsofDct[c] = _line
 
-    #print(len(lsofDct))
-
-    #if len(lsofDct) > 1:
-    #    #print('Yes, Multiples exist')
-    #    mpids = []
-    #    for k,v in lsofDct.items():
-    #        print(' multi ' + str(v))
-    #        _p = v.split(' ')[5]
-    #        print(' mpid ' + _p)
-    #        mpids.append(_p)
-
     return lsofDct
     # sudo lsof -i TCP:631
-    # 'tcp4:631', 'tcp6:631'
-    #sudo lsof -n  -i4tcp:631 
-    #sudo lsof -n  -i6tcp:631 
 
 
 def getLsOfDct():
@@ -894,9 +854,6 @@ def printListenPortsDetailed():
             print(v)
     return True
 
-#def printPortDetails(port):
-#    _print = printLsOfPort(port)
-#    return True
 
 def printListenPortsDetails(port):
 
@@ -941,11 +898,9 @@ def printListenPortsDetails(port):
     return True
 
 def printEstablished():
-
     Dct = getEstablishedDct()
     for k,v in Dct.items():
         print(v)
-
     return True
 
 
@@ -1136,10 +1091,6 @@ def runDiscoverNetThreaded(ipnet, level, db_store):
     #ping-net for discovery
     hostLst = pingNet(ipnet) #already threading ThreadWithReturnValue 
     #OSError: [Errno 24] Too many open files
-    #hostLst = ['192.168.8.1', '192.168.8.109']
-
-    #print('namp -sn ' + str(ipnet))
-    #hostLst = nmapNet(ipnet)
 
     print('found: ' + str(hostLst))
 
@@ -1147,16 +1098,11 @@ def runDiscoverNetThreaded(ipnet, level, db_store):
     scanDct = {}
     #threads = []
     for ip in hostLst:
-        #print('nmap-scan: ' + ip)
-        #scan = nmapScan(ip, level)
-        #print(ip, ' ', scan)
-        #scanDct[ip] = scan
         t = ThreadWithReturnValue(target=nmapScan, args=(ip, level))
         t.start()
         #threads.append(t)
         scanDct[ip] = t
 
-    #for t in threads:
     for k,t in scanDct.items():
         out = t.join()
         #print(out)
@@ -1167,20 +1113,6 @@ def runDiscoverNetThreaded(ipnet, level, db_store):
         _data = str(success) + ' ' + str(data)
         print('(' + k + ') ' + str(_data))
         replace = store.replaceNmaps(k, _data, db_store)
-
-    #for k,v in scanDct.items():
-    #    line = v.split()
-    #    #print('line: ' + str(line))
-    #    success = line[0]
-    #    try: data = line[1]
-    #    except IndexError: data = None
-#
-#        _data = str(success) + ' ' + str(data)
-#
-#        #print('['+k+']', v)
-#        #print('(' + k + ') ' + str(success) + ' ' + str(data))
-#        print('(' + k + ') ' + str(_data))
-#        replace = store.replaceNmaps(k, _data, db_store)
 
     return True
 
@@ -1603,27 +1535,6 @@ def fimCheck(config, db_store):
     return check
 
 
-def fimScanJob(config, db_store):
-    print('get config... ' + str(config))
-    #conf = store.getConfig(config, db_store)
-    conf = store.getFim(config, db_store)
-    #print('conf is... ' + str(conf)) #None
-
-    if conf is None:
-        return 'config is None'
-    else:
-        conf = conf[0]
-    #print('conf ' + str(conf))
-
-    try:
-        jdata = json.loads(conf)
-    except json.decoder.JSONDecodeError:
-        return 'invalid json ' + str(conf)
-
-    print(str(conf))
-
-    return True
-
 def b2sumFim(name, db_store):
     fim = store.getFim(name, db_store)
     if fim is None:
@@ -1726,7 +1637,7 @@ def addFimFile(name, _file, db_store):
     jdata[_file] = ""
 
     #print('new.jdata ' + str(jdata))
-    update = store.updateTbl('fims', name, json.dumps(jdata), db_store)
+    update = store.updateData('fims', name, json.dumps(jdata), db_store)
     #update = store.updateFims(name, json.dumps(jdata), db_store)
     #replace = store.replaceINTO('fims', name, json.dumps(jdata), db_store)
     #print(update)
@@ -1753,11 +1664,62 @@ def delFimFile(name, _file, db_store):
     except KeyError:
         return 'not found ' + str(_file)
 
-    update = store.updateTbl('fims', name, json.dumps(jdata), db_store)
+    update = store.updateData('fims', name, json.dumps(jdata), db_store)
     return update
 
 
+def runAlert(name, db_store):
+    print('runAlert ' + str(name))
+    #alerts = store.getAll('alerts', db_store)
+    #for row in alerts:
+    #    #print(row)
+    #    name = row[1]
+    #    print(name)
 
+    alert = store.getData('alerts', name, db_store)
+    #print(alert)
+    if alert is None:
+        return str(name) + ' is None'
+    else:
+        alert = alert[0]
+
+    try:
+        jdata = json.loads(alert)
+    except json.decoder.JSONDecodeError:
+        return 'invalid json ' + str(alert)
+
+    print(str(jdata))
+
+    #-start
+    start = time.strftime("%Y-%m-%d %H:%M:%S")
+
+    new_json = jdata
+    new_json['start'] = start
+
+    try:
+        del new_json['done']
+    except KeyError: pass
+    try:
+        del new_json['success']
+    except KeyError: pass
+
+    #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
+    replace = store.replaceINTO('alerts', name, json.dumps(new_json), db_store)
+    print('replace was ' + str(replace))
+
+    #DO.RUN
+    run = True
+
+    #-done
+    done = time.strftime("%Y-%m-%d %H:%M:%S")
+    new_json['done'] = done
+    new_json['success'] = run
+
+    #update = updateJobsJson(name, json.dumps(new_json), db_store)
+    update = store.updateData('alerts', name, json.dumps(new_json), db_store)
+    print('update was ' + str(update))
+    print('run ' + str(name) + ' was ' + str(run))
+    return run
 
 
 #we'll move these into db config store later
@@ -1766,7 +1728,6 @@ options = {
  'port-scan' : portScanJob1,
  'port-scan2' : portScanJob2,
  'detect-scan' : detectScanJob,
- 'fim-scan' : fimScanJob,
  'fim-check' : fimCheck,
 }
 #options[sys.argv[2]](sys.argv[3:])
@@ -1775,11 +1736,10 @@ def runJob(name, db_store):
     #print('runJob')
     #-start
     start = time.strftime("%Y-%m-%d %H:%M:%S")
-    #start = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
 
     job = store.getJob(name, db_store)
     if not job:
-        print('no.job')
+        print('no job')
         return None
     #print(str(type(job)))
     print(job)
@@ -1817,9 +1777,6 @@ def runJob(name, db_store):
     #if type(_ips) == list:
     #if type(_ips) == str:
         
-    #run = tools.runNmapVulnMultiProcess(hostLst, db_store)
-    #run = tools.nmapVulnScanStore(ip, db_store)
-
     #run = options[_job](_ips, db_store)
 
     if _ips:
@@ -1836,10 +1793,10 @@ def runJob(name, db_store):
     new_json['done'] = done
     new_json['success'] = run
     update = updateJobsJson(name, json.dumps(new_json), db_store)
-    print('update was ' + str(update))
-    print('run was ' + str(run))
+    #print('update was ' + str(update))
+    print('run ' + str(name) + ' was ' + str(run))
     #return True
-    return run #lets get the return val here
+    return run
 
 def getDuration(_repeat):
     #amt, scale = getDuration(_repeat)
@@ -1885,12 +1842,11 @@ def sentryProcessSchedule(db_store):
 
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-    #print('now .      ' + str(now_time))
 
     for job in jobs:
-        #print(job)
         name = job[1]
         jdata = job[3]
+        #print(job)
         #print(name)
         try:
             jdata = json.loads(job[3])
@@ -1927,7 +1883,6 @@ def sentryProcessSchedule(db_store):
 
             if _start is None:
                 run = runJob(name, db_store)
-                #print(run)
 
             else:
                 start_time = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
@@ -1935,7 +1890,6 @@ def sentryProcessSchedule(db_store):
                 #print('start ' + str(start_time) + ' m: ' + str(start_minute))
                 if _done:
                     done_time = datetime.datetime.strptime(_done, "%Y-%m-%d %H:%M:%S")
-                    #done_minute = int(str(done_time).split()[1].split(':')[1])
                     #print('done       ' + str(done_time))
 
                     #td_time = done_time + datetime.timedelta(minutes=5)
@@ -1954,7 +1908,7 @@ def sentryProcessSchedule(db_store):
     
     #print('end')
     #return True
-    return run #lets get the return val here
+    return run
 
 def replaceJobsJson(name, jdata, db_store):
     #replaceINTO(tbl, item, data, db_file):
@@ -1967,14 +1921,11 @@ def updateJobsJson(name, jdata, db_store):
     return update
 
 def sentryScheduler(db_store):
-
     #sigterm = False
-
     while (sigterm == False):
 
         #run = sentryProcessSchedule(db_store)
-        #run = threading.Thread(target=sentryProcessSchedule, args=(db_store,), name = 'SentrySchduler')
-        run = threading.Thread(target=sentryProcessSchedule, args=(db_store,))
+        run = threading.Thread(target=sentryProcessSchedule, args=(db_store,), name="SentryScheduler")
         run.setDaemon(True)
         run.start()
 

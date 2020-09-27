@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.w3'
+__version__ = '0.0.0.v1.4.w4'
 
 import sys
 #sys.path.insert(0,'db')
@@ -88,6 +88,7 @@ def usage():
         delete-alert id
         run-alert name
         update-alert name data
+        run-alert name
 
         list-fims
         list-fims-changed
@@ -634,8 +635,8 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-alerts':
-            reports = store.getAll('alerts', db_store)
-            for row in reports:
+            alerts = store.getAll('alerts', db_store)
+            for row in alerts:
                 print(row)
             sys.exit(0)
 

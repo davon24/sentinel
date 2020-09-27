@@ -821,7 +821,8 @@ def replaceINTO(tbl, name, data, db_file):
 
 # need to standardize on name, timestamp, data for all...
 # create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-def updateTbl(tbl, name, data, db_file):
+#def updateTbl(tbl, name, data, db_file):
+def updateData(tbl, name, data, db_file):
     con = sql_connection(db_file)
     cur = con.cursor()
     cur.execute("UPDATE " + str(tbl) + " SET data=?, timestamp=DATETIME('now') WHERE name=?", (data, name))
