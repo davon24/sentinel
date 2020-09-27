@@ -1,4 +1,27 @@
 
+we'll manually run the cmd right now...
+
+./sentinel.py run-alert alert-fim-1
+
+---
+
+./sentinel.py update-config logfile '{"logfile":"/tmp/sentinel.log"}'
+./sentinel.py update-alert alert-fim-1 '{"report": "fim-1", "config":"logfile"}'
+
+---
+
+#set an alert on fim-1 reports , send via email config
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py update-alert alert-fim-1 '{"report": "fim-1", "config":"email"}'
+True
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-alerts
+(1, 'alert-fim-1', '2020-09-27 05:01:04', '{"report": "fim-1", "config":"email"}')
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-configs
+(1, 'email', '2020-09-26 16:38:31', '{"smtp_to":"root@localhost"}')
+
+
+---
 
 🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-fims
 (12, 'fim-1', '2020-09-27 02:25:10', '{"/etc/hosts": "8ae3f882dfbd435f78551a84d85dd8394d6f05ac", "/etc/passwd": "14e6089b58703286399d670073a758014064c41a", "/etc/group": "0996309dc16b961e8f02c5d560a8c3aa607b0258", "/etc/profile": "993fe74f82d506d7afc63ba7a533cb4d30f96629"}')

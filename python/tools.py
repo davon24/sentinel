@@ -1404,6 +1404,7 @@ def sendEmail(subject, message, db_store):
 
         import certifi
         #print(certifi.where())
+        import os
 
         openssl_dir, openssl_cafile = os.path.split(
                 ssl.get_default_verify_paths().openssl_cafile)

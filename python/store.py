@@ -97,6 +97,11 @@ def sql_connection(db_file):
         cur.execute(create_reports)
         cur.execute(create_reportsi)
 
+        create_alerts  = "CREATE TABLE IF NOT EXISTS alerts (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+        create_alertsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_alerts ON alerts (name);"
+        cur.execute(create_alerts)
+        cur.execute(create_alertsi)
+
         create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (job TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
         create_jobsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs ON jobs (job);"
         cur.execute(create_jobs)

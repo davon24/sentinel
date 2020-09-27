@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.w2'
+__version__ = '0.0.0.v1.4.w3'
 
 import sys
 #sys.path.insert(0,'db')
@@ -83,6 +83,11 @@ def usage():
 
         list-reports
         delete-report id
+
+        list-alerts
+        delete-alert id
+        run-alert name
+        update-alert name data
 
         list-fims
         list-fims-changed
@@ -627,6 +632,38 @@ if __name__ == '__main__':
             delete = store.deleteFrom('reports', rowid, db_store)
             print(delete)
             sys.exit(0)
+
+        if sys.argv[1] == 'list-alerts':
+            reports = store.getAll('alerts', db_store)
+            for row in reports:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-alert':
+            rowid = sys.argv[2]
+            delete = store.deleteFrom('alerts', rowid, db_store)
+            print(delete)
+            sys.exit(0)
+
+        if sys.argv[1] == 'update-alert':
+            name = sys.argv[2]
+            data = sys.argv[3]
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError:
+                print('invalid json')
+                sys.exit(1)
+            run = store.replaceINTO('alerts', name, data, db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'run-alert':
+            name = sys.argv[2]
+            run = tools.runAlert(name, db_store)
+            print(str(run))
+            sys.exit(0)
+
+
+
 
         else:
             usage()
