@@ -92,6 +92,11 @@ def sql_connection(db_file):
         cur.execute(create_fims)
         cur.execute(create_fimsi)
 
+        create_reports  = "CREATE TABLE IF NOT EXISTS reports (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+        create_reportsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_reports ON reports (name);"
+        cur.execute(create_reports)
+        cur.execute(create_reportsi)
+
         create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (job TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
         create_jobsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs ON jobs (job);"
         cur.execute(create_jobs)
@@ -835,6 +840,8 @@ def deleteFrom(tbl, rowid, db_file):
     cur = con.cursor()
     cur.execute("DELETE FROM " + str(tbl) + " WHERE rowid=? ;", (rowid,))
     con.commit()
+    if cur.rowcount == 0:
+        return False
     return True
 
 def selectAll(tbl, db_file):

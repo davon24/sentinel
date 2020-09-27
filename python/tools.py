@@ -1472,11 +1472,36 @@ def printConfigs(db_store):
         print(row)
     return True
 
-def printFims(db_store):
+def printAllFims(db_store):
     #fims = store.getAllFims(db_store)
     fims = store.getAll('fims', db_store)
     for row in fims:
         print(row)
+    return True
+
+def printAllFimsChanged(db_store):
+    fims = store.getAll('fims', db_store)
+    for row in fims:
+        #print(row)
+        name = row[1]
+        #print(name)
+        fDct = getFimDct(name, db_store)
+        for k,v in fDct.items():
+            #print(k, 'CHANGED')
+            #print(k, v)
+            #print('v is ' + str(type(v)) + ' ' + str(v) + ' ' + str(len(v)))
+            if len(v) == 0:
+                print(k, 'ADDED')
+            else:
+                print(k, 'CHANGED')
+    return True
+
+
+def printFim(name, db_store):
+    fDct = getFimDct(name, db_store)
+    for k,v in fDct.items():
+        #print(k,v)
+        print(k, 'CHANGED')
     return True
 
 
@@ -1550,6 +1575,29 @@ def discoverHostLst(ips):
 def detectScanJob(ips, db_store):
     pass
 
+def fimCheck(config, db_store):
+    print('fimCheck get config... ' + str(config))
+
+    conf = store.getFim(config, db_store)
+    if conf is None:
+        return 'config is None'
+
+    check = checkFimAndReport(config, db_store)
+    print(check)
+
+    #else:
+    #    conf = conf[0]
+    ##print('conf ' + str(conf))
+    #try:
+    #    jdata = json.loads(conf)
+    #except json.decoder.JSONDecodeError:
+    #    return 'invalid json ' + str(conf)
+    #print(str(jdata))
+
+    #return True
+    return check
+
+
 def fimScanJob(config, db_store):
     print('get config... ' + str(config))
     #conf = store.getConfig(config, db_store)
@@ -1598,7 +1646,45 @@ def b2sumFim(name, db_store):
     return replace
 
 def checkFim(name, db_store):
-    #print('checkFim')
+    print('checkFim .now ' + str(name))
+    fimDct = getFimDct(name, db_store)
+    for k,v in fimDct.items():
+        #print(k,v)
+        #print(k, ' CHANGED')
+        if len(v) == 0:
+            print(k, 'ADDED')
+        else:
+            print(k, 'CHANGED')
+    return True
+
+def checkFimAndReport(name, db_store):
+    Dct = {}
+    print('checkFimAndReport ' + str(name))
+    fimDct = getFimDct(name, db_store)
+    
+    for k,v in fimDct.items():
+        #print(k,v)
+        #print(k, ' CHANGED')
+        if len(v) == 0:
+            #print(k, 'ADDED')
+            Dct[k] = 'ADDED'
+        else:
+            #print(k, 'CHANGED')
+            Dct[k] = 'CHANGED'
+
+    #try:
+    #    jdata = json.loads(Dct)
+    #except json.decoder.JSONDecodeError:
+    #    return 'invalid json ' + str(fim)
+    #replace = store.replaceINTO('reports', name, json.dumps(jdata), db_store)
+
+    replace = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
+    return replace
+
+
+def getFimDct(name, db_store):
+    #print('getFimDct')
+    Dct = {}
     fim = store.getFim(name, db_store)
     if fim is None:
         return str(name) + ' is None'
@@ -1613,9 +1699,12 @@ def checkFim(name, db_store):
     for k,v in jdata.items():
         b = b2sum(k)
         if b != v:
-            print(k + ' CHANGED')
+            #print(k + ' CHANGED')
+            #Dct[k] = 'CHANGED'
+            Dct[k] = v
 
-    return True
+    #return True
+    return Dct
 
 def addFimFile(name, _file, db_store):
     fim = store.getFim(name, db_store)
@@ -1673,10 +1762,12 @@ options = {
  'port-scan2' : portScanJob2,
  'detect-scan' : detectScanJob,
  'fim-scan' : fimScanJob,
+ 'fim-check' : fimCheck,
 }
 #options[sys.argv[2]](sys.argv[3:])
 
 def runJob(name, db_store):
+    #print('runJob')
     #-start
     start = time.strftime("%Y-%m-%d %H:%M:%S")
     #start = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
@@ -1709,7 +1800,7 @@ def runJob(name, db_store):
     except KeyError: pass
 
     replace = replaceJobsJson(name, json.dumps(new_json), db_store)
-    print(replace)
+    print('replace was ' + str(replace))
 
     #_time = jdata.get('time', None) 
     #_repeat = jdata.get('repeat', None) 

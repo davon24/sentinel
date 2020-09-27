@@ -81,7 +81,11 @@ def usage():
         update-config name data
         delete-config id
 
+        list-reports
+        delete-report id
+
         list-fims
+        list-fims-changed
         check-fim [name]
         b2sum-fim [name]
         b2sum /dir/file
@@ -129,6 +133,7 @@ if __name__ == '__main__':
             mfname = store.get_manuf(mac, db_manuf)
             print(mfname)
             sys.exit(0)
+
         if sys.argv[1] == 'arps':
             printArps()
             sys.exit(0)
@@ -242,7 +247,8 @@ if __name__ == '__main__':
             ip = sys.argv[2]
             insert = store.deleteIPs(ip, db_store)
             print(insert)
-            sys.exit(0)
+            sys.exit(0
+            )
         if sys.argv[1] == 'update-ip':
             ip = sys.argv[2]
             data = sys.argv[3]
@@ -250,10 +256,12 @@ if __name__ == '__main__':
             replace = store.replaceINTO('ips', ip, data, db_store)
             print(replace)
             sys.exit(0)
+
         if sys.argv[1] == 'clear-ips':
             clear = store.clearAllIPs(db_store)
             print(clear)
             sys.exit(0)
+
         if sys.argv[1] == 'discover-net':
             ipnet = None
             level = None
@@ -290,6 +298,7 @@ if __name__ == '__main__':
             for row in scans:
                 print(row)
             sys.exit(0)
+
         if sys.argv[1] == 'del-nmap':
             ip = sys.argv[2]
             del_ = store.deleteNmaps(ip, db_store)
@@ -309,11 +318,13 @@ if __name__ == '__main__':
             #print('vid: ' + str(vid))
             run = tools.printVulnScan(db_store, vid)
             sys.exit(0)
+
         if sys.argv[1] == 'del-vuln':
             ip = sys.argv[2]
             del_ = store.deleteVulns(ip, db_store)
             print(del_)
             sys.exit(0)
+
         if sys.argv[1] == 'clear-vulns':
             clear = store.clearAllVulns(db_store)
             print(clear)
@@ -340,6 +351,7 @@ if __name__ == '__main__':
             myip = tools.getIfconfigIPv4()
             print(myip)
             sys.exit(0)
+
         if sys.argv[1] == 'udp':
             ip = sys.argv[2]
             port = sys.argv[3]
@@ -562,15 +574,20 @@ if __name__ == '__main__':
                 fims = store.getAll('fims', db_store)
                 for i in fims:
                     name = i[1]
-                    run = tools.checkFim(name, db_store)
+                    run = tools.printFim(name, db_store)
                     print(str(name) + ' ' + str(run))
             else:
-                run = tools.checkFim(name, db_store)
+                run = tools.printFim(name, db_store)
                 print(str(run))
             sys.exit(0)
 
         if sys.argv[1] == 'list-fims':
-            run = tools.printFims(db_store)
+            run = tools.printAllFims(db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-fims-changed':
+            run = tools.printAllFimsChanged(db_store)
             print(run)
             sys.exit(0)
 
@@ -588,8 +605,6 @@ if __name__ == '__main__':
             print(str(add))
             sys.exit(0)
 
-
-
         if sys.argv[1] == 'update-fim':
             name = sys.argv[2]
             data = sys.argv[3]
@@ -601,8 +616,17 @@ if __name__ == '__main__':
             print(run)
             sys.exit(0)
 
+        if sys.argv[1] == 'list-reports':
+            reports = store.getAll('reports', db_store)
+            for row in reports:
+                print(row)
+            sys.exit(0)
 
-
+        if sys.argv[1] == 'delete-report':
+            rowid = sys.argv[2]
+            delete = store.deleteFrom('reports', rowid, db_store)
+            print(delete)
+            sys.exit(0)
 
         else:
             usage()
