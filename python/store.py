@@ -35,14 +35,16 @@ class DNSUpDateTask:
         cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
         record = cur.fetchone()
         if record is None:
-            return None
+            return False
         #print(record[0])
         jdata = json.loads(record[0])
         jdata['dns'] = dnsname
         update = json.dumps(jdata)
         cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
         con.commit()
-        print('t.updated.dns ' + str(mac) + ' ' + str(update))
+        print('updated dns ' + str(mac) + ' ' + str(update))
+        if cur.rowcount == 0:
+            return False
         return True
 
 def sqlConnection(db_file):
