@@ -1442,25 +1442,25 @@ def printFim(name, db_store):
     return True
 
 
-def vulnScanJob(ips, db_store):
+def vulnScan(ips, db_store):
     hostLst = discoverHostLst(ips)
     scan = runNmapVulnMultiProcess(hostLst, db_store)
     return True
 
-def portScanJob1(ips, db_store):
+def portScan1(ips, db_store):
     level = 1
-    return portScanJob(ips, level, db_store)
+    return portScan(ips, level, db_store)
 
-def portScanJob2(ips, db_store):
+def portScan2(ips, db_store):
     level = 2
-    return portScanJob(ips, level, db_store)
+    return portScan(ips, level, db_store)
 
-def portScanJob(ips, level, db_store):
+def portScan(ips, level, db_store):
     hostLst = discoverHostLst(ips)
     if level is None:
         level = 1
     scan = runNmapScanMultiProcess(hostLst, level, db_store)
-    return True
+    return scan
 
 def isNet(ips):
     try:
@@ -1509,7 +1509,7 @@ def discoverHostLst(ips):
     print('discovered: ' + str(hostLst))
     return hostLst
 
-def detectScanJob(ips, db_store):
+def detectScan(ips, db_store):
     pass
 
 def fimCheck(config, db_store):
@@ -1707,6 +1707,18 @@ def runAlert(name, db_store):
     replace = store.replaceINTO('alerts', name, json.dumps(new_json), db_store)
     print('replace was ' + str(replace))
 
+    #_ips = jdata.get('ips', None)
+    #if type(_ips) == list:
+
+    _report = jdata.get('report', None)
+    _config = jdata.get('config', None)
+
+    #getReport
+    report = store.getData('reports', _report, db_store)
+    print(str(report))
+
+    #getConfig
+
     #DO.RUN
     run = True
 
@@ -1724,10 +1736,10 @@ def runAlert(name, db_store):
 
 #we'll move these into db config store later
 options = {
- 'vuln-scan' : vulnScanJob,
- 'port-scan' : portScanJob1,
- 'port-scan2' : portScanJob2,
- 'detect-scan' : detectScanJob,
+ 'vuln-scan' : vulnScan,
+ 'port-scan' : portScan1,
+ 'port-scan2' : portScan2,
+ 'detect-scan' : detectScan,
  'fim-check' : fimCheck,
 }
 #options[sys.argv[2]](sys.argv[3:])

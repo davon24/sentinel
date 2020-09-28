@@ -1,6 +1,0 @@
-{
-    "/etc/hosts": "5dc73a68e6cb459f7d4a558593d01be72133d2ff",
-    "/etc/passwd": "14e6089b58703286399d670073a758014064c41a",
-    "/etc/group": "0996309dc16b961e8f02c5d560a8c3aa607b0258",
-    "~/.ssh/authorized_keys": "[Errno 2] No such file or directory: '~/.ssh/authorized_keys'"
-}

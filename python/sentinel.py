@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.w4'
+__version__ = '0.0.0.v1.4.w5'
 
 import sys
 #sys.path.insert(0,'db')
