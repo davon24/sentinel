@@ -16,7 +16,7 @@ class DNSUpDateTask:
     def terminate(self):
         self._running = False
 
-    def sql_connection(self, db_file):
+    def sqlConnection(self, db_file):
         con = sqlite3.connect(db_file)
         return con
 
@@ -30,7 +30,7 @@ class DNSUpDateTask:
         dnsname = str(tools.getNSlookup(ip))
 
         #print('DNS: ' + dnsname)
-        con = self.sql_connection(db_file)
+        con = self.sqlConnection(db_file)
         cur = con.cursor()
         cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
         record = cur.fetchone()
@@ -45,74 +45,77 @@ class DNSUpDateTask:
         print('t.updated.dns ' + str(mac) + ' ' + str(update))
         return True
 
-
-def sql_connection(db_file):
-
+def sqlConnection(db_file):
     if not os.path.isfile(db_file):
-        con = sqlite3.connect(db_file)
-        cur = con.cursor()
-
-        cur.execute('''CREATE TABLE IF NOT EXISTS arp (mac TEXT PRIMARY KEY NOT NULL,ip TEXT,data TEXT);''')
-        cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_mac ON arp (mac);''')
-
-        cur.execute('''CREATE TABLE IF NOT EXISTS ports (port INTEGER PRIMARY KEY NOT NULL,data TEXT);''')
-        cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_port ON ports (port);''')
-
-        create_established =  "CREATE TABLE IF NOT EXISTS established (rule TEXT CHECK(rule IN ('ALLOW','DENY')) NOT NULL DEFAULT 'ALLOW',"
-        create_established += "proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER,UNIQUE(rule,proto,laddr,lport,faddr,fport));"
-        cur.execute(create_established)
-
-        create_nmap  = "CREATE TABLE IF NOT EXISTS nmap (ip TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-        create_nmapi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_nmap ON nmap (ip);"
-        cur.execute(create_nmap)
-        cur.execute(create_nmapi)
-
-        create_vulns  = "CREATE TABLE IF NOT EXISTS vulns (vid INTEGER PRIMARY KEY NOT NULL,ip TEXT,timestamp TEXT,report TEXT,data TEXT,blob BLOB);"
-        create_vulnsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_vulns ON vulns (vid);"
-        cur.execute(create_vulns)
-        cur.execute(create_vulnsi)
-
-        create_detect  = "CREATE TABLE IF NOT EXISTS detect (did INTEGER PRIMARY KEY NOT NULL,ip TEXT,timestamp TEXT,report TEXT,data TEXT,blob BLOB);"
-        create_detecti = "CREATE UNIQUE INDEX IF NOT EXISTS idx_detect ON detect (did);"
-        cur.execute(create_detect)
-        cur.execute(create_detecti)
-
-        create_ip  = "CREATE TABLE IF NOT EXISTS ips (ip TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-        create_ipi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_ip ON ips (ip);"
-        cur.execute(create_ip)
-        cur.execute(create_ipi)
-
-        create_configs  = "CREATE TABLE IF NOT EXISTS configs (config TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-        create_configsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_config ON configs (config);"
-        cur.execute(create_configs)
-        cur.execute(create_configsi)
-
-        create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-        create_fimsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_fims ON fims (name);"
-        cur.execute(create_fims)
-        cur.execute(create_fimsi)
-
-        create_reports  = "CREATE TABLE IF NOT EXISTS reports (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-        create_reportsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_reports ON reports (name);"
-        cur.execute(create_reports)
-        cur.execute(create_reportsi)
-
-        create_alerts  = "CREATE TABLE IF NOT EXISTS alerts (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-        create_alertsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_alerts ON alerts (name);"
-        cur.execute(create_alerts)
-        cur.execute(create_alertsi)
-
-        create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (job TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-        create_jobsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs ON jobs (job);"
-        cur.execute(create_jobs)
-        cur.execute(create_jobsi)
-
-        create_counts  = "CREATE TABLE IF NOT EXISTS counts (name TEXT PRIMARY KEY NOT NULL,count INTEGER) WITHOUT ROWID;"
-        cur.execute(create_counts)
-
-        con.commit()
+        con = createDB(db_file)
     else:
         con = sqlite3.connect(db_file)
+    return con
+
+def createDB(db_file):
+
+    con = sqlite3.connect(db_file)
+    cur = con.cursor()
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS arp (mac TEXT PRIMARY KEY NOT NULL,ip TEXT,data TEXT);''')
+    cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_mac ON arp (mac);''')
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS ports (port INTEGER PRIMARY KEY NOT NULL,data TEXT);''')
+    cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_port ON ports (port);''')
+
+    create_established =  "CREATE TABLE IF NOT EXISTS established (rule TEXT CHECK(rule IN ('ALLOW','DENY')) NOT NULL DEFAULT 'ALLOW',"
+    create_established += "proto TEXT,laddr TEXT,lport INTEGER,faddr TEXT,fport INTEGER,UNIQUE(rule,proto,laddr,lport,faddr,fport));"
+    cur.execute(create_established)
+
+    create_nmap  = "CREATE TABLE IF NOT EXISTS nmap (ip TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_nmapi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_nmap ON nmap (ip);"
+    cur.execute(create_nmap)
+    cur.execute(create_nmapi)
+
+    create_vulns  = "CREATE TABLE IF NOT EXISTS vulns (vid INTEGER PRIMARY KEY NOT NULL,ip TEXT,timestamp TEXT,report TEXT,data TEXT,blob BLOB);"
+    create_vulnsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_vulns ON vulns (vid);"
+    cur.execute(create_vulns)
+    cur.execute(create_vulnsi)
+
+    create_detect  = "CREATE TABLE IF NOT EXISTS detect (did INTEGER PRIMARY KEY NOT NULL,ip TEXT,timestamp TEXT,report TEXT,data TEXT,blob BLOB);"
+    create_detecti = "CREATE UNIQUE INDEX IF NOT EXISTS idx_detect ON detect (did);"
+    cur.execute(create_detect)
+    cur.execute(create_detecti)
+
+    create_ip  = "CREATE TABLE IF NOT EXISTS ips (ip TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_ipi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_ip ON ips (ip);"
+    cur.execute(create_ip)
+    cur.execute(create_ipi)
+
+    create_configs  = "CREATE TABLE IF NOT EXISTS configs (config TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_configsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_config ON configs (config);"
+    cur.execute(create_configs)
+    cur.execute(create_configsi)
+
+    create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_fimsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_fims ON fims (name);"
+    cur.execute(create_fims)
+    cur.execute(create_fimsi)
+
+    create_reports  = "CREATE TABLE IF NOT EXISTS reports (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_reportsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_reports ON reports (name);"
+    cur.execute(create_reports)
+    cur.execute(create_reportsi)
+
+    create_alerts  = "CREATE TABLE IF NOT EXISTS alerts (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_alertsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_alerts ON alerts (name);"
+    cur.execute(create_alerts)
+    cur.execute(create_alertsi)
+
+    create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (job TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_jobsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs ON jobs (job);"
+    cur.execute(create_jobs)
+    cur.execute(create_jobsi)
+
+    create_counts  = "CREATE TABLE IF NOT EXISTS counts (name TEXT PRIMARY KEY NOT NULL,count INTEGER) WITHOUT ROWID;"
+    cur.execute(create_counts)
+
+    con.commit()
 
     return con
 
@@ -127,7 +130,7 @@ def sql_connection(db_file):
 
 def update_arp_data(db_file, arpDict):
 
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
 
     for ip,mac in arpDict.items():
@@ -199,7 +202,7 @@ def update_arp_data(db_file, arpDict):
 
 
 def select_all(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT * FROM arp')
     rows = cur.fetchall()
@@ -221,7 +224,7 @@ def insert_table(con):
 
 
 def update_data_manuf(mac, mfname, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     #cur.execute("SELECT data FROM arp WHERE mac='" + str(mac) + "';")
     cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
@@ -239,7 +242,7 @@ def update_data_manuf(mac, mfname, db_file):
     return True
 
 def update_data_dns(mac, dnsname, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
     record = cur.fetchone()
@@ -256,7 +259,7 @@ def update_data_dns(mac, dnsname, db_file):
     return True
 
 def get_data(mac, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
     record = cur.fetchone()
@@ -279,7 +282,7 @@ def get_manuf(mac, manuf_file):
 #    return update
 
 def printListeningAllowed(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT * FROM ports')
     rows = cur.fetchall()
@@ -289,7 +292,7 @@ def printListeningAllowed(db_file):
 
 def gettListeningAllowedLst(db_file):
     portLst = []
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT port FROM ports')
     rows = cur.fetchall()
@@ -301,14 +304,14 @@ def gettListeningAllowedLst(db_file):
 
 
 def insertAllowedPort(port, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("INSERT INTO ports VALUES(?,?)", (port, '{}'))
     con.commit()
     return True
 
 def deleteAllowedPort(port, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM ports WHERE port=?", (port,))
     con.commit()
@@ -341,7 +344,7 @@ def printEstablishedRules(db_file):
     return True
 
 def getEstablishedRulesDct(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT * FROM established')
     rows = cur.fetchall()
@@ -359,7 +362,7 @@ def getEstablishedRulesDct(db_file):
     return Dct
 
 def insertEstablishedRules(rule, proto, laddr, lport, faddr, fport, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("INSERT INTO established VALUES(?,?,?,?,?,?)", (rule, proto, laddr, lport, faddr, fport))
     con.commit()
@@ -563,14 +566,14 @@ def printIPs(db_file):
     return True
 
 def getIPs(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM ips ORDER by rowid DESC;')
     rows = cur.fetchall()
     return rows
 
 def insertIPs(ip, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     #cur.execute("INSERT INTO ips VALUES(?, DATETIME('now'), ?)", (ip, None ))
     cur.execute("INSERT INTO ips VALUES(?, DATETIME('now'), NULL)", (ip, ))
@@ -578,7 +581,7 @@ def insertIPs(ip, db_file):
     return True
 
 def updateIPs(ip, data, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     #print('UPDATE ' + ip + ' ' + data)
     #cur.execute("UPDATE ips SET data=? WHERE ip=?", (ip, data))
@@ -588,14 +591,14 @@ def updateIPs(ip, data, db_file):
     return True
 
 def replaceIPs(ip, data, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("REPLACE INTO ips VALUES(?, DATETIME('now'), ?)", (ip, data))
     con.commit()
     return True
 
 def clearAllIPs(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM ips;")
     cur.execute("REINDEX ips;")
@@ -603,7 +606,7 @@ def clearAllIPs(db_file):
     return True
 
 def deleteIPs(ip, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM ips WHERE ip=? ;", (ip,))
     con.commit()
@@ -611,28 +614,28 @@ def deleteIPs(ip, db_file):
 
 
 def getNmaps(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM nmap ORDER by rowid DESC;')
     rows = cur.fetchall()
     return rows
 
 def replaceNmaps(ip, data, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("REPLACE INTO nmap VALUES(?, DATETIME('now'), ?)", (ip, data))
     con.commit()
     return True
 
 def deleteNmaps(ip, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM nmap WHERE ip=? ;", (ip,))
     con.commit()
     return True
 
 def clearAllNmaps(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM nmap;")
     cur.execute("REINDEX nmap;")
@@ -640,28 +643,28 @@ def clearAllNmaps(db_file):
     return True
 
 def getNmapVuln(vid, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM vulns WHERE rowid=? ;', (vid,))
     row = cur.fetchone()
     return row
 
 def getAllNmapVulns(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM vulns ORDER by rowid DESC;')
     rows = cur.fetchall()
     return rows
 
 def replaceVulns(ip, data, blob, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("REPLACE INTO vulns VALUES(?,DATETIME('now'),?,?)", (ip, data, blob))
     con.commit()
     return True
 
 def clearAllVulns(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM vulns;")
     cur.execute("REINDEX vulns;")
@@ -669,21 +672,21 @@ def clearAllVulns(db_file):
     return True
 
 def deleteVulns(rowid, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM vulns WHERE rowid=? ;", (rowid,))
     con.commit()
     return True
 
 def insertVulns(ip, report, data, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("INSERT INTO vulns VALUES(NULL,?,DATETIME('now'),?,?,NULL)", (ip,report,data))
     con.commit()
     return True
 
 def updateVulnsReport(vid, report, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     sql = "UPDATE vulns SET report='" + report + "' WHERE vid='" + str(vid) + "';"
     cur.execute(sql)
@@ -691,42 +694,42 @@ def updateVulnsReport(vid, report, db_file):
     return True
 
 def getVulnData(vid, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT data FROM vulns WHERE rowid=? ;', (vid,))
     row = cur.fetchone()
     return row
 
 def getNmapDetect(did, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM detect WHERE rowid=? ;', (did,))
     row = cur.fetchone()
     return row
 
 def getAllNmapDetects(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM detect ORDER by rowid DESC;')
     rows = cur.fetchall()
     return rows
 
 def insertDetect(ip, report, data, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("INSERT INTO detect VALUES(NULL,?,DATETIME('now'),?,?,NULL)", (ip,report,data))
     con.commit()
     return True
 
 def deleteDetect(rowid, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM detect WHERE rowid=? ;", (rowid,))
     con.commit()
     return True
 
 def clearAllDetects(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM detect;")
     cur.execute("REINDEX detect;")
@@ -734,7 +737,7 @@ def clearAllDetects(db_file):
     return True
 
 def getAllConfigs(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM configs;')
     rows = cur.fetchall()
@@ -745,14 +748,14 @@ def getAllConfigs(db_file):
 #    return rows
 
 def getAll(tbl, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM ' + str(tbl) + ';')
     rows = cur.fetchall()
     return rows
 
 def clearAll(tbl, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('DELETE FROM ' + str(tbl) + ';')
     cur.execute('REINDEX ' + str(tbl) + ';')
@@ -761,14 +764,14 @@ def clearAll(tbl, db_file):
 
 
 def getConfig(name, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT data FROM configs WHERE config=? ;', (name,))
     row = cur.fetchone()
     return row
 
 def getFim(name, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT data FROM fims WHERE name=? ;', (name,))
     row = cur.fetchone()
@@ -777,7 +780,7 @@ def getFim(name, db_file):
     return row
 
 def getData(tbl, name, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT data FROM ' + str(tbl) + ' WHERE name=? ;', (name,))
     row = cur.fetchone()
@@ -787,7 +790,7 @@ def getData(tbl, name, db_file):
 
 
 #def replaceFim(name, data, db_file):
-#    con = sql_connection(db_file)
+#    con = sqlConnection(db_file)
 #    cur = con.cursor()
 #    cur.execute("REPLACE INTO fims VALUES(?,DATETIME('now'),?)", (name, data))
 #    con.commit()
@@ -795,14 +798,14 @@ def getData(tbl, name, db_file):
 
 
 def insertConfig(name, data, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("INSERT INTO configs VALUES(?,DATETIME('now'),?)", (name,data))
     con.commit()
     return True
 
 def replaceConfig(name, data, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("REPLACE INTO configs VALUES(?,DATETIME('now'),?)", (name, data))
     con.commit()
@@ -811,7 +814,7 @@ def replaceConfig(name, data, db_file):
     return True
 
 def replaceINTO(tbl, name, data, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("REPLACE INTO " + str(tbl) + " VALUES(?,DATETIME('now'),?)", (name, data))
     con.commit()
@@ -823,7 +826,7 @@ def replaceINTO(tbl, name, data, db_file):
 # create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
 #def updateTbl(tbl, name, data, db_file):
 def updateData(tbl, name, data, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("UPDATE " + str(tbl) + " SET data=?, timestamp=DATETIME('now') WHERE name=?", (data, name))
     con.commit()
@@ -832,7 +835,7 @@ def updateData(tbl, name, data, db_file):
     return True
 
 def updateFims(name, data, db_file): #not working?  ah, name,data...data,name
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("UPDATE fims SET data=?, timestamp=DATETIME('now') WHERE name=?", (data, name))
     con.commit()
@@ -842,7 +845,7 @@ def updateFims(name, data, db_file): #not working?  ah, name,data...data,name
 
 
 def deleteFrom(tbl, rowid, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM " + str(tbl) + " WHERE rowid=? ;", (rowid,))
     con.commit()
@@ -851,14 +854,14 @@ def deleteFrom(tbl, rowid, db_file):
     return True
 
 def selectAll(tbl, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("SELECT rowid,* FROM " + str(tbl) + ";")
     rows = cur.fetchall()
     return rows
 
 def getJob(name, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT data FROM jobs WHERE job=? ;', (name,))
     row = cur.fetchone()
@@ -867,7 +870,7 @@ def getJob(name, db_file):
 
 def deleteJob(name, db_file):
     #print('let us delete...')
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM jobs WHERE job=? ;", (name,))
     con.commit()
@@ -877,7 +880,7 @@ def deleteJob(name, db_file):
     return True
 
 def clearAllJobs(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("DELETE FROM jobs;")
     cur.execute("REINDEX jobs;")
@@ -885,7 +888,7 @@ def clearAllJobs(db_file):
     return True
 
 def replaceCounts(name, count, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("REPLACE INTO counts VALUES(?,?)", (name, count))
     con.commit()
@@ -916,7 +919,7 @@ def replaceCounts(name, count, db_file):
 
 
 def updateCounts(name, count, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     #sql = "UPDATE counts SET count='" + count + "' WHERE name='" + str(name) + "';" 
     #cur.execute(sql)
@@ -926,14 +929,14 @@ def updateCounts(name, count, db_file):
     return True
 
 def getCount(name, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT count FROM counts WHERE name=? ;', (name,))
     row = cur.fetchone()
     return row
 
 def getAllCounts(db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("SELECT * FROM counts;")
     rows = cur.fetchall()
@@ -941,7 +944,7 @@ def getAllCounts(db_file):
 
 
 def updateJobs(job, jdata, db_file):
-    con = sql_connection(db_file)
+    con = sqlConnection(db_file)
     cur = con.cursor()
     sql = "UPDATE jobs SET data='" + jdata + "' WHERE job='" + str(job) + "';"
     cur.execute(sql)

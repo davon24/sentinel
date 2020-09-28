@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.w5'
+__version__ = '0.0.0.v1.4.w6'
 
 import sys
 #sys.path.insert(0,'db')
@@ -102,6 +102,9 @@ def usage():
 
         sentry
 
+        ---
+
+        run-create-db
 
     ''')
 
@@ -663,8 +666,10 @@ if __name__ == '__main__':
             print(str(run))
             sys.exit(0)
 
-
-
+        if sys.argv[1] == 'run-create-db':
+            run = store.createDB(db_store)
+            print(str(run))
+            sys.exit(0)
 
         else:
             usage()
