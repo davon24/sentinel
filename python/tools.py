@@ -1794,23 +1794,23 @@ def runAlert(name, db_store):
             if email:
                 # send email...
                 #print('email.config')
-                subject = 'sentinel alert '
+                subject = 'sentinel alert ' + name + ' '
                 send = sendEmail(subject, message, db_store)
                 #run = True
                 sent = 'email'
-                logging.info('alert email ' + str('get.details'))
+                logging.info('alert email sent ' + name)
 
             if logfile:
                 # write log...
                 #print('logfile.config ' + str(logfile))
                 #write = writeLog(logfile, message)
-                subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ')
+                subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
                 with open(logfile, 'a+') as log:
                     #log.write(message)
                     #print('write this ' + str(report))
                     log.write(subject + ' ' + message + '\n')
                 sent = 'logfile'
-                logging.info('alert logfile ' + str(logfile))
+                logging.info('alert logfile written ' + name)
 
     #if _sent and not alert:
     #    cleared = True
@@ -1825,6 +1825,15 @@ def runAlert(name, db_store):
 
     if _cleared is None and alert is False:
         new_json['cleared'] = done
+        if email:
+            subject = 'sentinel alert cleared ' + name + ' '
+            send = sendEmail(subject, message, db_store)
+            logging.info('alert email sent cleared ' + name)
+        if logfile:
+            subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
+            with open(logfile, 'a+') as log:
+                log.write(subject + ' ' + message + '\n')
+            logging.info('alert logfile written cleared ' + name)
 
     #elif _cleared and alert:
     if _cleared and alert is True:
@@ -1839,6 +1848,8 @@ def runAlert(name, db_store):
     #print('run ' + str(name) + ' was ' + str(run))
     #return run
     return True
+
+#Back to play another day...
 
 
 #we'll move these into db config store later
