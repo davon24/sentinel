@@ -1694,13 +1694,13 @@ def runAlert(name, db_store):
     start = time.strftime("%Y-%m-%d %H:%M:%S")
 
     new_json = jdata
-    new_json['start'] = start
+    #new_json['start'] = start
 
     try:
-        del new_json['done']
+        del new_json['checked']
     except KeyError: pass
     try:
-        del new_json['success']
+        del new_json['alert']
     except KeyError: pass
 
     #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
@@ -1712,6 +1712,8 @@ def runAlert(name, db_store):
 
     _report = jdata.get('report', None)
     _config = jdata.get('config', None)
+
+    _sent = jdata.get('sent', None)
 
     #getReport
     report = store.getData('reports', _report, db_store)
@@ -1758,10 +1760,10 @@ def runAlert(name, db_store):
     has_items = bool(report) 
     if not has_items:
         #print('Empty Dct')
-        run = False
+        alert = False
     else:
         #print('Apparently has itmes... ' + str(report))
-        run = True
+        alert = True
 
 
     # send report to config...
@@ -1780,37 +1782,52 @@ def runAlert(name, db_store):
 
     #DO.RUN
     #run = True
-    #run = False
-    if run is True:
 
-        if email:
-            # send email...
-            print('email.config')
-            subject = 'sentinel alert '
-            send = sendEmail(subject, message, db_store)
-            #run = True
-            run = send
 
-        if logfile:
-            # write log...
-            print('logfile.config ' + str(logfile))
-            #write = writeLog(logfile, message)
-            subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ')
-            with open(logfile, 'a+') as log:
-                #log.write(message)
-                #print('write this ' + str(report))
-                log.write(subject + ' ' + message + '\n')
-            run = True
+    sent = None
 
+    if alert is True:
+
+        if _sent is None:
+            print('never sent before...')
+
+            if email:
+                # send email...
+                print('email.config')
+                subject = 'sentinel alert '
+                send = sendEmail(subject, message, db_store)
+                #run = True
+                sent = 'email'
+
+            if logfile:
+                # write log...
+                print('logfile.config ' + str(logfile))
+                #write = writeLog(logfile, message)
+                subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ')
+                with open(logfile, 'a+') as log:
+                    #log.write(message)
+                    #print('write this ' + str(report))
+                    log.write(subject + ' ' + message + '\n')
+                sent = 'logfile'
+
+    if _sent and not alert:
+        cleared = True
 
     #-done
     done = time.strftime("%Y-%m-%d %H:%M:%S")
-    new_json['done'] = done
-    new_json['success'] = run
+    new_json['checked'] = done
+    new_json['alert'] = alert
+    if sent:
+        #new_json['sent'] = sent
+        new_json['sent'] = done
+
+    if cleared:
+        new_json['cleared'] = done
 
     #update = updateJobsJson(name, json.dumps(new_json), db_store)
     update = store.updateData('alerts', name, json.dumps(new_json), db_store)
     print('update was ' + str(update))
+    run = True
     print('run ' + str(name) + ' was ' + str(run))
     return run
 
