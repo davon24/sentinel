@@ -84,13 +84,13 @@ def createDB(db_file):
     cur.execute(create_detect)
     cur.execute(create_detecti)
 
-    create_ip  = "CREATE TABLE IF NOT EXISTS ips (ip TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-    create_ipi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_ip ON ips (ip);"
+    create_ip  = "CREATE TABLE IF NOT EXISTS ips (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_ipi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_ip ON ips (name);"
     cur.execute(create_ip)
     cur.execute(create_ipi)
 
-    create_configs  = "CREATE TABLE IF NOT EXISTS configs (config TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-    create_configsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_config ON configs (config);"
+    create_configs  = "CREATE TABLE IF NOT EXISTS configs (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_configsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_config ON configs (name);"
     cur.execute(create_configs)
     cur.execute(create_configsi)
 
@@ -109,8 +109,8 @@ def createDB(db_file):
     cur.execute(create_alerts)
     cur.execute(create_alertsi)
 
-    create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (job TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-    create_jobsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs ON jobs (job);"
+    create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
+    create_jobsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs ON jobs (name);"
     cur.execute(create_jobs)
     cur.execute(create_jobsi)
 
@@ -865,7 +865,7 @@ def selectAll(tbl, db_file):
 def getJob(name, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
-    cur.execute('SELECT data FROM jobs WHERE job=? ;', (name,))
+    cur.execute('SELECT data FROM jobs WHERE name=? ;', (name,))
     row = cur.fetchone()
     #print(len(row))
     return row
@@ -874,7 +874,7 @@ def deleteJob(name, db_file):
     #print('let us delete...')
     con = sqlConnection(db_file)
     cur = con.cursor()
-    cur.execute("DELETE FROM jobs WHERE job=? ;", (name,))
+    cur.execute("DELETE FROM jobs WHERE name=? ;", (name,))
     con.commit()
     #print('cur.rowcount ' + str(cur.rowcount))
     if cur.rowcount == 0:
@@ -944,14 +944,14 @@ def getAllCounts(db_file):
     rows = cur.fetchall()
     return rows
 
-
-def updateJobs(job, jdata, db_file):
-    con = sqlConnection(db_file)
-    cur = con.cursor()
-    sql = "UPDATE jobs SET data='" + jdata + "' WHERE job='" + str(job) + "';"
-    cur.execute(sql)
-    con.commit()
-    return True
+#def updateData(tbl, name, data, db_file):
+#def updateJobs(name, jdata, db_file):
+#    con = sqlConnection(db_file)
+#    cur = con.cursor()
+#    sql = "UPDATE jobs SET data='" + jdata + "' WHERE name='" + str(name) + "';"
+#    cur.execute(sql)
+#    con.commit()
+#    return True
 
 
 

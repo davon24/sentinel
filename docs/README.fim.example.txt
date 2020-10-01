@@ -95,9 +95,54 @@ manually run the alert,
 And this is where i'm at... so, back to programming the nex steps...
 
 
+---
+
+./sentinel.py list-configs
+(1, 'email', '2020-09-26 16:38:31', '{"smtp_to":"root@localhost"}')
+(2, 'logfile', '2020-09-27 05:13:38', '{"logfile":"/tmp/sentinel.log"}')
+
+
+./sentinel.py update-config logfile '{"logfile":"/tmp/sentinel.log"}'
+
+
+---
+
+🍁 krink@Karls-MacBook-Pro python % sudo vi /etc/hosts
+Password:
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-fims-changed
+/etc/hosts CHANGED
+True
+
+
+./sentinel.py update-job fim-job-1 '{"repeat": "12hour", "job": "fim-check", "config": "fim-1"}'
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-reports
+(2, 'fim-1', '2020-09-30 01:32:40', '{"/etc/hosts": "CHANGED"}')
+
+
+🍁 krink@Karls-MacBook-Pro python % ./sentinel.py list-alerts
+(1, 'alert-on-fim-1', '2020-09-30 01:15:51', '{"report":"fim-1", "config":"logfile"}')
+
+./sentinel.py run-alert alert-on-fim-1
+
+---
+
+./sentinel.py update-job fim-job-1 '{"repeat": "12hour", "job": "fim-check", "config": "fim-1"}'
+./sentinel.py list-reports
+./sentinel.py list-alerts
+
+
+
+% ./sentinel.py list-reports
+(5, 'fim-1', '2020-10-01 04:25:59', '{}')
+
+
+
 
   
-  
-  
+ 
+
+
+
   
   

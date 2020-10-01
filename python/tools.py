@@ -1715,12 +1715,78 @@ def runAlert(name, db_store):
 
     #getReport
     report = store.getData('reports', _report, db_store)
-    print(str(report))
+    #print(str(report))
 
     #getConfig
+    config = store.getData('configs', _config, db_store)
+    #print(str(config))
+
+
+    if type(report) == tuple:
+        report = report[0]
+    try:
+        report = json.loads(report)
+    except json.decoder.JSONDecodeError:
+        print('invalid json')
+        return None
+
+    if type(config) == tuple:
+        config = config[0]
+    try:
+        config = json.loads(config)
+    except json.decoder.JSONDecodeError:
+        print('invalid json')
+        return None
+
+    #print(str(report))
+    #print(str(config))
+
+    #report.get('subject') is None
+
+    #if isEmpty(report):
+    #if len(report['results']) == 0:
+    #    print(isEmpty)
+
+    # check if empty json {}
+
+
+
+    # send report to config...
+
+    #destination_config_is
+    #if config['logfile']:
+    #    print('logfile')
+
+    logfile = config.get('logfile', None)
+    email = config.get('email', None)
+
+    run = False
+
+    student.get('subject') is None
+
+    #message = json.dumps(report)
+    #print(len(message))
+
+    if email:
+        # send email...
+        print('email.config')
+        subject = 'sentinel alert '
+        send = sendEmail(subject, message, db_store)
+        run = True
+
+    if logfile:
+        # write log...
+        print('logfile.config ' + str(logfile))
+        #write = writeLog(logfile, message)
+        subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ')
+        with open(logfile, 'a+') as log:
+            #log.write(message)
+            #print('write this ' + str(report))
+            log.write(subject + ' ' + message + '\n')
+        run = True
 
     #DO.RUN
-    run = True
+    #run = True
 
     #-done
     done = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -1804,7 +1870,8 @@ def runJob(name, db_store):
     done = time.strftime("%Y-%m-%d %H:%M:%S")
     new_json['done'] = done
     new_json['success'] = run
-    update = updateJobsJson(name, json.dumps(new_json), db_store)
+    #update = updateJobsJson(name, json.dumps(new_json), db_store)
+    update = store.updateData('jobs', name, json.dumps(new_json), db_store)
     #print('update was ' + str(update))
     print('run ' + str(name) + ' was ' + str(run))
     #return True
@@ -1927,10 +1994,11 @@ def replaceJobsJson(name, jdata, db_store):
     replace = store.replaceINTO('jobs', name, jdata, db_store)
     return replace
 
-def updateJobsJson(name, jdata, db_store):
-    #replaceINTO(tbl, item, data, db_file):
-    update = store.updateJobs(name, jdata, db_store)
-    return update
+#def updateJobsJson(name, jdata, db_store):
+#    #replaceINTO(tbl, item, data, db_file):
+#    #update = store.updateJobs(name, jdata, db_store)
+#    update = store.updateData('jobs', name, jdata, db_store)
+#    return update
 
 def sentryScheduler(db_store):
     #sigterm = False
