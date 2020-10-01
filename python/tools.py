@@ -25,6 +25,8 @@ import json
 
 from hashlib import blake2b, blake2s
 
+import logging
+
 import store
 
 class ThreadWithReturnValue(threading.Thread):
@@ -1513,14 +1515,14 @@ def detectScan(ips, db_store):
     pass
 
 def fimCheck(config, db_store):
-    print('fimCheck get config... ' + str(config))
+    #print('fimCheck get config... ' + str(config))
 
     conf = store.getFim(config, db_store)
     if conf is None:
         return 'config is None'
 
     check = checkFimAndReport(config, db_store)
-    print(check)
+    #print(check)
 
     #else:
     #    conf = conf[0]
@@ -1575,7 +1577,7 @@ def checkFim(name, db_store):
 
 def checkFimAndReport(name, db_store):
     Dct = {}
-    print('checkFimAndReport ' + str(name))
+    #print('checkFimAndReport ' + str(name))
     fimDct = getFimDct(name, db_store)
     
     for k,v in fimDct.items():
@@ -1669,7 +1671,7 @@ def delFimFile(name, _file, db_store):
 
 
 def runAlert(name, db_store):
-    print('runAlert ' + str(name))
+    #print('runAlert ' + str(name))
     #alerts = store.getAll('alerts', db_store)
     #for row in alerts:
     #    #print(row)
@@ -1688,7 +1690,7 @@ def runAlert(name, db_store):
     except json.decoder.JSONDecodeError:
         return 'invalid json ' + str(alert)
 
-    print(str(jdata))
+    #print(str(jdata))
 
     #-start
     start = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -1705,7 +1707,7 @@ def runAlert(name, db_store):
 
     #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
     replace = store.replaceINTO('alerts', name, json.dumps(new_json), db_store)
-    print('replace was ' + str(replace))
+    #print('replace was ' + str(replace))
 
     #_ips = jdata.get('ips', None)
     #if type(_ips) == list:
@@ -1714,10 +1716,11 @@ def runAlert(name, db_store):
     _config = jdata.get('config', None)
 
     _sent = jdata.get('sent', None)
+    _cleared = jdata.get('cleared', None)
 
     #getReport
     report = store.getData('reports', _report, db_store)
-    print('getReport report is ' + str(type(report)) + ' ' + str(report))
+    #print('getReport report is ' + str(type(report)) + ' ' + str(report))
 
     #getConfig
     config = store.getData('configs', _config, db_store)
@@ -1725,15 +1728,15 @@ def runAlert(name, db_store):
 
 
     if type(report) == tuple:
-        print('yep, tuple... 2 string')
+        #print('yep, tuple... 2 string')
         report = report[0]
-        print('report is ' + str(type(report)))
+        #print('report is ' + str(type(report)))
 
     try:
-        print('ok, report json.loads now')
+        #print('ok, report json.loads now')
         report = json.loads(report)
     except json.decoder.JSONDecodeError:
-        print('invalid json')
+        #print('invalid json')
         return None
 
     if type(config) == tuple:
@@ -1754,7 +1757,7 @@ def runAlert(name, db_store):
     #    print(isEmpty)
 
     # check if empty json {}
-    print('report (after json.loads is ' + str(type(report)))
+    #print('report (after json.loads is ' + str(type(report)))
     # report is <class 'dict'>
     #bool True|False
     has_items = bool(report) 
@@ -1765,7 +1768,6 @@ def runAlert(name, db_store):
         #print('Apparently has itmes... ' + str(report))
         alert = True
 
-
     # send report to config...
     #destination_config_is
     #if config['logfile']:
@@ -1773,7 +1775,6 @@ def runAlert(name, db_store):
 
     logfile = config.get('logfile', None)
     email = config.get('email', None)
-
 
     #student.get('subject') is None
 
@@ -1783,25 +1784,25 @@ def runAlert(name, db_store):
     #DO.RUN
     #run = True
 
-
     sent = None
 
     if alert is True:
 
         if _sent is None:
-            print('never sent before...')
+            #print('never sent before...')
 
             if email:
                 # send email...
-                print('email.config')
+                #print('email.config')
                 subject = 'sentinel alert '
                 send = sendEmail(subject, message, db_store)
                 #run = True
                 sent = 'email'
+                logging.info('alert email ' + str('get.details'))
 
             if logfile:
                 # write log...
-                print('logfile.config ' + str(logfile))
+                #print('logfile.config ' + str(logfile))
                 #write = writeLog(logfile, message)
                 subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ')
                 with open(logfile, 'a+') as log:
@@ -1809,9 +1810,10 @@ def runAlert(name, db_store):
                     #print('write this ' + str(report))
                     log.write(subject + ' ' + message + '\n')
                 sent = 'logfile'
+                logging.info('alert logfile ' + str(logfile))
 
-    if _sent and not alert:
-        cleared = True
+    #if _sent and not alert:
+    #    cleared = True
 
     #-done
     done = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -1821,15 +1823,22 @@ def runAlert(name, db_store):
         #new_json['sent'] = sent
         new_json['sent'] = done
 
-    if cleared:
+    if _cleared is None and alert is False:
         new_json['cleared'] = done
 
-    #update = updateJobsJson(name, json.dumps(new_json), db_store)
+    #elif _cleared and alert:
+    if _cleared and alert is True:
+        try:
+            del new_json['cleared']
+            #del new_json['sent'] #we'll probably repeat here later...
+        except KeyError: pass
+
     update = store.updateData('alerts', name, json.dumps(new_json), db_store)
-    print('update was ' + str(update))
-    run = True
-    print('run ' + str(name) + ' was ' + str(run))
-    return run
+    #print('update was ' + str(update))
+    #run = True
+    #print('run ' + str(name) + ' was ' + str(run))
+    #return run
+    return True
 
 
 #we'll move these into db config store later
@@ -1849,10 +1858,10 @@ def runJob(name, db_store):
 
     job = store.getJob(name, db_store)
     if not job:
-        print('no job')
+        #print('no job')
         return None
     #print(str(type(job)))
-    print(job)
+    #print(job)
 
     if type(job) == tuple:
         job = job[0]
@@ -1860,7 +1869,7 @@ def runJob(name, db_store):
     try:
         jdata = json.loads(job)
     except json.decoder.JSONDecodeError:
-        print('invalid json')
+        #print('invalid json')
         return None
 
     new_json = jdata
@@ -1875,7 +1884,7 @@ def runJob(name, db_store):
     except KeyError: pass
 
     replace = replaceJobsJson(name, json.dumps(new_json), db_store)
-    print('replace was ' + str(replace))
+    #print('replace was ' + str(replace))
 
     #_time = jdata.get('time', None) 
     #_repeat = jdata.get('repeat', None) 
@@ -1905,7 +1914,7 @@ def runJob(name, db_store):
     #update = updateJobsJson(name, json.dumps(new_json), db_store)
     update = store.updateData('jobs', name, json.dumps(new_json), db_store)
     #print('update was ' + str(update))
-    print('run ' + str(name) + ' was ' + str(run))
+    #print('run ' + str(name) + ' was ' + str(run))
     #return True
     return run
 
@@ -1941,7 +1950,32 @@ def getDuration(_repeat):
         
     return scale, amt
 
-def sentryProcessSchedule(db_store):
+def sentryProcessAlerts(db_store):
+    #print( 'process Alerts')
+    Dct = {}
+    alerts = store.selectAll('alerts', db_store)
+    for alert in alerts:
+        #print(alert[0])
+        name = alert[1]
+        jdata = alert[3]
+
+        try:
+            jdata = json.loads(alert[3])
+        except json.decoder.JSONDecodeError:
+            print('invalid json')
+            #return None
+            jdata = json.loads('{}')
+        Dct[name] = jdata
+
+    #run = runAlert(name, db_store)
+    for name,jdata in Dct.items():
+        run = runAlert(name, db_store)
+        #print('run alert is ' + str(run))
+
+    return True
+
+
+def sentryProcessJobs(db_store):
     #print('process Schedule')
     run = None
 
@@ -2036,10 +2070,16 @@ def sentryScheduler(db_store):
     #sigterm = False
     while (sigterm == False):
 
-        #run = sentryProcessSchedule(db_store)
-        run = threading.Thread(target=sentryProcessSchedule, args=(db_store,), name="SentryScheduler")
-        run.setDaemon(True)
-        run.start()
+        #run = sentryProcessJobs(db_store)
+        job = threading.Thread(target=sentryProcessJobs, args=(db_store,), name="SentryJobRunner")
+        job.setDaemon(True)
+        job.start()
+
+        #run = sentryProcessAlerts(db_store)
+        alert = threading.Thread(target=sentryProcessAlerts, args=(db_store,), name="SentryAlertRunner")
+        alert.setDaemon(True)
+        alert.start()
+
 
         tcount = 0
         threads = []
@@ -2072,8 +2112,8 @@ def sentryScheduler(db_store):
 
         time.sleep(3)
 
-    #return True
-    return run
+    return True
+    #return run
 
 def listRunning(db_store):
     rows = store.getAllCounts(db_store)
@@ -2082,7 +2122,7 @@ def listRunning(db_store):
     return True
 
 def sentryCleanup(db_store):
-    import logging
+    #import logging
     logging.info("Cleanup:")
     update1 = store.replaceCounts('threads', 0, db_store)
     update2 = store.replaceCounts('process', 0, db_store)
@@ -2093,7 +2133,7 @@ def sentryMode(db_store):
     global sigterm
     sigterm = False
 
-    import logging
+    #import logging
     import atexit
     import signal
 
@@ -2113,6 +2153,10 @@ def sentryMode(db_store):
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="Scheduler")
     scheduler.setDaemon(True)
     scheduler.start()
+
+    #alertmgr = threading.Thread(target=sentryAlertManager, args=(db_store,), name="AlertManager")
+    #alertmgr.setDaemon(True)
+    #alertmgr.start()
 
     while (sigterm == False):
         try:
