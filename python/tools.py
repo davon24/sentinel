@@ -1715,7 +1715,7 @@ def runAlert(name, db_store):
 
     #getReport
     report = store.getData('reports', _report, db_store)
-    #print(str(report))
+    print('getReport report is ' + str(type(report)) + ' ' + str(report))
 
     #getConfig
     config = store.getData('configs', _config, db_store)
@@ -1723,8 +1723,12 @@ def runAlert(name, db_store):
 
 
     if type(report) == tuple:
+        print('yep, tuple... 2 string')
         report = report[0]
+        print('report is ' + str(type(report)))
+
     try:
+        print('ok, report json.loads now')
         report = json.loads(report)
     except json.decoder.JSONDecodeError:
         print('invalid json')
@@ -1748,11 +1752,19 @@ def runAlert(name, db_store):
     #    print(isEmpty)
 
     # check if empty json {}
-
+    print('report (after json.loads is ' + str(type(report)))
+    # report is <class 'dict'>
+    #bool True|False
+    has_items = bool(report) 
+    if not has_items:
+        #print('Empty Dct')
+        run = False
+    else:
+        #print('Apparently has itmes... ' + str(report))
+        run = True
 
 
     # send report to config...
-
     #destination_config_is
     #if config['logfile']:
     #    print('logfile')
@@ -1760,33 +1772,36 @@ def runAlert(name, db_store):
     logfile = config.get('logfile', None)
     email = config.get('email', None)
 
-    run = False
 
-    student.get('subject') is None
+    #student.get('subject') is None
 
-    #message = json.dumps(report)
+    message = json.dumps(report)
     #print(len(message))
-
-    if email:
-        # send email...
-        print('email.config')
-        subject = 'sentinel alert '
-        send = sendEmail(subject, message, db_store)
-        run = True
-
-    if logfile:
-        # write log...
-        print('logfile.config ' + str(logfile))
-        #write = writeLog(logfile, message)
-        subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ')
-        with open(logfile, 'a+') as log:
-            #log.write(message)
-            #print('write this ' + str(report))
-            log.write(subject + ' ' + message + '\n')
-        run = True
 
     #DO.RUN
     #run = True
+    #run = False
+    if run is True:
+
+        if email:
+            # send email...
+            print('email.config')
+            subject = 'sentinel alert '
+            send = sendEmail(subject, message, db_store)
+            #run = True
+            run = send
+
+        if logfile:
+            # write log...
+            print('logfile.config ' + str(logfile))
+            #write = writeLog(logfile, message)
+            subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ')
+            with open(logfile, 'a+') as log:
+                #log.write(message)
+                #print('write this ' + str(report))
+                log.write(subject + ' ' + message + '\n')
+            run = True
+
 
     #-done
     done = time.strftime("%Y-%m-%d %H:%M:%S")
