@@ -39,17 +39,26 @@ def get_ps():
     #print('sys.exit')
     #sys.exit(1)
 
-    ps_rrdupdate = 'N:' + str(number_of_procs)
-    ps_rrdupdate += ':' + str(number_of_defunct)
-    json_data = '{"rrd":"%s","val":"%s"}' % ('ps', ps_rrdupdate)
-    import json
-    return json.loads(json_data), alert_data
+    Dct = {}
+
+    Dct['procs'] = number_of_procs
+    Dct['defunct'] = number_of_defunct
+
+    Dct.update(alert_data)
+
+    #json_data = '{"ps":"%s","val":"%s"}' % ('ps', ps_num_procs)
+
+    #import json
+    #return json.loads(json_data), alert_data
+    #print(str(type(json_data)))
+    #print(str(type(data)))
+    #return json_data
+    return Dct
 
 if __name__ == '__main__':
 
-    rrd_ps, alert_ps = get_ps()
-    print(rrd_ps)
-    print(alert_ps)
+    run = get_ps()
+    print(run)
 
 #>>> import sys
 #>>> sys.path.append('/ufs/guido/lib/python')
