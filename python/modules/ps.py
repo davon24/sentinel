@@ -5,8 +5,8 @@ import re
 
 def get_ps():
     alert_data = {}
-    collect="ps -ef"
-    p = subprocess.Popen(collect, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    cmd="ps -ef"
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output, err = p.communicate()
     exit_code = p.wait()
     if (exit_code != 0):
@@ -19,8 +19,10 @@ def get_ps():
     count = 0
     for line in multilines:
        count += 1
-       #print(str(count) + ': ' + line)
+       line = line.decode('utf-8')
+       #print(str(count) + ': ' + str(line))
        odict[count] = line
+
 
     number_of_procs = len(odict)
     number_of_defunct = 0
@@ -33,16 +35,21 @@ def get_ps():
 
     #alert_data[1] = '503 19591 19580   0  6:57PM ttys010    0:00.00 defunct'
 
+    #import sys
+    #print('sys.exit')
+    #sys.exit(1)
+
     ps_rrdupdate = 'N:' + str(number_of_procs)
     ps_rrdupdate += ':' + str(number_of_defunct)
     json_data = '{"rrd":"%s","val":"%s"}' % ('ps', ps_rrdupdate)
+    import json
     return json.loads(json_data), alert_data
-
-
 
 if __name__ == '__main__':
 
     rrd_ps, alert_ps = get_ps()
+    print(rrd_ps)
+    print(alert_ps)
 
 #>>> import sys
 #>>> sys.path.append('/ufs/guido/lib/python')
