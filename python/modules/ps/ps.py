@@ -2,7 +2,7 @@
 
 import sys
 import subprocess
-import re
+#import re
 
 def get_ps():
 
@@ -11,7 +11,7 @@ def get_ps():
     #if sys.platform == 'linux' or sys.platform == 'linux2':
     #    cmd='ps -ef'
 
-    cmd='ps -A -o stat,uid,ppid,pid,user,command'
+    cmd='ps -A -o stat,uid,ppid,pid,user,etime,command'
 
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output, err = p.communicate()

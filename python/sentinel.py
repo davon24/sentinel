@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.w12'
+__version__ = '0.0.0.v1.4.x0'
 
 import sys
 #sys.path.insert(0,'db')
@@ -105,6 +105,7 @@ def usage():
         ---
 
         run-create-db
+        run-ps
 
     ''')
 
@@ -669,6 +670,12 @@ if __name__ == '__main__':
         if sys.argv[1] == 'run-create-db':
             run = store.createDB(db_store)
             print(str(run))
+            sys.exit(0)
+
+        if sys.argv[1] == 'run-ps':
+            import modules.ps.ps
+            run = modules.ps.ps.get_ps()
+            print(run)
             sys.exit(0)
 
         else:
