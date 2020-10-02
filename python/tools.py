@@ -1680,10 +1680,15 @@ def runAlert(name, db_store):
     #    name = row[1]
     #    print(name)
 
+    run = None
+    sent = None
+
     alert = store.getData('alerts', name, db_store)
     #print(alert)
     if alert is None:
-        return str(name) + ' is None'
+        #return str(name) + ' is None'
+        run = str(name) + ' is None'
+        alert = False
     else:
         alert = alert[0]
 
@@ -1691,6 +1696,9 @@ def runAlert(name, db_store):
         jdata = json.loads(alert)
     except json.decoder.JSONDecodeError:
         return 'invalid json ' + str(alert)
+
+    #isAlert None?
+    #print('isAlert ' + str(alert)) #isAlert None {"report": "proc-monitor", "config": "logfile"}
 
     #print(str(jdata))
 
@@ -1706,6 +1714,10 @@ def runAlert(name, db_store):
     try:
         del new_json['alert']
     except KeyError: pass
+    try:
+        del new_json['run']
+    except KeyError: pass
+
 
     #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
     replace = store.replaceINTO('alerts', name, json.dumps(new_json), db_store)
@@ -1714,7 +1726,7 @@ def runAlert(name, db_store):
     #_ips = jdata.get('ips', None)
     #if type(_ips) == list:
 
-    _report = jdata.get('report', None)
+    _report = jdata.get('report', None) #name
     _config = jdata.get('config', None)
 
     _sent = jdata.get('sent', None)
@@ -1726,6 +1738,7 @@ def runAlert(name, db_store):
 
     #getConfig
     config = store.getData('configs', _config, db_store)
+    #print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
     #print(str(config))
 
 
@@ -1737,20 +1750,27 @@ def runAlert(name, db_store):
     try:
         #print('ok, report json.loads now')
         report = json.loads(report)
-    except json.decoder.JSONDecodeError:
+    except (json.decoder.JSONDecodeError, TypeError):
         #print('invalid json')
-        return None
+        #return None
+        #return 'invalid json ' + str(report)
+        report = None
 
     if type(config) == tuple:
         config = config[0]
     try:
         config = json.loads(config)
-    except json.decoder.JSONDecodeError:
+    #except json.decoder.JSONDecodeError:
+    except (json.decoder.JSONDecodeError, TypeError):
         #print('invalid json')
-        return None
+        #return None
+        #return 'invalid json ' + str(report)
+        config = None
 
     #print(str(report))
     #print(str(config))
+    #print('report is ' + str(type(report)) + ' ' + str(report))
+    #print('configs is ' + str(type(config)) + ' ' + str(config))
 
     #report.get('subject') is None
 
@@ -1762,13 +1782,32 @@ def runAlert(name, db_store):
     #print('report (after json.loads is ' + str(type(report)))
     # report is <class 'dict'>
     #bool True|False
-    has_items = bool(report) 
-    if not has_items:
+    report_items = bool(report) 
+    config_items = bool(config)
+
+    if not report_items:
         #print('Empty Dct')
+        #alert = False
+        #alert = 'empty report ' + str(report) + ' ' + str(name)
+        #alert = str(_report) + ' report is ' + str(report)
         alert = False
+        run = str(_report) + ' report is ' + str(report)
+    elif not config_items:
+        alert = False
+        run = str(_config) + ' config is ' + str(config) + ' ' + run
     else:
         #print('Apparently has itmes... ' + str(report))
         alert = True
+        run = True
+
+    #config_items = bool(config)
+    #if not config_items:
+    #    alert = False
+    #    run = str(_config) + ' config is ' + str(config) + ' ' + run
+    #else:
+    #    alert = True
+    #    run = True
+
 
     # send report to config...
     #destination_config_is
@@ -1785,34 +1824,38 @@ def runAlert(name, db_store):
 
     #DO.RUN
     #run = True
+    #sent = None
 
-    sent = None
+    #print('alert is ' + str(alert))
+    #print('report is ' + str(report))
+    #print('config is ' + str(config))
 
     if alert is True:
 
         if _sent is None:
-            #print('never sent before...')
+            #print('NEVER sent before...')
+            if report is not None and config is not None:
 
-            if email:
-                # send email...
-                #print('email.config')
-                subject = 'sentinel alert ' + name + ' '
-                send = sendEmail(subject, message, db_store)
-                #run = True
-                sent = 'email'
-                logging.info('alert email sent ' + name)
+                if email:
+                    # send email...
+                    #print('email.config')
+                    subject = 'sentinel alert ' + name + ' '
+                    send = sendEmail(subject, message, db_store)
+                    #run = True
+                    sent = 'email'
+                    logging.info('alert email sent ' + name)
 
-            if logfile:
-                # write log...
-                #print('logfile.config ' + str(logfile))
-                #write = writeLog(logfile, message)
-                subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
-                with open(logfile, 'a+') as log:
-                    #log.write(message)
-                    #print('write this ' + str(report))
-                    log.write(subject + ' ' + message + '\n')
-                sent = 'logfile'
-                logging.info('alert logfile written ' + name)
+                if logfile:
+                    # write log...
+                    #print('logfile.config ' + str(logfile))
+                    #write = writeLog(logfile, message)
+                    subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
+                    with open(logfile, 'a+') as log:
+                        #log.write(message)
+                        #print('write this ' + str(report))
+                        log.write(subject + ' ' + message + '\n')
+                    sent = 'logfile'
+                    logging.info('alert logfile written ' + name)
 
     #if _sent and not alert:
     #    cleared = True
@@ -1827,15 +1870,18 @@ def runAlert(name, db_store):
 
     if _cleared is None and alert is False:
         new_json['cleared'] = done
-        if email:
-            subject = 'sentinel alert cleared ' + name + ' '
-            send = sendEmail(subject, message, db_store)
-            logging.info('alert email sent cleared ' + name)
-        if logfile:
-            subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
-            with open(logfile, 'a+') as log:
-                log.write(subject + ' ' + message + '\n')
-            logging.info('alert logfile written cleared ' + name)
+
+        if report is not None and config is not None:
+
+            if email:
+                subject = 'sentinel alert cleared ' + name + ' '
+                send = sendEmail(subject, message, db_store)
+                logging.info('alert email sent cleared ' + name)
+            if logfile:
+                subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
+                with open(logfile, 'a+') as log:
+                    log.write(subject + ' ' + message + '\n')
+                logging.info('alert logfile written cleared ' + name)
 
     #elif _cleared and alert:
     if _cleared and alert is True:
@@ -1844,12 +1890,14 @@ def runAlert(name, db_store):
             #del new_json['sent'] #we'll probably repeat here later...
         except KeyError: pass
 
+    new_json['run'] = run
+
     update = store.updateData('alerts', name, json.dumps(new_json), db_store)
     #print('update was ' + str(update))
     #run = True
     #print('run ' + str(name) + ' was ' + str(run))
-    #return run
-    return True
+    return run
+    #return True
 
 #Back to play another day...
 
@@ -2009,6 +2057,9 @@ def sentryProcessAlerts(db_store):
             #return None
             jdata = json.loads('{}')
         Dct[name] = jdata
+
+    #no name?
+    #print('this is my name right before runAlert ' + str(name))
 
     #run = runAlert(name, db_store)
     for name,jdata in Dct.items():

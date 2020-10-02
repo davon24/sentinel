@@ -16,6 +16,14 @@
 
 ./sentinel.py update-alert proc-monitor-alert '{"report":"proc-monitor", "config": "logfile"}' 
 
+#no proc-monitor report...
+#Exception in thread SentryAlertRunner:
+#TypeError: the JSON object must be str, bytes or bytearray, not NoneType
+# getReport report is <class 'NoneType'> None
+
+🎃 karl.rink@Karl-MacBook-Pro python % ./sentinel.py list-alerts
+
+
 
 
 
