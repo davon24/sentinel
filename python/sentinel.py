@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.x5'
+__version__ = '0.0.0.v1.4.x6'
 
 import sys
 #sys.path.insert(0,'db')
@@ -90,6 +90,7 @@ def usage():
         run-alert name
         update-alert name data
         run-alert name
+        clear-alerts
 
         list-fims
         list-fims-changed
@@ -651,6 +652,11 @@ if __name__ == '__main__':
             print(delete)
             sys.exit(0)
 
+        if sys.argv[1] == 'clear-alerts':
+            clear = store.clearAll('alerts', db_store)
+            print(clear)
+            sys.exit(0)
+
         if sys.argv[1] == 'update-alert':
             name = sys.argv[2]
             data = sys.argv[3]
@@ -683,6 +689,7 @@ if __name__ == '__main__':
             for k,v in tools.options.items():
                 print(k)
             sys.exit(0)
+
 
         else:
             usage()

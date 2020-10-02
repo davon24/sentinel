@@ -1669,8 +1669,34 @@ def delFimFile(name, _file, db_store):
     update = store.updateData('fims', name, json.dumps(jdata), db_store)
     return update
 
-
 def runAlert(name, db_store):
+    print('runAlert ' + str(name))
+    alertData = store.getData('alerts', name, db_store)
+    #print('alertData is ' + str(type(alertData)) + ' ' + str(alertData))
+
+    if type(alertData) == tuple:
+        jdata = alertData[0]
+
+    try:
+        jdata = json.loads(jdata)
+    except json.decoder.JSONDecodeError:
+        jdata = None
+
+    print('jdata is ' + str(type(jdata)) + ' ' + str(jdata))
+
+    _report = jdata.get('report', None)
+    _config = jdata.get('config', None)
+    _repeat = jdata.get('repeat', None)
+
+    print('_report is ' + str(_report))
+    print('_config is ' + str(_config))
+    print('_repeat is ' + str(_repeat))
+
+
+
+    return True
+
+#def runAlert(name, db_store):
     #print('runAlert ' + str(name))
     #dump into reports...
     #return True
@@ -1680,228 +1706,244 @@ def runAlert(name, db_store):
     #    name = row[1]
     #    print(name)
 
-    run = None
-    sent = None
-
-    alert = store.getData('alerts', name, db_store)
-    #print(alert)
-    if alert is None:
-        #return str(name) + ' is None'
-        run = str(name) + ' is None'
-        alert = False
-    else:
-        alert = alert[0]
-
-    try:
-        jdata = json.loads(alert)
-    except json.decoder.JSONDecodeError:
-        return 'invalid json ' + str(alert)
-
-    #isAlert None?
-    #print('isAlert ' + str(alert)) #isAlert None {"report": "proc-monitor", "config": "logfile"}
-
-    #print(str(jdata))
-
-    #-start
-    start = time.strftime("%Y-%m-%d %H:%M:%S")
-
-    new_json = jdata
-    #new_json['start'] = start
-
-    try:
-        del new_json['checked']
-    except KeyError: pass
-    try:
-        del new_json['alert']
-    except KeyError: pass
-    try:
-        del new_json['run']
-    except KeyError: pass
-
-
-    #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
-    replace = store.replaceINTO('alerts', name, json.dumps(new_json), db_store)
-    #print('replace was ' + str(replace))
-
-    #_ips = jdata.get('ips', None)
-    #if type(_ips) == list:
-
-    _report = jdata.get('report', None) #name
-    _config = jdata.get('config', None)
-
-    _sent = jdata.get('sent', None)
-    _cleared = jdata.get('cleared', None)
-
-    #getReport
-    report = store.getData('reports', _report, db_store)
-    #print('getReport report is ' + str(type(report)) + ' ' + str(report))
-
-    #getConfig
-    config = store.getData('configs', _config, db_store)
-    #print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
-    #print(str(config))
-
-
-    if type(report) == tuple:
-        #print('yep, tuple... 2 string')
-        report = report[0]
-        #print('report is ' + str(type(report)))
-
-    try:
-        #print('ok, report json.loads now')
-        report = json.loads(report)
-    except (json.decoder.JSONDecodeError, TypeError):
-        #print('invalid json')
-        #return None
-        #return 'invalid json ' + str(report)
-        report = None
-
-    if type(config) == tuple:
-        config = config[0]
-    try:
-        config = json.loads(config)
-    #except json.decoder.JSONDecodeError:
-    except (json.decoder.JSONDecodeError, TypeError):
-        #print('invalid json')
-        #return None
-        #return 'invalid json ' + str(report)
-        config = None
-
-    #print(str(report))
-    #print(str(config))
-    #print('report is ' + str(type(report)) + ' ' + str(report))
-    #print('configs is ' + str(type(config)) + ' ' + str(config))
-
-    #report.get('subject') is None
-
-    #if isEmpty(report):
-    #if len(report['results']) == 0:
-    #    print(isEmpty)
-
-    # check if empty json {}
-    #print('report (after json.loads is ' + str(type(report)))
-    # report is <class 'dict'>
-    #bool True|False
-    report_items = bool(report) 
-    config_items = bool(config)
-
-    if not report_items:
-        #print('Empty Dct')
-        #alert = False
-        #alert = 'empty report ' + str(report) + ' ' + str(name)
-        #alert = str(_report) + ' report is ' + str(report)
-        alert = False
-        run = str(_report) + ' report is ' + str(report)
-    elif not config_items:
-        alert = False
-        run = str(_config) + ' config is ' + str(config) + ' ' + run
-    else:
-        #print('Apparently has itmes... ' + str(report))
-        alert = True
-        run = True
-
-    #config_items = bool(config)
-    #if not config_items:
-    #    alert = False
-    #    run = str(_config) + ' config is ' + str(config) + ' ' + run
-    #else:
-    #    alert = True
-    #    run = True
-
-
-    # send report to config...
-    #destination_config_is
-    #if config['logfile']:
-    #    print('logfile')
-
-    logfile = config.get('logfile', None)
-    email = config.get('email', None)
-
-    #student.get('subject') is None
-
-    message = json.dumps(report)
-    #print(len(message))
-
-    #DO.RUN
-    #run = True
-    #sent = None
-
-    #print('alert is ' + str(alert))
-    #print('report is ' + str(report))
-    #print('config is ' + str(config))
-
-    if alert is True:
-
-        if _sent is None:
-            #print('NEVER sent before...')
-            if report is not None and config is not None:
-
-                if email:
-                    # send email...
-                    #print('email.config')
-                    subject = 'sentinel alert ' + name + ' '
-                    send = sendEmail(subject, message, db_store)
-                    #run = True
-                    sent = 'email'
-                    logging.info('alert email sent ' + name)
-
-                if logfile:
-                    # write log...
-                    #print('logfile.config ' + str(logfile))
-                    #write = writeLog(logfile, message)
-                    subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
-                    with open(logfile, 'a+') as log:
-                        #log.write(message)
-                        #print('write this ' + str(report))
-                        log.write(subject + ' ' + message + '\n')
-                    sent = 'logfile'
-                    logging.info('alert logfile written ' + name)
-
-    #if _sent and not alert:
-    #    cleared = True
-
-    #-done
-    done = time.strftime("%Y-%m-%d %H:%M:%S")
-    new_json['checked'] = done
-    new_json['alert'] = alert
-    if sent:
-        #new_json['sent'] = sent
-        new_json['sent'] = done
-
-    if _cleared is None and alert is False:
-        new_json['cleared'] = done
-
-        if report is not None and config is not None:
-
-            if email:
-                subject = 'sentinel alert ' + name + ' cleared '
-                send = sendEmail(subject, message, db_store)
-                logging.info('alert email sent cleared ' + name)
-            if logfile:
-                subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name + ' cleared ')
-                with open(logfile, 'a+') as log:
-                    log.write(subject + ' ' + message + '\n')
-                logging.info('alert logfile written cleared ' + name)
-
-    #elif _cleared and alert:
-    if _cleared and alert is True:
-        try:
-            del new_json['cleared']
-            #del new_json['sent'] #we'll probably repeat here later...
-        except KeyError: pass
-
-    new_json['run'] = run
-
-    update = store.updateData('alerts', name, json.dumps(new_json), db_store)
-    #print('update was ' + str(update))
-    #run = True
-    #print('run ' + str(name) + ' was ' + str(run))
-    return run
-    #return True
-
+#    run = None
+#    sent = None
+#
+#    alert = store.getData('alerts', name, db_store)
+#    #print(alert)
+#    if alert is None:
+#        #return str(name) + ' is None'
+#        run = str(name) + ' is None'
+#        alert = False
+#    else:
+#        alert = alert[0]
+#
+#    try:
+#        jdata = json.loads(alert)
+#    except json.decoder.JSONDecodeError:
+#        return 'invalid json ' + str(alert)
+#
+#    #isAlert None?
+#    #print('isAlert ' + str(alert)) #isAlert None {"report": "proc-monitor", "config": "logfile"}
+#
+#    #print(str(jdata))
+#
+#    #-start
+#    start = time.strftime("%Y-%m-%d %H:%M:%S")
+#
+#    new_json = jdata
+#    #new_json['start'] = start
+#
+#    try:
+#        del new_json['checked']
+#    except KeyError: pass
+#    try:
+#        del new_json['alert']
+#    except KeyError: pass
+#    try:
+#        del new_json['run']
+#    except KeyError: pass
+#    try:
+#        del new_json['error']
+#    except KeyError: pass
+#
+#
+#    #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
+#    replace = store.replaceINTO('alerts', name, json.dumps(new_json), db_store)
+#    #print('replace was ' + str(replace))
+#
+#    #_ips = jdata.get('ips', None)
+#    #if type(_ips) == list:
+#
+#    _report = jdata.get('report', None) #name
+#    _config = jdata.get('config', None)
+#
+#    _sent = jdata.get('sent', None)
+#    _cleared = jdata.get('cleared', None)
+#
+#    #getReport
+#    report = store.getData('reports', _report, db_store)
+#    #print('getReport report is ' + str(type(report)) + ' ' + str(report))
+#
+#    #getConfig
+#    config = store.getData('configs', _config, db_store)
+#    #print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
+#    #print(str(config))
+#
+#
+#    if type(report) == tuple:
+#        #print('yep, tuple... 2 string')
+#        report = report[0]
+#        #print('report is ' + str(type(report)))
+#
+#    try:
+#        #print('ok, report json.loads now')
+#        report = json.loads(report)
+#    except (json.decoder.JSONDecodeError, TypeError):
+#        #print('invalid json')
+#        #return None
+#        #return 'invalid json ' + str(report)
+#        report = None
+#
+#    if type(config) == tuple:
+#        config = config[0]
+#    try:
+#        config = json.loads(config)
+#    #except json.decoder.JSONDecodeError:
+#    except (json.decoder.JSONDecodeError, TypeError):
+#        #print('invalid json')
+#        #return None
+#        #return 'invalid json ' + str(report)
+#        config = None
+#
+#    #print(str(report))
+#    #print(str(config))
+#    print('report is ' + str(type(report)) + ' ' + str(report))
+#    print('config is ' + str(type(config)) + ' ' + str(config))
+#
+#    if report is None:
+#        alert = False
+#        new_json['error'] = name + ' report is None'
+#
+#    if config is None:
+#        alert = False
+#        new_json['error'] = name + ' report is None'
+#    
+#    logfile = config.get('logfile', None)
+#    email = config.get('email', None)
+#
+#    message = json.dumps(report)
+#
+#    print('Alert is ' + str(alert))
+#
+#    #report.get('subject') is None
+#
+#    #if isEmpty(report):
+#    #if len(report['results']) == 0:
+#    #    print(isEmpty)
+#
+#    # check if empty json {}
+#    #print('report (after json.loads is ' + str(type(report)))
+#    # report is <class 'dict'>
+#    #bool True|False
+##    report_items = bool(report) 
+##    config_items = bool(config)
+##
+##    if not report_items:
+##        #print('Empty Dct')
+##        #alert = False
+##        #alert = 'empty report ' + str(report) + ' ' + str(name)
+##        #alert = str(_report) + ' report is ' + str(report)
+##        alert = False
+##        run = str(_report) + ' report is ' + str(report)
+##    elif not config_items:
+##        alert = False
+##        run = str(_config) + ' config is ' + str(config) + ' ' + run
+##    else:
+##        #print('Apparently has itmes... ' + str(report))
+##        alert = True
+##        run = True
+#
+#    #config_items = bool(config)
+#    #if not config_items:
+#    #    alert = False
+#    #    run = str(_config) + ' config is ' + str(config) + ' ' + run
+#    #else:
+#    #    alert = True
+#    #    run = True
+#
+#
+#    # send report to config...
+#    #destination_config_is
+#    #if config['logfile']:
+#    #    print('logfile')
+#
+#    #logfile = config.get('logfile', None)
+#    #email = config.get('email', None)
+#
+#    #student.get('subject') is None
+#
+#    #message = json.dumps(report)
+#    #print(len(message))
+#
+#    #DO.RUN
+#    #run = True
+#    #sent = None
+#
+#    #print('alert is ' + str(alert))
+#    #print('report is ' + str(report))
+#    #print('config is ' + str(config))
+#
+#    if alert is True:
+#
+#        if _sent is None:
+#
+#            if report is not None and config is not None:
+#
+#                if email:
+#                    # send email...
+#                    #print('email.config')
+#                    subject = 'sentinel alert ' + name + ' '
+#                    send = sendEmail(subject, message, db_store)
+#                    #run = True
+#                    sent = 'email'
+#                    logging.info('alert email sent ' + name)
+#
+#                if logfile:
+#                    # write log...
+#                    #print('logfile.config ' + str(logfile))
+#                    #write = writeLog(logfile, message)
+#                    subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
+#                    with open(logfile, 'a+') as log:
+#                        #log.write(message)
+#                        #print('write this ' + str(report))
+#                        log.write(subject + ' ' + message + '\n')
+#                    sent = 'logfile'
+#                    logging.info('alert logfile written ' + name)
+#
+#    #if _sent and not alert:
+#    #    cleared = True
+#
+#    #-done
+#    done = time.strftime("%Y-%m-%d %H:%M:%S")
+#    new_json['checked'] = done
+#    new_json['alert'] = alert
+#    if sent:
+#        #new_json['sent'] = sent
+#        new_json['sent'] = done
+#
+#    if _cleared is None and alert is False:
+#        new_json['cleared'] = done
+#
+#        if report is not None and config is not None:
+#
+#            if email:
+#                subject = 'sentinel alert ' + name + ' cleared '
+#                send = sendEmail(subject, message, db_store)
+#                logging.info('alert email sent cleared ' + name)
+#            if logfile:
+#                subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name + ' cleared ')
+#                with open(logfile, 'a+') as log:
+#                    log.write(subject + ' ' + message + '\n')
+#                logging.info('alert logfile written cleared ' + name)
+#
+#    #elif _cleared and alert:
+#    if _cleared and alert is True:
+#        try:
+#            del new_json['cleared']
+#            #del new_json['sent'] #we'll probably repeat here later...
+#        except KeyError: pass
+#
+#    new_json['run'] = run
+#
+#    update = store.updateData('alerts', name, json.dumps(new_json), db_store)
+#    #print('update was ' + str(update))
+#    #run = True
+#    #print('run ' + str(name) + ' was ' + str(run))
+#    return run
+#    #return True
 #Back to play another day...
 
-#def psCheck(_data, db_store):
 def psCheck(name, db_store):
     #print(str(_data)) #None
     import modules.ps.ps
