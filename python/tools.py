@@ -1874,11 +1874,11 @@ def runAlert(name, db_store):
         if report is not None and config is not None:
 
             if email:
-                subject = 'sentinel alert cleared ' + name + ' '
+                subject = 'sentinel alert ' + name + ' cleared '
                 send = sendEmail(subject, message, db_store)
                 logging.info('alert email sent cleared ' + name)
             if logfile:
-                subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
+                subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name + ' cleared ')
                 with open(logfile, 'a+') as log:
                     log.write(subject + ' ' + message + '\n')
                 logging.info('alert logfile written cleared ' + name)

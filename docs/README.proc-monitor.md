@@ -25,6 +25,20 @@
 
 
 
+./sentinel.py update-job proc-monitor '{"repeat": "1min", "job": "ps-check"}' 
+
+
+#...
+
+
+
+
+runAlert logic...  1st pass, sent = None , just send
+runAlert logic...  2nd pass, already sent? yes = pass...
+
+runAlert logic...  2nd pass, already sent? yes = pass || timedelta = re-send
+
+
 
 
 
