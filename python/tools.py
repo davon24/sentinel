@@ -1672,6 +1672,8 @@ def delFimFile(name, _file, db_store):
 
 def runAlert(name, db_store):
     #print('runAlert ' + str(name))
+    #dump into reports...
+    return True
     #alerts = store.getAll('alerts', db_store)
     #for row in alerts:
     #    #print(row)
@@ -1851,6 +1853,11 @@ def runAlert(name, db_store):
 
 #Back to play another day...
 
+def psCheck(_data, db_store):
+    import modules.ps.ps
+    psDct = modules.ps.ps.get_ps()
+    #dump into reports...
+    return True
 
 #we'll move these into db config store later
 options = {
@@ -1859,6 +1866,7 @@ options = {
  'port-scan2' : portScan2,
  'detect-scan' : detectScan,
  'fim-check' : fimCheck,
+ 'ps-check' : psCheck,
 }
 #options[sys.argv[2]](sys.argv[3:])
 
@@ -1916,7 +1924,12 @@ def runJob(name, db_store):
     else:
         _data = None
 
-    run = options[_job](_data, db_store)
+    try:
+        run = options[_job](_data, db_store)
+    except KeyError:
+        # unknown "job":"????"
+        #return 'unknown job ' + str(_job)
+        run = 'unknown job ' + str(_job)
 
     #-done
     done = time.strftime("%Y-%m-%d %H:%M:%S")
