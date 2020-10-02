@@ -1673,7 +1673,7 @@ def delFimFile(name, _file, db_store):
 def runAlert(name, db_store):
     #print('runAlert ' + str(name))
     #dump into reports...
-    return True
+    #return True
     #alerts = store.getAll('alerts', db_store)
     #for row in alerts:
     #    #print(row)
@@ -1746,7 +1746,7 @@ def runAlert(name, db_store):
     try:
         config = json.loads(config)
     except json.decoder.JSONDecodeError:
-        print('invalid json')
+        #print('invalid json')
         return None
 
     #print(str(report))
