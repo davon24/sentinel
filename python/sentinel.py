@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.x1'
+__version__ = '0.0.0.v1.4.x2'
 
 import sys
 #sys.path.insert(0,'db')
@@ -72,6 +72,7 @@ def usage():
 
         list-jobs
         list-jobs-running
+        list-jobs-available
         run-job name
         update-job name data
         delete-job name
@@ -676,6 +677,11 @@ if __name__ == '__main__':
             import modules.ps.ps
             run = modules.ps.ps.get_ps()
             print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-jobs-available':
+            for k,v in tools.options.items():
+                print(k)
             sys.exit(0)
 
         else:

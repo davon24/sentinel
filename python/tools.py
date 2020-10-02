@@ -1564,7 +1564,7 @@ def b2sumFim(name, db_store):
     return replace
 
 def checkFim(name, db_store):
-    print('checkFim .now ' + str(name))
+    #print('checkFim .now ' + str(name))
     fimDct = getFimDct(name, db_store)
     for k,v in fimDct.items():
         #print(k,v)
@@ -1853,11 +1853,28 @@ def runAlert(name, db_store):
 
 #Back to play another day...
 
-def psCheck(_data, db_store):
+#def psCheck(_data, db_store):
+def psCheck(name, db_store):
+    #print(str(_data)) #None
     import modules.ps.ps
     psDct = modules.ps.ps.get_ps()
+    #for k,v in psDct.items():
+    #    print(k,v)
     #dump into reports...
-    return True
+    check = checkPsAndReport(name, psDct, db_store)
+    #return True
+    #return check
+    return check
+
+
+def checkPsAndReport(name, Dct, db_store):
+
+    #for k,v in _dct.items():
+    #    print(k,v)
+
+    replace = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
+    return replace
+    
 
 #we'll move these into db config store later
 options = {
@@ -1921,6 +1938,8 @@ def runJob(name, db_store):
         _data = _ips
     elif _config:
         _data = _config
+    elif _config is None:
+        _data = name
     else:
         _data = None
 
