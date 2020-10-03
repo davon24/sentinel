@@ -1,0 +1,14 @@
+
+sqlite> create table testtable (testfield JSON);
+sqlite> insert into testtable (testfield) values (json('{"json1": "works"}'));
+
+sqlite> insert into testtable (testfield) values (json('{"name": "karl"}'));
+sqlite> insert into testtable (testfield) values (json('{"name": "zara"}'));
+
+sqlite> select * from testtable where json_extract("testfield", '$.name') is not null;
+{"name":"karl"}
+{"name":"zara"}
+
+
+
+
