@@ -1696,6 +1696,7 @@ def runAlert(name, db_store):
 
     _report = jdata.get('report', None)
     _config = jdata.get('config', None)
+    _job    = jdata.get('job', None)
     _repeat = jdata.get('repeat', None)
 
     #print('_report is ' + str(_report))
@@ -1710,6 +1711,17 @@ def runAlert(name, db_store):
     config = store.getData('configs', _config, db_store)
     #print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
 
+    #getJob just verifies options
+    #for k in options:
+    #    print(k)
+
+    if _job in options:
+        job = _job
+    else:
+        job = None
+        new_json['error'] = str(_job) + ' is None'
+        
+
     if report is None:
         new_json['error'] = str(_report) + ' is None'
     else:
@@ -1722,9 +1734,9 @@ def runAlert(name, db_store):
         config = config[0] #tuple
         config = json.loads(config) #<class 'dict'>
 
-    if report is not None and config is not None:
-        #print('runAlert now ' + str(name))
-        print('report ' + name + ' is ' + str(type(report)) + ' ' + str(report))
+    if report is not None and config is not None and job is not None:
+        #print('runAlert job name ' + str(job))
+        #print('report ' + name + ' is ' + str(type(report)) + ' ' + str(report))
         #print('config is ' + str(type(config)) + ' ' + str(config))
         # check if empty json {}
         #bool True|False
@@ -1735,7 +1747,7 @@ def runAlert(name, db_store):
         #    alert = True
 
         #alert = isAlert(name, _report, report)
-        alert = isAlert(_report, report)
+        alert = isAlert(_report, job, report)
 
 
 
@@ -1758,10 +1770,21 @@ def runAlert(name, db_store):
 #def isAlert(name, _report, report):
 #    print('isAlert ' + name, _report, report)
 
-def isAlert(name, _dct):
-    print('isAlert ' + name, _dct)
+def isAlert(name, job, _dct):
+    #print('isAlert ' + name, job, _dct)
+    alert = False
 
-    return False
+
+    #isAlert fim-2 fim-check {'/etc/group': 'ADDED', '/Users/krink/.ssh/config': 'ADDED'}
+    if job == 'fim-check':
+        #print('...check if empty')
+        #report_items = bool(_dct)
+        if bool(_dct):
+            alert = True
+
+    #isAlert proc-monitor ps-check {'procs': 418, 'defunct': 0}
+
+    return alert
 
 #def runAlert(name, db_store):
     #print('runAlert ' + str(name))

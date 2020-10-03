@@ -58,6 +58,37 @@ a one shot alert
 
 
 
-#
+#-------------------------------------------------------------------------------------------------------------------
+
+
+#-----------------------
+./sentinel.py list-jobs
+('proc-monitor', '2020-10-03 23:08:40', '{"repeat": "1min", "job": "ps-check", "start": "2020-10-03 16:08:40", "done": "2020-10-03 16:08:40", "success": true}')
+
+
+./sentinel.py list-reports
+('proc-monitor', '2020-10-03 23:08:40', '{"procs": 426, "defunct": 0}')
+
+
+./sentinel.py update-alert alert-1 '{"report":"proc-monitor", "job":"ps-check", "config":"logfile", "procs": 300, "defunct": 1, "repeat": "5min"}'
+
+
+#-----------------------
+
+./sentinel.py list-jobs
+('fim-job-1', '2020-10-03 23:10:35', '{"repeat": "1min", "job": "fim-check", "config": "fim-1", "start": "2020-10-03 16:10:35", "done": "2020-10-03 16:10:35", "success": true}')
+
+./sentinel.py list-reports
+('fim-1', '2020-10-03 23:11:38', '{}')
+('fim-2', '2020-10-03 23:12:17', '{"/etc/group": "ADDED", "/Users/krink/.ssh/config": "ADDED"}')
+
+
+./sentinel.py update-alert alert-2 '{"report": "fim-1", "job": "fim-check", "config": "logfile"}'
+
+
+
+
+
+
 
 
