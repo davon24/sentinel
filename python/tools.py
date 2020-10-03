@@ -1402,23 +1402,26 @@ def sendEmail(subject, message, db_store):
 
 
 def printConfigs(db_store):
-    configs = store.getAllConfigs(db_store)
+    #configs = store.getAllConfigs(db_store)
+    configs = store.selectAll('configs', db_store)
     for row in configs:
         print(row)
     return True
 
 def printAllFims(db_store):
-    #fims = store.getAllFims(db_store)
-    fims = store.getAll('fims', db_store)
+    #fims = store.getAll('fims', db_store)
+    fims = store.selectAll('fims', db_store)
     for row in fims:
         print(row)
     return True
 
 def printAllFimsChanged(db_store):
-    fims = store.getAll('fims', db_store)
+    #fims = store.getAll('fims', db_store)
+    fims = store.selectAll('fims', db_store)
     for row in fims:
         #print(row)
-        name = row[1]
+        #name = row[1]
+        name = row[0]
         #print(name)
         fDct = getFimDct(name, db_store)
         for k,v in fDct.items():
@@ -2116,11 +2119,14 @@ def sentryProcessAlerts(db_store):
     alerts = store.selectAll('alerts', db_store)
     for alert in alerts:
         #print(alert[0])
-        name = alert[1]
-        jdata = alert[3]
+        #name = alert[1]
+        #jdata = alert[3]
+        name = alert[0]
+        jdata = alert[2]
 
         try:
-            jdata = json.loads(alert[3])
+            #jdata = json.loads(alert[3])
+            jdata = json.loads(alert[2])
         except json.decoder.JSONDecodeError:
             print('invalid json')
             #return None
@@ -2152,12 +2158,15 @@ def sentryProcessJobs(db_store):
     now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
 
     for job in jobs:
-        name = job[1]
-        jdata = job[3]
+        #name = job[1]
+        #jdata = job[3]
+        name = job[0]
+        jdata = job[2]
         #print(job)
         #print(name)
         try:
-            jdata = json.loads(job[3])
+            #jdata = json.loads(job[3])
+            jdata = json.loads(job[2])
         except json.decoder.JSONDecodeError:
             print('invalid json')
             return None

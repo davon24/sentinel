@@ -746,12 +746,12 @@ def clearAllDetects(db_file):
     con.commit()
     return True
 
-def getAllConfigs(db_file):
-    con = sqlConnection(db_file)
-    cur = con.cursor()
-    cur.execute('SELECT rowid,* FROM configs;')
-    rows = cur.fetchall()
-    return rows
+#def getAllConfigs(db_file):
+#    con = sqlConnection(db_file)
+#    cur = con.cursor()
+#    cur.execute('SELECT rowid,* FROM configs;')
+#    rows = cur.fetchall()
+#    return rows
 
 #def getAllFims(db_file):
 #    rows = getAll('fims', db_file)

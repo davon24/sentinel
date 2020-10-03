@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.y1'
+__version__ = '0.0.0.v1.4.y2'
 
 import sys
 #sys.path.insert(0,'db')
@@ -569,9 +569,11 @@ if __name__ == '__main__':
             try: name = sys.argv[2]
             except IndexError: name = None
             if name is None:
-                fims = store.getAll('fims', db_store)
+                #fims = store.getAll('fims', db_store)
+                fims = store.selectAll('fims', db_store)
                 for i in fims:
-                    name = i[1]
+                    #name = i[1]
+                    name = i[0]
                     run = tools.b2sumFim(name, db_store)
                     print(str(name) + ' ' + str(run))
             else:
@@ -629,7 +631,8 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-reports':
-            reports = store.getAll('reports', db_store)
+            #reports = store.getAll('reports', db_store)
+            reports = store.selectAll('reports', db_store)
             for row in reports:
                 print(row)
             sys.exit(0)
