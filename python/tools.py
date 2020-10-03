@@ -12,6 +12,7 @@ import time
 import datetime
 import collections
 import socket
+import copy
 import json
 
 #import smtplib
@@ -1673,37 +1674,41 @@ def delFimFile(name, _file, db_store):
     return update
 
 def runAlert(name, db_store):
-    print('runAlert ' + str(name))
-    alert = store.getData('alerts', name, db_store)
+    #print('start runAlert ' + str(name))
+    alert = False
+
+    _alert = store.getData('alerts', name, db_store)
     #print('alertData is ' + str(type(alertData)) + ' ' + str(alertData))
 
-    if type(alert) == tuple:
-        alert = alert[0]
+    if type(_alert) == tuple:
+        _alert = _alert[0]
 
     try:
-        jdata = json.loads(alert)
+        jdata = json.loads(_alert)
     except json.decoder.JSONDecodeError:
         jdata = None
 
-    new_json = jdata
+    #new_json = jdata
+    #new_json = copy.deepcopy(jdata)
+    new_json = copy.copy(jdata)
 
-    print('jdata is ' + str(type(jdata)) + ' ' + str(jdata))
+    #print('jdata is ' + str(type(jdata)) + ' ' + str(jdata))
 
     _report = jdata.get('report', None)
     _config = jdata.get('config', None)
     _repeat = jdata.get('repeat', None)
 
-    print('_report is ' + str(_report))
-    print('_config is ' + str(_config))
-    print('_repeat is ' + str(_repeat))
+    #print('_report is ' + str(_report))
+    #print('_config is ' + str(_config))
+    #print('_repeat is ' + str(_repeat))
 
     #getReport
     report = store.getData('reports', _report, db_store)
-    print('getReport report is ' + str(type(report)) + ' ' + str(report))
+    #print('getReport report is ' + str(type(report)) + ' ' + str(report))
 
     #getConfig
     config = store.getData('configs', _config, db_store)
-    print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
+    #print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
 
     if report is None:
         new_json['report_error'] = str(_report) + ' is None'
@@ -1712,19 +1717,29 @@ def runAlert(name, db_store):
         new_json['config_error'] = str(_config) + ' is None'
 
     if report is not None and config is not None:
-        print('runAlert ' + str(name))
-        checked = time.strftime("%Y-%m-%d %H:%M:%S")
-        new_json['checked'] = checked
+        print('runAlert now ' + str(name))
 
-        run = True
+        #if not _start 
+        #checked = time.strftime("%Y-%m-%d %H:%M:%S")
+        #new_json['checked'] = checked
+        #run = True
+    #else:
+    #    print('runAlert NONE ' + str(name))
+    #    run = False
+
+    #new_json['test'] = 'TEST is here'
+    #print(str(len(jdata)) + ' ' + str(jdata))
+    #print(str(len(new_json)) + ' ' + str(new_json))
+
+    if new_json == jdata:
+        #print('same')
+        update = None
     else:
-        print('runAlert NONE ' + str(name))
+        #print('diff')
+        update = store.updateData('alerts', name, json.dumps(new_json), db_store)
 
-        run = False
-
-    update = store.updateData('alerts', name, json.dumps(new_json), db_store)
-
-    return run
+    #update = store.updateData('alerts', name, json.dumps(new_json), db_store)
+    return alert
 
 #def runAlert(name, db_store):
     #print('runAlert ' + str(name))
@@ -2028,7 +2043,8 @@ def runJob(name, db_store):
         #print('invalid json')
         return None
 
-    new_json = jdata
+    new_json = copy.copy(jdata)
+
     new_json['start'] = start
     
     # del element['hours']
@@ -2122,13 +2138,13 @@ def sentryProcessAlerts(db_store):
         #name = alert[1]
         #jdata = alert[3]
         name = alert[0]
-        jdata = alert[2]
+        #jdata = alert[2]
 
         try:
             #jdata = json.loads(alert[3])
             jdata = json.loads(alert[2])
         except json.decoder.JSONDecodeError:
-            print('invalid json')
+            #print('invalid json')
             #return None
             jdata = json.loads('{}')
         Dct[name] = jdata
@@ -2138,8 +2154,8 @@ def sentryProcessAlerts(db_store):
 
     #run = runAlert(name, db_store)
     for name,jdata in Dct.items():
-        run = runAlert(name, db_store)
-        #print('run alert is ' + str(run))
+        alert = runAlert(name, db_store)
+        print('Alert ' + name + ' is ' + str(alert))
 
     return True
 
