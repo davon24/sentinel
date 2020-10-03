@@ -85,37 +85,37 @@ def createDB(db_file):
     cur.execute(create_detecti)
 
     #create_ip  = "CREATE TABLE IF NOT EXISTS ips (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-    create_ip  = "CREATE TABLE IF NOT EXISTS ips (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON);"
+    create_ip  = "CREATE TABLE IF NOT EXISTS ips (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
     create_ipi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_ip ON ips (name);"
     cur.execute(create_ip)
     cur.execute(create_ipi)
 
     #create_configs  = "CREATE TABLE IF NOT EXISTS configs (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-    create_configs  = "CREATE TABLE IF NOT EXISTS configs (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON);"
+    create_configs  = "CREATE TABLE IF NOT EXISTS configs (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
     create_configsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_config ON configs (name);"
     cur.execute(create_configs)
     cur.execute(create_configsi)
 
     #create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-    create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON);"
+    create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
     create_fimsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_fims ON fims (name);"
     cur.execute(create_fims)
     cur.execute(create_fimsi)
 
     #create_reports  = "CREATE TABLE IF NOT EXISTS reports (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-    create_reports  = "CREATE TABLE IF NOT EXISTS reports (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON);"
+    create_reports  = "CREATE TABLE IF NOT EXISTS reports (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
     create_reportsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_reports ON reports (name);"
     cur.execute(create_reports)
     cur.execute(create_reportsi)
 
     #create_alerts  = "CREATE TABLE IF NOT EXISTS alerts (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON,status INT,run JSON);"
-    create_alerts  = "CREATE TABLE IF NOT EXISTS alerts (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON);"
+    create_alerts  = "CREATE TABLE IF NOT EXISTS alerts (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
     create_alertsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_alerts ON alerts (name);"
     cur.execute(create_alerts)
     cur.execute(create_alertsi)
 
     #create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-    create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON);"
+    create_jobs  = "CREATE TABLE IF NOT EXISTS jobs (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
     create_jobsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs ON jobs (name);"
     cur.execute(create_jobs)
     cur.execute(create_jobsi)
@@ -757,12 +757,6 @@ def getAllConfigs(db_file):
 #    rows = getAll('fims', db_file)
 #    return rows
 
-def getAll(tbl, db_file):
-    con = sqlConnection(db_file)
-    cur = con.cursor()
-    cur.execute('SELECT rowid,* FROM ' + str(tbl) + ';')
-    rows = cur.fetchall()
-    return rows
 
 def clearAll(tbl, db_file):
     con = sqlConnection(db_file)
@@ -863,12 +857,29 @@ def deleteFrom(tbl, rowid, db_file):
         return False
     return True
 
+#def selectAllrowid(tbl, db_file):
+#    con = sqlConnection(db_file)
+#    cur = con.cursor()
+#    cur.execute("SELECT rowid,* FROM " + str(tbl) + ";")
+#    #cur.execute("SELECT * FROM " + str(tbl) + ";")
+#    rows = cur.fetchall()
+#    return rows
+
 def selectAll(tbl, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
-    cur.execute("SELECT rowid,* FROM " + str(tbl) + ";")
+    #cur.execute("SELECT rowid,* FROM " + str(tbl) + ";")
+    cur.execute("SELECT * FROM " + str(tbl) + ";")
     rows = cur.fetchall()
     return rows
+
+def getAll(tbl, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM ' + str(tbl) + ';')
+    rows = cur.fetchall()
+    return rows
+
 
 def getJob(name, db_file):
     con = sqlConnection(db_file)

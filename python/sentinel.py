@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.y0'
+__version__ = '0.0.0.v1.4.y1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -641,7 +641,7 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-alerts':
-            alerts = store.getAll('alerts', db_store)
+            alerts = store.selectAll('alerts', db_store)
             for row in alerts:
                 print(row)
             sys.exit(0)
