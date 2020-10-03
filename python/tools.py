@@ -1711,35 +1711,57 @@ def runAlert(name, db_store):
     #print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
 
     if report is None:
-        new_json['report_error'] = str(_report) + ' is None'
+        new_json['error'] = str(_report) + ' is None'
+    else:
+        report = report[0] #tuple
+        report = json.loads(report) #<class 'dict'>
 
     if config is None:
-        new_json['config_error'] = str(_config) + ' is None'
+        new_json['error'] = str(_config) + ' is None'
+    else:
+        config = config[0] #tuple
+        config = json.loads(config) #<class 'dict'>
 
     if report is not None and config is not None:
-        print('runAlert now ' + str(name))
+        #print('runAlert now ' + str(name))
+        print('report ' + name + ' is ' + str(type(report)) + ' ' + str(report))
+        #print('config is ' + str(type(config)) + ' ' + str(config))
+        # check if empty json {}
+        #bool True|False
+        #report_items = bool(report)
+        #if not report_items:
+        #    print('Empty Dct')
+        #if bool(report):
+        #    alert = True
 
-        #if not _start 
-        #checked = time.strftime("%Y-%m-%d %H:%M:%S")
-        #new_json['checked'] = checked
-        #run = True
-    #else:
-    #    print('runAlert NONE ' + str(name))
-    #    run = False
+        #alert = isAlert(name, _report, report)
+        alert = isAlert(_report, report)
 
-    #new_json['test'] = 'TEST is here'
-    #print(str(len(jdata)) + ' ' + str(jdata))
-    #print(str(len(new_json)) + ' ' + str(new_json))
+
+
+    new_json['alert'] = alert
 
     if new_json == jdata:
         #print('same')
         update = None
     else:
         #print('diff')
+
+        #post, may need to update/remove report_error or config_error
+
         update = store.updateData('alerts', name, json.dumps(new_json), db_store)
 
     #update = store.updateData('alerts', name, json.dumps(new_json), db_store)
     return alert
+
+
+#def isAlert(name, _report, report):
+#    print('isAlert ' + name, _report, report)
+
+def isAlert(name, _dct):
+    print('isAlert ' + name, _dct)
+
+    return False
 
 #def runAlert(name, db_store):
     #print('runAlert ' + str(name))
@@ -2151,11 +2173,13 @@ def sentryProcessAlerts(db_store):
 
     #no name?
     #print('this is my name right before runAlert ' + str(name))
+    #need job name...
+
 
     #run = runAlert(name, db_store)
     for name,jdata in Dct.items():
         alert = runAlert(name, db_store)
-        print('Alert ' + name + ' is ' + str(alert))
+        print('Alert ' + name + ' ' + str(alert))
 
     return True
 
