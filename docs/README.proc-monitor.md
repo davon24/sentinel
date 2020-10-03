@@ -50,6 +50,14 @@ a one shot alert
 ./sentinel.py update-alert alert-on-proc-monitor '{"report":"proc-monitor", "config":"logfile", "repeat":"5min"}'
 ./sentinel.py update-alert alert-on-fim-1 '{"report":"fim-1", "config":"logfile", "repeat":"5min"}'
 
+./sentinel.py update-alert broken-1 '{"report":"report-NONE", "config":"logfile", "repeat":"5min"}'
+./sentinel.py update-alert broken-2 '{"report":"report-NONE", "config":"logfile-NONE", "repeat":"5min"}'
 
+#oneshot?...
+./sentinel.py update-alert alert-on-proc-monitor '{"report":"proc-monitor", "config":"logfile"}'
+
+
+
+#
 
 

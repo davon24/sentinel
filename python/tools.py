@@ -1671,16 +1671,18 @@ def delFimFile(name, _file, db_store):
 
 def runAlert(name, db_store):
     print('runAlert ' + str(name))
-    alertData = store.getData('alerts', name, db_store)
+    alert = store.getData('alerts', name, db_store)
     #print('alertData is ' + str(type(alertData)) + ' ' + str(alertData))
 
-    if type(alertData) == tuple:
-        jdata = alertData[0]
+    if type(alert) == tuple:
+        alert = alert[0]
 
     try:
-        jdata = json.loads(jdata)
+        jdata = json.loads(alert)
     except json.decoder.JSONDecodeError:
         jdata = None
+
+    new_json = jdata
 
     print('jdata is ' + str(type(jdata)) + ' ' + str(jdata))
 
@@ -1692,9 +1694,34 @@ def runAlert(name, db_store):
     print('_config is ' + str(_config))
     print('_repeat is ' + str(_repeat))
 
+    #getReport
+    report = store.getData('reports', _report, db_store)
+    print('getReport report is ' + str(type(report)) + ' ' + str(report))
 
+    #getConfig
+    config = store.getData('configs', _config, db_store)
+    print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
 
-    return True
+    if report is None:
+        new_json['report_error'] = str(_report) + ' is None'
+
+    if config is None:
+        new_json['config_error'] = str(_config) + ' is None'
+
+    if report is not None and config is not None:
+        print('runAlert ' + str(name))
+        checked = time.strftime("%Y-%m-%d %H:%M:%S")
+        new_json['checked'] = checked
+
+        run = True
+    else:
+        print('runAlert NONE ' + str(name))
+
+        run = False
+
+    update = store.updateData('alerts', name, json.dumps(new_json), db_store)
+
+    return run
 
 #def runAlert(name, db_store):
     #print('runAlert ' + str(name))
