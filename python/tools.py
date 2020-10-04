@@ -1678,7 +1678,8 @@ def runAlert(name, db_store):
     alert = False
 
     _alert = store.getData('alerts', name, db_store)
-    #print('alertData is ' + str(type(alertData)) + ' ' + str(alertData))
+    #print('alertData is ' + str(type(_alert)) + ' ' + str(_alert))
+    #print('DATA Data is ' + str(type(data)) + ' ' + str(data))
 
     if type(_alert) == tuple:
         _alert = _alert[0]
@@ -1747,7 +1748,7 @@ def runAlert(name, db_store):
         #    alert = True
 
         #alert = isAlert(name, _report, report)
-        alert = isAlert(_report, job, report)
+        alert = isAlert(_report, job, report, _alert)
 
 
 
@@ -1770,19 +1771,46 @@ def runAlert(name, db_store):
 #def isAlert(name, _report, report):
 #    print('isAlert ' + name, _report, report)
 
-def isAlert(name, job, _dct):
+def isAlert(name, job, report, _alert):
     #print('isAlert ' + name, job, _dct)
     alert = False
+
+    #print('report ' + str(report))
+    #print('_alert ' + str(_alert))
+    _alert = json.loads(_alert)
+    #print('_alert.loads ' + str(_alert))
 
 
     #isAlert fim-2 fim-check {'/etc/group': 'ADDED', '/Users/krink/.ssh/config': 'ADDED'}
     if job == 'fim-check':
         #print('...check if empty')
         #report_items = bool(_dct)
-        if bool(_dct):
+        if bool(report):
             alert = True
 
     #isAlert proc-monitor ps-check {'procs': 418, 'defunct': 0}
+    if job == 'ps-check':
+        #print(job, report)
+        _procs = report.get('procs', None)
+        _defunct = report.get('defunct', None)
+
+        #print('procs val ' + str(_procs))
+        #print('defunct val ' + str(_defunct))
+
+        _procs2 = _alert.get('procs', None)
+        _defunct2 = _alert.get('defunct', None)
+
+        #print('procs val2 ' + str(_procs2))
+        #print('defunct val2 ' + str(_defunct2))
+        if int(_procs) > int(_procs2):
+            #print(str(_procs) + ' greater than ' + str(_procs2))
+            alert = True
+
+        #print(str(_defunct) + ' over ' + str(_defunct2))
+        if int(_defunct) >= int(_defunct2):
+            #print(str(_procs) + ' greater than ' + str(_procs2))
+            alert = True
+
 
     return alert
 
@@ -2200,7 +2228,7 @@ def sentryProcessAlerts(db_store):
 
 
     #run = runAlert(name, db_store)
-    for name,jdata in Dct.items():
+    for name, data in Dct.items():
         alert = runAlert(name, db_store)
         print('Alert ' + name + ' ' + str(alert))
 
