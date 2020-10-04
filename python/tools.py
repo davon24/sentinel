@@ -2233,17 +2233,44 @@ def sentryProcessAlerts(db_store):
 
     #run = runAlert(name, db_store)
     for name, data in Dct.items():
+        #print('runAlert ' + str(data))
+
         alert = runAlert(name, db_store)
         #print('Alert ' + name + ' ' + str(alert) + ' ' + str(data))
         #need config
         config = data.get('config', None)
         #print('config- ' + str(config))
 
+        repeat = data.get('repeat', None)
+        sent = data.get('sent', None)
+        #print('repeat ' + str(repeat))
+
+        #if repeat is not None:
+        if repeat is not None:
+            #getDuration
+            scale, amt = getDuration(repeat)
+            #print(scale, amt)
+
 
         #if alert is True:
         if alert:
-            send = sendAlertNotice(name, config, alert, db_store)
-            #print('send Notice: ' + str(send))
+            #config = data.get('config', None)
+            if sent is None:
+                send = sendAlertNotice(name, config, alert, db_store)
+                print('send Notice: ' + str(send))
+                #now = time.strftime("%Y-%m-%d %H:%M:%S")
+                #need the json...
+                print('the json data currently is ' + str(data))
+                #lets update here, as opposed to in/at sendAlertNotice
+
+                #don't need to copy.copy here, just update the data reference
+                data['sent'] = send
+
+                print('name ' + name)
+                print('data ' + str(data))
+
+                update = store.updateData('alerts', name, json.dumps(data), db_store)
+                print(update)
 
     return True
 
@@ -2252,14 +2279,14 @@ def sendAlertNotice(name, config, _dct, db_store):
 
     message = json.dumps(_dct)
 
-    sent = None
+    sent = False
 
     if config == 'email':
         # send email...
         subject = 'sentinel alert ' + name + ' '
         send = sendEmail(subject, message, db_store)
-        sent = 'email'
         logging.info('alert email sent ' + name)
+        sent = time.strftime("%Y-%m-%d %H:%M:%S")
 
     if config == 'logfile':
         _logfile = store.getData('configs', config, db_store)
@@ -2271,8 +2298,8 @@ def sendAlertNotice(name, config, _dct, db_store):
         subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
         with open(_logfile, 'a+') as log:
             log.write(subject + ' ' + message + '\n')
-        send = 'logfile'
         logging.info('alert logfile written ' + name)
+        sent = time.strftime("%Y-%m-%d %H:%M:%S")
 
     return sent
 
