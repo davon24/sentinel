@@ -2242,23 +2242,24 @@ def sentryProcessAlerts(db_store):
 
         config = data.get('config', None)
         repeat = data.get('repeat', None)
-        sent = data.get('sent', None)
+        _sent = data.get('sent', None)
 
         cleared = data.get('cleared', None)
+        count = data.get('count', None)
 
         #print('repeat ' + str(repeat))
 
         #if repeat is not None:
         #if repeat is not None:
         #    if sent is not None:
-        if repeat and sent:
+        if repeat and _sent:
             #getDuration
             scale, amt = getDuration(repeat)
             #print(scale, amt)
             #start_time = datetime.datetime.strptime(sent, "%Y-%m-%d %H:%M:%S")
             now = time.strftime("%Y-%m-%d %H:%M:%S")
             now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-            sent_time = datetime.datetime.strptime(sent, "%Y-%m-%d %H:%M:%S")
+            sent_time = datetime.datetime.strptime(_sent, "%Y-%m-%d %H:%M:%S")
 
             arg_dict = {scale:amt}
             delta_time = sent_time + datetime.timedelta(**arg_dict)
@@ -2267,7 +2268,11 @@ def sentryProcessAlerts(db_store):
             if now_time > delta_time:
                 #print('re-send ' + str(name))
                 sent = None
+            else:
+                sent = _sent
 
+        #print('DEBUG Alert ' + str(name) + ' alert: ' + str(alert) + ' repeat ' + str(repeat) + ' sent ' + str(sent))
+        #DEBUG Alert alert-on-fim-2 alert: {'/opt/NO.FILE.txt': 'ADDED'} repeat 1min sent None
 
 
         #if alert is True:
@@ -2275,6 +2280,10 @@ def sentryProcessAlerts(db_store):
         #    #config = data.get('config', None)
         #    if sent is None:
         #if alert and sent is None:
+        #if alert and not sent:
+        #if alert is True and sent is None:
+        #if alert and sent is None:
+
         if alert and not sent:
             time_sent = sendAlertNotice(name, config, alert, db_store)
                 #print('send Notice: ' + str(send))
@@ -2292,7 +2301,30 @@ def sentryProcessAlerts(db_store):
             update = store.updateData('alerts', name, json.dumps(data), db_store)
             #update = store.updateDataItem('sent', time_sent, 'alerts', name, db_store) #broken.broken.update wrong item
             print(update)
-                #MARK
+
+        #print('DEBUG Alert ' + str(name) + ' alert: ' + str(alert) + ' repeat ' + str(repeat) + ' sent ' + str(sent) + ' cleared ' + str(cleared))
+
+        #if not alert and sent:
+        #if not alert and sent (and not 'cleared'):
+        #if alert is False and sent:
+        #if not alert and sent and not cleared:
+        if alert is False and _sent and not cleared:
+            # alert cleared, send notice
+            #time_cleared = time.strftime("%Y-%m-%d %H:%M:%S")
+            time_cleared = sendAlertNotice(name, config, alert, db_store)
+
+            data['cleared'] = time_cleared
+
+            if count:
+                count += int(count)
+            else:
+                count = 1
+
+            data['count'] = count
+
+            update = store.updateData('alerts', name, json.dumps(data), db_store)
+            print(update)
+
 
     return True
 
