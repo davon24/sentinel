@@ -1518,28 +1518,6 @@ def discoverHostLst(ips):
 def detectScan(ips, db_store):
     pass
 
-def fimCheck(config, db_store):
-    #print('fimCheck get config... ' + str(config))
-
-    conf = store.getFim(config, db_store)
-    if conf is None:
-        return 'config is None'
-
-    check = checkFimAndReport(config, db_store)
-    #print(check)
-
-    #else:
-    #    conf = conf[0]
-    ##print('conf ' + str(conf))
-    #try:
-    #    jdata = json.loads(conf)
-    #except json.decoder.JSONDecodeError:
-    #    return 'invalid json ' + str(conf)
-    #print(str(jdata))
-
-    #return True
-    return check
-
 
 def b2sumFim(name, db_store):
     fim = store.getFim(name, db_store)
@@ -1600,8 +1578,48 @@ def checkFimAndReport(name, db_store):
     #    return 'invalid json ' + str(fim)
     #replace = store.replaceINTO('reports', name, json.dumps(jdata), db_store)
 
-    replace = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
-    return replace
+    #get current_report_dct
+    current_report = store.getData('reports', name, db_store)
+    current_report = current_report[0]
+    current_report = json.loads(current_report)
+
+    if Dct == current_report:
+        #print('same Dct')
+        run = True
+    else:
+        #print('not.same.Dct')
+        run = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
+        print('PERF replaceINTO occured Fim ')
+
+
+    #replace = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
+    #return replace
+    return run
+
+def fimCheck(config, db_store):
+    #print('fimCheck get config... ' + str(config))
+
+    conf = store.getFim(config, db_store)
+    if conf is None:
+        return 'config is None'
+
+        #get current_report_dct
+
+    check = checkFimAndReport(config, db_store)
+    #print(check)
+
+    #else:
+    #    conf = conf[0]
+    ##print('conf ' + str(conf))
+    #try:
+    #    jdata = json.loads(conf)
+    #except json.decoder.JSONDecodeError:
+    #    return 'invalid json ' + str(conf)
+    #print(str(jdata))
+
+    #return True
+    return check
+
 
 
 def getFimDct(name, db_store):
@@ -2079,7 +2097,7 @@ def psCheck(name, db_store):
     return check
 
 
-def checkPsAndReport(name, psDct, db_store):
+def checkPsAndReport(name, Dct, db_store):
 
     #for k,v in _dct.items():
     #    print(k,v)
@@ -2094,13 +2112,13 @@ def checkPsAndReport(name, psDct, db_store):
     #print('current_report ' + str(current_report))
     #maybe revist this, procs keeps changing, just need know when alert.... but,
 
-    if psDct == current_report:
+    if Dct == current_report:
         #print('same Dct')
         run = True
     else:
         #print('not.same.Dct')
-        run = store.replaceINTO('reports', name, json.dumps(psDct), db_store)
-        print('PERF replaceINTO occured')
+        run = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
+        print('PERF replaceINTO occured psCheck ')
 
     return run
     
