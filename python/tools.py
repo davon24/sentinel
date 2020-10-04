@@ -2269,7 +2269,9 @@ def sentryProcessAlerts(db_store):
                 print('name ' + name)
                 print('data ' + str(data))
 
-                update = store.updateData('alerts', name, json.dumps(data), db_store)
+                #olde school update.  try just the data['sent'] = send
+                #update = store.updateData('alerts', name, json.dumps(data), db_store)
+                update = store.updateDataItem('sent', send, 'alerts', name, db_store)
                 print(update)
 
     return True
