@@ -2247,9 +2247,23 @@ def sentryProcessAlerts(db_store):
 
         #if repeat is not None:
         if repeat is not None:
-            #getDuration
-            scale, amt = getDuration(repeat)
-            #print(scale, amt)
+            if sent is not None:
+                #getDuration
+                scale, amt = getDuration(repeat)
+                #print(scale, amt)
+                #start_time = datetime.datetime.strptime(sent, "%Y-%m-%d %H:%M:%S")
+                now = time.strftime("%Y-%m-%d %H:%M:%S")
+                now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+                sent_time = datetime.datetime.strptime(sent, "%Y-%m-%d %H:%M:%S")
+
+                arg_dict = {scale:amt}
+                delta_time = sent_time + datetime.timedelta(**arg_dict)
+                #print('delta_time ' + str(delta_time))
+                
+                if now_time > delta_time:
+                    #print('re-send ' + str(name))
+                    sent = None
+
 
 
         #if alert is True:
@@ -2257,22 +2271,22 @@ def sentryProcessAlerts(db_store):
             #config = data.get('config', None)
             if sent is None:
                 send = sendAlertNotice(name, config, alert, db_store)
-                print('send Notice: ' + str(send))
+                #print('send Notice: ' + str(send))
                 #now = time.strftime("%Y-%m-%d %H:%M:%S")
                 #need the json...
-                print('the json data currently is ' + str(data))
+                #print('the json data currently is ' + str(data))
                 #lets update here, as opposed to in/at sendAlertNotice
 
                 #don't need to copy.copy here, just update the data reference
-                data['sent'] = send
-
-                print('name ' + name)
-                print('data ' + str(data))
+                #data['sent'] = send
+                #print('name ' + name)
+                #print('data ' + str(data))
 
                 #olde school update.  try just the data['sent'] = send
                 #update = store.updateData('alerts', name, json.dumps(data), db_store)
                 update = store.updateDataItem('sent', send, 'alerts', name, db_store)
                 print(update)
+                #MARK
 
     return True
 
