@@ -767,12 +767,12 @@ def clearAll(tbl, db_file):
     return True
 
 
-def getConfig(name, db_file):
-    con = sqlConnection(db_file)
-    cur = con.cursor()
-    cur.execute('SELECT data FROM configs WHERE config=? ;', (name,))
-    row = cur.fetchone()
-    return row
+#def getConfig(name, db_file):
+#    con = sqlConnection(db_file)
+#    cur = con.cursor()
+#    cur.execute('SELECT data FROM configs WHERE name=? ;', (name,))
+#    row = cur.fetchone()
+#    return row
 
 def getFim(name, db_file):
     con = sqlConnection(db_file)

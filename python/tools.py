@@ -1765,7 +1765,11 @@ def runAlert(name, db_store):
         update = store.updateData('alerts', name, json.dumps(new_json), db_store)
 
     #update = store.updateData('alerts', name, json.dumps(new_json), db_store)
-    return alert
+    #return alert
+    if alert is True:
+        return report
+    else:
+        return False
 
 
 #def isAlert(name, _report, report):
@@ -2230,9 +2234,47 @@ def sentryProcessAlerts(db_store):
     #run = runAlert(name, db_store)
     for name, data in Dct.items():
         alert = runAlert(name, db_store)
-        print('Alert ' + name + ' ' + str(alert))
+        #print('Alert ' + name + ' ' + str(alert) + ' ' + str(data))
+        #need config
+        config = data.get('config', None)
+        #print('config- ' + str(config))
+
+
+        #if alert is True:
+        if alert:
+            send = sendAlertNotice(name, config, alert, db_store)
+            #print('send Notice: ' + str(send))
 
     return True
+
+def sendAlertNotice(name, config, _dct, db_store):
+    #print('sendNotice ' + str(name) + ' ' + str(config) + ' ' + str(_dct))
+
+    message = json.dumps(_dct)
+
+    sent = None
+
+    if config == 'email':
+        # send email...
+        subject = 'sentinel alert ' + name + ' '
+        send = sendEmail(subject, message, db_store)
+        sent = 'email'
+        logging.info('alert email sent ' + name)
+
+    if config == 'logfile':
+        _logfile = store.getData('configs', config, db_store)
+        _logfile = _logfile[0]
+        _logfile = json.loads(_logfile)
+        _logfile = _logfile.get('logfile', None)
+        #print(_logfile)
+        # write log...
+        subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
+        with open(_logfile, 'a+') as log:
+            log.write(subject + ' ' + message + '\n')
+        send = 'logfile'
+        logging.info('alert logfile written ' + name)
+
+    return sent
 
 
 def sentryProcessJobs(db_store):
