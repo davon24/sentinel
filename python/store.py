@@ -859,14 +859,24 @@ def updateFims(name, data, db_file): #not working?  ah, name,data...data,name
     return True
 
 
-def deleteFrom(tbl, rowid, db_file):
+#def deleteFromrowid(tbl, rowid, db_file):
+#    con = sqlConnection(db_file)
+#    cur = con.cursor()
+#    cur.execute("DELETE FROM " + str(tbl) + " WHERE rowid=? ;", (rowid,))
+#    con.commit()
+#    if cur.rowcount == 0:
+#        return False
+#    return True
+
+def deleteFrom(tbl, name, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
-    cur.execute("DELETE FROM " + str(tbl) + " WHERE rowid=? ;", (rowid,))
+    cur.execute("DELETE FROM " + str(tbl) + " WHERE name=? ;", (name,))
     con.commit()
     if cur.rowcount == 0:
         return False
     return True
+
 
 #def selectAllrowid(tbl, db_file):
 #    con = sqlConnection(db_file)
