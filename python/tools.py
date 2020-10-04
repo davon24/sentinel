@@ -2079,13 +2079,30 @@ def psCheck(name, db_store):
     return check
 
 
-def checkPsAndReport(name, Dct, db_store):
+def checkPsAndReport(name, psDct, db_store):
 
     #for k,v in _dct.items():
     #    print(k,v)
 
-    replace = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
-    return replace
+    #print('psDct ' + str(psDct))
+    #io performance, compare psDct w/ current report vals
+    #and write/replace only if diff
+    #
+    current_report = store.getData('reports', name, db_store)
+    current_report = current_report[0]
+    current_report = json.loads(current_report)
+    #print('current_report ' + str(current_report))
+    #maybe revist this, procs keeps changing, just need know when alert.... but,
+
+    if psDct == current_report:
+        #print('same Dct')
+        run = True
+    else:
+        #print('not.same.Dct')
+        run = store.replaceINTO('reports', name, json.dumps(psDct), db_store)
+        print('PERF replaceINTO occured')
+
+    return run
     
 
 #we'll move these into db config store later
