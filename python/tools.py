@@ -2320,7 +2320,8 @@ def sentryProcessAlerts(db_store):
         #if alert and sent is None:
 
         if alert and not sent:
-            time_sent = sendAlertNotice(name, config, alert, db_store)
+            subject = ''
+            time_sent = sendAlertNotice(name, config, subject, alert, db_store)
                 #print('send Notice: ' + str(send))
                 #now = time.strftime("%Y-%m-%d %H:%M:%S")
                 #need the json...
@@ -2346,7 +2347,8 @@ def sentryProcessAlerts(db_store):
         if alert is False and _sent and not cleared:
             # alert cleared, send notice
             #time_cleared = time.strftime("%Y-%m-%d %H:%M:%S")
-            time_cleared = sendAlertNotice(name, config, alert, db_store)
+            subject = 'cleared'
+            time_cleared = sendAlertNotice(name, config, subject, alert, db_store)
 
             data['cleared'] = time_cleared
 
@@ -2363,16 +2365,16 @@ def sentryProcessAlerts(db_store):
 
     return True
 
-def sendAlertNotice(name, config, _dct, db_store):
+def sendAlertNotice(name, config, _subject, _message, db_store):
     #print('sendNotice ' + str(name) + ' ' + str(config) + ' ' + str(_dct))
 
-    message = json.dumps(_dct)
+    message = json.dumps(_message)
 
     sent = False
 
     if config == 'email':
         # send email...
-        subject = 'sentinel alert ' + name + ' '
+        subject = 'sentinel alert ' + name + ' ' + str(_subject)
         send = sendEmail(subject, message, db_store)
         logging.info('alert email sent ' + name)
         sent = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -2384,7 +2386,7 @@ def sendAlertNotice(name, config, _dct, db_store):
         _logfile = _logfile.get('logfile', None)
         #print(_logfile)
         # write log...
-        subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S") + ' ' + name)
+        subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S")) + ' ' + name + ' ' + str(_subject)
         with open(_logfile, 'a+') as log:
             log.write(subject + ' ' + message + '\n')
         logging.info('alert logfile written ' + name)
