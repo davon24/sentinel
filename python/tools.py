@@ -2270,6 +2270,8 @@ def sentryProcessAlerts(db_store):
     for name, data in Dct.items():
         #print('runAlert ' + str(data))
 
+        sent = None
+
         alert = runAlert(name, db_store)
         #print('Alert ' + name + ' ' + str(alert) + ' ' + str(data))
         #need config
@@ -2319,7 +2321,8 @@ def sentryProcessAlerts(db_store):
         #if alert is True and sent is None:
         #if alert and sent is None:
 
-        if alert and not sent:
+        #if alert and not sent:
+        if alert and sent is None:
             subject = ''
             time_sent = sendAlertNotice(name, config, subject, alert, db_store)
                 #print('send Notice: ' + str(send))
