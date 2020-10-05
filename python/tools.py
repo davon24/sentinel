@@ -2347,6 +2347,7 @@ def sentryProcessAlerts(db_store):
         #if not alert and sent (and not 'cleared'):
         #if alert is False and sent:
         #if not alert and sent and not cleared:
+        #if (alert is False and _sent and not cleared) or (alert is False and _sent and cleared):
         if alert is False and _sent and not cleared:
             # alert cleared, send notice
             #time_cleared = time.strftime("%Y-%m-%d %H:%M:%S")
