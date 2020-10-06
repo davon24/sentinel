@@ -843,7 +843,9 @@ def updateDataItem(item, val, tbl, name, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
     #cur.execute("UPDATE " + str(tbl) + " SET data=?, timestamp=DATETIME('now') WHERE name=?", (data, name))
-    cur.execute("UPDATE " + str(tbl) + " SET data=(select json_set(" + str(tbl) + ".data, '$." + str(item) + "', ? ) from " + str(tbl) + ") where name=?", (val, name)) 
+    sql = "UPDATE " + str(tbl) + " SET data=(select json_set(" + str(tbl) + ".data, '$." + str(item) + "', ? ) from " + str(tbl) + ") where name=?", (val, name)
+    print(sql)
+    cur.execute(sql) 
     con.commit()
     if cur.rowcount == 0:
         return False
