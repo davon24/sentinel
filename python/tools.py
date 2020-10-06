@@ -1738,17 +1738,17 @@ def runAlert(name, db_store):
         job = _job
     else:
         job = None
-        new_json['error'] = str(_job) + ' is None'
+        new_json['error'] = 'job is ' + str(_job)
         
 
     if report is None:
-        new_json['error'] = str(_report) + ' is None'
+        new_json['error'] = 'report is ' + str(_report)
     else:
         report = report[0] #tuple
         report = json.loads(report) #<class 'dict'>
 
     if config is None:
-        new_json['error'] = str(_config) + ' is None'
+        new_json['error'] = 'config is ' + str(_config)
     else:
         config = config[0] #tuple
         config = json.loads(config) #<class 'dict'>
@@ -1767,8 +1767,6 @@ def runAlert(name, db_store):
 
         #alert = isAlert(name, _report, report)
         alert = isAlert(_report, job, report, _alert)
-
-
 
     new_json['alert'] = alert
 

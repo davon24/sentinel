@@ -1,0 +1,21 @@
+
+🎃 karl.rink@Karl-MacBook-Pro python % ./sentinel.py list-jobs
+('proc-monitor', '2020-10-05 18:46:21', '{"repeat": "1min", "job": "ps-check", "start": "2020-10-05 11:46:21", "done": "2020-10-05 11:46:21", "success": true}')
+('fim-job-1', '2020-10-05 18:46:21', '{"repeat": "1min", "job": "fim-check", "config": "fim-1", "start": "2020-10-05 11:46:21", "done": "2020-10-05 11:46:21", "success": true}')
+🎃 karl.rink@Karl-MacBook-Pro python % ./sentinel.py list-reports
+('fim-1', '2020-10-03 00:17:26', '{}')
+('proc-monitor', '2020-10-05 18:46:21', '{"procs": 399, "defunct": 1, "1": "Z      503   652   661 karl.rink        02:43:49 (uname)"}')
+🎃 karl.rink@Karl-MacBook-Pro python %
+
+#---
+
+
+./sentinel.py update-alert alert-on-fim-1 '{"report":"fim-1","job":"fim-check","config":"logfile","repeat":"5min"}'
+
+./sentinel.py update-alert alert-on-proc-monitor '{"report":"proc-monitor","job":"ps-check","config":"logfile","repeat":"5min","procs":500,"defunct":1}'
+
+
+
+
+
+
