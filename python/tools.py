@@ -2334,6 +2334,12 @@ def sentryProcessAlerts(db_store):
                 #print('name ' + name)
                 #print('data ' + str(data))
 
+            #lets remove cleared here
+            #del data['cleared']
+            try:
+                del data['cleared']
+            except KeyError: pass
+
                 #olde school update.  try just the data['sent'] = send
             update = store.updateData('alerts', name, json.dumps(data), db_store)
             #update = store.updateDataItem('sent', time_sent, 'alerts', name, db_store) #broken.broken.update wrong item
@@ -2353,6 +2359,13 @@ def sentryProcessAlerts(db_store):
             time_cleared = sendAlertNotice(name, config, subject, alert, db_store)
 
             data['cleared'] = time_cleared
+
+            #lets remove _sent here
+            #del data['sent']
+            try:
+                del data['sent']
+            except KeyError: pass
+
 
             if count:
                 count += int(count)
@@ -2378,7 +2391,7 @@ def sendAlertNotice(name, config, _subject, _message, db_store):
         # send email...
         subject = 'sentinel alert ' + name + ' ' + str(_subject)
         send = sendEmail(subject, message, db_store)
-        logging.info('alert email sent ' + name)
+        logging.info('alert email sent ' + name + ' ' + str(_subject))
         sent = time.strftime("%Y-%m-%d %H:%M:%S")
 
     if config == 'logfile':
@@ -2391,7 +2404,7 @@ def sendAlertNotice(name, config, _subject, _message, db_store):
         subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S")) + ' ' + name + ' ' + str(_subject)
         with open(_logfile, 'a+') as log:
             log.write(subject + ' ' + message + '\n')
-        logging.info('alert logfile written ' + name)
+        logging.info('alert logfile written ' + name + ' ' + str(_subject))
         sent = time.strftime("%Y-%m-%d %H:%M:%S")
 
     return sent
