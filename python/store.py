@@ -569,18 +569,19 @@ def getEstablishedAlertsDct(db_store):
     return returnDct
 
 
-def printIPs(db_file):
-    rows = getIPs(db_file)
-    for row in rows:
-        print(row)
-    return True
-
-def getIPs(db_file):
-    con = sqlConnection(db_file)
-    cur = con.cursor()
-    cur.execute('SELECT rowid,* FROM ips ORDER by rowid DESC;')
-    rows = cur.fetchall()
-    return rows
+#def printIPs(db_file):
+#    rows = getIPs(db_file)
+#    for row in rows:
+#        print(row)
+#    return True
+#
+#def getIPs(db_file):
+#    con = sqlConnection(db_file)
+#    cur = con.cursor()
+#    #cur.execute('SELECT rowid,* FROM ips ORDER by rowid DESC;')
+#    cur.execute('SELECT * FROM ips ORDER by rowid DESC;')
+#    rows = cur.fetchall()
+#    return rows
 
 def insertIPs(ip, db_file):
     con = sqlConnection(db_file)
@@ -607,13 +608,13 @@ def replaceIPs(ip, data, db_file):
     con.commit()
     return True
 
-def clearAllIPs(db_file):
-    con = sqlConnection(db_file)
-    cur = con.cursor()
-    cur.execute("DELETE FROM ips;")
-    cur.execute("REINDEX ips;")
-    con.commit()
-    return True
+#def clearAllIPs(db_file):
+#    con = sqlConnection(db_file)
+#    cur = con.cursor()
+#    cur.execute("DELETE FROM ips;")
+#    cur.execute("REINDEX ips;")
+#    con.commit()
+#    return True
 
 def deleteIPs(ip, db_file):
     con = sqlConnection(db_file)
@@ -842,7 +843,16 @@ def updateDataItem(item, val, tbl, name, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
     #cur.execute("UPDATE " + str(tbl) + " SET data=?, timestamp=DATETIME('now') WHERE name=?", (data, name))
-    cur.execute("UPDATE " + str(tbl) + " SET data=(select json_set(" + str(tbl) + ".data, '$." + str(item) + "', ? ) from " + str(tbl) + ") where name==?", (val, name)) 
+    cur.execute("UPDATE " + str(tbl) + " SET data=(select json_set(" + str(tbl) + ".data, '$." + str(item) + "', ? ) from " + str(tbl) + ") where name=?", (val, name)) 
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
+def deleteDataItem(item, tbl, name, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("UPDATE " + str(tbl) + " SET data=(select json_remove(" + str(tbl) + ".data, '$." + str(item) + "') from " + str(tbl) + ") where name=?", (name,))
     con.commit()
     if cur.rowcount == 0:
         return False
@@ -892,6 +902,8 @@ def selectAll(tbl, db_file):
     #cur.execute("SELECT rowid,* FROM " + str(tbl) + ";")
     cur.execute("SELECT * FROM " + str(tbl) + ";")
     rows = cur.fetchall()
+    #if cur.rowcount == 0:
+    #    return False
     return rows
 
 def getAll(tbl, db_file):
@@ -899,6 +911,8 @@ def getAll(tbl, db_file):
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM ' + str(tbl) + ';')
     rows = cur.fetchall()
+    #if cur.rowcount == 0:
+    #    return False
     return rows
 
 

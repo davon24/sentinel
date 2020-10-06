@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.y9-done'
+__version__ = '0.0.0.v1.4.z0'
 
 import sys
 #sys.path.insert(0,'db')
@@ -67,6 +67,8 @@ def usage():
 
         list-ips
         update-ip ip data
+        update-ip-item ip item value
+        delete-ip-item ip item value
         del-ip ip
         clear-ips
 
@@ -239,6 +241,7 @@ if __name__ == '__main__':
             port = sys.argv[2]
             lsof = tools.printLsOfPort(port)
             sys.exit(0)
+
         if sys.argv[1] == 'nmap':
             ip = sys.argv[2]
             try: level = sys.argv[3]
@@ -247,30 +250,57 @@ if __name__ == '__main__':
             update = store.replaceNmaps(ip, scan, db_store)
             print(str(update) + ' ' + str(scan))
             sys.exit(0)
+
         if sys.argv[1] == 'list-ips':
-            run = store.printIPs(db_store)
+            #run = store.printIPs(db_store)
+            rows = store.selectAll('ips', db_store)
+            for row in rows:
+                print(row)
             sys.exit(0)
+
         if sys.argv[1] == 'add-ip':
             ip = sys.argv[2]
             insert = store.insertIPs(ip, db_store)
             print(insert)
             sys.exit(0)
+
         if sys.argv[1] == 'del-ip':
             ip = sys.argv[2]
             insert = store.deleteIPs(ip, db_store)
             print(insert)
-            sys.exit(0
-            )
+            sys.exit(0)
+
         if sys.argv[1] == 'update-ip':
             ip = sys.argv[2]
             data = sys.argv[3]
+
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError:
+                print('invalid json')
+                sys.exit(1)
+
             #update = store.updateIPs(ip, data, db_store)
             replace = store.replaceINTO('ips', ip, data, db_store)
             print(replace)
             sys.exit(0)
 
+        if sys.argv[1] == 'update-ip-item':
+            name = sys.argv[2]
+            item = sys.argv[3]
+            val  = sys.argv[4]
+            update = store.updateDataItem(item, val, 'ips', name, db_store)
+            print(update)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-ip-item':
+            name = sys.argv[2]
+            item = sys.argv[3]
+            delete = store.deleteDataItem(item, 'ips', name, db_store)
+            print(delete)
+            sys.exit(0)
+
         if sys.argv[1] == 'clear-ips':
-            clear = store.clearAllIPs(db_store)
+            clear = store.clearAll('ips', db_store)
             print(clear)
             sys.exit(0)
 
