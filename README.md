@@ -4,7 +4,18 @@ noun.  a soldier or guard whose job is to stand and keep watch.
 
 Python program for the automation of mundane security tasks.  Relies on command line tools nmap, netstat, ping, arp, nslookup.  
 
----
+---  
+
+IN-PROGRESS  
+
+prometheus integration  
+
+```
+./sentinel.py update-config prometheus '{"port": 9111, "path": "/metrics"}'    
+```
+
+
+---  
 
 Remote  
 - Network Discovery  
@@ -20,10 +31,9 @@ Local
 ---
 
 ```
-./sentinel.py --help   
-
-
 ./sentinel.py [option]
+
+./sentinel.py --help   
 
     options:
 
@@ -79,11 +89,14 @@ Local
 
         list-ips
         update-ip ip data
+        update-ip-item ip item value
+        delete-ip-item ip item value
         del-ip ip
         clear-ips
 
         list-jobs
         list-jobs-running
+        list-jobs-available
         run-job name
         update-job name data
         delete-job name
@@ -95,6 +108,13 @@ Local
 
         list-reports
         delete-report id
+
+        list-alerts
+        delete-alert id
+        run-alert name
+        update-alert name data
+        run-alert name
+        clear-alerts
 
         list-fims
         list-fims-changed
@@ -108,13 +128,10 @@ Local
 
         sentry
 
+        ---
 
-
-```
-
----
-
-[man sentinel](/docs/README.man.md)
-
+        list-counts
+        run-create-db
+        run-ps
 
 
