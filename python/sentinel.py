@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.z0.t1'
+__version__ = '0.0.0.v1.4.z0.t2'
 
 import sys
 #sys.path.insert(0,'db')
@@ -108,6 +108,7 @@ def usage():
 
         ---
 
+        list-counts
         run-create-db
         run-ps
 
@@ -721,6 +722,12 @@ if __name__ == '__main__':
         if sys.argv[1] == 'list-jobs-available':
             for k,v in tools.options.items():
                 print(k)
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-counts':
+            reports = store.selectAll('counts', db_store)
+            for row in reports:
+                print(row)
             sys.exit(0)
 
 

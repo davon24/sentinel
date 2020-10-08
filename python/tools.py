@@ -2165,7 +2165,9 @@ def runJob(name, db_store):
         del new_json['success']
     except KeyError: pass
 
-    replace = replaceJobsJson(name, json.dumps(new_json), db_store)
+    #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
+    replace = store.replaceINTO('jobs', name, json.dumps(new_json), db_store)
+    print('PERF replaceINTO occured on jobs')
     #print('replace was ' + str(replace))
 
     #_time = jdata.get('time', None) 
@@ -2202,6 +2204,7 @@ def runJob(name, db_store):
     new_json['success'] = run
     #update = updateJobsJson(name, json.dumps(new_json), db_store)
     update = store.updateData('jobs', name, json.dumps(new_json), db_store)
+    print('PERF updateData occured on jobs')
     #print('update was ' + str(update))
     #print('run ' + str(name) + ' was ' + str(run))
     #return True
@@ -2342,6 +2345,7 @@ def sentryProcessAlerts(db_store):
 
                 #olde school update.  try just the data['sent'] = send
             update = store.updateData('alerts', name, json.dumps(data), db_store)
+            print('PERF updateData occured on alerts')
             #update = store.updateDataItem('sent', time_sent, 'alerts', name, db_store) #broken.broken.update wrong item
             print(update)
 
@@ -2375,6 +2379,7 @@ def sentryProcessAlerts(db_store):
             data['count'] = count
 
             update = store.updateData('alerts', name, json.dumps(data), db_store)
+            print('PERF updateData occured on alerts')
             print(update)
 
 
@@ -2493,10 +2498,10 @@ def sentryProcessJobs(db_store):
     #return True
     return run
 
-def replaceJobsJson(name, jdata, db_store):
-    #replaceINTO(tbl, item, data, db_file):
-    replace = store.replaceINTO('jobs', name, jdata, db_store)
-    return replace
+#def replaceJobsJson(name, jdata, db_store):
+#    #replaceINTO(tbl, item, data, db_file):
+#    replace = store.replaceINTO('jobs', name, jdata, db_store)
+#    return replace
 
 #def updateJobsJson(name, jdata, db_store):
 #    #replaceINTO(tbl, item, data, db_file):
@@ -2532,7 +2537,6 @@ def sentryScheduler(db_store):
             threads.append(thread)
         #print('count ' + str(threading.active_count()))
         #tcount = threading.active_count()
-        update1 = store.updateCounts('threads', tcount, db_store)
 
         pcount = 0
         process = []
@@ -2540,7 +2544,32 @@ def sentryScheduler(db_store):
             #print(str(proc.name))
             pcount += 1
             process.append(proc)
-        update2 = store.updateCounts('process', pcount, db_store)
+
+        #cDct = {}
+        #get current
+        counts = store.selectAll('counts', db_store)
+        for row in counts:
+            #print(row)
+            name = row[0]
+            val  = row[1]
+            #print(name, val)
+            #cDct[name] = val
+            if name == 'threads':
+                #print('compare val to tcount ' + str(val) + ' ' + str(tcount))
+                if int(val) == int(tcount):
+                    continue
+                else:
+                    update1 = store.updateCounts('threads', tcount, db_store)
+                    print('PERF updateCounts occured on threads ' + str(update1))
+
+            if name == 'process':
+                #print('compare val to pcount ' + str(val) + ' ' + str(pcount))
+                if int(val) == int(pcount):
+                    continue
+                else:
+                    update2 = store.updateCounts('process', pcount, db_store)
+                    print('PERF updateCounts occured on process ' + str(update2))
+
 
         #for t in threads:
         #    t.join()
