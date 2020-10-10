@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.4.z0.t2'
+__version__ = '0.0.0.v1.5.0'
 
 import sys
 #sys.path.insert(0,'db')
@@ -110,6 +110,7 @@ def usage():
         ---
 
         list-counts
+        clear-counts
         run-create-db
         run-ps
 
@@ -736,6 +737,10 @@ if __name__ == '__main__':
                 print(row)
             sys.exit(0)
 
+        if sys.argv[1] == 'clear-counts':
+            clear = store.clearAll('counts', db_store)
+            print(clear)
+            sys.exit(0)
 
         else:
             usage()
