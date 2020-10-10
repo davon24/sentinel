@@ -31,7 +31,8 @@ import store
 #import queue
 #gQ = queue.Queue()
 
-gList = []
+#gList = []
+gDict = {}
 sigterm = False
 
 class ThreadWithReturnValue(threading.Thread):
@@ -69,8 +70,14 @@ class Handler(BaseHTTPRequestHandler):
             #while not gQ.empty():
             #    #print(gQ.get())
             #    self.wfile.write(bytes(str(gQ.get()) + str('\n'), 'utf-8'))
-            for item in gList:
-                self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
+
+            #for item in gList:
+            #    self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
+
+            for k,v in gDict.items():
+                #v should be a list
+                for item in v:
+                    self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
             
             #print(gQ.get())
 
@@ -1995,11 +2002,18 @@ def runJob(name, db_store):
     new_json['success'] = run
     #update = updateJobsJson(name, json.dumps(new_json), db_store)
     update = store.updateData('jobs', name, json.dumps(new_json), db_store)
-    print('PERF updateData occured on jobs')
+    #print('PERF updateData occured on jobs')
+
+    print('gDict  updateData occured on jobs')
+    gDict[name] = [ json.dumps(new_json) ]
+
+    #gList.append('PERF updateData occured on jobs')
     #print('update was ' + str(update))
     #print('run ' + str(name) + ' was ' + str(run))
     #return True
+    print('run ' + str(run))
     return run
+    #MARK
 
 def getDuration(_repeat):
     #amt, scale = getDuration(_repeat)
@@ -2301,21 +2315,29 @@ def sentryProcessJobs(db_store):
 #    return update
 
 
-def processD():
+def processD(List):
     sentinel_up = 1
     start = time.time()
 
-    gList.clear()
+    #gList.clear()
 
     promHELP = '# HELP sentinel_up Whether the sentinel service is up.'
     promTYPE = '# TYPE sentinel_up gauge'
     promDATA = 'sentinel_up ' + str(sentinel_up)
-    gList.append(promHELP)
-    gList.append(promTYPE)
-    gList.append(promDATA)
+    #gList.append(promHELP)
+    #gList.append(promTYPE)
+    #gList.append(promDATA)
     #gQ.put(promHELP)
     #gQ.put(promTYPE)
     #gQ.put(promDATA)
+    #gList[0] = promHELP
+    #gList[1] = promTYPE
+    #gList[2] = promDATA
+
+    gDict['sentinel_up'] = [promHELP, promTYPE, promDATA]
+
+    #gList.extend(List)
+    #print(gList)
 
     return True
 
@@ -2326,6 +2348,7 @@ def sentryScheduler(db_store):
     #sigterm = False
     while (sigterm == False):
 
+        List = []
         #run = sentryProcessJobs(db_store)
         job = threading.Thread(target=sentryProcessJobs, args=(db_store,), name="SentryJobRunner")
         job.setDaemon(True)
@@ -2338,7 +2361,7 @@ def sentryScheduler(db_store):
 
 
         tcount = 0
-        threads = []
+        #threads = []
         for thread in threading.enumerate():
             #print(str(thread.name))
             if thread.name == 'MainThread':
@@ -2347,41 +2370,48 @@ def sentryScheduler(db_store):
                 continue
             #print(str(thread.name))
             tcount += 1
-            threads.append(thread)
-        #print('count ' + str(threading.active_count()))
-        #tcount = threading.active_count()
+            #threads.append(thread)
 
         pcount = 0
-        process = []
+        #process = []
         for proc in multiprocessing.active_children():
             #print(str(proc.name))
             pcount += 1
-            process.append(proc)
+            #process.append(proc)
+
+
+
+        List.append('threads ' + str(tcount))
+        List.append('process ' + str(pcount))
 
         #cDct = {}
         #get current
-        counts = store.selectAll('counts', db_store)
-        for row in counts:
-            #print(row)
-            name = row[0]
-            val  = row[1]
-            #print(name, val)
-            #cDct[name] = val
-            if name == 'threads':
-                #print('compare val to tcount ' + str(val) + ' ' + str(tcount))
-                if int(val) == int(tcount):
-                    continue
-                else:
-                    update1 = store.updateCounts('threads', tcount, db_store)
-                    print('PERF updateCounts occured on threads ' + str(update1))
-
-            if name == 'process':
-                #print('compare val to pcount ' + str(val) + ' ' + str(pcount))
-                if int(val) == int(pcount):
-                    continue
-                else:
-                    update2 = store.updateCounts('process', pcount, db_store)
-                    print('PERF updateCounts occured on process ' + str(update2))
+        #counts = store.selectAll('counts', db_store)
+        #for row in counts:
+        #    #print(row)
+        #    name = row[0]
+        #    val  = row[1]
+        #    #print(name, val)
+        #    #cDct[name] = val
+        #    if name == 'threads':
+        #        #print('compare val to tcount ' + str(val) + ' ' + str(tcount))
+        #        if int(val) == int(tcount):
+        #            continue
+        #        else:
+        #            #update1 = store.updateCounts('threads', tcount, db_store)
+        #            #print('PERF updateCounts occured on threads ' + str(update1))
+        #            print('PERF updateCounts occured on threads ' + str(tcount))
+        #            List.append('PERF updateCounts occured on threads ' + str(tcount))
+#
+#            if name == 'process':
+#                #print('compare val to pcount ' + str(val) + ' ' + str(pcount))
+#                if int(val) == int(pcount):
+#                    continue
+#                else:
+#                    #update2 = store.updateCounts('process', pcount, db_store)
+#                    #print('PERF updateCounts occured on process ' + str(update2))
+#                    print('PERF updateCounts occured on process ' + str(pcount))
+#                    List.append('PERF updateCounts occured on process ' + str(pcount))
 
 
         #for t in threads:
@@ -2390,7 +2420,7 @@ def sentryScheduler(db_store):
         #for p in process:
         #    p.join()
 
-        processD()
+        processD(List)
 
         time.sleep(3)
 
