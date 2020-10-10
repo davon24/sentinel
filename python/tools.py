@@ -21,7 +21,6 @@ import json
 import logging
 #import atexit
 #import signal
-#sigterm = False
 
 from hashlib import blake2b, blake2s
 
@@ -29,9 +28,11 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 import store
 
-import queue
-gQ = queue.Queue()
-#gList = []
+#import queue
+#gQ = queue.Queue()
+
+gList = []
+sigterm = False
 
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -65,9 +66,11 @@ class Handler(BaseHTTPRequestHandler):
             #for item in items:
             #    #self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
             #    self.wfile.write(str(item) + str('\n'))
-            while not gQ.empty():
-                #print(gQ.get())
-                self.wfile.write(bytes(str(gQ.get()) + str('\n'), 'utf-8'))
+            #while not gQ.empty():
+            #    #print(gQ.get())
+            #    self.wfile.write(bytes(str(gQ.get()) + str('\n'), 'utf-8'))
+            for item in gList:
+                self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
             
             #print(gQ.get())
 
@@ -2302,17 +2305,17 @@ def processD():
     sentinel_up = 1
     start = time.time()
 
-    #gList.clear()
+    gList.clear()
 
     promHELP = '# HELP sentinel_up Whether the sentinel service is up.'
     promTYPE = '# TYPE sentinel_up gauge'
     promDATA = 'sentinel_up ' + str(sentinel_up)
-    #gList.append(promHELP)
-    #gList.append(promTYPE)
-    #gList.append(promDATA)
-    gQ.put(promHELP)
-    gQ.put(promTYPE)
-    gQ.put(promDATA)
+    gList.append(promHELP)
+    gList.append(promTYPE)
+    gList.append(promDATA)
+    #gQ.put(promHELP)
+    #gQ.put(promTYPE)
+    #gQ.put(promDATA)
 
     return True
 
@@ -2422,8 +2425,8 @@ def sentryMode(db_store):
     #print(config['port'])
     #print(config['path'])
 
-    global sigterm
-    sigterm = False
+    #global sigterm
+    #sigterm = False
 
     #import logging
     import atexit
