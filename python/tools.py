@@ -1604,9 +1604,51 @@ def checkFim(name, db_store):
             print(k, 'CHANGED')
     return True
 
-def checkFimAndReport(name, db_store):
+#def checkFimAndReport(name, db_store):
+#    Dct = {}
+#    #print('checkFimAndReport ' + str(name))
+#    fimDct = getFimDct(name, db_store)
+#    
+#    for k,v in fimDct.items():
+#        #print(k,v)
+#        #print(k, ' CHANGED')
+#        if len(v) == 0:
+#            #print(k, 'ADDED')
+#            Dct[k] = 'ADDED'
+#        else:
+#            #print(k, 'CHANGED')
+#            Dct[k] = 'CHANGED'
+#
+#    #try:
+#    #    jdata = json.loads(Dct)
+#    #except json.decoder.JSONDecodeError:
+#    #    return 'invalid json ' + str(fim)
+#    #replace = store.replaceINTO('reports', name, json.dumps(jdata), db_store)
+#
+#    #get current_report_dct
+#    #current_report = store.getData('reports', name, db_store)
+#    #current_report = current_report[0]
+#    #current_report = json.loads(current_report)
+#
+#    #if Dct == current_report:
+#    #    #print('same Dct')
+#    #    run = True
+#    #else:
+#    #    #print('not.same.Dct')
+#    #    run = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
+#    #    print('PERF replaceINTO occured Fim ')
+#
+#    gDict[name] = ['sentinel_fim_job' + json.dumps(Dct) ]
+#
+#
+#    #replace = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
+#    #return replace
+#    #return run
+#    return True
+
+def fimCheck(name, db_store):
+
     Dct = {}
-    #print('checkFimAndReport ' + str(name))
     fimDct = getFimDct(name, db_store)
     
     for k,v in fimDct.items():
@@ -1619,40 +1661,38 @@ def checkFimAndReport(name, db_store):
             #print(k, 'CHANGED')
             Dct[k] = 'CHANGED'
 
-    #try:
-    #    jdata = json.loads(Dct)
-    #except json.decoder.JSONDecodeError:
-    #    return 'invalid json ' + str(fim)
-    #replace = store.replaceINTO('reports', name, json.dumps(jdata), db_store)
+    _key = 'fimcheck-' + str(name)
 
-    #get current_report_dct
-    current_report = store.getData('reports', name, db_store)
-    current_report = current_report[0]
-    current_report = json.loads(current_report)
-
-    if Dct == current_report:
-        #print('same Dct')
-        run = True
+    if bool(Dct):
+        val = 1
     else:
-        #print('not.same.Dct')
-        run = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
-        print('PERF replaceINTO occured Fim ')
+        val = 0
+
+    Dct['config'] = name
+
+    gDict[_key] = ['sentinel_job_output' + json.dumps(Dct) + ' ' + str(val) ]
+
+    return True
 
 
-    #replace = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
-    #return replace
-    return run
 
-def fimCheck(config, db_store):
+
+
+
     #print('fimCheck get config... ' + str(config))
 
-    conf = store.getFim(config, db_store)
-    if conf is None:
-        return 'config is None'
+    #data = store.getFim(name, db_store)
+    #if data is None:
+    #    return 'data is None'
+#
+#        #get current_report_dct
+#
+#    data = data[0]
+#    data = json.loads(data)
+#    print('data is type ' + str(type(config)) + ' ' + str(config))
 
-        #get current_report_dct
-
-    check = checkFimAndReport(config, db_store)
+    #check = checkFimAndReport(config, db_store)
+    #check = checkFimAndReport(config, db_store)
     #print(check)
 
     #else:
@@ -1663,9 +1703,12 @@ def fimCheck(config, db_store):
     #except json.decoder.JSONDecodeError:
     #    return 'invalid json ' + str(conf)
     #print(str(jdata))
+    #return check
 
-    #return True
-    return check
+    #print('name ' + str(name))
+    #print('conF is   ' + str(conf))
+
+    #return check
 
 
 
@@ -1738,147 +1781,148 @@ def delFimFile(name, _file, db_store):
     update = store.updateData('fims', name, json.dumps(jdata), db_store)
     return update
 
-def runAlert(name, db_store):
-    #print('start runAlert ' + str(name))
-    alert = False
+#def runAlert(name, db_store):
+#    #print('start runAlert ' + str(name))
+#    alert = False
+#
+#    _alert = store.getData('alerts', name, db_store)
+#    #print('alertData is ' + str(type(_alert)) + ' ' + str(_alert))
+#    #print('DATA Data is ' + str(type(data)) + ' ' + str(data))
+#
+#    if type(_alert) == tuple:
+#        _alert = _alert[0]
+#
+#    try:
+#        jdata = json.loads(_alert)
+#    except json.decoder.JSONDecodeError:
+#        jdata = None
+#
+#    #new_json = jdata
+#    #new_json = copy.deepcopy(jdata)
+#    new_json = copy.copy(jdata)
+#
+#    #print('jdata is ' + str(type(jdata)) + ' ' + str(jdata))
+#
+#    _report = jdata.get('report', None)
+#    _config = jdata.get('config', None)
+#    _job    = jdata.get('job', None)
+#    _repeat = jdata.get('repeat', None)
+#
+#    #print('_report is ' + str(_report))
+#    #print('_config is ' + str(_config))
+#    #print('_repeat is ' + str(_repeat))
+#
+#    #getReport
+#    report = store.getData('reports', _report, db_store)
+#    #print('getReport report is ' + str(type(report)) + ' ' + str(report))
+#
+#    #getConfig
+#    config = store.getData('configs', _config, db_store)
+#    #print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
+#
+#    #getJob just verifies options
+#    #for k in options:
+#    #    print(k)
+#
+#    if _job in options:
+#        job = _job
+#    else:
+#        job = None
+#        new_json['error'] = 'job is ' + str(_job)
+#        
+#
+#    if report is None:
+#        new_json['error'] = 'report is ' + str(_report)
+#    else:
+#        report = report[0] #tuple
+#        report = json.loads(report) #<class 'dict'>
+#
+#    if config is None:
+#        new_json['error'] = 'config is ' + str(_config)
+#    else:
+#        config = config[0] #tuple
+#        config = json.loads(config) #<class 'dict'>
+#
+#    if report is not None and config is not None and job is not None:
+#        #print('runAlert job name ' + str(job))
+#        #print('report ' + name + ' is ' + str(type(report)) + ' ' + str(report))
+#        #print('config is ' + str(type(config)) + ' ' + str(config))
+#        # check if empty json {}
+#        #bool True|False
+#        #report_items = bool(report)
+#        #if not report_items:
+#        #    print('Empty Dct')
+#        #if bool(report):
+#        #    alert = True
+#
+#        #alert = isAlert(name, _report, report)
+#        alert = isAlert(_report, job, report, _alert)
+#
+#    new_json['alert'] = alert
+#
+#    if new_json == jdata:
+#        #print('same')
+#        update = None
+#    else:
+#        #print('diff')
+#
+#        #post, may need to update/remove report_error or config_error
+#
+#        update = store.updateData('alerts', name, json.dumps(new_json), db_store)
+#
+#    #update = store.updateData('alerts', name, json.dumps(new_json), db_store)
+#    #return alert
+#    if alert is True:
+#        return report
+#    else:
+#        return False
 
-    _alert = store.getData('alerts', name, db_store)
-    #print('alertData is ' + str(type(_alert)) + ' ' + str(_alert))
-    #print('DATA Data is ' + str(type(data)) + ' ' + str(data))
-
-    if type(_alert) == tuple:
-        _alert = _alert[0]
-
-    try:
-        jdata = json.loads(_alert)
-    except json.decoder.JSONDecodeError:
-        jdata = None
-
-    #new_json = jdata
-    #new_json = copy.deepcopy(jdata)
-    new_json = copy.copy(jdata)
-
-    #print('jdata is ' + str(type(jdata)) + ' ' + str(jdata))
-
-    _report = jdata.get('report', None)
-    _config = jdata.get('config', None)
-    _job    = jdata.get('job', None)
-    _repeat = jdata.get('repeat', None)
-
-    #print('_report is ' + str(_report))
-    #print('_config is ' + str(_config))
-    #print('_repeat is ' + str(_repeat))
-
-    #getReport
-    report = store.getData('reports', _report, db_store)
-    #print('getReport report is ' + str(type(report)) + ' ' + str(report))
-
-    #getConfig
-    config = store.getData('configs', _config, db_store)
-    #print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
-
-    #getJob just verifies options
-    #for k in options:
-    #    print(k)
-
-    if _job in options:
-        job = _job
-    else:
-        job = None
-        new_json['error'] = 'job is ' + str(_job)
-        
-
-    if report is None:
-        new_json['error'] = 'report is ' + str(_report)
-    else:
-        report = report[0] #tuple
-        report = json.loads(report) #<class 'dict'>
-
-    if config is None:
-        new_json['error'] = 'config is ' + str(_config)
-    else:
-        config = config[0] #tuple
-        config = json.loads(config) #<class 'dict'>
-
-    if report is not None and config is not None and job is not None:
-        #print('runAlert job name ' + str(job))
-        #print('report ' + name + ' is ' + str(type(report)) + ' ' + str(report))
-        #print('config is ' + str(type(config)) + ' ' + str(config))
-        # check if empty json {}
-        #bool True|False
-        #report_items = bool(report)
-        #if not report_items:
-        #    print('Empty Dct')
-        #if bool(report):
-        #    alert = True
-
-        #alert = isAlert(name, _report, report)
-        alert = isAlert(_report, job, report, _alert)
-
-    new_json['alert'] = alert
-
-    if new_json == jdata:
-        #print('same')
-        update = None
-    else:
-        #print('diff')
-
-        #post, may need to update/remove report_error or config_error
-
-        update = store.updateData('alerts', name, json.dumps(new_json), db_store)
-
-    #update = store.updateData('alerts', name, json.dumps(new_json), db_store)
-    #return alert
-    if alert is True:
-        return report
-    else:
-        return False
-
+#alert = isAlert(_report, job, report, _alert)
 
 #def isAlert(name, _report, report):
 #    print('isAlert ' + name, _report, report)
 
-def isAlert(name, job, report, _alert):
-    #print('isAlert ' + name, job, _dct)
-    alert = False
-
-    #print('report ' + str(report))
-    #print('_alert ' + str(_alert))
-    _alert = json.loads(_alert)
-    #print('_alert.loads ' + str(_alert))
-
-
-    #isAlert fim-2 fim-check {'/etc/group': 'ADDED', '/Users/krink/.ssh/config': 'ADDED'}
-    if job == 'fim-check':
-        #print('...check if empty')
-        #report_items = bool(_dct)
-        if bool(report):
-            alert = True
-
-    #isAlert proc-monitor ps-check {'procs': 418, 'defunct': 0}
-    if job == 'ps-check':
-        #print(job, report)
-        _procs = report.get('procs', None)
-        _defunct = report.get('defunct', None)
-
-        #print('procs val ' + str(_procs))
-        #print('defunct val ' + str(_defunct))
-
-        _procs2 = _alert.get('procs', None)
-        _defunct2 = _alert.get('defunct', None)
-
-        #print('procs val2 ' + str(_procs2))
-        #print('defunct val2 ' + str(_defunct2))
-        if int(_procs) > int(_procs2):
-            #print(str(_procs) + ' greater than ' + str(_procs2))
-            alert = True
-
-        #print(str(_defunct) + ' over ' + str(_defunct2))
-        if int(_defunct) >= int(_defunct2):
-            #print(str(_procs) + ' greater than ' + str(_procs2))
-            alert = True
-
-    return alert
+#def isAlert(name, job, report, _alert):
+#    #print('isAlert ' + name, job, _dct)
+#    alert = False
+#
+#    #print('report ' + str(report))
+#    #print('_alert ' + str(_alert))
+#    _alert = json.loads(_alert)
+#    #print('_alert.loads ' + str(_alert))
+#
+#
+#    #isAlert fim-2 fim-check {'/etc/group': 'ADDED', '/Users/krink/.ssh/config': 'ADDED'}
+#    if job == 'fim-check':
+#        #print('...check if empty')
+#        #report_items = bool(_dct)
+#        if bool(report):
+#            alert = True
+#
+#    #isAlert proc-monitor ps-check {'procs': 418, 'defunct': 0}
+#    if job == 'ps-check':
+#        #print(job, report)
+#        _procs = report.get('procs', None)
+#        _defunct = report.get('defunct', None)
+#
+#        #print('procs val ' + str(_procs))
+#        #print('defunct val ' + str(_defunct))
+#
+#        _procs2 = _alert.get('procs', None)
+#        _defunct2 = _alert.get('defunct', None)
+#
+#        #print('procs val2 ' + str(_procs2))
+#        #print('defunct val2 ' + str(_defunct2))
+#        if int(_procs) > int(_procs2):
+#            #print(str(_procs) + ' greater than ' + str(_procs2))
+#            alert = True
+#
+#        #print(str(_defunct) + ' over ' + str(_defunct2))
+#        if int(_defunct) >= int(_defunct2):
+#            #print(str(_procs) + ' greater than ' + str(_procs2))
+#            alert = True
+#
+#    return alert
 
 def psCheck(name, db_store):
     #print(str(_data)) #None
@@ -1887,36 +1931,42 @@ def psCheck(name, db_store):
     #for k,v in psDct.items():
     #    print(k,v)
     #dump into reports...
-    check = checkPsAndReport(name, psDct, db_store)
-    #return True
+    #check = checkPsAndReport(name, psDct, db_store)
     #return check
-    return check
+
+    _key = 'pscheck-' + str(name)
+
+    psDct['name'] = name
+    val = 1
+    gDict[_key] = ['sentinel_job_output' + json.dumps(psDct) + ' ' + str(val) ]
+
+    return True
 
 
-def checkPsAndReport(name, Dct, db_store):
-
-    #for k,v in _dct.items():
-    #    print(k,v)
-
-    #print('psDct ' + str(psDct))
-    #io performance, compare psDct w/ current report vals
-    #and write/replace only if diff
-    #
-    current_report = store.getData('reports', name, db_store)
-    current_report = current_report[0]
-    current_report = json.loads(current_report)
-    #print('current_report ' + str(current_report))
-    #maybe revist this, procs keeps changing, just need know when alert.... but,
-
-    if Dct == current_report:
-        #print('same Dct')
-        run = True
-    else:
-        #print('not.same.Dct')
-        run = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
-        print('PERF replaceINTO occured psCheck ')
-
-    return run
+#def checkPsAndReport(name, Dct, db_store):
+#
+#    #for k,v in _dct.items():
+#    #    print(k,v)
+#
+#    #print('psDct ' + str(psDct))
+#    #io performance, compare psDct w/ current report vals
+#    #and write/replace only if diff
+#    #
+#    current_report = store.getData('reports', name, db_store)
+#    current_report = current_report[0]
+#    current_report = json.loads(current_report)
+#    #print('current_report ' + str(current_report))
+#    #maybe revist this, procs keeps changing, just need know when alert.... but,
+#
+#    if Dct == current_report:
+#        #print('same Dct')
+#        run = True
+#    else:
+#        #print('not.same.Dct')
+#        run = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
+#        print('PERF replaceINTO occured psCheck ')
+#
+#    return run
     
 
 #we'll move these into db config store later
@@ -1932,6 +1982,7 @@ options = {
 
 def runJob(name, db_store):
     #print('runJob')
+    val = 0
     #-start
     start = time.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -1951,21 +2002,29 @@ def runJob(name, db_store):
         #print('invalid json')
         return None
 
-    new_json = copy.copy(jdata)
+    #don't need to do this now either...
+    #new_json = copy.copy(jdata)
 
-    new_json['start'] = start
+    #new_json['start'] = start
+    jdata['start'] = start
+    jdata['name'] = name
     
     # del element['hours']
     try:
-        del new_json['done']
+        #del new_json['done']
+        del jdata['done']
     except KeyError: pass
     try:
-        del new_json['success']
+        #del new_json['success']
+        del jdata['success']
     except KeyError: pass
 
+    gDict[name] = [ str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
+
     #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
-    replace = store.replaceINTO('jobs', name, json.dumps(new_json), db_store)
-    print('PERF replaceINTO occured on jobs')
+    #don't need to do this now...
+    #replace = store.replaceINTO('jobs', name, json.dumps(new_json), db_store)
+    #print('PERF replaceINTO occured on jobs')
     #print('replace was ' + str(replace))
 
     #_time = jdata.get('time', None) 
@@ -1998,20 +2057,34 @@ def runJob(name, db_store):
 
     #-done
     done = time.strftime("%Y-%m-%d %H:%M:%S")
-    new_json['done'] = done
-    new_json['success'] = run
+    #new_json['done'] = done
+    #new_json['success'] = run
+    jdata['done'] = done
+    jdata['success'] = run
     #update = updateJobsJson(name, json.dumps(new_json), db_store)
-    update = store.updateData('jobs', name, json.dumps(new_json), db_store)
+
+    #don't need to do this now...
+    #update = store.updateData('jobs', name, json.dumps(new_json), db_store)
     #print('PERF updateData occured on jobs')
 
-    print('gDict  updateData occured on jobs')
-    gDict[name] = [ json.dumps(new_json) ]
+    if run is True:
+        val = 1
+
+    #print('gDict  updateData occured on jobs')
+
+    #may need to remove old gDict entries as well... perhaps here...
+
+    #promHELP = '# HELP sentinel_job The sentinel job service.'
+    #promTYPE = '# TYPE sentinel_job gauge'
+    #gDict[name] = [ promHELP, promTYPE, str('sentinel_job') + json.dumps(new_json) + ' ' + str(val) ]
+    #gDict[name] = [ str('sentinel_job') + json.dumps(new_json) + ' ' + str(val) ]
+    gDict[name] = [ str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
 
     #gList.append('PERF updateData occured on jobs')
     #print('update was ' + str(update))
     #print('run ' + str(name) + ' was ' + str(run))
     #return True
-    print('run ' + str(run))
+    #print('run ' + str(run))
     return run
     #MARK
 
@@ -2047,72 +2120,78 @@ def getDuration(_repeat):
         
     return scale, amt
 
-def sentryProcessAlerts(db_store):
-    #print( 'process Alerts')
-    Dct = {}
-    alerts = store.selectAll('alerts', db_store)
-    for alert in alerts:
-        #print(alert[0])
-        #name = alert[1]
-        #jdata = alert[3]
-        name = alert[0]
-        #jdata = alert[2]
+#def sentryProcessAlerts(db_store):
+#    #print( 'process Alerts')
+#    Dct = {}
+#    alerts = store.selectAll('alerts', db_store)
+#    for alert in alerts:
+#        #print(alert[0])
+#        #name = alert[1]
+#        #jdata = alert[3]
+#        name = alert[0]
+#        #jdata = alert[2]
+#
+#        try:
+#            #jdata = json.loads(alert[3])
+#            jdata = json.loads(alert[2])
+#        except json.decoder.JSONDecodeError:
+#            #print('invalid json')
+#            #return None
+#            jdata = json.loads('{}')
+#        Dct[name] = jdata
+#
+#    #no name?
+#    #print('this is my name right before runAlert ' + str(name))
+#    #need job name...
+#
+#
+#    #run = runAlert(name, db_store)
+#    for name, data in Dct.items():
+#        #print('runAlert ' + str(data))
+#
+#        #sent = None
+#
+#        #alert = runAlert(name, db_store)
+#        alert = 'MANUAL'
+#        #print('Alert ' + name + ' ' + str(alert) + ' ' + str(data))
+#
+#    return True
 
-        try:
-            #jdata = json.loads(alert[3])
-            jdata = json.loads(alert[2])
-        except json.decoder.JSONDecodeError:
-            #print('invalid json')
-            #return None
-            jdata = json.loads('{}')
-        Dct[name] = jdata
 
-    #no name?
-    #print('this is my name right before runAlert ' + str(name))
-    #need job name...
-
-
-    #run = runAlert(name, db_store)
-    for name, data in Dct.items():
-        #print('runAlert ' + str(data))
-
-        sent = None
-
-        alert = runAlert(name, db_store)
-        #print('Alert ' + name + ' ' + str(alert) + ' ' + str(data))
+######################################################################
         #need config
         #print('config- ' + str(config))
 
-        config = data.get('config', None)
-        repeat = data.get('repeat', None)
-        _sent = data.get('sent', None)
+        #config = data.get('config', None)
+        #repeat = data.get('repeat', None)
+        #_sent = data.get('sent', None)
 
-        cleared = data.get('cleared', None)
-        count = data.get('count', None)
+        #cleared = data.get('cleared', None)
+        #count = data.get('count', None)
 
         #print('repeat ' + str(repeat))
 
         #if repeat is not None:
         #if repeat is not None:
         #    if sent is not None:
-        if repeat and _sent:
-            #getDuration
-            scale, amt = getDuration(repeat)
-            #print(scale, amt)
-            #start_time = datetime.datetime.strptime(sent, "%Y-%m-%d %H:%M:%S")
-            now = time.strftime("%Y-%m-%d %H:%M:%S")
-            now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-            sent_time = datetime.datetime.strptime(_sent, "%Y-%m-%d %H:%M:%S")
-
-            arg_dict = {scale:amt}
-            delta_time = sent_time + datetime.timedelta(**arg_dict)
-            #print('delta_time ' + str(delta_time))
-                
-            if now_time > delta_time:
-                #print('re-send ' + str(name))
-                sent = None
-            else:
-                sent = _sent
+        #if repeat and _sent:
+        #    #getDuration
+        #    scale, amt = getDuration(repeat)
+        #    #print(scale, amt)
+        #    #start_time = datetime.datetime.strptime(sent, "%Y-%m-%d %H:%M:%S")
+        #    now = time.strftime("%Y-%m-%d %H:%M:%S")
+        #    now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+        #    sent_time = datetime.datetime.strptime(_sent, "%Y-%m-%d %H:%M:%S")
+#
+#            arg_dict = {scale:amt}
+#            delta_time = sent_time + datetime.timedelta(**arg_dict)
+#            #print('delta_time ' + str(delta_time))
+#                
+#            if now_time > delta_time:
+#                #print('re-send ' + str(name))
+#                sent = None
+#            else:
+#                sent = _sent
 
         #print('DEBUG Alert ' + str(name) + ' alert: ' + str(alert) + ' repeat ' + str(repeat) + ' sent ' + str(sent))
         #DEBUG Alert alert-on-fim-2 alert: {'/opt/NO.FILE.txt': 'ADDED'} repeat 1min sent None
@@ -2128,31 +2207,32 @@ def sentryProcessAlerts(db_store):
         #if alert and sent is None:
 
         #if alert and not sent:
-        if alert and sent is None:
-            subject = ''
-            time_sent = sendAlertNotice(name, config, subject, alert, db_store)
-                #print('send Notice: ' + str(send))
-                #now = time.strftime("%Y-%m-%d %H:%M:%S")
-                #need the json...
-                #print('the json data currently is ' + str(data))
-                #lets update here, as opposed to in/at sendAlertNotice
-
-                #don't need to copy.copy here, just update the data reference
-            data['sent'] = time_sent
-                #print('name ' + name)
-                #print('data ' + str(data))
-
-            #lets remove cleared here
-            #del data['cleared']
-            try:
-                del data['cleared']
-            except KeyError: pass
-
-                #olde school update.  try just the data['sent'] = send
-            update = store.updateData('alerts', name, json.dumps(data), db_store)
-            print('PERF updateData occured on alerts')
-            #update = store.updateDataItem('sent', time_sent, 'alerts', name, db_store) #broken.broken.update wrong item
-            print(update)
+#        if alert and sent is None:
+#            subject = ''
+#            #time_sent = sendAlertNotice(name, config, subject, alert, db_store)
+#            time_sent = time.strftime("%Y-%m-%d %H:%M:%S")
+#                #print('send Notice: ' + str(send))
+#                #now = time.strftime("%Y-%m-%d %H:%M:%S")
+#                #need the json...
+#                #print('the json data currently is ' + str(data))
+#                #lets update here, as opposed to in/at sendAlertNotice
+#
+#                #don't need to copy.copy here, just update the data reference
+#            data['sent'] = time_sent
+#                #print('name ' + name)
+#                #print('data ' + str(data))
+#
+#            #lets remove cleared here
+#            #del data['cleared']
+#            try:
+#                del data['cleared']
+#            except KeyError: pass
+#
+#                #olde school update.  try just the data['sent'] = send
+#            update = store.updateData('alerts', name, json.dumps(data), db_store)
+#            print('PERF updateData occured on alerts')
+#            #update = store.updateDataItem('sent', time_sent, 'alerts', name, db_store) #broken.broken.update wrong item
+#            print(update)
 
         #print('DEBUG Alert ' + str(name) + ' alert: ' + str(alert) + ' repeat ' + str(repeat) + ' sent ' + str(sent) + ' cleared ' + str(cleared))
 
@@ -2161,63 +2241,64 @@ def sentryProcessAlerts(db_store):
         #if alert is False and sent:
         #if not alert and sent and not cleared:
         #if (alert is False and _sent and not cleared) or (alert is False and _sent and cleared):
-        if alert is False and _sent and not cleared:
-            # alert cleared, send notice
-            #time_cleared = time.strftime("%Y-%m-%d %H:%M:%S")
-            subject = 'cleared'
-            time_cleared = sendAlertNotice(name, config, subject, alert, db_store)
+#        if alert is False and _sent and not cleared:
+#            # alert cleared, send notice
+#            #time_cleared = time.strftime("%Y-%m-%d %H:%M:%S")
+#            subject = 'cleared'
+#            #time_cleared = sendAlertNotice(name, config, subject, alert, db_store)
+#            time_cleared = time.strftime("%Y-%m-%d %H:%M:%S")
+#
+#            data['cleared'] = time_cleared
+#
+#            #lets remove _sent here
+#            #del data['sent']
+#            try:
+#                del data['sent']
+#            except KeyError: pass
+#
+#
+#            if count:
+#                count += int(count)
+#            else:
+#                count = 1
+#
+#            data['count'] = count
+#
+#            update = store.updateData('alerts', name, json.dumps(data), db_store)
+#            print('PERF updateData occured on alerts')
+#            print(update)
+#
+#
+#    return True
 
-            data['cleared'] = time_cleared
-
-            #lets remove _sent here
-            #del data['sent']
-            try:
-                del data['sent']
-            except KeyError: pass
-
-
-            if count:
-                count += int(count)
-            else:
-                count = 1
-
-            data['count'] = count
-
-            update = store.updateData('alerts', name, json.dumps(data), db_store)
-            print('PERF updateData occured on alerts')
-            print(update)
-
-
-    return True
-
-def sendAlertNotice(name, config, _subject, _message, db_store):
-    #print('sendNotice ' + str(name) + ' ' + str(config) + ' ' + str(_dct))
-
-    message = json.dumps(_message)
-
-    sent = False
-
-    if config == 'email':
-        # send email...
-        subject = 'sentinel alert ' + name + ' ' + str(_subject)
-        send = sendEmail(subject, message, db_store)
-        logging.info('alert email sent ' + name + ' ' + str(_subject))
-        sent = time.strftime("%Y-%m-%d %H:%M:%S")
-
-    if config == 'logfile':
-        _logfile = store.getData('configs', config, db_store)
-        _logfile = _logfile[0]
-        _logfile = json.loads(_logfile)
-        _logfile = _logfile.get('logfile', None)
-        #print(_logfile)
-        # write log...
-        subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S")) + ' ' + name + ' ' + str(_subject)
-        with open(_logfile, 'a+') as log:
-            log.write(subject + ' ' + message + '\n')
-        logging.info('alert logfile written ' + name + ' ' + str(_subject))
-        sent = time.strftime("%Y-%m-%d %H:%M:%S")
-
-    return sent
+#def sendAlertNotice(name, config, _subject, _message, db_store):
+#    #print('sendNotice ' + str(name) + ' ' + str(config) + ' ' + str(_dct))
+#
+#    message = json.dumps(_message)
+#
+#    sent = False
+#
+#    if config == 'email':
+#        # send email...
+#        subject = 'sentinel alert ' + name + ' ' + str(_subject)
+#        send = sendEmail(subject, message, db_store)
+#        logging.info('alert email sent ' + name + ' ' + str(_subject))
+#        sent = time.strftime("%Y-%m-%d %H:%M:%S")
+#
+#    if config == 'logfile':
+#        _logfile = store.getData('configs', config, db_store)
+#        _logfile = _logfile[0]
+#        _logfile = json.loads(_logfile)
+#        _logfile = _logfile.get('logfile', None)
+#        #print(_logfile)
+#        # write log...
+#        subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S")) + ' ' + name + ' ' + str(_subject)
+#        with open(_logfile, 'a+') as log:
+#            log.write(subject + ' ' + message + '\n')
+#        logging.info('alert logfile written ' + name + ' ' + str(_subject))
+#        sent = time.strftime("%Y-%m-%d %H:%M:%S")
+#
+#    return sent
 
 
 def sentryProcessJobs(db_store):
@@ -2354,10 +2435,10 @@ def sentryScheduler(db_store):
         job.setDaemon(True)
         job.start()
 
-        #run = sentryProcessAlerts(db_store)
-        alert = threading.Thread(target=sentryProcessAlerts, args=(db_store,), name="SentryAlertRunner")
-        alert.setDaemon(True)
-        alert.start()
+        ##run = sentryProcessAlerts(db_store)
+        #alert = threading.Thread(target=sentryProcessAlerts, args=(db_store,), name="SentryAlertRunner")
+        #alert.setDaemon(True)
+        #alert.start()
 
 
         tcount = 0

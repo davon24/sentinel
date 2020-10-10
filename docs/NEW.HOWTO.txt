@@ -1,0 +1,10 @@
+
+🎃 krink@Karls-MacBook-Pro python % ./sentinel.py list-jobs
+('fim-job-1', '2020-10-10 20:02:13', '{"repeat": "1min", "job": "fim-check", "config": "fim-1"}')
+('fim-job-2', '2020-10-10 20:02:39', '{"repeat": "1min", "job": "fim-check", "config": "fim-2"}')
+('proc-monitor', '2020-10-10 20:03:05', '{"repeat": "1min", "job": "ps-check"}')
+
+
+display at curl localhost:9111/metrics
+
+

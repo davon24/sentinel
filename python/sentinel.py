@@ -85,7 +85,8 @@ def usage():
         delete-config id
 
         list-reports
-        delete-report id
+        delete-report name
+        clear-reports
 
         list-alerts
         delete-alert id
@@ -669,9 +670,14 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'delete-report':
-            rowid = sys.argv[2]
-            delete = store.deleteFrom('reports', rowid, db_store)
+            name = sys.argv[2]
+            delete = store.deleteFrom('reports', name, db_store)
             print(delete)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-reports':
+            clear = store.clearAll('reports', db_store)
+            print(clear)
             sys.exit(0)
 
         if sys.argv[1] == 'list-alerts':
@@ -681,8 +687,8 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'delete-alert':
-            rowid = sys.argv[2]
-            delete = store.deleteFrom('alerts', rowid, db_store)
+            name = sys.argv[2]
+            delete = store.deleteFrom('alerts', name, db_store)
             print(delete)
             sys.exit(0)
 
