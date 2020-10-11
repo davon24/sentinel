@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.5.0'
+__version__ = '0.0.0.v1.5.1'
 
 import sys
 #sys.path.insert(0,'db')
@@ -137,9 +137,16 @@ def run():
         print(update)
         return True
 
-if __name__ == '__main__':
 
-    gLst = []
+
+#conf = store.getData('configs', 'prometheus', db_store)
+#if not conf:
+#    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
+#    conf = store.getData('configs', 'prometheus', db_store)
+#conf = json.loads(conf[0])
+
+
+if __name__ == '__main__':
 
     db_store = 'db/sentinel.db'
     db_manuf = 'db/manuf'
@@ -583,6 +590,17 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'sentry':
+
+            #conf = store.getData('configs', 'prometheus', db_store)
+            #if conf is None:
+            #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
+            #    conf = store.getData('configs', 'prometheus', db_store)
+
+            ##config = config[0]
+            #conf = json.loads(conf[0])
+
+            #print(config)
+
             run = tools.sentryMode(db_store)
             print(str(run))
             sys.exit(0)

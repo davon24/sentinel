@@ -50,44 +50,42 @@ class ThreadWithReturnValue(threading.Thread):
         return self._return
 
 class Handler(BaseHTTPRequestHandler):
+
+    #def __init__(self, config):
+    #    self.config = config
+
     def do_GET(self):
+
+        #config = config.get('path', None)
+        
+        #config = conf.get('path', None)
+        #print(str(_metric_path))
+        #print('hello')
+
         #127.0.0.1 - - [31/May/2020 19:09:05] "GET /metrics HTTP/1.1" 200 -
-        logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 200 -'))
-        if self.path == '/metrics':
+        #logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 200 -'))
         #if self.path == config.param['metricPath']:
         #if self.path == config['path']:
+            #print(str(config['path']))
+
+        #if self.path == '/metrics':
+        if self.path == _metric_path:
             self.send_response(200)
             self.send_header("Content-type", "text/plain; charset=utf-8")
             self.end_headers()
-
-            #for item in gList:
-            #for item in gQ:
-            #    self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
-            #items = gQ.get()
-            #for item in items:
-            #    #self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
-            #    self.wfile.write(str(item) + str('\n'))
-            #while not gQ.empty():
-            #    #print(gQ.get())
-            #    self.wfile.write(bytes(str(gQ.get()) + str('\n'), 'utf-8'))
-
-            #for item in gList:
-            #    self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
 
             for k,v in gDict.items():
                 #v should be a list
                 for item in v:
                     self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
             
-            #print(gQ.get())
-
         else:
-            logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 404 -'))
+            #logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 404 -'))
             self.send_error(404) #404 Not Found
         return
 
     def do_POST(self):
-        logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 405 -'))
+        #logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 405 -'))
         self.send_error(405) #405 Method Not Allowed
         return
 
@@ -2508,11 +2506,11 @@ def sentryScheduler(db_store):
     return True
     #return run
 
-def listRunning(db_store):
-    rows = store.getAllCounts(db_store)
-    for row in rows:
-        print(row)
-    return True
+#def listRunning(db_store):
+#    rows = store.getAllCounts(db_store)
+#    for row in rows:
+#        print(row)
+#    return True
 
 def sentryCleanup(db_store):
     #import logging
@@ -2525,19 +2523,26 @@ def sentryMode(db_store):
 
     #gList = []
 
-    config = store.getData('configs', 'prometheus', db_store)
+    #config = store.getData('configs', 'prometheus', db_store)
     #print(config)
-    if config is None:
-        update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
-        config = store.getData('configs', 'prometheus', db_store)
-
-    #config = config[0]
-    config = json.loads(config[0])
+    #if config is None:
+    #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
+    #    config = store.getData('configs', 'prometheus', db_store)
+#
+#    #config = config[0]
+#    config = json.loads(config[0])
     #print(config['port'])
     #print(config['path'])
 
     #global sigterm
     #sigterm = False
+
+    conf = store.getData('configs', 'prometheus', db_store)
+    if not conf:
+        update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
+        conf = store.getData('configs', 'prometheus', db_store)
+    conf = json.loads(conf[0])
+
 
     #import logging
     import atexit
@@ -2552,8 +2557,8 @@ def sentryMode(db_store):
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry startup")
-    update1 = store.replaceCounts('threads', 0, db_store)
-    update2 = store.replaceCounts('process', 0, db_store)
+    #update1 = store.replaceCounts('threads', 0, db_store)
+    #update2 = store.replaceCounts('process', 0, db_store)
 
     #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="Scheduler")
@@ -2564,7 +2569,14 @@ def sentryMode(db_store):
     #alertmgr.setDaemon(True)
     #alertmgr.start()
 
-    httpd = HTTPServer(('', config['port']), Handler)
+
+    #print(conf['port'])
+    _port = conf['port']
+    #print(conf['path'])
+    global _metric_path
+    _metric_path = conf['path']
+
+    httpd = HTTPServer(('', _port), Handler)
 
     #while (sigterm == False):
     try:
