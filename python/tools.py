@@ -35,8 +35,8 @@ import os, pwd, grp
 
 #gList = []
 
-global gDict
-gDict = {}
+#global gDict
+#gDict = {}
 
 #sigterm = False
 
@@ -80,7 +80,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
 
             for k,v in gDict.items():
-                #v should be a list
+            #    #v should be a list
                 for item in v:
                     self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
             
@@ -2419,6 +2419,8 @@ def processD(List):
     #gList[2] = promDATA
 
     gDict['sentinel_up'] = [promHELP, promTYPE, promDATA]
+    #Dict['sentinel_up'] = [promHELP, promTYPE, promDATA]
+    #gQ.put(Dict)
 
     #gList.extend(List)
     #print(gList)
@@ -2586,6 +2588,8 @@ def sentryMode(db_store):
 
     global gDict
     gDict = {}
+    #global gQ
+    #gQ = queue.Queue()
 
     conf = store.getData('configs', 'prometheus', db_store)
     if not conf:
@@ -2633,6 +2637,7 @@ def sentryMode(db_store):
 
         httpd = HTTPServer(('', _port), Handler)
         httpd.serve_forever()
+
 
         #process = subprocess.Popen(httpd.serve_forever(), preexec_fn=demote('nobody', 'nobody')) 
         #process = subprocess.Popen(, preexec_fn=demote('nobody', 'nobody')) 
