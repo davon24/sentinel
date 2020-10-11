@@ -85,6 +85,7 @@ def usage():
         delete-config id
 
         list-reports
+        update-report name data
         delete-report name
         clear-reports
 
@@ -104,6 +105,10 @@ def usage():
         delete-fim id
         add-fim name /dir/file
         del-fim name /dir/file
+
+        list-proms
+        update-prom name data
+        clear-proms
 
         sentry
 
@@ -688,6 +693,18 @@ if __name__ == '__main__':
             print(clear)
             sys.exit(0)
 
+        if sys.argv[1] == 'update-report':
+            name = sys.argv[2]
+            data = sys.argv[3]
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError:
+                print('invalid json')
+                sys.exit(1)
+            run = store.replaceINTO('reports', name, data, db_store)
+            print(run)
+            sys.exit(0)
+
+
         if sys.argv[1] == 'list-alerts':
             alerts = store.selectAll('alerts', db_store)
             for row in alerts:
@@ -748,6 +765,26 @@ if __name__ == '__main__':
             clear = store.clearAll('counts', db_store)
             print(clear)
             sys.exit(0)
+
+
+        if sys.argv[1] == 'list-proms':
+            proms = store.selectAll('proms', db_store)
+            for row in proms:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-proms':
+            clear = store.clearAll('proms', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'update-prom':
+            name = sys.argv[2]
+            data = sys.argv[3]
+            run = store.replaceINTOproms(name, data, db_store)
+            print(run)
+            sys.exit(0)
+
 
         else:
             usage()

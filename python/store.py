@@ -125,6 +125,11 @@ def createDB(db_file):
     cur.execute(create_counts)
     cur.execute(create_countsi)
 
+    create_proms  = "CREATE TABLE IF NOT EXISTS proms (name TEXT PRIMARY KEY NOT NULL,data TEXT) WITHOUT ROWID;"
+    create_promsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_proms ON proms (name);"
+    cur.execute(create_proms)
+    cur.execute(create_promsi)
+
     con.commit()
 
     return con
@@ -817,6 +822,16 @@ def replaceConfig(name, data, db_file):
     if cur.rowcount == 0:
         return False
     return True
+
+def replaceINTOproms(name, data, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO proms VALUES(?,?)", (name, data))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
 
 def replaceINTO(tbl, name, data, db_file):
     con = sqlConnection(db_file)

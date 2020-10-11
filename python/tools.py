@@ -18,7 +18,6 @@ import json
 #import ssl
 #import certifi
 
-import logging
 #import atexit
 #import signal
 
@@ -32,13 +31,17 @@ import os, pwd, grp
 
 #import queue
 #gQ = queue.Queue()
-
 #gList = []
-
 #global gDict
 #gDict = {}
 
-#sigterm = False
+import logging
+loglevel = logging.INFO
+logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
+datefmt = "%b %d %H:%M:%S"
+logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
+
+sigterm = False
 
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -56,33 +59,25 @@ class ThreadWithReturnValue(threading.Thread):
 
 class Handler(BaseHTTPRequestHandler):
 
-    #def __init__(self, config):
-    #    self.config = config
-
     def do_GET(self):
-
-        #config = config.get('path', None)
-        
-        #config = conf.get('path', None)
-        #print(str(_metric_path))
-        #print('hello')
-
-        #127.0.0.1 - - [31/May/2020 19:09:05] "GET /metrics HTTP/1.1" 200 -
         #logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 200 -'))
         #if self.path == config.param['metricPath']:
         #if self.path == config['path']:
-            #print(str(config['path']))
-
         #if self.path == '/metrics':
         if self.path == _metric_path:
             self.send_response(200)
             self.send_header("Content-type", "text/plain; charset=utf-8")
             self.end_headers()
 
-            for k,v in gDict.items():
+            #for k,v in gDict.items():
             #    #v should be a list
-                for item in v:
-                    self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
+            #    for item in v:
+            #        self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
+            proms = store.selectAll('proms', db_store)
+            for row in proms:
+                #print(row)
+                self.wfile.write(bytes(str(row) + str('\n'), 'utf-8'))
+
             
         else:
             #logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 404 -'))
@@ -1784,149 +1779,6 @@ def delFimFile(name, _file, db_store):
     update = store.updateData('fims', name, json.dumps(jdata), db_store)
     return update
 
-#def runAlert(name, db_store):
-#    #print('start runAlert ' + str(name))
-#    alert = False
-#
-#    _alert = store.getData('alerts', name, db_store)
-#    #print('alertData is ' + str(type(_alert)) + ' ' + str(_alert))
-#    #print('DATA Data is ' + str(type(data)) + ' ' + str(data))
-#
-#    if type(_alert) == tuple:
-#        _alert = _alert[0]
-#
-#    try:
-#        jdata = json.loads(_alert)
-#    except json.decoder.JSONDecodeError:
-#        jdata = None
-#
-#    #new_json = jdata
-#    #new_json = copy.deepcopy(jdata)
-#    new_json = copy.copy(jdata)
-#
-#    #print('jdata is ' + str(type(jdata)) + ' ' + str(jdata))
-#
-#    _report = jdata.get('report', None)
-#    _config = jdata.get('config', None)
-#    _job    = jdata.get('job', None)
-#    _repeat = jdata.get('repeat', None)
-#
-#    #print('_report is ' + str(_report))
-#    #print('_config is ' + str(_config))
-#    #print('_repeat is ' + str(_repeat))
-#
-#    #getReport
-#    report = store.getData('reports', _report, db_store)
-#    #print('getReport report is ' + str(type(report)) + ' ' + str(report))
-#
-#    #getConfig
-#    config = store.getData('configs', _config, db_store)
-#    #print('getConfig configs is ' + str(type(config)) + ' ' + str(config))
-#
-#    #getJob just verifies options
-#    #for k in options:
-#    #    print(k)
-#
-#    if _job in options:
-#        job = _job
-#    else:
-#        job = None
-#        new_json['error'] = 'job is ' + str(_job)
-#        
-#
-#    if report is None:
-#        new_json['error'] = 'report is ' + str(_report)
-#    else:
-#        report = report[0] #tuple
-#        report = json.loads(report) #<class 'dict'>
-#
-#    if config is None:
-#        new_json['error'] = 'config is ' + str(_config)
-#    else:
-#        config = config[0] #tuple
-#        config = json.loads(config) #<class 'dict'>
-#
-#    if report is not None and config is not None and job is not None:
-#        #print('runAlert job name ' + str(job))
-#        #print('report ' + name + ' is ' + str(type(report)) + ' ' + str(report))
-#        #print('config is ' + str(type(config)) + ' ' + str(config))
-#        # check if empty json {}
-#        #bool True|False
-#        #report_items = bool(report)
-#        #if not report_items:
-#        #    print('Empty Dct')
-#        #if bool(report):
-#        #    alert = True
-#
-#        #alert = isAlert(name, _report, report)
-#        alert = isAlert(_report, job, report, _alert)
-#
-#    new_json['alert'] = alert
-#
-#    if new_json == jdata:
-#        #print('same')
-#        update = None
-#    else:
-#        #print('diff')
-#
-#        #post, may need to update/remove report_error or config_error
-#
-#        update = store.updateData('alerts', name, json.dumps(new_json), db_store)
-#
-#    #update = store.updateData('alerts', name, json.dumps(new_json), db_store)
-#    #return alert
-#    if alert is True:
-#        return report
-#    else:
-#        return False
-
-#alert = isAlert(_report, job, report, _alert)
-
-#def isAlert(name, _report, report):
-#    print('isAlert ' + name, _report, report)
-
-#def isAlert(name, job, report, _alert):
-#    #print('isAlert ' + name, job, _dct)
-#    alert = False
-#
-#    #print('report ' + str(report))
-#    #print('_alert ' + str(_alert))
-#    _alert = json.loads(_alert)
-#    #print('_alert.loads ' + str(_alert))
-#
-#
-#    #isAlert fim-2 fim-check {'/etc/group': 'ADDED', '/Users/krink/.ssh/config': 'ADDED'}
-#    if job == 'fim-check':
-#        #print('...check if empty')
-#        #report_items = bool(_dct)
-#        if bool(report):
-#            alert = True
-#
-#    #isAlert proc-monitor ps-check {'procs': 418, 'defunct': 0}
-#    if job == 'ps-check':
-#        #print(job, report)
-#        _procs = report.get('procs', None)
-#        _defunct = report.get('defunct', None)
-#
-#        #print('procs val ' + str(_procs))
-#        #print('defunct val ' + str(_defunct))
-#
-#        _procs2 = _alert.get('procs', None)
-#        _defunct2 = _alert.get('defunct', None)
-#
-#        #print('procs val2 ' + str(_procs2))
-#        #print('defunct val2 ' + str(_defunct2))
-#        if int(_procs) > int(_procs2):
-#            #print(str(_procs) + ' greater than ' + str(_procs2))
-#            alert = True
-#
-#        #print(str(_defunct) + ' over ' + str(_defunct2))
-#        if int(_defunct) >= int(_defunct2):
-#            #print(str(_procs) + ' greater than ' + str(_procs2))
-#            alert = True
-#
-#    return alert
-
 def psCheck(name, db_store):
     #print(str(_data)) #None
     import modules.ps.ps
@@ -1946,33 +1798,6 @@ def psCheck(name, db_store):
     return True
 
 
-#def checkPsAndReport(name, Dct, db_store):
-#
-#    #for k,v in _dct.items():
-#    #    print(k,v)
-#
-#    #print('psDct ' + str(psDct))
-#    #io performance, compare psDct w/ current report vals
-#    #and write/replace only if diff
-#    #
-#    current_report = store.getData('reports', name, db_store)
-#    current_report = current_report[0]
-#    current_report = json.loads(current_report)
-#    #print('current_report ' + str(current_report))
-#    #maybe revist this, procs keeps changing, just need know when alert.... but,
-#
-#    if Dct == current_report:
-#        #print('same Dct')
-#        run = True
-#    else:
-#        #print('not.same.Dct')
-#        run = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
-#        print('PERF replaceINTO occured psCheck ')
-#
-#    return run
-    
-
-#we'll move these into db config store later
 options = {
  'vuln-scan' : vulnScan,
  'port-scan' : portScan1,
@@ -2123,185 +1948,19 @@ def getDuration(_repeat):
         
     return scale, amt
 
-#def sentryProcessAlerts(db_store):
-#    #print( 'process Alerts')
-#    Dct = {}
-#    alerts = store.selectAll('alerts', db_store)
-#    for alert in alerts:
-#        #print(alert[0])
-#        #name = alert[1]
-#        #jdata = alert[3]
-#        name = alert[0]
-#        #jdata = alert[2]
-#
-#        try:
-#            #jdata = json.loads(alert[3])
-#            jdata = json.loads(alert[2])
-#        except json.decoder.JSONDecodeError:
-#            #print('invalid json')
-#            #return None
-#            jdata = json.loads('{}')
-#        Dct[name] = jdata
-#
-#    #no name?
-#    #print('this is my name right before runAlert ' + str(name))
-#    #need job name...
-#
-#
-#    #run = runAlert(name, db_store)
-#    for name, data in Dct.items():
-#        #print('runAlert ' + str(data))
-#
-#        #sent = None
-#
-#        #alert = runAlert(name, db_store)
-#        alert = 'MANUAL'
-#        #print('Alert ' + name + ' ' + str(alert) + ' ' + str(data))
-#
-#    return True
+def sentryProcessor(db_store):
+    while (sigterm == False):
+        print('process Reports')
 
+        for k,v in gDict.items():
+            print(k,v)
+            #for item in v:
+                #print(k, item)
 
-######################################################################
-        #need config
-        #print('config- ' + str(config))
+        time.sleep(10)
 
-        #config = data.get('config', None)
-        #repeat = data.get('repeat', None)
-        #_sent = data.get('sent', None)
+    return True
 
-        #cleared = data.get('cleared', None)
-        #count = data.get('count', None)
-
-        #print('repeat ' + str(repeat))
-
-        #if repeat is not None:
-        #if repeat is not None:
-        #    if sent is not None:
-        #if repeat and _sent:
-        #    #getDuration
-        #    scale, amt = getDuration(repeat)
-        #    #print(scale, amt)
-        #    #start_time = datetime.datetime.strptime(sent, "%Y-%m-%d %H:%M:%S")
-        #    now = time.strftime("%Y-%m-%d %H:%M:%S")
-        #    now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
-        #    sent_time = datetime.datetime.strptime(_sent, "%Y-%m-%d %H:%M:%S")
-#
-#            arg_dict = {scale:amt}
-#            delta_time = sent_time + datetime.timedelta(**arg_dict)
-#            #print('delta_time ' + str(delta_time))
-#                
-#            if now_time > delta_time:
-#                #print('re-send ' + str(name))
-#                sent = None
-#            else:
-#                sent = _sent
-
-        #print('DEBUG Alert ' + str(name) + ' alert: ' + str(alert) + ' repeat ' + str(repeat) + ' sent ' + str(sent))
-        #DEBUG Alert alert-on-fim-2 alert: {'/opt/NO.FILE.txt': 'ADDED'} repeat 1min sent None
-
-
-        #if alert is True:
-        #if alert:
-        #    #config = data.get('config', None)
-        #    if sent is None:
-        #if alert and sent is None:
-        #if alert and not sent:
-        #if alert is True and sent is None:
-        #if alert and sent is None:
-
-        #if alert and not sent:
-#        if alert and sent is None:
-#            subject = ''
-#            #time_sent = sendAlertNotice(name, config, subject, alert, db_store)
-#            time_sent = time.strftime("%Y-%m-%d %H:%M:%S")
-#                #print('send Notice: ' + str(send))
-#                #now = time.strftime("%Y-%m-%d %H:%M:%S")
-#                #need the json...
-#                #print('the json data currently is ' + str(data))
-#                #lets update here, as opposed to in/at sendAlertNotice
-#
-#                #don't need to copy.copy here, just update the data reference
-#            data['sent'] = time_sent
-#                #print('name ' + name)
-#                #print('data ' + str(data))
-#
-#            #lets remove cleared here
-#            #del data['cleared']
-#            try:
-#                del data['cleared']
-#            except KeyError: pass
-#
-#                #olde school update.  try just the data['sent'] = send
-#            update = store.updateData('alerts', name, json.dumps(data), db_store)
-#            print('PERF updateData occured on alerts')
-#            #update = store.updateDataItem('sent', time_sent, 'alerts', name, db_store) #broken.broken.update wrong item
-#            print(update)
-
-        #print('DEBUG Alert ' + str(name) + ' alert: ' + str(alert) + ' repeat ' + str(repeat) + ' sent ' + str(sent) + ' cleared ' + str(cleared))
-
-        #if not alert and sent:
-        #if not alert and sent (and not 'cleared'):
-        #if alert is False and sent:
-        #if not alert and sent and not cleared:
-        #if (alert is False and _sent and not cleared) or (alert is False and _sent and cleared):
-#        if alert is False and _sent and not cleared:
-#            # alert cleared, send notice
-#            #time_cleared = time.strftime("%Y-%m-%d %H:%M:%S")
-#            subject = 'cleared'
-#            #time_cleared = sendAlertNotice(name, config, subject, alert, db_store)
-#            time_cleared = time.strftime("%Y-%m-%d %H:%M:%S")
-#
-#            data['cleared'] = time_cleared
-#
-#            #lets remove _sent here
-#            #del data['sent']
-#            try:
-#                del data['sent']
-#            except KeyError: pass
-#
-#
-#            if count:
-#                count += int(count)
-#            else:
-#                count = 1
-#
-#            data['count'] = count
-#
-#            update = store.updateData('alerts', name, json.dumps(data), db_store)
-#            print('PERF updateData occured on alerts')
-#            print(update)
-#
-#
-#    return True
-
-#def sendAlertNotice(name, config, _subject, _message, db_store):
-#    #print('sendNotice ' + str(name) + ' ' + str(config) + ' ' + str(_dct))
-#
-#    message = json.dumps(_message)
-#
-#    sent = False
-#
-#    if config == 'email':
-#        # send email...
-#        subject = 'sentinel alert ' + name + ' ' + str(_subject)
-#        send = sendEmail(subject, message, db_store)
-#        logging.info('alert email sent ' + name + ' ' + str(_subject))
-#        sent = time.strftime("%Y-%m-%d %H:%M:%S")
-#
-#    if config == 'logfile':
-#        _logfile = store.getData('configs', config, db_store)
-#        _logfile = _logfile[0]
-#        _logfile = json.loads(_logfile)
-#        _logfile = _logfile.get('logfile', None)
-#        #print(_logfile)
-#        # write log...
-#        subject = 'sentinel ' + str(time.strftime("%Y-%m-%d %H:%M:%S")) + ' ' + name + ' ' + str(_subject)
-#        with open(_logfile, 'a+') as log:
-#            log.write(subject + ' ' + message + '\n')
-#        logging.info('alert logfile written ' + name + ' ' + str(_subject))
-#        sent = time.strftime("%Y-%m-%d %H:%M:%S")
-#
-#    return sent
 
 
 def sentryProcessJobs(db_store):
@@ -2383,50 +2042,20 @@ def sentryProcessJobs(db_store):
                         run = runJob(name, db_store)
                         #print(run)
     
-    #print('end')
     #return True
     return run
-
-#def replaceJobsJson(name, jdata, db_store):
-#    #replaceINTO(tbl, item, data, db_file):
-#    replace = store.replaceINTO('jobs', name, jdata, db_store)
-#    return replace
-
-#def updateJobsJson(name, jdata, db_store):
-#    #replaceINTO(tbl, item, data, db_file):
-#    #update = store.updateJobs(name, jdata, db_store)
-#    update = store.updateData('jobs', name, jdata, db_store)
-#    return update
-
 
 def processD(List):
     sentinel_up = 1
     start = time.time()
 
-    #gList.clear()
-
     promHELP = '# HELP sentinel_up Whether the sentinel service is up.'
     promTYPE = '# TYPE sentinel_up gauge'
     promDATA = 'sentinel_up ' + str(sentinel_up)
-    #gList.append(promHELP)
-    #gList.append(promTYPE)
-    #gList.append(promDATA)
-    #gQ.put(promHELP)
-    #gQ.put(promTYPE)
-    #gQ.put(promDATA)
-    #gList[0] = promHELP
-    #gList[1] = promTYPE
-    #gList[2] = promDATA
 
     gDict['sentinel_up'] = [promHELP, promTYPE, promDATA]
-    #Dict['sentinel_up'] = [promHELP, promTYPE, promDATA]
-    #gQ.put(Dict)
-
-    #gList.extend(List)
-    #print(gList)
 
     return True
-
 
 
 def sentryScheduler(db_store):
@@ -2466,39 +2095,8 @@ def sentryScheduler(db_store):
             #process.append(proc)
 
 
-
         List.append('threads ' + str(tcount))
         List.append('process ' + str(pcount))
-
-        #cDct = {}
-        #get current
-        #counts = store.selectAll('counts', db_store)
-        #for row in counts:
-        #    #print(row)
-        #    name = row[0]
-        #    val  = row[1]
-        #    #print(name, val)
-        #    #cDct[name] = val
-        #    if name == 'threads':
-        #        #print('compare val to tcount ' + str(val) + ' ' + str(tcount))
-        #        if int(val) == int(tcount):
-        #            continue
-        #        else:
-        #            #update1 = store.updateCounts('threads', tcount, db_store)
-        #            #print('PERF updateCounts occured on threads ' + str(update1))
-        #            print('PERF updateCounts occured on threads ' + str(tcount))
-        #            List.append('PERF updateCounts occured on threads ' + str(tcount))
-#
-#            if name == 'process':
-#                #print('compare val to pcount ' + str(val) + ' ' + str(pcount))
-#                if int(val) == int(pcount):
-#                    continue
-#                else:
-#                    #update2 = store.updateCounts('process', pcount, db_store)
-#                    #print('PERF updateCounts occured on process ' + str(update2))
-#                    print('PERF updateCounts occured on process ' + str(pcount))
-#                    List.append('PERF updateCounts occured on process ' + str(pcount))
-
 
         #for t in threads:
         #    t.join()
@@ -2513,78 +2111,44 @@ def sentryScheduler(db_store):
     return True
     #return run
 
-#def listRunning(db_store):
-#    rows = store.getAllCounts(db_store)
-#    for row in rows:
-#        print(row)
-#    return True
 
 def sentryCleanup(db_store):
-    #import logging
-    logging.info("Cleanup:")
-    #update1 = store.replaceCounts('threads', 0, db_store)
-    #update2 = store.replaceCounts('process', 0, db_store)
+    logging.info("Sentry Cleanup:")
     return True
 
 
-#def drop_privileges(uid_name='nobody', gid_name='nogroup'):
-def drop_privileges(_port):
-
-    # Get the uid/gid from the name
-    #running_uid = pwd.getpwnam(uid_name).pw_uid
-    #running_gid = grp.getgrnam(gid_name).gr_gid
-
-    #print('running_uid ' + str(running_uid))
-    #print('running_gid ' + str(running_gid))
-
-    # Remove group privileges
-    #os.setgroups([])
-
-    # Try setting the new uid/gid
-    #os.setgid(running_gid)
-
-    run_as_user = "nobody"
-    uid = pwd.getpwnam(run_as_user)[2]
-    print('nobody ' + str(uid))
-    os.setuid(uid)
-
-    print('drop_privs')
-
-    httpd = HTTPServer(('', _port), Handler)
-    httpd.serve_forever()
-
-    return True
-
-def demote(user, group):
-    
-    def result():
-        #report_ids('starting demotion')
-        #os.setgid(uid)
-        #os.setuid(gid)
-        #report_ids('finished demotion')
-        print('demote')
-    return result
-
-#def report_ids(msg):
-#    print('uid, gid = %d, %d; %s' % (os.getuid(), os.getgid(), msg))
-
-
-def procHTTPServer(port, metric_path, Dct):
+def procHTTPServer(port, metric_path, db_file):
     global _metric_path
     _metric_path = metric_path
 
-    global gDict
-    gDict = Dct
+    global db_store
+    db_store = db_file
+
+    #print(os.getuid())
+    if os.getuid() == 0:
+        run_as_user = "nobody"
+        uid = pwd.getpwnam(run_as_user)[2]
+        #print('user.nobody ' + str(uid))
+        logging.info('Sentry HTTPServer Drop Privileges to uid ' + str(uid))
+        os.setuid(uid)
+
+    #run_as_group = "nobody"
+    #gid = grp.getgrnam(run_as_group)[2]
+    #print('group.nobody ' + str(gid))
+    #os.setgid(gid)
+
 
     httpd = HTTPServer(('', port), Handler)
     httpd.serve_forever()
 
 
 
-def sentryMode(db_store):
+def sentryMode(db_file):
 
-    global sigterm
-    sigterm = False
+    global db_store
+    db_store = db_file
+
+    #sigterm = False
 
     global gDict
     gDict = {}
@@ -2600,11 +2164,6 @@ def sentryMode(db_store):
     import atexit
     import signal
 
-    loglevel = logging.INFO
-    logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
-    datefmt = "%b %d %H:%M:%S"
-    logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
-    
     atexit.register(sentryCleanup, db_store)
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
@@ -2614,61 +2173,20 @@ def sentryMode(db_store):
     scheduler.setDaemon(True)
     scheduler.start()
 
+    processor = threading.Thread(target=sentryProcessor, args=(db_store,), name="Processor")
+    processor.setDaemon(True)
+    processor.start()
 
     _port = conf['port']
     global _metric_path
     _metric_path = conf['path']
 
-    #httpd = HTTPServer(('', _port), Handler)
-
-    #import os, pwd, grp
     try:
 
-        run_as_user = "nobody"
-        uid = pwd.getpwnam(run_as_user)[2]
-        print('user.nobody ' + str(uid))
-        
-        run_as_group = "nobody"
-        gid = grp.getgrnam(run_as_group)[2]
-        print('group.nobody ' + str(gid))
- 
-        #os.setuid(uid)
-        #os.setgid(gid)
+        p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
+        p.start()
+        p.join()
 
-        httpd = HTTPServer(('', _port), Handler)
-        httpd.serve_forever()
-
-
-        #process = subprocess.Popen(httpd.serve_forever(), preexec_fn=demote('nobody', 'nobody')) 
-        #process = subprocess.Popen(, preexec_fn=demote('nobody', 'nobody')) 
-        #result = process.wait()
-
-        #httpd.serve_forever()
-
-        #procHTTPServer(_port)
-        #p = multiprocessing.Process(target=procHTTPServer, args=(_port,_metric_path, gDict))
-        #p = multiprocessing.Process(target=httpd.serve_forever, args=())
-
-
-        #p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, gDict))
-        #p.start()
-        #p.join()
-
-
-
-
-
-    #    print(os.getuid())
-#
-#        if os.getuid() == 0:
-#            #drop_privileges(_port)
-#            #print(os.getuid())
-#            #httpd.serve_forever()
-#        else:
-#            httpd.serve_forever()
-#
-#        #print('sentry mode')
-        #time.sleep(60)
     except (KeyboardInterrupt, SystemExit, Exception):
         sigterm = True
         scheduler.join()
