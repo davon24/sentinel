@@ -636,9 +636,9 @@ if __name__ == '__main__':
             try: name = sys.argv[2]
             except IndexError: name = None
             if name is None:
-                fims = store.getAll('fims', db_store)
+                fims = store.selectAll('fims', db_store)
                 for i in fims:
-                    name = i[1]
+                    name = i[0]
                     run = tools.printFim(name, db_store)
                     print(str(name) + ' ' + str(run))
             else:
