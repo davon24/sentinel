@@ -590,17 +590,6 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'sentry':
-
-            #conf = store.getData('configs', 'prometheus', db_store)
-            #if conf is None:
-            #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
-            #    conf = store.getData('configs', 'prometheus', db_store)
-
-            ##config = config[0]
-            #conf = json.loads(conf[0])
-
-            #print(config)
-
             run = tools.sentryMode(db_store)
             print(str(run))
             sys.exit(0)

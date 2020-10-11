@@ -28,12 +28,17 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 import store
 
+import os, pwd, grp
+
 #import queue
 #gQ = queue.Queue()
 
 #gList = []
+
+global gDict
 gDict = {}
-sigterm = False
+
+#sigterm = False
 
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -2519,23 +2524,68 @@ def sentryCleanup(db_store):
     #update2 = store.replaceCounts('process', 0, db_store)
     return True
 
+
+#def drop_privileges(uid_name='nobody', gid_name='nogroup'):
+def drop_privileges(_port):
+
+    # Get the uid/gid from the name
+    #running_uid = pwd.getpwnam(uid_name).pw_uid
+    #running_gid = grp.getgrnam(gid_name).gr_gid
+
+    #print('running_uid ' + str(running_uid))
+    #print('running_gid ' + str(running_gid))
+
+    # Remove group privileges
+    #os.setgroups([])
+
+    # Try setting the new uid/gid
+    #os.setgid(running_gid)
+
+    run_as_user = "nobody"
+    uid = pwd.getpwnam(run_as_user)[2]
+    print('nobody ' + str(uid))
+    os.setuid(uid)
+
+    print('drop_privs')
+
+    httpd = HTTPServer(('', _port), Handler)
+    httpd.serve_forever()
+
+    return True
+
+def demote(user, group):
+    
+    def result():
+        #report_ids('starting demotion')
+        #os.setgid(uid)
+        #os.setuid(gid)
+        #report_ids('finished demotion')
+        print('demote')
+    return result
+
+#def report_ids(msg):
+#    print('uid, gid = %d, %d; %s' % (os.getuid(), os.getgid(), msg))
+
+
+def procHTTPServer(port, metric_path, Dct):
+    global _metric_path
+    _metric_path = metric_path
+
+    global gDict
+    gDict = Dct
+
+    httpd = HTTPServer(('', port), Handler)
+    httpd.serve_forever()
+
+
+
 def sentryMode(db_store):
 
-    #gList = []
+    global sigterm
+    sigterm = False
 
-    #config = store.getData('configs', 'prometheus', db_store)
-    #print(config)
-    #if config is None:
-    #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
-    #    config = store.getData('configs', 'prometheus', db_store)
-#
-#    #config = config[0]
-#    config = json.loads(config[0])
-    #print(config['port'])
-    #print(config['path'])
-
-    #global sigterm
-    #sigterm = False
+    global gDict
+    gDict = {}
 
     conf = store.getData('configs', 'prometheus', db_store)
     if not conf:
@@ -2543,8 +2593,6 @@ def sentryMode(db_store):
         conf = store.getData('configs', 'prometheus', db_store)
     conf = json.loads(conf[0])
 
-
-    #import logging
     import atexit
     import signal
 
@@ -2557,32 +2605,65 @@ def sentryMode(db_store):
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry startup")
-    #update1 = store.replaceCounts('threads', 0, db_store)
-    #update2 = store.replaceCounts('process', 0, db_store)
 
-    #scheduler = threading.Thread(target=sentryScheduler, name="scheduler")
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="Scheduler")
     scheduler.setDaemon(True)
     scheduler.start()
 
-    #alertmgr = threading.Thread(target=sentryAlertManager, args=(db_store,), name="AlertManager")
-    #alertmgr.setDaemon(True)
-    #alertmgr.start()
 
-
-    #print(conf['port'])
     _port = conf['port']
-    #print(conf['path'])
     global _metric_path
     _metric_path = conf['path']
 
-    httpd = HTTPServer(('', _port), Handler)
+    #httpd = HTTPServer(('', _port), Handler)
 
-    #while (sigterm == False):
+    #import os, pwd, grp
     try:
-        #print('sentry mode')
-        #time.sleep(60)
+
+        run_as_user = "nobody"
+        uid = pwd.getpwnam(run_as_user)[2]
+        print('user.nobody ' + str(uid))
+        
+        run_as_group = "nobody"
+        gid = grp.getgrnam(run_as_group)[2]
+        print('group.nobody ' + str(gid))
+ 
+        #os.setuid(uid)
+        #os.setgid(gid)
+
+        httpd = HTTPServer(('', _port), Handler)
         httpd.serve_forever()
+
+        #process = subprocess.Popen(httpd.serve_forever(), preexec_fn=demote('nobody', 'nobody')) 
+        #process = subprocess.Popen(, preexec_fn=demote('nobody', 'nobody')) 
+        #result = process.wait()
+
+        #httpd.serve_forever()
+
+        #procHTTPServer(_port)
+        #p = multiprocessing.Process(target=procHTTPServer, args=(_port,_metric_path, gDict))
+        #p = multiprocessing.Process(target=httpd.serve_forever, args=())
+
+
+        #p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, gDict))
+        #p.start()
+        #p.join()
+
+
+
+
+
+    #    print(os.getuid())
+#
+#        if os.getuid() == 0:
+#            #drop_privileges(_port)
+#            #print(os.getuid())
+#            #httpd.serve_forever()
+#        else:
+#            httpd.serve_forever()
+#
+#        #print('sentry mode')
+        #time.sleep(60)
     except (KeyboardInterrupt, SystemExit, Exception):
         sigterm = True
         scheduler.join()
