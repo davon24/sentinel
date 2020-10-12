@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.6.1d'
+__version__ = '0.0.0.v1.6.1e'
 
 import sys
 #sys.path.insert(0,'db')
@@ -598,6 +598,12 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'sentry':
+
+            #import multiprocessing
+            #manager = multiprocessing.Manager()
+            #global gDict
+            #gDict = manager.dict()
+
             run = tools.sentryMode(db_store)
             print(str(run))
             sys.exit(0)

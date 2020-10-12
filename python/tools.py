@@ -41,6 +41,11 @@ logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
 datefmt = "%b %d %H:%M:%S"
 logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
+
+#manager = multiprocessing.Manager()
+#global gDict
+#gDict = manager.dict()
+
 sigterm = False
 
 class ThreadWithReturnValue(threading.Thread):
@@ -281,7 +286,8 @@ def nmapVulnScan(ip):
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     return proc.stdout.readlines()
 
-def nmapVulnScanStore(ip, db_store):
+def nmapVulnScanStore(ip, db_store, gDict, name):
+
     data = ''
     scan = nmapVulnScan(ip)
     for line in scan:
@@ -298,8 +304,20 @@ def nmapVulnScanStore(ip, db_store):
     report = processVulnData(data)
     if len(report) == 0:
         report = '-'
+        val = 0
+    else:
+        #val = 1
+        val = len(report.split(','))
+
     insert = store.insertVulns(ip, report, data, db_store)
     #processVulnData(data)
+
+    #PROM INTEGRATION
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    _key = 'vuln-scan-' + str(ip)
+    prom = 'name="' + str(name) + '",job="vuln-scan",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str(report) + '"'
+    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
     return insert
 
 def printVulnScan(db_store, vid=None):
@@ -335,7 +353,7 @@ def printVulnScan(db_store, vid=None):
 
     return True
 
-def nmapScanStore(ip, level, db_store):
+def nmapScanStore(ip, level, db_store, gDict, name):
     data = nmapScan(ip, level)
     print('(' + ip + ') ' + data)
     replace = store.replaceNmaps(ip, data, db_store)
@@ -1209,7 +1227,7 @@ def runDiscoverNetMultiProcess(ipnet, level, db_store):
 
     return True
 
-def runDiscoverNetAll(ipnet, level, db_store):
+def runDiscoverNetAll(ipnet, level, db_store, gDict):
 
     level = int(level)
 
@@ -1235,7 +1253,7 @@ def runDiscoverNetAll(ipnet, level, db_store):
         nmapDct[ip] = p
         if level > 1:
             #print('level ' + str(level) + ' vuln-scan launch ')
-            p2 = multiprocessing.Process(target=nmapVulnScanStore, args=(ip, db_store))
+            p2 = multiprocessing.Process(target=nmapVulnScanStore, args=(ip, db_store, gDict))
             p2.start()
             vulnDct[ip] = p2
 
@@ -1256,14 +1274,14 @@ def runDiscoverNetAll(ipnet, level, db_store):
     return True
     #https://stackoverflow.com/questions/26063877/python-multiprocessing-module-join-processes-with-timeout
 
-def runNmapScanMultiProcess(hostLst, level, db_store):
+def runNmapScanMultiProcess(hostLst, level, db_store, gDict, name):
 
     print('hostLst: ' + str(hostLst))
     print('scan-level: ' + str(level))
 
     nmapDct = {}
     for ip in hostLst:
-        p = multiprocessing.Process(target=nmapScanStore, args=(ip, level, db_store))
+        p = multiprocessing.Process(target=nmapScanStore, args=(ip, level, db_store, gDict, name))
         p.start()
         nmapDct[ip] = p
 
@@ -1272,14 +1290,14 @@ def runNmapScanMultiProcess(hostLst, level, db_store):
 
     return True
 
-def runNmapVulnMultiProcess(hostLst, db_store):
+def runNmapVulnMultiProcess(hostLst, db_store, gDict, name):
 
     print('hostLst: ' + str(hostLst))
 
     vulnDct = {}
     for ip in hostLst:
         #print('level ' + str(level) + ' vuln-scan launch ')
-        p2 = multiprocessing.Process(target=nmapVulnScanStore, args=(ip, db_store))
+        p2 = multiprocessing.Process(target=nmapVulnScanStore, args=(ip, db_store, gDict, name))
         p2.start()
         vulnDct[ip] = p2
 
@@ -1508,24 +1526,24 @@ def printFim(name, db_store):
     return True
 
 
-def vulnScan(ips, db_store):
+def vulnScan(ips, db_store, gDict, name):
     hostLst = discoverHostLst(ips)
-    scan = runNmapVulnMultiProcess(hostLst, db_store)
+    scan = runNmapVulnMultiProcess(hostLst, db_store, gDict, name)
     return True
 
-def portScan1(ips, db_store):
+def portScan1(ips, db_store, gDict, name):
     level = 1
-    return portScan(ips, level, db_store)
+    return portScan(ips, level, db_store, gDict, name)
 
-def portScan2(ips, db_store):
+def portScan2(ips, db_store, gDict, name):
     level = 2
-    return portScan(ips, level, db_store)
+    return portScan(ips, level, db_store, gDict, name)
 
-def portScan(ips, level, db_store):
+def portScan(ips, level, db_store, gDict, name):
     hostLst = discoverHostLst(ips)
     if level is None:
         level = 1
-    scan = runNmapScanMultiProcess(hostLst, level, db_store)
+    scan = runNmapScanMultiProcess(hostLst, level, db_store, gDict, name)
     return scan
 
 def isNet(ips):
@@ -1617,31 +1635,37 @@ def checkFim(name, db_store):
             print(k, 'CHANGED')
     return True
 
-def fimCheck(name, db_store):
+def fimCheck(name, db_store, gDict, _name):
 
     Dct = {}
     fimDct = getFimDct(name, db_store)
-    
+  
+    a = 0
+    c = 0
     for k,v in fimDct.items():
         #print(k,v)
         #print(k, ' CHANGED')
         if len(v) == 0:
+            a += 1
             #print(k, 'ADDED')
-            Dct[k] = 'ADDED'
+            Dct[k] = 'ADDED' + str(a)
         else:
+            c += 1
             #print(k, 'CHANGED')
-            Dct[k] = 'CHANGED'
+            Dct[k] = 'CHANGED' + str(c)
 
     _key = 'fimcheck-' + str(name)
 
     if bool(Dct):
-        val = 1
+        #val = 1
+        val = len(Dct)
     else:
         val = 0
 
     #Note... this is all backwards 
     #Dct['config'] = name
     Dct[name] = 'config'
+    Dct[_name] = 'job'
 
     #promHELP = '# HELP sentinel_job_output The output of the sentinel job.'
     #promTYPE = '# TYPE sentinel_job_output gauge'
@@ -1666,7 +1690,15 @@ def fimCheck(name, db_store):
             prom += str(v).lower() + '="' + str(k) + '"'
         else:
             prom += str(v).lower() + '="' + str(k) + '",'
-    gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    prom += ',done="' + str(now) + '"'
+
+    #if val != 0:
+    #    val = len(Dct)
+
+    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+    #gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
     #print('Sentry fim-check ' + str(name))
 
     return True
@@ -1741,7 +1773,7 @@ def delFimFile(name, _file, db_store):
     update = store.updateData('fims', name, json.dumps(jdata), db_store)
     return update
 
-def psCheck(name, db_store):
+def psCheck(name, db_store, gDict, _name):
     #print(str(_data)) #None
     import modules.ps.ps
     psDct = modules.ps.ps.get_ps()
@@ -1753,7 +1785,8 @@ def psCheck(name, db_store):
 
     _key = 'pscheck-' + str(name)
 
-    psDct['name'] = name
+    #psDct['name'] = name
+    psDct['job'] = name
     val = 1
 
     #promHELP = '# HELP sentinel_job_output The output of the sentinel job.'
@@ -1761,6 +1794,7 @@ def psCheck(name, db_store):
     #gDict[_key] = [ promHELP, promTYPE, 'sentinel_job_output' + json.dumps(psDct) + ' ' + str(val) ]
     #gDict[_key] = [ 'sentinel_job_output' + json.dumps(psDct) + ' ' + str(val) ]
 
+    #prom = 'job="' + str(_name) + '",'
     prom = ''
     c = len(psDct)
     for k,v in psDct.items():
@@ -1788,7 +1822,7 @@ options = {
 }
 #options[sys.argv[2]](sys.argv[3:])
 
-def runJob(name, db_store):
+def runJob(name, db_store, gDict):
 
     #print('runJob')
     val = 0
@@ -1878,7 +1912,7 @@ def runJob(name, db_store):
         _data = None
 
     try:
-        run = options[_job](_data, db_store)
+        run = options[_job](_data, db_store, gDict, name)
     except KeyError:
         # unknown "job":"????"
         #return 'unknown job ' + str(_job)
@@ -1953,7 +1987,7 @@ def getDuration(_repeat):
         
     return scale, amt
 
-def sentryProcessor(db_store):
+def sentryProcessor(db_store, gDict):
     while (sigterm == False):
         #print('process Reports')
 
@@ -1969,7 +2003,7 @@ def sentryProcessor(db_store):
     return True
 
 
-def sentryProcessJobs(db_store):
+def sentryProcessJobs(db_store, gDict):
     #print('process Schedule')
     run = None
 
@@ -2016,7 +2050,7 @@ def sentryProcessJobs(db_store):
             #if now_time > run_time and _start is None and _done is None:
             if now_time > run_time and _start is None:
                 #print('Over time and _start is None.  run_time')
-                run = runJob(name, db_store)
+                run = runJob(name, db_store, gDict)
                 #print(run)
 
         if _repeat:
@@ -2024,7 +2058,7 @@ def sentryProcessJobs(db_store):
             #print(scale + ' amt ' + str(amt))
 
             if _start is None:
-                run = runJob(name, db_store)
+                run = runJob(name, db_store, gDict)
 
             else:
                 start_time = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
@@ -2045,7 +2079,7 @@ def sentryProcessJobs(db_store):
 
                     if now_time > delta_time:
                         #print('Over time.  repeat_time')
-                        run = runJob(name, db_store)
+                        run = runJob(name, db_store, gDict)
                         #print(run)
     
     #return True
@@ -2072,11 +2106,11 @@ def processD(List):
     return True
 
 
-def sentryScheduler(db_store):
+def sentryScheduler(db_store, gDict):
     while (sigterm == False):
 
         List = []
-        job = threading.Thread(target=sentryProcessJobs, args=(db_store,), name="SentryJobRunner")
+        job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
         job.setDaemon(True)
         job.start()
 
@@ -2192,11 +2226,11 @@ def sentryMode(db_file):
 
     logging.info("Sentry startup")
 
-    scheduler = threading.Thread(target=sentryScheduler, args=(db_store,), name="Scheduler")
+    scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
     scheduler.setDaemon(True)
     scheduler.start()
 
-    processor = threading.Thread(target=sentryProcessor, args=(db_store,), name="Processor")
+    processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
     processor.setDaemon(True)
     processor.start()
 
