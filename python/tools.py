@@ -73,11 +73,24 @@ class Handler(BaseHTTPRequestHandler):
             #    #v should be a list
             #    for item in v:
             #        self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
-            proms = store.selectAll('proms', db_store)
-            for row in proms:
-                #print(row)
-                self.wfile.write(bytes(str(row) + str('\n'), 'utf-8'))
 
+            #proms = store.selectAll('proms', db_store)
+            #for row in proms:
+            #    #print(row)
+            #    self.wfile.write(bytes(str(row) + str('\n'), 'utf-8'))
+
+            #_file = open('myfile.txt', 'r') 
+            #lines = _file.readlines()
+
+            _prom = str(db_store) + '.prom'
+            try:
+                with open(_prom, 'r') as _file:
+                    lines = _file.readlines()
+                    for line in lines:
+                        #self.wfile.write(bytes(str(line) + str('\n'), 'utf-8'))
+                        self.wfile.write(bytes(str(line), 'utf-8'))
+            except Exception as e:
+                logging.info('Sentry Exception ' + str(e))
             
         else:
             #logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 404 -'))
@@ -1950,17 +1963,18 @@ def getDuration(_repeat):
 
 def sentryProcessor(db_store):
     while (sigterm == False):
-        print('process Reports')
+        #print('process Reports')
 
-        for k,v in gDict.items():
-            print(k,v)
-            #for item in v:
-                #print(k, item)
+        _prom = str(db_store) + '.prom'
+
+        with open(_prom, 'w+') as _file:
+            for k,v in gDict.items():
+                for item in v:
+                    _file.write(item + '\n')
 
         time.sleep(10)
 
     return True
-
 
 
 def sentryProcessJobs(db_store):
@@ -2055,16 +2069,21 @@ def processD(List):
 
     gDict['sentinel_up'] = [promHELP, promTYPE, promDATA]
 
+    c = 0
+    for item in List:
+        #print(item)
+        c += 1
+        k = 'sentinel_up_' + str(c)
+
+        gDict[k] = [ item ]
+
     return True
 
 
 def sentryScheduler(db_store):
-    #gList = []
-    #sigterm = False
     while (sigterm == False):
 
         List = []
-        #run = sentryProcessJobs(db_store)
         job = threading.Thread(target=sentryProcessJobs, args=(db_store,), name="SentryJobRunner")
         job.setDaemon(True)
         job.start()
@@ -2079,10 +2098,10 @@ def sentryScheduler(db_store):
         #threads = []
         for thread in threading.enumerate():
             #print(str(thread.name))
-            if thread.name == 'MainThread':
-                continue
-            if thread.name == 'Scheduler':
-                continue
+            #if thread.name == 'MainThread':
+            #    continue
+            #if thread.name == 'Scheduler':
+            #    continue
             #print(str(thread.name))
             tcount += 1
             #threads.append(thread)
@@ -2095,8 +2114,8 @@ def sentryScheduler(db_store):
             #process.append(proc)
 
 
-        List.append('threads ' + str(tcount))
-        List.append('process ' + str(pcount))
+        List.append('sentinel_threads ' + str(tcount))
+        List.append('sentinel_process ' + str(pcount))
 
         #for t in threads:
         #    t.join()
