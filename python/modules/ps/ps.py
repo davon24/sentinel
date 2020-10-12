@@ -47,7 +47,9 @@ def get_ps():
         #mac
         if line.startswith('Z'):
             number_of_defunct += 1
-            defunct_data[number_of_defunct] = str(line)
+            #defunct_data[number_of_defunct] = str(line)
+            _key = 'defunct' + str(number_of_defunct)
+            defunct_data[_key] = str(line)
 
     Dct['procs'] = number_of_procs
     Dct['defunct'] = number_of_defunct

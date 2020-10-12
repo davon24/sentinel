@@ -1667,7 +1667,7 @@ def fimCheck(name, db_store):
         else:
             prom += str(v).lower() + '="' + str(k) + '",'
     gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-    print('Sentry fim-check ' + str(name))
+    #print('Sentry fim-check ' + str(name))
 
     return True
 
@@ -1773,7 +1773,7 @@ def psCheck(name, db_store):
     #gDict[name] = [ 'sentinel_job_pscheck_output{' + prom + '} ' + str(val) ]
     #gDict[_key] = [ 'sentinel_job_pscheck_output{' + prom + '} ' + str(val) ]
     gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-    print('Sentry ps-check ' + str(name) + ' prom ' + str(prom))
+    #print('Sentry ps-check ' + str(name) + ' prom ' + str(prom))
 
     return True
 
@@ -1847,6 +1847,8 @@ def runJob(name, db_store):
         
     #gDict[name] = [ str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
     gDict[name] = [ 'sentinel_job{' + prom + '} ' + str(val) ]
+    replace = store.replaceINTO('jobs', name, json.dumps(jdata), db_store)
+    #print('PERF replaceINTO occured on jobs')
 
     #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
     #don't need to do this now...
@@ -1912,6 +1914,10 @@ def runJob(name, db_store):
             prom += str(k) + '="' + str(v) + '",'
 
     gDict[name] = [ 'sentinel_job{' + prom + '} ' + str(val) ]
+    update = store.updateData('jobs', name, json.dumps(jdata), db_store)
+    #print('PERF updateData occured on jobs')
+
+    logging.info('Sentry Job run ' + str(name))
 
     return run
 
