@@ -304,7 +304,8 @@ def nmapVulnScanStore(ip, db_store, gDict, name):
     report = processVulnData(data)
     if len(report) == 0:
         report = '-'
-        val = 0
+        #val = 0
+        val = -1
     else:
         #val = 1
         val = len(report.split(','))
@@ -356,7 +357,32 @@ def printVulnScan(db_store, vid=None):
 def nmapScanStore(ip, level, db_store, gDict, name):
     data = nmapScan(ip, level)
     print('(' + ip + ') ' + data)
+    #(192.168.0.156) 1 22/tcp,548/tcp
+
     replace = store.replaceNmaps(ip, data, db_store)
+
+    val_ = data.split(' ')[0]
+    report_ = data.split(' ')[1]
+
+    if val_ == 0:
+        val = 0
+        report = 'FAIL'
+    else:
+        rlen_ = len(report_.split(','))
+        val = int(val_) + int(rlen_) - 1
+
+    if len(report_) == 0:
+        report = '-'
+        val = -1
+    else:
+        report = report_
+
+    #PROM INTEGRATION
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    _key = 'port-scan-' + str(ip)
+    prom = 'name="' + str(name) + '",job="port-scan",level="' + str(level) + '",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str(report) + '"'
+    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
     return True
 
 
@@ -1810,7 +1836,6 @@ def psCheck(name, db_store, gDict, _name):
     #print('Sentry ps-check ' + str(name) + ' prom ' + str(prom))
 
     return True
-
 
 options = {
  'vuln-scan' : vulnScan,
