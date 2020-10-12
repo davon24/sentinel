@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.6.1b'
+__version__ = '0.0.0.v1.6.1c'
 
 import sys
 #sys.path.insert(0,'db')
@@ -107,8 +107,10 @@ def usage():
         del-fim name /dir/file
 
         list-proms
-        update-prom name data
-        clear-proms
+
+        list-proms-db
+        update-prom-db name data
+        clear-proms-db
 
         sentry
 
@@ -149,6 +151,7 @@ def run():
 #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
 #    conf = store.getData('configs', 'prometheus', db_store)
 #conf = json.loads(conf[0])
+
 
 
 if __name__ == '__main__':
@@ -778,12 +781,18 @@ if __name__ == '__main__':
                     print(line.strip('\n'))
             sys.exit(0)
 
-        if sys.argv[1] == 'clear-proms':
+        if sys.argv[1] == 'list-proms-db':
+            proms = store.selectAll('proms', db_store)
+            for row in proms:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-proms-db':
             clear = store.clearAll('proms', db_store)
             print(clear)
             sys.exit(0)
 
-        if sys.argv[1] == 'update-prom':
+        if sys.argv[1] == 'update-prom-db':
             name = sys.argv[2]
             data = sys.argv[3]
             run = store.replaceINTOproms(name, data, db_store)

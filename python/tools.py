@@ -66,8 +66,8 @@ class Handler(BaseHTTPRequestHandler):
         #if self.path == '/metrics':
         if self.path == _metric_path:
             self.send_response(200)
-            #self.send_header("Content-type", "text/plain; charset=utf-8")
-            self.send_header("Content-type", "text/html; charset=utf-8")
+            self.send_header("Content-type", "text/plain; charset=utf-8")
+            #self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
 
             #for k,v in gDict.items():
@@ -1667,7 +1667,7 @@ def fimCheck(name, db_store):
         else:
             prom += str(v).lower() + '="' + str(k) + '",'
     gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-
+    print('Sentry fim-check ' + str(name))
 
     return True
 
@@ -1770,8 +1770,10 @@ def psCheck(name, db_store):
         else:
             prom += str(k) + '="' + str(v) + '",'
 
-    gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-
+    #gDict[name] = [ 'sentinel_job_pscheck_output{' + prom + '} ' + str(val) ]
+    #gDict[_key] = [ 'sentinel_job_pscheck_output{' + prom + '} ' + str(val) ]
+    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+    print('Sentry ps-check ' + str(name) + ' prom ' + str(prom))
 
     return True
 
@@ -1787,6 +1789,7 @@ options = {
 #options[sys.argv[2]](sys.argv[3:])
 
 def runJob(name, db_store):
+
     #print('runJob')
     val = 0
     #-start
@@ -2161,8 +2164,11 @@ def sentryMode(db_file):
 
     #sigterm = False
 
+    manager = multiprocessing.Manager()
     global gDict
-    gDict = {}
+    gDict = manager.dict()
+    #gDict = {}
+
     #global gQ
     #gQ = queue.Queue()
 

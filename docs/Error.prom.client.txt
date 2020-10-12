@@ -1,0 +1,10 @@
+
+🎃 krink@Karls-MacBook-Pro prometheus-2.22.0-rc.0.darwin-amd64 % curl -s localhost:9111/metrics | ./promtool check metrics
+sentinel_job no help text
+sentinel_job_output no help text
+sentinel_process no help text
+sentinel_threads no help text
+sentinel_up no help text
+
+
+
