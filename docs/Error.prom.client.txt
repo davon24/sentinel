@@ -1,4 +1,28 @@
 
+
+hmmm,  double same duplicate label names... 'added=', 'added='
+sentinel_job_output{changed="/etc/hosts",added="/etc/bashrc",added="/etc/profile",config="fim-1"} 1
+
+
+🎃 krink@Karls-MacBook-Pro prometheus-2.22.0-rc.0.darwin-amd64 % curl -s localhost:9111/metrics | ./promtool check metrics
+sentinel_job no help text
+sentinel_job_output no help text
+sentinel_process no help text
+sentinel_threads no help text
+sentinel_up no help text
+🎃 krink@Karls-MacBook-Pro prometheus-2.22.0-rc.0.darwin-amd64 % curl -s localhost:9111/metrics                           
+sentinel_up 1
+sentinel_threads 4
+sentinel_process 2
+sentinel_job{repeat="1min",job="fim-check",config="fim-2",start="2020-10-11 23:49:39",name="fim-job-2",done="2020-10-11 23:49:39",success="True"} 1
+sentinel_job_output{config="fim-2"} 0
+sentinel_job{repeat="1min",job="fim-check",config="fim-1",start="2020-10-11 23:49:48",name="fim-job-1",done="2020-10-11 23:49:48",success="True"} 1
+sentinel_job_output{changed="/etc/hosts",added="/etc/bashrc",added="/etc/profile",config="fim-1"} 1
+sentinel_job{repeat="1min",job="ps-check",start="2020-10-11 23:49:51",name="proc-monitor",done="2020-10-11 23:49:51",success="True"} 1
+sentinel_job_output{procs="436",defunct="0",name="proc-monitor"} 1
+
+
+
 error while linting: text format parsing error in line 7: invalid label name for metric "sentinel_job_output"
 defunct="1",1="Z+     501 63253 63254 krink                  01:29 (a.out)",
 
