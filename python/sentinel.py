@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.5.1'
+__version__ = '0.0.0.v1.6'
 
 import sys
 #sys.path.insert(0,'db')
@@ -768,9 +768,14 @@ if __name__ == '__main__':
 
 
         if sys.argv[1] == 'list-proms':
-            proms = store.selectAll('proms', db_store)
-            for row in proms:
-                print(row)
+            #proms = store.selectAll('proms', db_store)
+            #for row in proms:
+            #    print(row)
+            _prom = str(db_store) + '.prom'
+            with open(_prom, 'r') as _file:
+                lines = _file.readlines()
+                for line in lines:
+                    print(line.strip('\n'))
             sys.exit(0)
 
         if sys.argv[1] == 'clear-proms':
