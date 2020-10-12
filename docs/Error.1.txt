@@ -1,0 +1,45 @@
+
+curl -s localhost:9111/metrics | ./promtool check metrics
+error while linting: text format parsing error in line 6: invalid label name for metric "sentinel_job"
+
+% curl -s localhost:9111/metrics
+# HELP sentinel_up Whether the sentinel service is up.
+# TYPE sentinel_up gauge
+sentinel_up 1
+sentinel_threads 4
+sentinel_process 1
+sentinel_job{"repeat": "1min", "job": "fim-check", "config": "fim-1", "start": "2020-10-11 19:25:34", "name": "fim-job-1", "done": "2020-10-11 19:25:34", "success": true} 1
+sentinel_job_output{"/etc/hosts": "CHANGED", "config": "fim-1"} 1
+sentinel_job{"repeat": "1min", "job": "fim-check", "config": "fim-2", "start": "2020-10-11 19:25:34", "name": "fim-job-2", "done": "2020-10-11 19:25:34", "success": true} 1
+sentinel_job_output{"config": "fim-2"} 0
+sentinel_job{"repeat": "1min", "job": "ps-check", "start": "2020-10-11 19:25:34", "name": "proc-monitor", "done": "2020-10-11 19:25:34", "success": true} 1
+sentinel_job_output{"procs": 439, "defunct": 0, "name": "proc-monitor"} 1
+
+
+
+
+---
+
+
+
+    promHELP = '# HELP sentinel_up Whether the sentinel service is up.'
+    promTYPE = '# TYPE sentinel_up gauge'
+    promDATA = 'sentinel_up ' + str(sentinel_up)
+
+
+
+
+🎃 krink@Karls-MacBook-Pro db % curl localhost:9111/metrics
+sentinel_up 1
+sentinel_threads 4
+sentinel_process 1
+sentinel_job{"repeat": "1min", "job": "fim-check", "config": "fim-1", "start": "2020-10-11 19:51:02", "name": "fim-job-1", "done": "2020-10-11 19:51:02", "success": "true"} 1
+
+
+dooh,
+
+node_filesystem_size_bytes{device="/dev/disk1s1",fstype="apfs",mountpoint="/System/Volumes/Data"} 2.50685575168e+11
+
+
+
+

@@ -66,7 +66,8 @@ class Handler(BaseHTTPRequestHandler):
         #if self.path == '/metrics':
         if self.path == _metric_path:
             self.send_response(200)
-            self.send_header("Content-type", "text/plain; charset=utf-8")
+            #self.send_header("Content-type", "text/plain; charset=utf-8")
+            self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
 
             #for k,v in gDict.items():
@@ -82,6 +83,7 @@ class Handler(BaseHTTPRequestHandler):
             #_file = open('myfile.txt', 'r') 
             #lines = _file.readlines()
 
+            #_prom = str(db_store) + '.prom-TEST'
             _prom = str(db_store) + '.prom'
             try:
                 with open(_prom, 'r') as _file:
@@ -1615,48 +1617,6 @@ def checkFim(name, db_store):
             print(k, 'CHANGED')
     return True
 
-#def checkFimAndReport(name, db_store):
-#    Dct = {}
-#    #print('checkFimAndReport ' + str(name))
-#    fimDct = getFimDct(name, db_store)
-#    
-#    for k,v in fimDct.items():
-#        #print(k,v)
-#        #print(k, ' CHANGED')
-#        if len(v) == 0:
-#            #print(k, 'ADDED')
-#            Dct[k] = 'ADDED'
-#        else:
-#            #print(k, 'CHANGED')
-#            Dct[k] = 'CHANGED'
-#
-#    #try:
-#    #    jdata = json.loads(Dct)
-#    #except json.decoder.JSONDecodeError:
-#    #    return 'invalid json ' + str(fim)
-#    #replace = store.replaceINTO('reports', name, json.dumps(jdata), db_store)
-#
-#    #get current_report_dct
-#    #current_report = store.getData('reports', name, db_store)
-#    #current_report = current_report[0]
-#    #current_report = json.loads(current_report)
-#
-#    #if Dct == current_report:
-#    #    #print('same Dct')
-#    #    run = True
-#    #else:
-#    #    #print('not.same.Dct')
-#    #    run = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
-#    #    print('PERF replaceINTO occured Fim ')
-#
-#    gDict[name] = ['sentinel_fim_job' + json.dumps(Dct) ]
-#
-#
-#    #replace = store.replaceINTO('reports', name, json.dumps(Dct), db_store)
-#    #return replace
-#    #return run
-#    return True
-
 def fimCheck(name, db_store):
 
     Dct = {}
@@ -1679,48 +1639,37 @@ def fimCheck(name, db_store):
     else:
         val = 0
 
-    Dct['config'] = name
+    #Note... this is all backwards 
+    #Dct['config'] = name
+    Dct[name] = 'config'
 
-    gDict[_key] = ['sentinel_job_output' + json.dumps(Dct) + ' ' + str(val) ]
+    #promHELP = '# HELP sentinel_job_output The output of the sentinel job.'
+    #promTYPE = '# TYPE sentinel_job_output gauge'
+    #gDict[_key] = [ promHELP, promTYPE, 'sentinel_job_output' + json.dumps(Dct) + ' ' + str(val) ]
+    #gDict[_key] = [ 'sentinel_job_output' + json.dumps(Dct) + ' ' + str(val) ]
+
+    #prom = ''
+    #c = len(Dct)
+    #for k,v in Dct.items():
+    #    c -= 1
+    #    if c == 0:
+    #        prom += str(k) + '="' + str(v) + '"'
+    #    else:
+    #        prom += str(k) + '="' + str(v) + '",'
+    #gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+    prom = ''
+    c = len(Dct)
+    for k,v in Dct.items():
+        c -= 1
+        if c == 0:
+            prom += str(v).lower() + '="' + str(k) + '"'
+        else:
+            prom += str(v).lower() + '="' + str(k) + '",'
+    gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
 
     return True
-
-
-
-
-
-
-    #print('fimCheck get config... ' + str(config))
-
-    #data = store.getFim(name, db_store)
-    #if data is None:
-    #    return 'data is None'
-#
-#        #get current_report_dct
-#
-#    data = data[0]
-#    data = json.loads(data)
-#    print('data is type ' + str(type(config)) + ' ' + str(config))
-
-    #check = checkFimAndReport(config, db_store)
-    #check = checkFimAndReport(config, db_store)
-    #print(check)
-
-    #else:
-    #    conf = conf[0]
-    ##print('conf ' + str(conf))
-    #try:
-    #    jdata = json.loads(conf)
-    #except json.decoder.JSONDecodeError:
-    #    return 'invalid json ' + str(conf)
-    #print(str(jdata))
-    #return check
-
-    #print('name ' + str(name))
-    #print('conF is   ' + str(conf))
-
-    #return check
-
 
 
 def getFimDct(name, db_store):
@@ -1806,7 +1755,23 @@ def psCheck(name, db_store):
 
     psDct['name'] = name
     val = 1
-    gDict[_key] = ['sentinel_job_output' + json.dumps(psDct) + ' ' + str(val) ]
+
+    #promHELP = '# HELP sentinel_job_output The output of the sentinel job.'
+    #promTYPE = '# TYPE sentinel_job_output gauge'
+    #gDict[_key] = [ promHELP, promTYPE, 'sentinel_job_output' + json.dumps(psDct) + ' ' + str(val) ]
+    #gDict[_key] = [ 'sentinel_job_output' + json.dumps(psDct) + ' ' + str(val) ]
+
+    prom = ''
+    c = len(psDct)
+    for k,v in psDct.items():
+        c -= 1
+        if c == 0:
+            prom += str(k) + '="' + str(v) + '"'
+        else:
+            prom += str(k) + '="' + str(v) + '",'
+
+    gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
 
     return True
 
@@ -1860,7 +1825,25 @@ def runJob(name, db_store):
         del jdata['success']
     except KeyError: pass
 
-    gDict[name] = [ str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
+    #promHELP = '# HELP sentinel_job The sentinel job service.'
+    #promTYPE = '# TYPE sentinel_job gauge'
+    #gDict[name] = [ promHELP, promTYPE, str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
+
+    #print(jdata)
+    prom = ''
+    #print(len(jdata))
+    c = len(jdata)
+    for k,v in jdata.items():
+        c -= 1
+        if c == 0:
+            prom += str(k) + '="' + str(v) + '"'
+        else:
+            prom += str(k) + '="' + str(v) + '",'
+
+    #print(prom)
+        
+    #gDict[name] = [ str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
+    gDict[name] = [ 'sentinel_job{' + prom + '} ' + str(val) ]
 
     #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
     #don't need to do this now...
@@ -1911,23 +1894,23 @@ def runJob(name, db_store):
     if run is True:
         val = 1
 
-    #print('gDict  updateData occured on jobs')
-
-    #may need to remove old gDict entries as well... perhaps here...
-
     #promHELP = '# HELP sentinel_job The sentinel job service.'
     #promTYPE = '# TYPE sentinel_job gauge'
-    #gDict[name] = [ promHELP, promTYPE, str('sentinel_job') + json.dumps(new_json) + ' ' + str(val) ]
-    #gDict[name] = [ str('sentinel_job') + json.dumps(new_json) + ' ' + str(val) ]
-    gDict[name] = [ str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
+    #gDict[name] = [ promHELP, promTYPE, str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
+    #gDict[name] = [ str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
 
-    #gList.append('PERF updateData occured on jobs')
-    #print('update was ' + str(update))
-    #print('run ' + str(name) + ' was ' + str(run))
-    #return True
-    #print('run ' + str(run))
+    prom = ''
+    c = len(jdata)
+    for k,v in jdata.items():
+        c -= 1
+        if c == 0:
+            prom += str(k) + '="' + str(v) + '"'
+        else:
+            prom += str(k) + '="' + str(v) + '",'
+
+    gDict[name] = [ 'sentinel_job{' + prom + '} ' + str(val) ]
+
     return run
-    #MARK
 
 def getDuration(_repeat):
     #amt, scale = getDuration(_repeat)
@@ -2063,11 +2046,11 @@ def processD(List):
     sentinel_up = 1
     start = time.time()
 
-    promHELP = '# HELP sentinel_up Whether the sentinel service is up.'
-    promTYPE = '# TYPE sentinel_up gauge'
+    #promHELP = '# HELP sentinel_up Whether the sentinel service is up.'
+    #promTYPE = '# TYPE sentinel_up gauge'
     promDATA = 'sentinel_up ' + str(sentinel_up)
-
-    gDict['sentinel_up'] = [promHELP, promTYPE, promDATA]
+    #gDict['sentinel_up'] = [promHELP, promTYPE, promDATA]
+    gDict['sentinel_up'] = [ promDATA ]
 
     c = 0
     for item in List:
@@ -2114,7 +2097,16 @@ def sentryScheduler(db_store):
             #process.append(proc)
 
 
+        #promHELP = '# HELP sentinel_threads Number of sentinel threads.'
+        #List.append(promHELP)
+        #promTYPE = '# TYPE sentinel_threads gauge'
+        #List.append(promTYPE)
         List.append('sentinel_threads ' + str(tcount))
+
+        #promHELP = '# HELP sentinel_process Number of sentinel process.'
+        #List.append(promHELP)
+        #promTYPE = '# TYPE sentinel_process gauge'
+        #List.append(promTYPE)
         List.append('sentinel_process ' + str(pcount))
 
         #for t in threads:
