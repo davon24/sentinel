@@ -1866,7 +1866,7 @@ def psCheck(name, db_store, gDict, _name):
     return True
 
 def establishedCheck(name, db_store, gDict, _name):
-    print('establishedCheck')
+    #print('establishedCheck')
     #getEstablishedAlertsDct should really get moved to tools
     eaDct = store.getEstablishedAlertsDct(db_store)
 
@@ -2071,10 +2071,10 @@ def sentryProcessor(db_store, gDict):
         #print('process Reports')
 
         _prom = str(db_store) + '.prom'
-
         with open(_prom, 'w+') as _file:
             for k,v in gDict.items():
                 for item in v:
+                    print(k, v)
                     _file.write(item + '\n')
 
         time.sleep(10)
@@ -2166,7 +2166,7 @@ def sentryProcessJobs(db_store, gDict):
 
 def processD(List):
     sentinel_up = 1
-    start = time.time()
+    #start = time.time()
 
     #promHELP = '# HELP sentinel_up Whether the sentinel service is up.'
     #promTYPE = '# TYPE sentinel_up gauge'
@@ -2179,7 +2179,6 @@ def processD(List):
         #print(item)
         c += 1
         k = 'sentinel_up_' + str(c)
-
         gDict[k] = [ item ]
 
     return True

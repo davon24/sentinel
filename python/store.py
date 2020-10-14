@@ -573,7 +573,6 @@ def getEstablishedAlertsDct(db_store):
 
     return returnDct
 
-
 #def printIPs(db_file):
 #    rows = getIPs(db_file)
 #    for row in rows:
