@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.6.3'
+__version__ = '0.0.0.v1.6.4'
 
 import sys
 #sys.path.insert(0,'db')
@@ -144,16 +144,6 @@ def run():
         print(update)
         return True
 
-
-
-#conf = store.getData('configs', 'prometheus', db_store)
-#if not conf:
-#    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
-#    conf = store.getData('configs', 'prometheus', db_store)
-#conf = json.loads(conf[0])
-
-
-
 if __name__ == '__main__':
 
     db_store = 'db/sentinel.db'
@@ -169,15 +159,18 @@ if __name__ == '__main__':
         if sys.argv[1] == 'arps':
             printArps()
             sys.exit(0)
+
         if sys.argv[1] == 'list-macs':
             store.print_all(db_store)
             sys.exit(0)
+
         if sys.argv[1] == 'update-manuf':
             mac = sys.argv[2]
             mfname = store.get_manuf(mac, db_manuf)
             update = store.update_data_manuf(mac, mfname, db_store)
             print(update)
             sys.exit(0)
+
         if sys.argv[1] == 'rdns':
             ip = sys.argv[2]
             try: srv = sys.argv[3]
@@ -185,6 +178,7 @@ if __name__ == '__main__':
             dnsname = tools.getNSlookup(ip, srv)
             print(dnsname)
             sys.exit(0)
+
         if sys.argv[1] == 'update-dns':
             mac = sys.argv[2]
             ip = sys.argv[3]
@@ -196,49 +190,61 @@ if __name__ == '__main__':
             t.start()
             #print(t)
             sys.exit(0)
+
         if sys.argv[1] == 'ping-net':
             ip = sys.argv[2]
             pn = tools.pingNet(ip)
             print(pn)
             sys.exit(0)
+
         if sys.argv[1] == 'nmap-net':
             ip = sys.argv[2]
             pn = tools.nmapNet(ip)
             print(pn)
             sys.exit(0)
+
         if sys.argv[1] == 'listening':
             p = tools.printListenPorts()
             sys.exit(0)
+
         if sys.argv[1] == 'listening-detailed':
             p = tools.printListenPortsDetailed()
             sys.exit(0)
+
         if sys.argv[1] == 'listening-details':
             port = sys.argv[2]
             #p = tools.printListenPortsDetails(port)
             p = tools.printLsOfPort(port)
             sys.exit(0)
+
         if sys.argv[1] == 'listening-allowed':
             p = store.printListeningAllowed(db_store)
             sys.exit(0)
+
         if sys.argv[1] == 'listening-allow':
             port = sys.argv[2]
             insert = store.insertAllowedPort(port, db_store)
             print(insert)
             sys.exit(0)
+
         if sys.argv[1] == 'listening-remove':
             port = sys.argv[2]
             remove = store.deleteAllowedPort(port, db_store)
             print(remove)
             sys.exit(0)
+
         if sys.argv[1] == 'listening-alerts':
             alerts = store.printListeningAlerts(db_store)
             sys.exit(0)
+
         if sys.argv[1] == 'established':
             established = tools.printEstablished()
             sys.exit(0)
+
         if sys.argv[1] == 'established-rules':
             established_rules = store.printEstablishedRules(db_store)
             sys.exit(0)
+
         if sys.argv[1] == 'established-rule':
             #established-rule proto laddr lport faddr fport
             rule  = sys.argv[2]
@@ -249,12 +255,15 @@ if __name__ == '__main__':
             fport = sys.argv[7]
             insert_rule = store.insertEstablishedRules(rule, proto, laddr, lport, faddr, fport, db_store)
             sys.exit(0)
+
         if sys.argv[1] == 'established-rules-filter':
             print_alerts = store.printEstablishedRulesMatch(db_store)
             sys.exit(0)
+
         if sys.argv[1] == 'established-alerts':
             print_alerts = store.printEstablishedAlerts(db_store)
             sys.exit(0)
+
         if sys.argv[1] == 'lsof':
             port = sys.argv[2]
             lsof = tools.printLsOfPort(port)
@@ -364,6 +373,7 @@ if __name__ == '__main__':
             del_ = store.deleteNmaps(ip, db_store)
             print(del_)
             sys.exit(0)
+
         if sys.argv[1] == 'clear-nmaps':
             clear = store.clearAllNmaps(db_store)
             print(clear)
@@ -390,7 +400,6 @@ if __name__ == '__main__':
             print(clear)
             sys.exit(0)
 
-
         if sys.argv[1] == 'check-vuln':
             vid = sys.argv[2]
             data = store.getVulnData(vid, db_store)
@@ -406,7 +415,6 @@ if __name__ == '__main__':
             print(email)
             sys.exit(0)
 
-
         if sys.argv[1] == 'myip':
             myip = tools.getIfconfigIPv4()
             print(myip)
@@ -418,13 +426,13 @@ if __name__ == '__main__':
             run = tools.nmapUDP(ip, port)
             print(run)
             sys.exit(0)
+
         if sys.argv[1] == 'udpscan':
             ip = port = None
             try:
                 ip = sys.argv[2]
                 port = sys.argv[3]
             except IndexError: pass
-
             #print(ip, port)
             run = tools.nmapUDPscan(ip, port)
             print(run)
@@ -491,7 +499,6 @@ if __name__ == '__main__':
             
             if type(ipnet) == str:
                 ipnet = ipnet.split()
-
             #print(str(ipnet))
             #print(str(level))
             scan = tools.runNmapScanMultiProcess(ipnet, level, db_store)
@@ -618,7 +625,6 @@ if __name__ == '__main__':
             print(_file + ' ' + b2sum)
             sys.exit(0)
 
-
         if sys.argv[1] == 'b2sum-fim':
             try: name = sys.argv[2]
             except IndexError: name = None
@@ -712,7 +718,6 @@ if __name__ == '__main__':
             run = store.replaceINTO('reports', name, data, db_store)
             print(run)
             sys.exit(0)
-
 
         if sys.argv[1] == 'list-alerts':
             alerts = store.selectAll('alerts', db_store)
