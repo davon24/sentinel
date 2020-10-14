@@ -80,6 +80,14 @@ class Handler(BaseHTTPRequestHandler):
             #    for item in v:
             #        self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
 
+        # curl localhost:9111/metrics
+        #  File "/opt/sentinel/python/tools.py", line 78, in do_GET
+        #  for k,v in gDict.items():
+        #   File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/connection.py", line 629, in SocketClient
+        #     s.connect(address)
+        # PermissionError: [Errno 13] Permission denied
+
+
             #proms = store.selectAll('proms', db_store)
             #for row in proms:
             #    #print(row)
@@ -1857,6 +1865,31 @@ def psCheck(name, db_store, gDict, _name):
 
     return True
 
+def establishedCheck(name, db_store, gDict, _name):
+    print('establishedCheck')
+    #getEstablishedAlertsDct should really get moved to tools
+    eaDct = store.getEstablishedAlertsDct(db_store)
+
+    c = 0
+    for k,v in eaDct.items():
+        #print(k,v)
+        val = 1
+        c += 1
+        proto = v[0]
+        laddr = v[1]
+        lport = v[2]
+        faddr = v[3]
+        fport = v[4]
+
+        now = time.strftime("%Y-%m-%d %H:%M:%S")
+        _key = 'established-check-' + str(_name) + '-' + str(c)
+
+        data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"'
+        prom = 'name="' + str(_name) + '",job="established-check",' + data + ',done="' + str(now) + '"'
+        gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+    return True
+
 options = {
  'vuln-scan' : vulnScan,
  'port-scan' : portScan1,
@@ -1864,14 +1897,15 @@ options = {
  'detect-scan' : detectScan,
  'fim-check' : fimCheck,
  'ps-check' : psCheck,
+ 'established-check' : establishedCheck,
 }
 #options[sys.argv[2]](sys.argv[3:])
 
 def runJob(name, db_store, gDict):
 
     #print('runJob')
-    val = 0
     #-start
+    val = 0
     start = time.strftime("%Y-%m-%d %H:%M:%S")
 
     job = store.getJob(name, db_store)
@@ -2216,12 +2250,16 @@ def sentryCleanup(db_store):
     return True
 
 
+#def procHTTPServer(port, metric_path, db_file, Dict):
 def procHTTPServer(port, metric_path, db_file):
     global _metric_path
     _metric_path = metric_path
 
     global db_store
     db_store = db_file
+
+    #global gDict
+    #gDict = Dict
 
     #print(os.getuid())
     if os.getuid() == 0:
@@ -2235,7 +2273,6 @@ def procHTTPServer(port, metric_path, db_file):
     #gid = grp.getgrnam(run_as_group)[2]
     #print('group.nobody ' + str(gid))
     #os.setgid(gid)
-
 
     httpd = HTTPServer(('', port), Handler)
     httpd.serve_forever()
@@ -2284,6 +2321,15 @@ def sentryMode(db_file):
     _metric_path = conf['path']
 
     try:
+
+        #p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store, gDict))
+        #bummer error... (due to drop privs...), multi process one as root other as nobody...
+        # curl localhost:9111/metrics
+        #  File "/opt/sentinel/python/tools.py", line 78, in do_GET
+        #  for k,v in gDict.items():
+        #   File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/connection.py", line 629, in SocketClient
+        #     s.connect(address)
+        # PermissionError: [Errno 13] Permission denied
 
         p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
         p.start()

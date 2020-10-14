@@ -31,12 +31,6 @@ def usage():
         check-vuln id
         email-vuln id
 
-        detect-scan-net [ip/net]
-        detect-scan ip
-        list-detects [id]
-        del-detect id
-        clear-detects
-
         arps
         manuf mac
         lsof port
@@ -64,6 +58,7 @@ def usage():
         established-rules-filter
         established-rule ALLOW|DENY proto laddr lport faddr fport
         established-alerts
+        delete-established-rule rowid
 
         list-ips
         update-ip ip data
@@ -122,6 +117,15 @@ def usage():
         run-ps
 
     ''')
+
+
+        #fix this later...
+        #detect-scan-net [ip/net]
+        #detect-scan ip
+        #list-detects [id]
+        #del-detect id
+        #clear-detects
+
 
 
 def printArps():
@@ -262,6 +266,12 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'established-alerts':
             print_alerts = store.printEstablishedAlerts(db_store)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-established-rule':
+            rowid = sys.argv[2]
+            delete = store.deleteFromRowid('established', rowid, db_store)
+            print(delete)
             sys.exit(0)
 
         if sys.argv[1] == 'lsof':

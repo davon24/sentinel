@@ -355,7 +355,7 @@ def printEstablishedRules(db_file):
     #print('id  proto  laddr  lport  faddr  fport')
     Dct = getEstablishedRulesDct(db_file)
     for k,v in Dct.items():
-        print(v)
+        print(k,v)
     return True
 
 def getEstablishedRulesDct(db_file):
@@ -884,14 +884,14 @@ def updateFims(name, data, db_file): #not working?  ah, name,data...data,name
     return True
 
 
-#def deleteFromrowid(tbl, rowid, db_file):
-#    con = sqlConnection(db_file)
-#    cur = con.cursor()
-#    cur.execute("DELETE FROM " + str(tbl) + " WHERE rowid=? ;", (rowid,))
-#    con.commit()
-#    if cur.rowcount == 0:
-#        return False
-#    return True
+def deleteFromRowid(tbl, rowid, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM " + str(tbl) + " WHERE rowid=? ;", (rowid,))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
 
 def deleteFrom(tbl, name, db_file):
     con = sqlConnection(db_file)
