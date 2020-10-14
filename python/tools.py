@@ -286,32 +286,40 @@ def nmapVulnScan(ip):
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     return proc.stdout.readlines()
 
-def nmapVulnScanStore(ip, db_store, gDict, name):
 
+def nmapVulnScanStore(ip, db_store):
     data = ''
     scan = nmapVulnScan(ip)
     for line in scan:
-        #line = line.decode('utf-8').strip('\n')
         line = line.decode('utf-8')
         print(line.strip('\n'))
         data += line
 
-    #print(str(type(scan)))
-    #print(str(scan))
-    #data = str(''.join(scan))
-    #update = store.replaceVulns(ip, data, None, db_store)
-    #report = ''
     report = processVulnData(data)
     if len(report) == 0:
         report = '-'
-        #val = 0
         val = -1
     else:
-        #val = 1
         val = len(report.split(','))
 
     insert = store.insertVulns(ip, report, data, db_store)
-    #processVulnData(data)
+    return insert
+
+def nmapVulnScanStoreDict(ip, db_store, gDict, name):
+    data = ''
+    scan = nmapVulnScan(ip)
+    for line in scan:
+        line = line.decode('utf-8')
+        data += line
+
+    report = processVulnData(data)
+    if len(report) == 0:
+        report = '-'
+        val = -1
+    else:
+        val = len(report.split(','))
+
+    insert = store.insertVulns(ip, report, data, db_store)
 
     #PROM INTEGRATION
     now = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -354,7 +362,15 @@ def printVulnScan(db_store, vid=None):
 
     return True
 
-def nmapScanStore(ip, level, db_store, gDict, name):
+def nmapScanStore(ip, level, db_store):
+    data = nmapScan(ip, level)
+    print('(' + ip + ') ' + data)
+    #(192.168.0.156) 1 22/tcp,548/tcp
+    replace = store.replaceNmaps(ip, data, db_store)
+    return replace
+
+
+def nmapScanStoreDict(ip, level, db_store, gDict, name):
     data = nmapScan(ip, level)
     print('(' + ip + ') ' + data)
     #(192.168.0.156) 1 22/tcp,548/tcp
@@ -1279,7 +1295,7 @@ def runDiscoverNetAll(ipnet, level, db_store, gDict):
         nmapDct[ip] = p
         if level > 1:
             #print('level ' + str(level) + ' vuln-scan launch ')
-            p2 = multiprocessing.Process(target=nmapVulnScanStore, args=(ip, db_store, gDict))
+            p2 = multiprocessing.Process(target=nmapVulnScanStoreDict, args=(ip, db_store, gDict))
             p2.start()
             vulnDct[ip] = p2
 
@@ -1300,30 +1316,34 @@ def runDiscoverNetAll(ipnet, level, db_store, gDict):
     return True
     #https://stackoverflow.com/questions/26063877/python-multiprocessing-module-join-processes-with-timeout
 
-def runNmapScanMultiProcess(hostLst, level, db_store, gDict, name):
 
+def runNmapScanMultiProcess(hostLst, level, db_store):
     print('hostLst: ' + str(hostLst))
     print('scan-level: ' + str(level))
-
     nmapDct = {}
     for ip in hostLst:
-        p = multiprocessing.Process(target=nmapScanStore, args=(ip, level, db_store, gDict, name))
+        p = multiprocessing.Process(target=nmapScanStore, args=(ip, level, db_store))
         p.start()
         nmapDct[ip] = p
-
     for k,p in nmapDct.items():
         out = p.join()
-
     return True
 
-def runNmapVulnMultiProcess(hostLst, db_store, gDict, name):
+def runNmapScanMultiProcessDict(hostLst, level, db_store, gDict, name):
+    nmapDct = {}
+    for ip in hostLst:
+        p = multiprocessing.Process(target=nmapScanStoreDict, args=(ip, level, db_store, gDict, name))
+        p.start()
+        nmapDct[ip] = p
+    for k,p in nmapDct.items():
+        out = p.join()
+    return True
 
+def runNmapVulnMultiProcess(hostLst, db_store):
     print('hostLst: ' + str(hostLst))
-
     vulnDct = {}
     for ip in hostLst:
-        #print('level ' + str(level) + ' vuln-scan launch ')
-        p2 = multiprocessing.Process(target=nmapVulnScanStore, args=(ip, db_store, gDict, name))
+        p2 = multiprocessing.Process(target=nmapVulnScanStore, args=(ip, db_store))
         p2.start()
         vulnDct[ip] = p2
 
@@ -1554,7 +1574,7 @@ def printFim(name, db_store):
 
 def vulnScan(ips, db_store, gDict, name):
     hostLst = discoverHostLst(ips)
-    scan = runNmapVulnMultiProcess(hostLst, db_store, gDict, name)
+    scan = runNmapVulnMultiProcessDict(hostLst, db_store, gDict, name)
     return True
 
 def portScan1(ips, db_store, gDict, name):
@@ -1569,7 +1589,7 @@ def portScan(ips, level, db_store, gDict, name):
     hostLst = discoverHostLst(ips)
     if level is None:
         level = 1
-    scan = runNmapScanMultiProcess(hostLst, level, db_store, gDict, name)
+    scan = runNmapScanMultiProcessDict(hostLst, level, db_store, gDict, name)
     return scan
 
 def isNet(ips):
