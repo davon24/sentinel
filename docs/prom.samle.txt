@@ -1,0 +1,4 @@
+
+node_filesystem_size_bytes{device="/dev/disk1s1",fstype="apfs",mountpoint="/System/Volumes/Data"} 2.50685575168e+11
+
+

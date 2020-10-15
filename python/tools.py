@@ -521,7 +521,6 @@ def nmapUDPscan(ip, ports=None):
             if l[1]:
                 print(s)
         except IndexError: pass
-
     return True
 
 def pingNet(ip):
@@ -2320,21 +2319,9 @@ def sentryMode(db_file):
     global db_store
     db_store = db_file
 
-    #sigterm = False
-
     manager = multiprocessing.Manager()
     global gDict
     gDict = manager.dict()
-    #gDict = {}
-
-    #global gQ
-    #gQ = queue.Queue()
-
-    conf = store.getData('configs', 'prometheus', db_store)
-    if not conf:
-        update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
-        conf = store.getData('configs', 'prometheus', db_store)
-    conf = json.loads(conf[0])
 
     import atexit
     import signal
@@ -2352,24 +2339,26 @@ def sentryMode(db_file):
     processor.setDaemon(True)
     processor.start()
 
-    _port = conf['port']
-    global _metric_path
-    _metric_path = conf['path']
+    conf = store.getData('configs', 'prometheus', db_store)
+    #if not conf:
+    #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
+    #    conf = store.getData('configs', 'prometheus', db_store)
+    #conf = json.loads(conf[0])
+
+    if conf:
+        prometheus = True
+        conf = json.loads(conf[0])
+        _port = conf['port']
+        global _metric_path
+        _metric_path = conf['path']
 
     try:
-
-        #p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store, gDict))
-        #bummer error... (due to drop privs...), multi process one as root other as nobody...
-        # curl localhost:9111/metrics
-        #  File "/opt/sentinel/python/tools.py", line 78, in do_GET
-        #  for k,v in gDict.items():
-        #   File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/connection.py", line 629, in SocketClient
-        #     s.connect(address)
-        # PermissionError: [Errno 13] Permission denied
-
-        p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
-        p.start()
-        p.join()
+        if prometheus:
+            p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
+            p.start()
+            p.join()
+        else:
+            time.sleep(60)
 
     except (KeyboardInterrupt, SystemExit, Exception):
         sigterm = True
