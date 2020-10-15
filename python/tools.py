@@ -1870,6 +1870,11 @@ def establishedCheck(name, db_store, gDict, _name):
     #getEstablishedAlertsDct should really get moved to tools
     eaDct = store.getEstablishedAlertsDct(db_store)
 
+    for key in gDict.keys():
+        if key.startswith('est-established-check-'):
+            del gDict[key]
+
+    #Dict = {}
     c = 0
     for k,v in eaDct.items():
         #print(k,v)
@@ -1882,11 +1887,43 @@ def establishedCheck(name, db_store, gDict, _name):
         fport = v[4]
 
         now = time.strftime("%Y-%m-%d %H:%M:%S")
-        _key = 'established-check-' + str(_name) + '-' + str(c)
+        _key = 'est-established-check-' + str(_name) + '-' + str(c)
 
         data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"'
         prom = 'name="' + str(_name) + '",job="established-check",' + data + ',done="' + str(now) + '"'
+        #Dict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
         gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+    #compare local Dict w/ gDict, but gDict has more keys...
+
+    #first_dict  = gDict
+    #second_dict = Dict
+
+    #print('gDict ' + str(type(gDict)) + ' ' + str(len(gDict)) + ' ' + str(gDict))
+    #gDict <class 'multiprocessing.managers.DictProxy'> 
+    #print('secondDict ' + str(type(Dict)) + ' ' + str(len(Dict)) + ' ' + str(Dict))
+    #secondDict <class 'dict'>
+
+    #value = { k : second_dict[k] for k in set(second_dict) - set(first_dict) }
+    #print('value is ' + str(value))
+
+    #gDict <class 'multiprocessing.managers.DictProxy'> 
+    #print('secondDict ' + str(type(Dict)) + ' ' + str(len(Dict)) + ' ' + str(Dict))
+    #set1 = set(gDict.items()) #TypeError: unhashable type: 'list'
+    #set2 = set(Dict.items())
+    #sdiff = set1 ^ set2
+    #print('sdifff ' + str(sdiff))
+
+    #for key in gDict.keys():
+    #    if key in Dict: 
+    #        if key.startswith('established-check-'):
+    #            print('yes Keystarts ' + str(key))
+    #        else:
+    #            print('no StartsWith  ' + str(key))
+    #    else:
+    #        print('Not in Dict skipping ' + str(key))
+
+
 
     return True
 
@@ -2074,7 +2111,7 @@ def sentryProcessor(db_store, gDict):
         with open(_prom, 'w+') as _file:
             for k,v in gDict.items():
                 for item in v:
-                    print(k, v)
+                    #print(k, v)
                     _file.write(item + '\n')
 
         time.sleep(10)
