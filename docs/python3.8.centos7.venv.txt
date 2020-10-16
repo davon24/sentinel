@@ -1,0 +1,26 @@
+
+docker run -it -v `pwd`:/build centos:7
+
+yum -y update
+yum -y groupinstall "Development Tools"
+yum -y install openssl-devel bzip2-devel libffi-devel
+
+#https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz
+
+curl -L -O https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz
+
+tar xvfz Python-3.8.6.tgz
+
+cd Python-3.8.6/
+
+./configure --enable-optimizations
+
+make altinstall
+
+/usr/local/bin/python3.8 -m venv --copies venv
+
+tar cvfz venv.tar.gz venv
+
+cp venv.tar.gz /build/
+
+

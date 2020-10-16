@@ -1,0 +1,16 @@
+
+python3 3.8
+
+
+  File "/opt/sentinel/python/store.py", line 90, in createDB
+    cur.execute(create_ip)
+sqlite3.OperationalError: near "WITHOUT": syntax error
+[root@linux python]# python3
+Python 3.6.8 (default, Apr  2 2020, 13:34:55) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-39)] on linux
+
+works here...
+linux:~ # python3
+Python 3.6.9 (default, Oct 29 2019, 10:39:36) [GCC] on linux
+
+
