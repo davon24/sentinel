@@ -1,0 +1,138 @@
+
+#vagrant init centos/7
+#vagrant up
+#vagrant ssh
+#sudo su -
+
+docker run -it -v `pwd`:/build centos:7
+
+yum -y update
+yum -y groupinstall "Development Tools"
+yum -y install openssl-devel bzip2-devel libffi-devel
+
+#https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz
+#https://www.sqlite.org/2020/sqlite-autoconf-3330000.tar.gz
+
+curl -L -O https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz
+curl -L -O https://www.sqlite.org/2020/sqlite-autoconf-3330000.tar.gz
+
+tar xvfz sqlite-autoconf-3330000.tar.gz
+tar xvfz Python-3.8.6.tgz
+
+cd sqlite-autoconf-3330000
+#./configure --prefix=/opt/sentinel/Python-3.8.6
+./configure --prefix=/usr
+#./configure
+make
+make install
+
+cd ../
+
+cd Python-3.8.6/
+#LD_RUN_PATH=/opt/sentinel/Python-3.8.6/lib
+#LDFLAGS="-L /opt/sentinel/Python-3.8.6/lib"
+#CPPFLAGS="-I /opt/sentinel/Python-3.8.6/include"
+#LD_RUN_PATH=/opt/sentinel/Python-3.8.6/lib
+
+
+./configure --enable-optimizations --prefix=/opt/sentinel/Python-3.8.6
+make altinstall
+
+cd /opt/sentinel/Python-3.8.6/bin 
+ln -s python3.8 python3
+#./pip3.8 install pysqlite3
+
+
+cd /opt/sentinel
+tar cvfz Python-3.8.6-el7.x86_64.tar.gz Python-3.8.6
+
+cp Python-3.8.6-el7.x86_64.tar.gz /build/
+
+#[root@centos7 sentinel]# LD_LIBRARY_PATH=/opt/sentinel/Python-3.8.6/lib Python-3.8.6/bin/python3  -c "import sqlite3; print(sqlite3.sqlite_version)"
+3.33.0
+
+export LD_LIBRARY_PATH=/opt/sentinel/Python-3.8.6/lib
+exort PATH=/opt/sentinel/Python-3.8.6/bin:$PATH
+cd /opt/sentinel/python
+./sentinel.py
+
+#https://stackoverflow.com/questions/19530974/how-can-i-add-the-sqlite3-module-to-python
+#----
+
+[root@b85d88aef7f4 bin]# ./pip3.8 install pysqlite3
+Collecting pysqlite3
+  Downloading pysqlite3-0.4.3.tar.gz (40 kB)
+     |████████████████████████████████| 40 kB 810 kB/s 
+Using legacy 'setup.py install' for pysqlite3, since package 'wheel' is not installed.
+Installing collected packages: pysqlite3
+    Running setup.py install for pysqlite3 ... done
+Successfully installed pysqlite3
+WARNING: You are using pip version 20.2.1; however, version 20.2.3 is available.
+You should consider upgrading via the '/opt/sentinel/Python-3.8.6/bin/python3.8 -m pip install --upgrade pip' command.
+[root@b85d88aef7f4 bin]# 
+
+[root@b85d88aef7f4 bin]# export PATH=/opt/sentinel/Python-3.8.6/bin:$PATH
+[root@b85d88aef7f4 bin]# python3
+Python 3.8.6 (default, Oct 16 2020, 19:09:37) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-39)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import sqlite3
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/opt/sentinel/Python-3.8.6/lib/python3.8/sqlite3/__init__.py", line 23, in <module>
+    from sqlite3.dbapi2 import *
+  File "/opt/sentinel/Python-3.8.6/lib/python3.8/sqlite3/dbapi2.py", line 27, in <module>
+    from _sqlite3 import *
+ModuleNotFoundError: No module named '_sqlite3'
+
+
+#---
+
+[root@centos7 python]# ../Python-3.8.6/bin/python3 ./sentinel.py 
+Traceback (most recent call last):
+  File "./sentinel.py", line 828, in <module>
+    sys.exit(run())
+  File "./sentinel.py", line 147, in run
+    update = store.update_arp_data(db_store, arpTbl)
+  File "/opt/sentinel/python/store.py", line 148, in update_arp_data
+    con = sqlConnection(db_file)
+  File "/opt/sentinel/python/store.py", line 52, in sqlConnection
+    con = createDB(db_file)
+  File "/opt/sentinel/python/store.py", line 90, in createDB
+    cur.execute(create_ip)
+sqlite3.OperationalError: near "WITHOUT": syntax error
+[root@centos7 python]#
+
+#create_ip  = "CREATE TABLE IF NOT EXISTS ips (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
+
+[root@centos7 python]# ../Python-3.8.6/bin/python3
+Python 3.8.6 (default, Oct 16 2020, 20:39:59) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-39)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import sqlite3
+>>> print(sqlite3.sqlite_version)
+3.7.17
+
+
+# SQLite3 3.8.2 for having support for WITHOUT ROWID
+
+#---
+
+
+this is interesting....
+
+[root@fcdd72be1860 /]# rpm -qa |grep sqlite
+sqlite-3.7.17-8.el7_7.1.x86_64
+[root@fcdd72be1860 /]# yum remove sqlite
+Error: Trying to remove "systemd", which is protected
+Error: Trying to remove "yum", which is protected
+
+looks like we'll have to mow over...
+./configure --prefix=/usr
+
+
+
+
+
+
+

@@ -1,0 +1,40 @@
+
+https://stackoverflow.com/questions/26399754/how-to-use-python-virtual-environment-in-another-computer
+
+
+[root@centos7 python]# cat /etc/redhat-release 
+CentOS Linux release 7.8.2003 (Core)
+[root@centos7 python]# source venv/bin/activate
+(venv) [root@centos7 python]# cd venv/bin
+(venv) [root@centos7 bin]# ./python3.8
+Could not find platform independent libraries <prefix>
+Could not find platform dependent libraries <exec_prefix>
+Consider setting $PYTHONHOME to <prefix>[:<exec_prefix>]
+Python path configuration:
+  PYTHONHOME = (not set)
+  PYTHONPATH = (not set)
+  program name = './python3.8'
+  isolated = 0
+  environment = 1
+  user site = 1
+  import site = 1
+  sys._base_executable = '/opt/sentinel/python/venv/bin/python3.8'
+  sys.base_prefix = '/usr/local'
+  sys.base_exec_prefix = '/usr/local'
+  sys.executable = '/opt/sentinel/python/venv/bin/python3.8'
+  sys.prefix = '/usr/local'
+  sys.exec_prefix = '/usr/local'
+  sys.path = [
+    '/usr/local/lib/python38.zip',
+    '/usr/local/lib/python3.8',
+    '/usr/local/lib/lib-dynload',
+  ]
+Fatal Python error: init_fs_encoding: failed to get the Python codec of the filesystem encoding
+Python runtime state: core initialized
+ModuleNotFoundError: No module named 'encodings'
+
+Current thread 0x00007f5e3c553740 (most recent call first):
+<no Python frame>
+(venv) [root@centos7 bin]#
+
+
