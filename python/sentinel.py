@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-__version__ = '0.0.0.v1.6.6'
+__version__ = '0.0.0.v1.6.7'
 
 import sys
+import os
 #sys.path.insert(0,'db')
 
 import json
@@ -137,23 +138,36 @@ def printArps():
     return True
 
 def printListening():
-    cntDct = cntLsOf()
+    cntDct = tools.cntLsOf()
     for k,v in sorted(cntDct.items()):
         print(k,v)
     return True
 
 def run():
         arpTbl = tools.getArps()
-        update = store.update_arp_data(db_store, arpTbl)
+        update = store.update_arp_data(db_store, arpTbl, db_manuf)
         print(update)
         return True
 
 if __name__ == '__main__':
 
-    db_store = 'db/sentinel.db'
-    db_manuf = 'db/manuf'
+    #print(os.path.dirname(__file__))
+
+    #sys.path.insert(0, os.path.dirname(__file__))
+
+    db_store = str(os.path.dirname(__file__)) + '/db/sentinel.db'
+    db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
+
+    #print(db_store)
+    #print(db_manuf)
+
 
     if sys.argv[1:]:
+
+        if sys.argv[1] == '--version':
+            print(__version__)
+            sys.exit(0)
+
         if sys.argv[1] == 'manuf':
             mac = sys.argv[2]
             mfname = store.get_manuf(mac, db_manuf)
@@ -366,9 +380,9 @@ if __name__ == '__main__':
                 level = 1
 
             #print(ipnet, level, db_store)
-            #run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
+            run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
             #run_discovery = tools.runDiscoverNetMultiProcess(ipnet, level, db_store)
-            run_discovery = tools.runDiscoverNetAll(ipnet, level, db_store)
+            #run_discovery = tools.runDiscoverNetAll(ipnet, level, db_store)
             print(run_discovery)
             sys.exit(0)
 

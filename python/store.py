@@ -143,7 +143,7 @@ def createDB(db_file):
 # Within one process it is possible to share an in-memory database if you use the file::memory:?cache=shared
 # but this is still not accessible from other another process.
 
-def update_arp_data(db_file, arpDict):
+def update_arp_data(db_file, arpDict, manuf_file):
 
     con = sqlConnection(db_file)
     cur = con.cursor()
@@ -185,7 +185,8 @@ def update_arp_data(db_file, arpDict):
         #print(_mac, _ip, _data)
         if not _result:
             t = time.strftime("%Y-%m-%dT%H:%M:%SZ")
-            m = mf.get_manuf(mac, 'db/manuf')
+            #m = mf.get_manuf(mac, 'db/manuf')
+            m = mf.get_manuf(mac, manuf_file)
             #print(m)
             data = '{"created":"' + t + '","manuf":"' + m + '"}'
             cur.execute("INSERT INTO arp VALUES (?, ?, ?)", (mac, ip, data))
@@ -772,12 +773,12 @@ def clearAll(tbl, db_file):
     return True
 
 
-#def getConfig(name, db_file):
-#    con = sqlConnection(db_file)
-#    cur = con.cursor()
-#    cur.execute('SELECT data FROM configs WHERE name=? ;', (name,))
-#    row = cur.fetchone()
-#    return row
+def getConfig(name, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT data FROM configs WHERE name=? ;', (name,))
+    row = cur.fetchone()
+    return row
 
 def getFim(name, db_file):
     con = sqlConnection(db_file)

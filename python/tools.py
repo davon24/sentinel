@@ -1582,7 +1582,7 @@ def printFim(name, db_store):
 def vulnScan(ips, db_store, gDict, name):
     hostLst = discoverHostLst(ips)
     scan = runNmapVulnMultiProcessDict(hostLst, db_store, gDict, name)
-    return True
+    return scan
 
 def portScan1(ips, db_store, gDict, name):
     level = 1

@@ -99,14 +99,15 @@ def get_manuf(mac, db_file):
 
 
 if __name__ == '__main__':
+    pass
 
-    mac = sys.argv[1].lower()
-    mac = even_up(mac)
+    #mac = sys.argv[1].lower()
+    #mac = even_up(mac)
 
-    db_file = 'db/manuf'
-    manufDict = get_manufDict(db_file)
+    #db_file = 'db/manuf'
+    #manufDict = get_manufDict(db_file)
 
-    m = match(mac, manufDict)
-    print(m)
+    #m = match(mac, manufDict)
+    #print(m)
 
 
