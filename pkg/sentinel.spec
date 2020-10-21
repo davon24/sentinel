@@ -127,6 +127,11 @@ echo "postrun.done"
 %dir /usr/libexec/sentinel
 %config(noreplace) /usr/libexec/sentinel/db/manuf
 /usr/libexec/sentinel/sentinel.py
+/usr/libexec/sentinel/manuf.py
+/usr/libexec/sentinel/modules/ps/ps.py
+/usr/libexec/sentinel/store.py
+/usr/libexec/sentinel/tools.py
+
 
 %if 0%{?rhel} == 7
 #%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyc
