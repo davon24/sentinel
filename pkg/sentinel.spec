@@ -7,7 +7,7 @@ Name: sentinel
 Version: v1.6.7
 Release: 0%{?dist}
 License: GPL
-URL: https://gitlab.com/krink/scrawl/-/archive/master/sentinel-master.tar.gz
+URL: https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz
 Group: Applications/Internet
 Source0: sentinel-%{version}.tar.gz
 
@@ -115,9 +115,6 @@ echo "postrun.done"
 
 %files
 %defattr(-,root,root)
-%{bindir}/scrawl
-%{bindir}/scrawl-backlog
-%{bindir}/scrawl-send-backlog
 
 %if 0%{?rhel} == 7
 /lib/systemd/system/sentinel.service
