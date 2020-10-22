@@ -1,0 +1,9 @@
+Package: sentinel
+Version: v1.6.7
+Section: custom
+Priority: optional
+Architecture: all
+Essential: no
+Installed-Size: 1024
+Maintainer: gitlab.com/krink
+Description: Sentinel Application
