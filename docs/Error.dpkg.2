@@ -1,0 +1,56 @@
+
+apt-get install -y zlib1g-dev
+
+rm /usr/libexec/sentinel/runtime/lib/python3.8/lib-dynload/_sysconfigdata__linux_x86_64-linux-gnu.py
+rm -r /usr/libexec/sentinel/runtime/lib/python3.8/lib-dynload/__pycache__
+/usr/bin/install -c -m 644 ./Misc/python.man \
+	/usr/libexec/sentinel/runtime/share/man/man1/python3.8.1
+if test "xupgrade" != "xno"  ; then \
+	case upgrade in \
+		upgrade) ensurepip="--altinstall --upgrade" ;; \
+		install|*) ensurepip="--altinstall" ;; \
+	esac; \
+	 ./python -E -m ensurepip \
+		$ensurepip --root=/ ; \
+fi
+Traceback (most recent call last):
+  File "<frozen zipimport>", line 520, in _get_decompress_func
+ModuleNotFoundError: No module named 'zlib'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen zipimport>", line 568, in _get_data
+  File "<frozen zipimport>", line 523, in _get_decompress_func
+zipimport.ZipImportError: can't decompress data; zlib not available
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/root/dpkgbuild/Python-3.8.6/Lib/runpy.py", line 194, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/root/dpkgbuild/Python-3.8.6/Lib/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/root/dpkgbuild/Python-3.8.6/Lib/ensurepip/__main__.py", line 5, in <module>
+    sys.exit(ensurepip._main())
+  File "/root/dpkgbuild/Python-3.8.6/Lib/ensurepip/__init__.py", line 210, in _main
+    return _bootstrap(
+  File "/root/dpkgbuild/Python-3.8.6/Lib/ensurepip/__init__.py", line 129, in _bootstrap
+    return _run_pip(args + [p[0] for p in _PROJECTS], additional_paths)
+  File "/root/dpkgbuild/Python-3.8.6/Lib/ensurepip/__init__.py", line 32, in _run_pip
+    runpy.run_module("pip", run_name="__main__", alter_sys=True)
+  File "/root/dpkgbuild/Python-3.8.6/Lib/runpy.py", line 203, in run_module
+    mod_name, mod_spec, code = _get_module_details(mod_name)
+  File "/root/dpkgbuild/Python-3.8.6/Lib/runpy.py", line 144, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/root/dpkgbuild/Python-3.8.6/Lib/runpy.py", line 111, in _get_module_details
+    __import__(pkg_name)
+  File "<frozen zipimport>", line 241, in load_module
+  File "<frozen zipimport>", line 709, in _get_module_code
+  File "<frozen zipimport>", line 570, in _get_data
+zipimport.ZipImportError: can't decompress data; zlib not available
+Makefile:1196: recipe for target 'altinstall' failed
+make: *** [altinstall] Error 1
+dpkg-deb: building package 'sentinel-runtime' in 'sentinel-runtime.deb'.
+
+
