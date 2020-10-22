@@ -39,14 +39,14 @@ tar xzvf %{SOURCE0}
 rm -rf $RPM_BUILD_ROOT
 
 %if 0%{?rhel} == 7
-#mkdir -p $RPM_BUILD_ROOT/lib/systemd/system
-#cp sentinel-%{version}/pkg/linux.sentinel.service $RPM_BUILD_ROOT/lib/systemd/system/sentinel.service
+mkdir -p $RPM_BUILD_ROOT/lib/systemd/system
+cp sentinel-%{version}/pkg/linux.sentinel.service $RPM_BUILD_ROOT/lib/systemd/system/sentinel.service
 %endif
 
 %if 0%{?rhel} == 6
-#mkdir -p $RPM_BUILD_ROOT/etc/init.d
-#cp sentinel-%{version}/pkg/sentinel.init $RPM_BUILD_ROOT/etc/init.d/sentinel
-#chmod 755 $RPM_BUILD_ROOT/etc/init.d/sentinel
+mkdir -p $RPM_BUILD_ROOT/etc/init.d
+cp sentinel-%{version}/pkg/sentinel.init $RPM_BUILD_ROOT/etc/init.d/sentinel
+chmod 755 $RPM_BUILD_ROOT/etc/init.d/sentinel
 %endif
 
 mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel
@@ -81,32 +81,32 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 # Add serivces for startup
-#%if 0%{?rhel} == 6
-#  echo "rh6"
-#  echo "install /etc/init.d/sentinel"
-#       /sbin/chkconfig --add sentinel 
-#  if [ $1 = 1 ]; then #1 install
-#    echo "start sentinel"
-#        /etc/init.d/sentinel start
-#  else
-#    echo "restart sentinel"
-#        /etc/init.d/sentinel restart
-#  fi
-#%endif
-#
-#%if 0%{?rhel} == 7
-#  echo "systemctl daemon-reload"
-#        systemctl daemon-reload
-#  if [ $1 = 1 ]; then #1 install
-#    echo "systemctl enable sentinel"
-#          systemctl enable sentinel
-#    echo "systemctl start sentinel"
-#          systemctl start sentinel
-#  else
-#    echo "systemctl restart sentinel"
-#          systemctl restart sentinel
-#  fi
-#%endif
+%if 0%{?rhel} == 6
+  echo "rh6"
+  echo "install /etc/init.d/sentinel"
+       /sbin/chkconfig --add sentinel 
+  if [ $1 = 1 ]; then #1 install
+    echo "start sentinel"
+        /etc/init.d/sentinel start
+  else
+    echo "restart sentinel"
+        /etc/init.d/sentinel restart
+  fi
+%endif
+
+%if 0%{?rhel} == 7
+  echo "systemctl daemon-reload"
+        systemctl daemon-reload
+  if [ $1 = 1 ]; then #1 install
+    echo "systemctl enable sentinel"
+          systemctl enable sentinel
+    echo "systemctl start sentinel"
+          systemctl start sentinel
+  else
+    echo "systemctl restart sentinel"
+          systemctl restart sentinel
+  fi
+%endif
 #end post
 
 %postun
@@ -116,11 +116,11 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 
 %if 0%{?rhel} == 7
-#/lib/systemd/system/sentinel.service
+/lib/systemd/system/sentinel.service
 %endif
 
 %if 0%{?rhel} == 6
-#/etc/init.d/sentinel
+/etc/init.d/sentinel
 %endif
 
 %dir /usr/libexec/sentinel
