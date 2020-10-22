@@ -6,17 +6,24 @@ ver=`awk '/^Version: / {print $2}' $basedir/control`
 mkdir ~/dpkgbuild >/dev/null 2>&1
 
 if [ ! -f ~/dpkgbuild/sentinel-master.tar.gz ]; then
-
   curl -k https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz >~/dpkgbuild/sentinel-master.tar.gz
-  tar xvf ~/dpkgbuild/sentinel-master.tar.gz -C ~/dpkgbuild/
-  mkdir -p ~/dpkgbuild/sentinel/usr/libexec
-  mv ~/dpkgbuild/sentinel-master ~/dpkgbuild/sentinel/usr/libexec/sentinel
-  #mv ~/dpkgbuild/sentinel-master ~/dpkgbuild/sentinel-$ver
-  #cd ~/dpkgbuild/
-  #tar cvfz sentinel-$ver.tar.gz sentinel-$ver
-  #cd -
-
 fi
+
+
+tar xvf ~/dpkgbuild/sentinel-master.tar.gz -C ~/dpkgbuild/
+
+mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel
+
+cp ~/dpkgbuild/sentinel-master/python/sentinel.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/sentinel.py
+cp ~/dpkgbuild/sentinel-master/python/tools.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/tools.py
+cp ~/dpkgbuild/sentinel-master/python/store.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/store.py
+cp ~/dpkgbuild/sentinel-master/python/manuf.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/manuf.py
+
+mkdir ~/dpkgbuild/sentinel/usr/libexec/sentinel/db
+cp ~/dpkgbuild/sentinel-master/python/db/manuf ~/dpkgbuild/sentinel/usr/libexec/sentinel/db/
+
+mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/ps
+cp ~/dpkgbuild/sentinel-master/python/modules/ps/ps.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/ps/ps.py
 
 mkdir  ~/dpkgbuild/sentinel/DEBIAN
 cp $basedir/control ~/dpkgbuild/sentinel/DEBIAN/
