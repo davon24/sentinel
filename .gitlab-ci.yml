@@ -14,3 +14,20 @@ build-centos7:
       paths:
          - package/*.rpm
 
+
+build-ubuntu16:
+   image: ubuntu:16.04
+   script:
+      - echo "Building DPKG"
+      - pwd
+      - ls
+      - ls /
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.dpkg
+
+
