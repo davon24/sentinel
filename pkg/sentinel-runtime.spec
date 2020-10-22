@@ -109,8 +109,12 @@ echo "postrun.done"
 #/etc/init.d/sentinel
 %endif
 
-%dir /usr/libexec/sentinel/runtime
+#----
 
+#%dir /usr/libexec/sentinel/runtime
+/usr/libexec/sentinel/runtime
+
+#----
 
 %if 0%{?rhel} == 7
 #%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyc
@@ -122,9 +126,9 @@ echo "postrun.done"
 #%exclude /usr/lib/python2.6/site-packages/scrawl/*.pyo
 %endif
 
-%exclude /usr/libexec/sentinel/runtime/*.pyc
-%exclude /usr/libexec/sentinel/runtime/*/*.pyc
-%exclude /usr/libexec/sentinel/runtime/*/*/*.pyc
+#%exclude /usr/libexec/sentinel/runtime/*.pyc
+#%exclude /usr/libexec/sentinel/runtime/*/*.pyc
+#%exclude /usr/libexec/sentinel/runtime/*/*/*.pyc
 %exclude /usr/libexec/sentinel/runtime/*/*/*/*.pyc
 %exclude /usr/libexec/sentinel/runtime/*/*/*/*/*.pyc
 %exclude /usr/libexec/sentinel/runtime/*/*/*/*/*/*.pyc
@@ -132,12 +136,10 @@ echo "postrun.done"
 %exclude /usr/libexec/sentinel/runtime/*/*/*/*/*/*/*/*.pyc
 %exclude /usr/libexec/sentinel/runtime/*/*/*/*/*/*/*/*/*.pyc
 %exclude /usr/libexec/sentinel/runtime/*/*/*/*/*/*/*/*/*/*.pyc
-%exclude /usr/libexec/sentinel/runtime/*/*/*/*/*/*/*/*/*/*/*.pyc
+#%exclude /usr/libexec/sentinel/runtime/*/*/*/*/*/*/*/*/*/*/*.pyc
 
 %exclude /usr/libexec/sentinel/runtime/lib/python3.8/test/*
 %exclude /usr/libexec/sentinel/runtime/include/*
-
-
 
 #%exclude /usr/libexec/sentinel/Python3.8.6/*.pyo
 #%exclude /usr/libexec/sentinel/Python3.8.6/modules/ps/*.pyc
