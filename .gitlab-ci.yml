@@ -58,7 +58,7 @@ build-ubuntu16:
       paths:
          - package/*.deb
 
-build-ubuntu16:
+build-ubuntu18:
    image: ubuntu:18.04
    script:
       - apt-get update
