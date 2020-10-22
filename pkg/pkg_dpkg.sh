@@ -9,7 +9,6 @@ if [ ! -f ~/dpkgbuild/sentinel-master.tar.gz ]; then
   curl -k https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz >~/dpkgbuild/sentinel-master.tar.gz
 fi
 
-
 tar xvf ~/dpkgbuild/sentinel-master.tar.gz -C ~/dpkgbuild/
 
 mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel
@@ -27,6 +26,9 @@ cp ~/dpkgbuild/sentinel-master/python/modules/ps/ps.py ~/dpkgbuild/sentinel/usr/
 
 mkdir -p ~/dpkgbuild/sentinel/lib/systemd/system
 cp ~/dpkgbuild/sentinel-master/pkg/linux.sentinel.service ~/dpkgbuild/sentinel/lib/systemd/system/sentinel.service
+
+mkdir -p ~/dpkgbuild/sentinel/usr/sbin
+cp ~/dpkgbuild/sentinel-master/pkg/sentinel.sh ~/dpkgbuild/sentinel/usr/sbin/sentinel
 
 mkdir  ~/dpkgbuild/sentinel/DEBIAN
 cp $basedir/control ~/dpkgbuild/sentinel/DEBIAN/

@@ -49,6 +49,9 @@ cp sentinel-%{version}/pkg/sentinel.init $RPM_BUILD_ROOT/etc/init.d/sentinel
 chmod 755 $RPM_BUILD_ROOT/etc/init.d/sentinel
 %endif
 
+mkdir -p $RPM_BUILD_ROOT/usr/sbin
+cp sentinel-%{version}/pkg/sentinel.sh $RPM_BUILD_ROOT/usr/sbin/sentinel
+
 mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel
 
 cp sentinel-%{version}/python/sentinel.py $RPM_BUILD_ROOT/usr/libexec/sentinel/sentinel.py
@@ -114,6 +117,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
+/usr/sbin/sentinel
 
 %if 0%{?rhel} == 7
 /lib/systemd/system/sentinel.service
