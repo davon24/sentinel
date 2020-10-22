@@ -1,5 +1,5 @@
 Package: sentinel
-Version: v1.6.7
+Version: 1.6.7
 Section: custom
 Priority: optional
 Architecture: all
