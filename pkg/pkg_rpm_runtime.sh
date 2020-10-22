@@ -28,7 +28,9 @@ LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib ./configure --enable-optimizations
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make altinstall
 
-cd /usr/libexec/sentinel
+cd /usr/libexec/sentinel/runtime/bin
+ln -s python3.8 python3
+cd /usr/libexec/sentinel/
 mkdir sentinel-runtime-$ver
 mv runtime sentinel-runtime-$ver/
 tar cvfz sentinel-runtime-$ver.tar.gz sentinel-runtime-$ver
