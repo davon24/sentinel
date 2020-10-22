@@ -3,15 +3,14 @@
 basedir=`dirname $0`
 ver=`awk '/^Version: / {print $2}' $basedir/control`
 
-
 mkdir ~/dpkgbuild >/dev/null 2>&1
 
 if [ ! -f ~/dpkgbuild/sentinel-master.tar.gz ]; then
 
   curl -k https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz >~/dpkgbuild/sentinel-master.tar.gz
   tar xvf ~/dpkgbuild/sentinel-master.tar.gz -C ~/dpkgbuild/
-  mkdir -p ~/dpkgbuild/usr/libexec
-  mv ~/dpkgbuild/sentinel-master ~/dpkgbuild/usr/libexec/sentinel
+  mkdir -p ~/dpkgbuild/sentinel/usr/libexec
+  mv ~/dpkgbuild/sentinel-master ~/dpkgbuild/sentinel/usr/libexec/sentinel
   #mv ~/dpkgbuild/sentinel-master ~/dpkgbuild/sentinel-$ver
   #cd ~/dpkgbuild/
   #tar cvfz sentinel-$ver.tar.gz sentinel-$ver
