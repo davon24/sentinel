@@ -25,6 +25,9 @@ cp ~/dpkgbuild/sentinel-master/python/db/manuf ~/dpkgbuild/sentinel/usr/libexec/
 mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/ps
 cp ~/dpkgbuild/sentinel-master/python/modules/ps/ps.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/ps/ps.py
 
+mkdir -p ~/dpkgbuild/sentinel/lib/systemd/system
+cp ~/dpkgbuild/sentinel-master/pkg/linux.sentinel.service ~/dpkgbuild/sentinel/lib/systemd/system/sentinel.service
+
 mkdir  ~/dpkgbuild/sentinel/DEBIAN
 cp $basedir/control ~/dpkgbuild/sentinel/DEBIAN/
 

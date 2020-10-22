@@ -1,0 +1,9 @@
+Package: sentinel-runtime
+Version: 1.6.7
+Section: custom
+Priority: optional
+Architecture: amd64
+Essential: no
+Installed-Size: 1024
+Maintainer: gitlab.com/krink
+Description: Sentinel Runtime
