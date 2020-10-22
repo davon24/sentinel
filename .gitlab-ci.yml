@@ -15,5 +15,5 @@ build-ubuntu16:
       - branches
    artifacts:
       paths:
-         - package/*.deb
+         - pkg/package/*.deb
 
