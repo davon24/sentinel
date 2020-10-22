@@ -1,5 +1,4 @@
 
-
 build-ubuntu16:
    image: ubuntu:16.04
    script:
@@ -15,5 +14,6 @@ build-ubuntu16:
       - branches
    artifacts:
       paths:
-         - pkg/package/*.deb
+         - package/*.deb
+         - /*.deb
 
