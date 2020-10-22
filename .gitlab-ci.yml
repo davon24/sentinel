@@ -1,0 +1,79 @@
+
+build-centos7:
+   image: centos:7
+   script:
+      - yum -y update
+      - yum install -y rpm-build
+      - yum -y groupinstall "Development Tools"
+      - yum -y install openssl-devel bzip2-devel libffi-devel
+      - echo "Building RPM"
+      - bash pkg/pkg_rpm.sh
+      - bash pkg/pkg_rpm_runtime.sh
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.rpm
+
+build-centos6:
+   image: centos:6
+   script:
+      - yum -y update
+      - yum install -y rpm-build
+      - yum -y groupinstall "Development Tools"
+      - yum -y install openssl-devel bzip2-devel libffi-devel
+      - echo "Building RPM"
+      - cd /pkg
+      - bash ./pkg_rpm.sh
+      - bash ./pkg_rpm_runtime.sh
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.rpm
+
+
+build-ubuntu16:
+   image: ubuntu:16.04
+   script:
+      - apt-get update
+      - apt-get install -y build-essential
+      - apt-get install -y curl
+      - apt-get install -y rsync
+      - apt-get install -y zlib1g-dev
+      - echo "Building DPKG"
+      - cd /pkg
+      - ./pkg_dpkg.sh
+      - ./pkg_dpkg_runtime.sh
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.deb
+
+build-ubuntu16:
+   image: ubuntu:18.04
+   script:
+      - apt-get update
+      - apt-get install -y build-essential
+      - apt-get install -y curl
+      - apt-get install -y rsync
+      - apt-get install -y zlib1g-dev
+      - echo "Building DPKG"
+      - cd /pkg
+      - ./pkg_dpkg.sh
+      - ./pkg_dpkg_runtime.sh
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.deb
+
