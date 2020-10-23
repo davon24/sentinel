@@ -14,6 +14,12 @@ Source0: sentinel-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 
+
+%if 0%{?rhel} == 8
+AutoReqProv: no
+#Requires: python38
+%endif
+
 %if 0%{?rhel} == 7
 AutoReqProv: no
 #Requires: python38
@@ -37,6 +43,11 @@ tar xzvf %{SOURCE0}
 
 %install
 rm -rf $RPM_BUILD_ROOT
+
+%if 0%{?rhel} == 8
+mkdir -p $RPM_BUILD_ROOT/lib/systemd/system
+cp sentinel-%{version}/pkg/linux.sentinel.service $RPM_BUILD_ROOT/lib/systemd/system/sentinel.service
+%endif
 
 %if 0%{?rhel} == 7
 mkdir -p $RPM_BUILD_ROOT/lib/systemd/system
@@ -110,6 +121,22 @@ rm -rf $RPM_BUILD_ROOT
           systemctl restart sentinel
   fi
 %endif
+
+%if 0%{?rhel} == 8
+  echo "systemctl daemon-reload"
+        systemctl daemon-reload
+  if [ $1 = 1 ]; then #1 install
+    echo "systemctl enable sentinel"
+          systemctl enable sentinel
+    echo "systemctl start sentinel"
+          systemctl start sentinel
+  else
+    echo "systemctl restart sentinel"
+          systemctl restart sentinel
+  fi
+%endif
+
+
 #end post
 
 %postun
@@ -118,6 +145,10 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 /usr/sbin/sentinel
+
+%if 0%{?rhel} == 8
+/lib/systemd/system/sentinel.service
+%endif
 
 %if 0%{?rhel} == 7
 /lib/systemd/system/sentinel.service
@@ -135,6 +166,10 @@ rm -rf $RPM_BUILD_ROOT
 /usr/libexec/sentinel/store.py
 /usr/libexec/sentinel/tools.py
 
+%if 0%{?rhel} == 8
+#%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyc
+#%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyo
+%endif
 
 %if 0%{?rhel} == 7
 #%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyc

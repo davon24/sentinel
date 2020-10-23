@@ -19,6 +19,11 @@ Source0: sentinel-runtime-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: x86_64
 
+%if 0%{?rhel} == 8
+AutoReqProv: no
+#Requires: python38
+%endif
+
 %if 0%{?rhel} == 7
 AutoReqProv: no
 #Requires: python38
@@ -43,6 +48,11 @@ tar xzvf %{SOURCE0}
 %install
 rm -rf $RPM_BUILD_ROOT
 #exit 0
+
+%if 0%{?rhel} == 8
+#mkdir -p $RPM_BUILD_ROOT/lib/systemd/system
+#cp sentinel-%{version}/pkg/linux.sentinel.service $RPM_BUILD_ROOT/lib/systemd/system/sentinel.service
+%endif
 
 %if 0%{?rhel} == 7
 #mkdir -p $RPM_BUILD_ROOT/lib/systemd/system
@@ -108,6 +118,10 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 
+%if 0%{?rhel} == 8
+#/lib/systemd/system/sentinel.service
+%endif
+
 %if 0%{?rhel} == 7
 #/lib/systemd/system/sentinel.service
 %endif
@@ -122,6 +136,11 @@ rm -rf $RPM_BUILD_ROOT
 /usr/libexec/sentinel/runtime
 
 #----
+
+%if 0%{?rhel} == 8
+#%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyc
+#%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyo
+%endif
 
 %if 0%{?rhel} == 7
 #%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyc
