@@ -19,11 +19,11 @@ fi
 
 cp $basedir/sentinel.spec ~/rpmbuild/SPECS/sentinel.spec
 
-#rpmbuild -tb ~/rpmbuild/SOURCES/sentinel-$ver.tar.gz
-rpmbuild -ba ~/rpmbuild/SPECS/sentinel.spec
+rpmbuild -tb ~/rpmbuild/SOURCES/sentinel-$ver.tar.gz
+#rpmbuild -ba ~/rpmbuild/SPECS/sentinel.spec
 
 mkdir -p $basedir/package >/dev/null 2>&1
-#cp ~/rpmbuild/SRPMS/*.rpm $basedir/package/
+cp ~/rpmbuild/SRPMS/*.rpm $basedir/package/
 #cp ~/rpmbuild/RPMS/x86_64/*.rpm $basedir/package/ >/dev/null 2>&1
 cp ~/rpmbuild/RPMS/noarch/*.rpm $basedir/package/
 
