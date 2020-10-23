@@ -14,23 +14,26 @@
 #      paths:
 #         - package/*.rpm
 
+
 build-ubuntu16:
    image: ubuntu:16.04
    script:
-      - apt-get update
-      - apt-get install -y build-essential
-      - apt-get install -y curl
-      - echo "Building DPKG"
-      - cp pkg/pkg_dpkg.sh .
-      - ./pkg_dpkg.sh
+     - apt-get update
+     - apt-get install -y build-essential
+     - apt-get install -y curl
+     - echo "Building DPKG"
+     - mkdir -p package
+     - cp pkg/pkg_dpkg.sh .
+     - ./pkg_dpkg.sh
+     - cp ~/dpkgbuild/*.deb package/
+     - pwd;ls
    only:
-      - tags
+     - tags
    except:
-      - branches
+     - branches
    artifacts:
       paths:
-         - package/*.deb
-         - ~/dpkgbuild/*.deb
+        - package/*.deb
 
 
 
