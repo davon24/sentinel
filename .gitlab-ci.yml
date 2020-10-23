@@ -26,4 +26,5 @@ build-ubuntu16:
          - /*.deb
          - pkg/*.deb
          - pkg/package/*.deb
+         - /root/package/*.deb
 
