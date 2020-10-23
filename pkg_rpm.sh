@@ -18,8 +18,8 @@ cd ~/rpmbuild/SOURCES/
 tar cvfz sentinel-$ver.tar.gz sentinel-$ver
 cd -
 
-rpmbuild -tb ~/rpmbuild/SOURCES/sentinel-$ver.tar.gz
-#rpmbuild -ba ~/rpmbuild/SPECS/sentinel.spec
+#rpmbuild -tb ~/rpmbuild/SOURCES/sentinel-$ver.tar.gz
+rpmbuild -ba ~/rpmbuild/SPECS/sentinel.spec
 
 mkdir -p $basedir/package >/dev/null 2>&1
 cp ~/rpmbuild/SRPMS/*.rpm $basedir/package/
