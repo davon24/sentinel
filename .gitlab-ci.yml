@@ -8,6 +8,8 @@ build-ubuntu16:
       - echo "Building DPKG"
       - cd pkg
       - ./pkg_dpkg.sh
+      - pwd
+      - ls
    only:
       - tags
    except:
@@ -16,4 +18,5 @@ build-ubuntu16:
       paths:
          - package/*.deb
          - /*.deb
+         - pkg/*.deb
 
