@@ -1,18 +1,20 @@
 
-#build-centos7:
-#   image: centos:7
-#   script:
-#      - yum install -y rpm-build
-#      - echo "Building RPM"
-#      - cp pkg/pkg_rpm.sh .
-#      - ./pkg_rpm.sh
-#   only:
-#      - tags
-#   except:
-#      - branches
-#   artifacts:
-#      paths:
-#         - package/*.rpm
+build-centos7:
+   image: centos:7
+   script:
+      - yum install -y rpm-build
+      - echo "Building RPM"
+      - mkdir package
+      - cp pkg/pkg_rpm.sh .
+      - ./pkg_rpm.sh
+      - cp ~/rpmbuild/RPMS/noarch/*.rpm package/
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.rpm
 
 build-centos7-runtime:
    image: centos:7
@@ -34,45 +36,165 @@ build-centos7-runtime:
       paths:
          - package/*.rpm
 
-#build-ubuntu16:
-#   image: ubuntu:16.04
-#   script:
-#     - apt-get update
-#     - apt-get install -y build-essential
-#     - apt-get install -y curl
-#     - echo "Building DPKG"
-#     - mkdir -p package
-#     - cp pkg/pkg_dpkg.sh .
-#     - ./pkg_dpkg.sh
-#     - cp ~/dpkgbuild/*.deb package/
-#   only:
-#     - tags
-#   except:
-#     - branches
-#   artifacts:
-#      paths:
-#        - package/*.deb
+build-centos6:
+   image: centos:6
+   script:
+      - yum install -y rpm-build
+      - echo "Building RPM"
+      - mkdir package
+      - cp pkg/pkg_rpm.sh .
+      - ./pkg_rpm.sh
+      - cp ~/rpmbuild/RPMS/noarch/*.rpm package/
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.rpm
 
-#build-ubuntu16-runtime:
-#   image: ubuntu:16.04
-#   script:
-#     - apt-get update
-#     - apt-get install -y build-essential
-#     - apt-get install -y curl
-#     - apt-get install -y rsync
-#     - apt-get install -y zlib1g-dev
-#     - echo "Building DPKG"
-#     - mkdir -p package
-#     - cp pkg/pkg_dpkg_runtime.sh .
-#     - ./pkg_dpkg_runtime.sh
-#     - cp ~/dpkgbuild/*.deb package/
-#   only:
-#     - tags
-#   except:
-#     - branches
-#   artifacts:
-#      paths:
-#        - package/*.deb
+build-centos6-runtime:
+   image: centos:6
+   script:
+      - yum install -y rpm-build
+      - yum -y update
+      - yum -y groupinstall "Development Tools"
+      - yum -y install openssl-devel bzip2-devel libffi-devel
+      - echo "Building RPM"
+      - mkdir package
+      - cp pkg/pkg_rpm_runtime.sh .
+      - ./pkg_rpm_runtime.sh
+      - cp ~/rpmbuild/RPMS/x86_64/*.rpm package/
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.rpm
+
+
+build-ubuntu20:
+   image: ubuntu:20.04
+   script:
+     - apt-get update
+     - apt-get install -y build-essential
+     - apt-get install -y curl
+     - echo "Building DPKG"
+     - mkdir -p package
+     - cp pkg/pkg_dpkg.sh .
+     - ./pkg_dpkg.sh
+     - cp ~/dpkgbuild/*.deb package/
+   only:
+     - tags
+   except:
+     - branches
+   artifacts:
+      paths:
+        - package/*.deb
+
+build-ubuntu20-runtime:
+   image: ubuntu:20.04
+   script:
+     - apt-get update
+     - apt-get install -y build-essential
+     - apt-get install -y curl
+     - apt-get install -y rsync
+     - apt-get install -y zlib1g-dev
+     - echo "Building DPKG" 
+     - mkdir -p package
+     - cp pkg/pkg_dpkg_runtime.sh .
+     - ./pkg_dpkg_runtime.sh
+     - cp ~/dpkgbuild/*.deb package/
+   only:
+     - tags
+   except:
+     - branches
+   artifacts:
+      paths:
+        - package/*.deb
+
+
+build-ubuntu18:
+   image: ubuntu:18.04
+   script:
+     - apt-get update
+     - apt-get install -y build-essential
+     - apt-get install -y curl
+     - echo "Building DPKG"
+     - mkdir -p package
+     - cp pkg/pkg_dpkg.sh .
+     - ./pkg_dpkg.sh
+     - cp ~/dpkgbuild/*.deb package/
+   only:
+     - tags
+   except:
+     - branches
+   artifacts:
+      paths:
+        - package/*.deb
+
+build-ubuntu18-runtime:
+   image: ubuntu:18.04
+   script:
+     - apt-get update
+     - apt-get install -y build-essential
+     - apt-get install -y curl
+     - apt-get install -y rsync
+     - apt-get install -y zlib1g-dev
+     - echo "Building DPKG"
+     - mkdir -p package
+     - cp pkg/pkg_dpkg_runtime.sh .
+     - ./pkg_dpkg_runtime.sh
+     - cp ~/dpkgbuild/*.deb package/
+   only:
+     - tags
+   except:
+     - branches
+   artifacts:
+      paths:
+        - package/*.deb
+
+
+build-ubuntu16:
+   image: ubuntu:16.04
+   script:
+     - apt-get update
+     - apt-get install -y build-essential
+     - apt-get install -y curl
+     - echo "Building DPKG"
+     - mkdir -p package
+     - cp pkg/pkg_dpkg.sh .
+     - ./pkg_dpkg.sh
+     - cp ~/dpkgbuild/*.deb package/
+   only:
+     - tags
+   except:
+     - branches
+   artifacts:
+      paths:
+        - package/*.deb
+
+build-ubuntu16-runtime:
+   image: ubuntu:16.04
+   script:
+     - apt-get update
+     - apt-get install -y build-essential
+     - apt-get install -y curl
+     - apt-get install -y rsync
+     - apt-get install -y zlib1g-dev
+     - echo "Building DPKG"
+     - mkdir -p package
+     - cp pkg/pkg_dpkg_runtime.sh .
+     - ./pkg_dpkg_runtime.sh
+     - cp ~/dpkgbuild/*.deb package/
+   only:
+     - tags
+   except:
+     - branches
+   artifacts:
+      paths:
+        - package/*.deb
 
 
 
