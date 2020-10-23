@@ -13,7 +13,7 @@ build-ubuntu16:
       - ls
       - ls package/*
       - ls ../
-      - ls ../package
+      - ls ../pkg
    only:
       - tags
    except:
