@@ -18,6 +18,9 @@ build-centos7-runtime:
    image: centos:7
    script:
       - yum install -y rpm-build
+      - yum -y update
+      - yum -y groupinstall "Development Tools"
+      - yum -y install openssl-devel bzip2-devel libffi-devel
       - echo "Building RPM"
       - cp pkg/pkg_rpm_runtime.sh .
       - ./pkg_rpm_runtime.sh
