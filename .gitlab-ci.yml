@@ -4,7 +4,7 @@ build-centos7:
    script:
       - yum install -y rpm-build
       - echo "Building RPM"
-      - bash pkg/pkg_rpm.sh
+      - ./pkg_rpm.sh
    only:
       - tags
    except:
@@ -12,6 +12,4 @@ build-centos7:
    artifacts:
       paths:
          - package/*.rpm
-         - /root/rpmbuild/SRPMS/*.rpm
-         - /root/rpmbuild/RPMS/noarch/*.rpm
 
