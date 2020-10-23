@@ -47,8 +47,8 @@ cp sentinel-runtime-$ver.tar.gz ~/rpmbuild/SOURCES/
 
 cd ~/
 
-#rpmbuild -tb ~/rpmbuild/SOURCES/sentinel-runtime-$ver.tar.gz
-rpmbuild -ba ~/rpmbuild/SPECS/sentinel-runtime.spec
+rpmbuild -tb ~/rpmbuild/SOURCES/sentinel-runtime-$ver.tar.gz
+#rpmbuild -ba ~/rpmbuild/SPECS/sentinel-runtime.spec
 
 mkdir -p $basedir/package >/dev/null 2>&1
 cp ~/rpmbuild/SRPMS/*.rpm $basedir/package/
