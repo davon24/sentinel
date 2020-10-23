@@ -45,13 +45,13 @@ mv runtime sentinel-runtime-$ver/
 tar cvfz sentinel-runtime-$ver.tar.gz sentinel-runtime-$ver
 cp sentinel-runtime-$ver.tar.gz ~/rpmbuild/SOURCES/
 
-cd ~/
+cd $basedir/
 
-rpmbuild -tb ~/rpmbuild/SOURCES/sentinel-runtime-$ver.tar.gz
-#rpmbuild -ba ~/rpmbuild/SPECS/sentinel-runtime.spec
+#rpmbuild -tb ~/rpmbuild/SOURCES/sentinel-runtime-$ver.tar.gz
+rpmbuild -ba ~/rpmbuild/SPECS/sentinel-runtime.spec
 
 mkdir -p $basedir/package >/dev/null 2>&1
-cp ~/rpmbuild/SRPMS/*.rpm $basedir/package/
+#cp ~/rpmbuild/SRPMS/*.rpm $basedir/package/
 cp ~/rpmbuild/RPMS/x86_64/*.rpm $basedir/package/ >/dev/null 2>&1
 #cp ~/rpmbuild/RPMS/noarch/*.rpm $basedir/package/
 
