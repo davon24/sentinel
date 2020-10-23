@@ -2,7 +2,7 @@
 
 basedir=`dirname $0`
 
-mkdir ~/dpkgbuild/sentinel-runtime >/dev/null 2>&1
+mkdir -p ~/dpkgbuild/sentinel-runtime >/dev/null 2>&1
 
 if [ ! -f ~/dpkgbuild/sentinel-master.tar.gz ]; then
   curl -k https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz >~/dpkgbuild/sentinel-master.tar.gz
@@ -11,7 +11,7 @@ tar xvf ~/dpkgbuild/sentinel-master.tar.gz -C ~/dpkgbuild/
 
 ver=`awk '/^Version: / {print $2}' ~/dpkgbuild/sentinel-master/pkg/control-runtime`
 
-mkdir  ~/dpkgbuild/sentinel-runtime/DEBIAN
+mkdir ~/dpkgbuild/sentinel-runtime/DEBIAN
 cp ~/dpkgbuild/sentinel-master/pkg/control-runtime ~/dpkgbuild/sentinel-runtime/DEBIAN/control
 
 #--
