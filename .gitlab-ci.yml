@@ -29,7 +29,7 @@ build-ubuntu16:
       - branches
    artifacts:
       paths:
-         - /tmp/package/*.deb
+         - package/*.deb
 
 
 
