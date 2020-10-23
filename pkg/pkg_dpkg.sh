@@ -34,11 +34,11 @@ cp ~/dpkgbuild/sentinel-master/pkg/sentinel.sh ~/dpkgbuild/sentinel/usr/sbin/sen
 mkdir  ~/dpkgbuild/sentinel/DEBIAN
 cp ~/dpkgbuild/sentinel-master/pkg/control ~/dpkgbuild/sentinel/DEBIAN/
 
-mkdir -p $basedir/package >/dev/null 2>&1
+mkdir /tmp/package >/dev/null 2>&1
 
 cd ~/dpkgbuild
 dpkg-deb --build sentinel
-cp sentinel.deb sentinel-${ver}_amd64.deb
-cp sentinel.deb $basedir/package/sentinel-${ver}_amd64.deb 
+cp sentinel.deb /tmp/package/sentinel-${ver}_amd64.deb
+#cp sentinel.deb $basedir/package/sentinel-${ver}_amd64.deb 
 
 
