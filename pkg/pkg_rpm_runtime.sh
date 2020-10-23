@@ -2,9 +2,18 @@
 
 basedir=`dirname $0`
 
-ver=`awk '/^Version: / {print $2}' $basedir/sentinel-runtime.spec`
-
 mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} >/dev/null 2>&1
+
+if [ ! -f ~/rpmbuild/SOURCES/sentinel-$ver.tar.gz ]; then
+  curl -k https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz >~/rpmbuild/SOURCES/sentinel-master.tar.gz
+fi
+
+tar xvf ~/rpmbuild/SOURCES/sentinel-master.tar.gz -C ~/rpmbuild/SOURCES/
+
+ver=`awk '/^Version: / {print $2}' ~/rpmbuild/SOURCES/sentinel-master/pkg/sentinel-runtime.spec`
+cp ~/rpmbuild/SOURCES/sentinel-master/pkg/sentinel-runtime.spec ~/rpmbuild/SPECS/sentinel-runtime.spec
+
+#---
 
 #https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz
 if [ ! -f ~/rpmbuild/SOURCES/Python-3.8.6.tgz ]; then
@@ -38,12 +47,11 @@ cp sentinel-runtime-$ver.tar.gz ~/rpmbuild/SOURCES/
 
 cd ~/
 
-cp $basedir/sentinel-runtime.spec ~/rpmbuild/SPECS/sentinel-runtime.spec
 #rpmbuild -tb ~/rpmbuild/SOURCES/sentinel-runtime-$ver.tar.gz
 rpmbuild -ba ~/rpmbuild/SPECS/sentinel-runtime.spec
 
 mkdir -p $basedir/package >/dev/null 2>&1
-#cp ~/rpmbuild/SRPMS/*.rpm $basedir/package/
+cp ~/rpmbuild/SRPMS/*.rpm $basedir/package/
 cp ~/rpmbuild/RPMS/x86_64/*.rpm $basedir/package/ >/dev/null 2>&1
 #cp ~/rpmbuild/RPMS/noarch/*.rpm $basedir/package/
 
