@@ -15,18 +15,38 @@
 #         - package/*.rpm
 
 
-build-ubuntu16:
+#build-ubuntu16:
+#   image: ubuntu:16.04
+#   script:
+#     - apt-get update
+#     - apt-get install -y build-essential
+#     - apt-get install -y curl
+#     - echo "Building DPKG"
+#     - mkdir -p package
+#     - cp pkg/pkg_dpkg.sh .
+#     - ./pkg_dpkg.sh
+#     - cp ~/dpkgbuild/*.deb package/
+#   only:
+#     - tags
+#   except:
+#     - branches
+#   artifacts:
+#      paths:
+#        - package/*.deb
+
+build-ubuntu16-runtime:
    image: ubuntu:16.04
    script:
      - apt-get update
      - apt-get install -y build-essential
      - apt-get install -y curl
+     - apt-get install -y rsync
+     - apt-get install -y zlib1g-dev
      - echo "Building DPKG"
      - mkdir -p package
-     - cp pkg/pkg_dpkg.sh .
-     - ./pkg_dpkg.sh
+     - cp pkg/pkg_dpkg_runtime.sh .
+     - ./pkg_dpkg_runtime.sh
      - cp ~/dpkgbuild/*.deb package/
-     - pwd;ls
    only:
      - tags
    except:

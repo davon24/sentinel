@@ -1,9 +1,20 @@
 #!/bin/bash
 
 basedir=`dirname $0`
-ver=`awk '/^Version: / {print $2}' $basedir/control-runtime`
 
 mkdir ~/dpkgbuild/sentinel-runtime >/dev/null 2>&1
+
+if [ ! -f ~/dpkgbuild/sentinel-master.tar.gz ]; then
+  curl -k https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz >~/dpkgbuild/sentinel-master.tar.gz
+fi
+tar xvf ~/dpkgbuild/sentinel-master.tar.gz -C ~/dpkgbuild/
+
+ver=`awk '/^Version: / {print $2}' ~/dpkgbuild/sentinel-master/pkg/control-runtime`
+
+mkdir  ~/dpkgbuild/sentinel-runtime/DEBIAN
+cp ~/dpkgbuild/sentinel-master/pkg/control-runtime ~/dpkgbuild/sentinel-runtime/DEBIAN/control
+
+#--
 
 #https://www.python.org/ftp/python/3.8.6/Python-3.8.6.tgz
 if [ ! -f ~/dpkgbuild/Python-3.8.6.tgz ]; then
@@ -30,22 +41,14 @@ LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make altinstall
 cd /usr/libexec/sentinel/runtime/bin
 ln -s python3.8 python3
 
-
 mkdir -p ~/dpkgbuild/sentinel-runtime/usr/libexec/sentinel
 rsync -a /usr/libexec/sentinel/runtime ~/dpkgbuild/sentinel-runtime/usr/libexec/sentinel/
-
-
 
 #mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel
 #cp ~/dpkgbuild/sentinel-master/python/sentinel.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/sentinel.py
 
-mkdir  ~/dpkgbuild/sentinel-runtime/DEBIAN
-cp $basedir/control-runtime ~/dpkgbuild/sentinel-runtime/DEBIAN/control
-
 cd ~/dpkgbuild
 dpkg-deb --build sentinel-runtime
-cp sentinel-runtime.deb sentinel-runtime-${ver}_amd64.deb
+mv sentinel-runtime.deb sentinel-runtime-${ver}_amd64.deb
 
-mkdir -p $basedir/package >/dev/null 2>&1
-cp ~/dpkgbuild/sentinel-runtime.deb $basedir/package/sentinel-runtime-${ver}_amd64.deb
 

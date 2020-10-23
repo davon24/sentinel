@@ -38,7 +38,7 @@ mkdir -p $basedir/package >/dev/null 2>&1
 
 cd ~/dpkgbuild
 dpkg-deb --build sentinel
-cp sentinel.deb sentinel-${ver}_amd64.deb
+mv sentinel.deb sentinel-${ver}_amd64.deb
 cd -
 
 #dpkg-deb --build ~/dpkgbuild/sentinel
