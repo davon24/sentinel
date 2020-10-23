@@ -37,6 +37,6 @@ cd ~/dpkgbuild
 dpkg-deb --build sentinel
 cp sentinel.deb sentinel-${ver}_amd64.deb
 
-mkdir -p $basedir/package >/dev/null 2>&1
-cp ~/dpkgbuild/sentinel.deb $basedir/package/sentinel-${ver}_amd64.deb
+mkdir -p ~/package >/dev/null 2>&1
+cp ~/dpkgbuild/sentinel.deb ~/package/sentinel-${ver}_amd64.deb
 

@@ -14,12 +14,14 @@ build-ubuntu16:
       - ls package/*
       - ls ../
       - ls ../pkg
+      - ls ~/pkg
    only:
       - tags
    except:
       - branches
    artifacts:
       paths:
+         - ~/package/*.deb
          - package/*.deb
          - /*.deb
          - pkg/*.deb
