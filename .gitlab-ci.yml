@@ -30,6 +30,7 @@ build-ubuntu16:
    artifacts:
       paths:
          - package/*.deb
+         - ~/dpkgbuild/*.deb
 
 
 
