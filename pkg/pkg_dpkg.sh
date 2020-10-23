@@ -41,4 +41,7 @@ dpkg-deb --build sentinel
 cp sentinel.deb $basedir/sentinel-${ver}_amd64.deb
 #cp sentinel.deb $basedir/package/sentinel-${ver}_amd64.deb 
 
+sleep 3
+
+echo 'done'
 
