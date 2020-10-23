@@ -10,6 +10,7 @@ build-ubuntu16:
       - ./pkg_dpkg.sh
       - pwd
       - ls
+      - ls package/*
    only:
       - tags
    except:
@@ -19,4 +20,5 @@ build-ubuntu16:
          - package/*.deb
          - /*.deb
          - pkg/*.deb
+         - pkg/package/*.deb
 
