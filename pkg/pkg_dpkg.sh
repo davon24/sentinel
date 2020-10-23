@@ -1,7 +1,6 @@
 #!/bin/bash
 
 basedir=`dirname $0`
-ver=`awk '/^Version: / {print $2}' $basedir/control`
 
 mkdir ~/dpkgbuild >/dev/null 2>&1
 
@@ -10,6 +9,8 @@ if [ ! -f ~/dpkgbuild/sentinel-master.tar.gz ]; then
 fi
 
 tar xvf ~/dpkgbuild/sentinel-master.tar.gz -C ~/dpkgbuild/
+
+ver=`awk '/^Version: / {print $2}' ~/dpkgbuild/sentinel-master/pkg/control`
 
 mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel
 
@@ -31,12 +32,13 @@ mkdir -p ~/dpkgbuild/sentinel/usr/sbin
 cp ~/dpkgbuild/sentinel-master/pkg/sentinel.sh ~/dpkgbuild/sentinel/usr/sbin/sentinel
 
 mkdir  ~/dpkgbuild/sentinel/DEBIAN
-cp $basedir/control ~/dpkgbuild/sentinel/DEBIAN/
+cp ~/dpkgbuild/sentinel-master/pkg/control ~/dpkgbuild/sentinel/DEBIAN/
+
+mkdir -p $basedir/package >/dev/null 2>&1
 
 cd ~/dpkgbuild
 dpkg-deb --build sentinel
 cp sentinel.deb sentinel-${ver}_amd64.deb
+cp sentinel.deb $basedir/package/sentinel-${ver}_amd64.deb 
 
-mkdir -p ~/package >/dev/null 2>&1
-cp ~/dpkgbuild/sentinel.deb ~/package/sentinel-${ver}_amd64.deb
 

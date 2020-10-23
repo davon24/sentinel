@@ -1,16 +1,35 @@
 
-build-centos7:
-   image: centos:7
+#build-centos7:
+#   image: centos:7
+#   script:
+#      - yum install -y rpm-build
+#      - echo "Building RPM"
+#      - cp pkg/pkg_rpm.sh .
+#      - ./pkg_rpm.sh
+#   only:
+#      - tags
+#   except:
+#      - branches
+#   artifacts:
+#      paths:
+#         - package/*.rpm
+
+build-ubuntu16:
+   image: ubuntu:16.04
    script:
-      - yum install -y rpm-build
-      - echo "Building RPM"
-      - cp pkg/pkg_rpm.sh .
-      - ./pkg_rpm.sh
+      - apt-get update
+      - apt-get install -y build-essential
+      - apt-get install -y curl
+      - echo "Building DPKG"
+      - cp pkg/pkg_dpkg.sh .
+      - ./pkg_dpkg.sh
    only:
       - tags
    except:
       - branches
    artifacts:
       paths:
-         - package/*.rpm
+         - package/*.deb
+
+
 
