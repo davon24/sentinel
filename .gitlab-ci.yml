@@ -12,4 +12,6 @@ build-centos7:
    artifacts:
       paths:
          - package/*.rpm
+         - /root/rpmbuild/SRPMS/*.rpm
+         - /root/rpmbuild/RPMS/noarch/*.rpm
 
