@@ -1359,6 +1359,20 @@ def runNmapVulnMultiProcess(hostLst, db_store):
 
     return True
 
+def runNmapVulnMultiProcessDict(hostLst, db_store, gDict, name):
+    print('hostLst: ' + str(hostLst))
+    vulnDct = {}
+    for ip in hostLst:
+        p2 = multiprocessing.Process(target=nmapVulnScanStoreDict, args=(ip, db_store, gDict, name))
+        p2.start()
+        vulnDct[ip] = p2
+
+    for k,p in vulnDct.items():
+        out = p.join()
+
+    return True
+
+
 def runNmapDetectMultiProcess(hostLst, db_store):
 
     print('found: ' + str(hostLst))

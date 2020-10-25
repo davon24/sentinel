@@ -1,0 +1,8 @@
+
+sentinel update-job vuln-scan-1-subnet '{"time": "2020-09-20 00:00:00", "job": "vuln-scan", "ips": ["192.168.0.1/24"]}'
+
+sentinel update-job port-scan-discover-lvl2 '{"time": "2020-09-20 00:00:00", "job": "port-scan2", "ips": []}'
+
+
+
+
