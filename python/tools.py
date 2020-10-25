@@ -2282,6 +2282,9 @@ def sentryScheduler(db_store, gDict):
 
 def sentryCleanup(db_store):
     logging.info("Sentry Cleanup:")
+    _prom = str(db_store) + '.prom'
+    with open(_prom, "w") as _file:
+        _file.write('')
     return True
 
 

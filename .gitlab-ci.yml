@@ -1,4 +1,43 @@
 
+
+build-centos8:
+   image: centos:8
+   script:
+      - yum install -y rpm-build
+      - echo "Building RPM"
+      - mkdir package
+      - cp pkg/pkg_rpm.sh .
+      - ./pkg_rpm.sh
+      - cp ~/rpmbuild/RPMS/noarch/*.rpm package/
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.rpm
+
+build-centos8-runtime:
+   image: centos:8
+   script:
+      - yum install -y rpm-build
+      - yum -y update
+      - yum -y groupinstall "Development Tools"
+      - yum -y install openssl-devel bzip2-devel libffi-devel
+      - echo "Building RPM"
+      - mkdir package
+      - cp pkg/pkg_rpm_runtime.sh .
+      - ./pkg_rpm_runtime.sh
+      - cp ~/rpmbuild/RPMS/x86_64/*.rpm package/
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.rpm
+
+
 build-centos7:
    image: centos:7
    script:
