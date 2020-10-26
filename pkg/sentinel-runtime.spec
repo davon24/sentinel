@@ -1,4 +1,8 @@
 
+%define __brp_mangle_shebangs /usr/bin/true
+#%global __mangle_shebangs_exclude ^$
+#%global __mangle_shebangs_exclude_from /usr/libexec/sentinel/runtime/lib/
+
 %global _python_bytecompile_extra 0
 
 # Turn off the brp-python-bytecompile script
@@ -10,7 +14,7 @@
 Summary: Sentinel Python 3.8.6 runtime tools
 Name: sentinel-runtime
 Version: 1.6.7
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 #URL: https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz
 Group: Applications/Internet
@@ -177,6 +181,9 @@ rm -rf $RPM_BUILD_ROOT
 #%exclude /usr/libexec/sentinel/Python3.8.6/modules/ps/*.pyo
 
 %changelog
+* Sun Oct 25 2020 Karl Rink <karl@rink.us> v1.6.7-2
+- pkging 1.6.7-2
+
 * Sat Oct 24 2020 Karl Rink <karl@rink.us> v1.6.7-1
 - release 1.6.7-1
 
