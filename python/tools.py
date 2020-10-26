@@ -14,6 +14,8 @@ import socket
 import copy
 import json
 
+import sqlite3
+
 #import smtplib
 #import ssl
 #import certifi
@@ -54,7 +56,6 @@ class ThreadWithReturnValue(threading.Thread):
         threading.Thread.__init__(self, group, target, name, args, kwargs)
         self._return = None
     def run(self):
-        #print(type(self._target))
         if self._target is not None:
             self._return = self._target(*self._args,
                                                 **self._kwargs)
@@ -63,40 +64,12 @@ class ThreadWithReturnValue(threading.Thread):
         return self._return
 
 class Handler(BaseHTTPRequestHandler):
-
     def do_GET(self):
-        #logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 200 -'))
-        #if self.path == config.param['metricPath']:
-        #if self.path == config['path']:
-        #if self.path == '/metrics':
         if self.path == _metric_path:
             self.send_response(200)
             self.send_header("Content-type", "text/plain; charset=utf-8")
-            #self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
 
-            #for k,v in gDict.items():
-            #    #v should be a list
-            #    for item in v:
-            #        self.wfile.write(bytes(str(item) + str('\n'), 'utf-8'))
-
-        # curl localhost:9111/metrics
-        #  File "/opt/sentinel/python/tools.py", line 78, in do_GET
-        #  for k,v in gDict.items():
-        #   File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/connection.py", line 629, in SocketClient
-        #     s.connect(address)
-        # PermissionError: [Errno 13] Permission denied
-
-
-            #proms = store.selectAll('proms', db_store)
-            #for row in proms:
-            #    #print(row)
-            #    self.wfile.write(bytes(str(row) + str('\n'), 'utf-8'))
-
-            #_file = open('myfile.txt', 'r') 
-            #lines = _file.readlines()
-
-            #_prom = str(db_store) + '.prom-TEST'
             _prom = str(db_store) + '.prom'
             try:
                 with open(_prom, 'r') as _file:
@@ -108,12 +81,10 @@ class Handler(BaseHTTPRequestHandler):
                 logging.info('Sentry Exception ' + str(e))
             
         else:
-            #logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 404 -'))
             self.send_error(404) #404 Not Found
         return
 
     def do_POST(self):
-        #logging.info(str(self.client_address[0] + ' - - [' + time.asctime() + '] "' + self.command + ' ' + self.path + ' ' + self.request_version + '" 405 -'))
         self.send_error(405) #405 Method Not Allowed
         return
 
@@ -2230,6 +2201,35 @@ def processD(List):
         c += 1
         k = 'sentinel_up_' + str(c)
         gDict[k] = [ item ]
+
+
+    #print(sys.version)
+    #print(sys.version_info)
+    #print(sys.implementation)a
+
+    #print(sys.implementation)
+    #namespace(_multiarch='darwin', cache_tag='cpython-38', hexversion=50857712, name='cpython', version=sys.version_info(major=3, minor=8, micro=6, releaselevel='final', serial=0))
+
+    _arch = sys.implementation._multiarch
+    _implementation = sys.implementation.name
+    _major = str(sys.version_info.major)
+    _minor = str(sys.version_info.minor)
+    _micro = str(sys.version_info.micro)
+    _releaselevel = sys.version_info.releaselevel
+    _serial = sys.version_info.serial
+    _version = _major + '.' + _minor + '.' + _micro
+
+    #python_info{implementation="CPython",major="3",minor="8",patchlevel="1",version="3.8.1"} 1.0
+
+    promDATA = 'sentinel_python_info{arch="' + _arch + '",implementation="' + _implementation + '",major="' + _major + '",minor="' + _minor
+    promDATA += '",micro="' + _micro + '",version="' + _version + '"} 1.0'
+    gDict['sentinel_python_info'] = [ promDATA ]
+
+    sqlite3_version = str(sqlite3.version)
+    sqlite3_sqlite_version = str(sqlite3.sqlite_version)
+
+    promDATA = 'sentinel_python_sqlite_info{sqlite3="' + sqlite3_version + '",library="' + sqlite3_sqlite_version + '"} 1.0'
+    gDict['sentinel_python_sqlite_info'] = [ promDATA ]
 
     return True
 

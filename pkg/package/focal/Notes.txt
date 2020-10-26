@@ -1,0 +1,24 @@
+
+
+
+apt-get update
+apt-get install -y ca-certificates
+
+echo 'deb [trusted=yes] https://gitlab.com/_pkg/sentinel/-/raw/master/deb/focal /  ' >/etc/apt/sources.list.d/sentinel.list
+
+apt-get update
+
+# arp
+apt-get install -y net-tools
+
+# nslookup
+apt-get install -y dnsutils
+
+# nmap
+apt-get install -y nmap
+
+
+apt-get install -y sentinel-runtime
+apt-get install -y sentinel
+
+
