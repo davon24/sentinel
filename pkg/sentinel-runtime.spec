@@ -14,7 +14,7 @@
 Summary: Sentinel Python 3.8.6 runtime tools
 Name: sentinel-runtime
 Version: 1.6.7
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 #URL: https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz
 Group: Applications/Internet
@@ -26,7 +26,7 @@ BuildArch: x86_64
 %if 0%{?rhel} == 8
 AutoReqProv: no
 #Requires: python38
-BuildRequires: /usr/bin/pathfix.py
+#BuildRequires: /usr/bin/pathfix.py
 %endif
 
 %if 0%{?rhel} == 7
@@ -51,7 +51,7 @@ Sentinel service runtime tools
 tar xzvf %{SOURCE0}
 
 %if 0%{?rhel} == 8
-pathfix.py -pni "%{__python3} %{py3_shbang_opts}" .
+#pathfix.py -pni "%{__python3} %{py3_shbang_opts}" .
 %endif
 
 %install
@@ -181,6 +181,9 @@ rm -rf $RPM_BUILD_ROOT
 #%exclude /usr/libexec/sentinel/Python3.8.6/modules/ps/*.pyo
 
 %changelog
+* Mon Oct 26 2020 Karl Rink <karl@rink.us> v1.6.7-4
+- 1.6.7-4
+
 * Sun Oct 25 2020 Karl Rink <karl@rink.us> v1.6.7-3
 - 1.6.7-3
 

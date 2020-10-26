@@ -1,0 +1,7 @@
+
+rpm -ivh https://gitlab.com/_pkg/sentinel/-/raw/master/rpm/centos7/x86_64/sentinel-runtime-1.6.7-3.el7.x86_64.rpm
+
+rpm -ivh https://gitlab.com/_pkg/sentinel/-/raw/master/rpm/centos7/x86_64/sentinel-1.6.7-3.el7.noarch.rpm
+
+
+

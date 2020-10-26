@@ -33,13 +33,24 @@ make
 make install
 
 cd ~/rpmbuild/SOURCES/Python-3.8.6
+
+#export LD_LIBRARY_PATH=/usr/libexec/sentinel/runtime/lib
+#export PATH=/usr/libexec/sentinel/runtime/bin:/usr/bin:/usr/sbin:/bin:/sbin
+#export PYTHONPATH=/usr/libexec/sentinel/runtime/lib/python3.8/site-packages
+
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib ./configure --enable-optimizations --prefix=/usr/libexec/sentinel/runtime
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make altinstall
 
+echo "Compiler Done"
+
 cd /usr/libexec/sentinel/runtime/bin
 ln -s python3.8 python3
 cd /usr/libexec/sentinel/
+if [ -d sentinel-runtime-$ver ]; then
+  echo "remove existing sentinel-runtime-$ver"
+  rm -rf sentinel-runtime-$ver
+fi
 mkdir sentinel-runtime-$ver
 mv runtime sentinel-runtime-$ver/
 tar cvfz sentinel-runtime-$ver.tar.gz sentinel-runtime-$ver
@@ -54,5 +65,7 @@ mkdir -p $basedir/package >/dev/null 2>&1
 #cp ~/rpmbuild/SRPMS/*.rpm $basedir/package/
 cp ~/rpmbuild/RPMS/x86_64/*.rpm $basedir/package/ >/dev/null 2>&1
 #cp ~/rpmbuild/RPMS/noarch/*.rpm $basedir/package/
+
+
 
 
