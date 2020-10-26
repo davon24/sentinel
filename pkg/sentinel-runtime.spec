@@ -14,7 +14,7 @@
 Summary: Sentinel Python 3.8.6 runtime tools
 Name: sentinel-runtime
 Version: 1.6.7
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 #URL: https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz
 Group: Applications/Internet
@@ -76,7 +76,7 @@ rm -rf $RPM_BUILD_ROOT
 
 mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel
 
-cp -r sentinel-runtime-%{version}/runtime $RPM_BUILD_ROOT/usr/libexec/sentinel/
+mv sentinel-runtime-%{version}/runtime $RPM_BUILD_ROOT/usr/libexec/sentinel/
 #cp -a /usr/libexec/sentinel/runtime $RPM_BUILD_ROOT/usr/libexec/sentinel/
 
 #cp sentinel-%{version}/python/sentinel.py $RPM_BUILD_ROOT/usr/libexec/sentinel/sentinel.py
@@ -182,7 +182,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Mon Oct 26 2020 Karl Rink <karl@rink.us> v1.6.7-4
-- 1.6.7-4
+- 1.6.7-4,5
 
 * Sun Oct 25 2020 Karl Rink <karl@rink.us> v1.6.7-3
 - 1.6.7-3

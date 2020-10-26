@@ -1,5 +1,5 @@
 Package: sentinel-runtime
-Version: 1.6.7-4
+Version: 1.6.7-5
 Section: custom
 Priority: optional
 Architecture: amd64
