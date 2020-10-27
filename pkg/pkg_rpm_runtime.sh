@@ -37,10 +37,20 @@ cd ~/rpmbuild/SOURCES/Python-3.8.6
 #export LD_LIBRARY_PATH=/usr/libexec/sentinel/runtime/lib
 #export PATH=/usr/libexec/sentinel/runtime/bin:/usr/bin:/usr/sbin:/bin:/sbin
 #export PYTHONPATH=/usr/libexec/sentinel/runtime/lib/python3.8/site-packages
+#export PYTHONPATH=/usr/libexec/sentinel/runtime/lib/python3.8
 
-export PYTHONPATH=/usr/libexec/sentinel/runtime/lib/python3.8
+#centos7
+#Error: Could not import runpy module
+#1. Upgrade gcc to a higher version, gcc 8.1.0 has fixed this problem
+#2. Remove --enable-optimizations from the ./configure parameter
 
-LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib ./configure --enable-optimizations --prefix=/usr/libexec/sentinel/runtime
+if grep -q -i "release 7" /etc/redhat-release ; then
+  LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib ./configure --prefix=/usr/libexec/sentinel/runtime
+else
+  LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib ./configure --enable-optimizations --prefix=/usr/libexec/sentinel/runtime
+fi
+
+#LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib ./configure --enable-optimizations --prefix=/usr/libexec/sentinel/runtime
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make altinstall
 
