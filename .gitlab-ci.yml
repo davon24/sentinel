@@ -63,6 +63,7 @@ build-centos7-runtime:
       - yum -y update
       - yum -y groupinstall "Development Tools"
       - yum -y install openssl-devel bzip2-devel libffi-devel
+      - yum -y install python3-devel
       - echo "Building RPM"
       - mkdir package
       - cp pkg/pkg_rpm_runtime.sh .
