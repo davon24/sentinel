@@ -1,7 +1,7 @@
 
 
 # python38
-yum install -y python38
+#yum install -y python38
 
 # arp, ifconfig, netstat
 yum install -y net-tools
@@ -23,6 +23,7 @@ EOE
 
 yum update
 
+yum install -y sentinel-runtime
 yum install -y sentinel
 
 
