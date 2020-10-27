@@ -38,6 +38,8 @@ cd ~/rpmbuild/SOURCES/Python-3.8.6
 #export PATH=/usr/libexec/sentinel/runtime/bin:/usr/bin:/usr/sbin:/bin:/sbin
 #export PYTHONPATH=/usr/libexec/sentinel/runtime/lib/python3.8/site-packages
 
+export PYTHONPATH=/usr/libexec/sentinel/runtime/lib/python3.8
+
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib ./configure --enable-optimizations --prefix=/usr/libexec/sentinel/runtime
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make altinstall
