@@ -1,0 +1,29 @@
+
+#proc-monster
+sentinel update-job proc-monster '{"repeat": "5min", "job": "ps-check"}'
+
+#fim
+sentinel update-fim fim-1 '{}'
+sentinel add-fim fim-1 /etc/hosts 
+sentinel add-fim fim-1 /etc/passwd 
+sentinel add-fim fim-1 /etc/shadow
+sentinel add-fim fim-1 /etc/group
+sentinel add-fim fim-1 /etc/sudoers
+
+sentinel b2sum-fim fim-1  
+
+sentinel update-job fim-job-1 '{"repeat": "12hour", "job": "fim-check", "config": "fim-1"}'
+
+#established
+sentinel established-rule ALLOW tcp6 127.0.0.1 '*' 127.0.0.1 '*'
+sentinel established-rule ALLOW tcp 127.0.0.1 '*' 127.0.0.1 '*'
+sentinel established-rule ALLOW tcp '*' 22 '34.225.171.227' '*'
+sentinel established-rule ALLOW tcp6 '*' 9000 '34.225.171.227' '*'
+sentinel established-rule ALLOW tcp6 '*' 9100 '18.144.148.110' '*'
+
+sentinel established-alerts
+
+sentinel update-job established-check-1 '{"repeat": "5min", "job": "established-check"}'
+
+
+

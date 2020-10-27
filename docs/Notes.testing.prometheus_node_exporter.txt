@@ -1,0 +1,7 @@
+
+rpm -ivh https://gitlab.com/_pkg/sentinel/-/raw/master/rpm/centos7/x86_64/sentinel-runtime-1.6.7-8.el7.x86_64.rpm
+rpm -ivh https://gitlab.com/_pkg/sentinel/-/raw/master/rpm/centos7/x86_64/sentinel-1.6.7-8.el7.noarch.rpm
+
+ExecStart=/bin/node_exporter --collector.textfile.directory=/usr/libexec/sentinel/db
+
+
