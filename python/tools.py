@@ -1952,7 +1952,7 @@ def psCheck(name, db_store, gDict, _name):
     _key = 'pscheck-' + str(name)
 
     #psDct['name'] = name
-    psDct['job'] = name
+    psDct['sentinel_job'] = name
     val = 1
 
     #promHELP = '# HELP sentinel_job_output The output of the sentinel job.'
