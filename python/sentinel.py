@@ -59,6 +59,7 @@ def usage():
         established-rule ALLOW|DENY proto laddr lport faddr fport
         established-alerts
         delete-established-rule rowid
+        clear-established-rules
 
         list-ips
         update-ip ip data
@@ -284,6 +285,11 @@ if __name__ == '__main__':
             rowid = sys.argv[2]
             delete = store.deleteFromRowid('established', rowid, db_store)
             print(delete)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-established-rules':
+            clear = store.clearAll('established', db_store)
+            print(clear)
             sys.exit(0)
 
         if sys.argv[1] == 'lsof':
