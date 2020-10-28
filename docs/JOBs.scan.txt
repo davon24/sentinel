@@ -1,0 +1,22 @@
+
+
+sentinel update-job vuln-scan-192.168.1.1/24 '{"time": "2020-09-20 00:00:00", "job": "vuln-scan", "ips": ["192.168.1.1/24"]}'
+sentinel update-job port-scan-lvl2-192.168.1.1/24 '{"time": "2020-09-20 00:00:00", "job": "port-scan2","ips": ["192.168.1.1/24"]}'
+
+
+
+
+
+#---
+
+
+sentinel update-job vuln-scan-1 '{"time": "2020-09-20 00:00:00", "job": "vuln-scan", "ips": ["192.168.0.1"]}'
+sentinel update-job port-scan-1 '{"time": "2020-09-20 00:00:00", "job": "port-scan", "ips": ["192.168.0.1"]}'
+sentinel update-job port-scan-2-lvl2 '{"time": "2020-09-20 00:00:00", "job": "port-scan2", "ips": ["192.168.0.1"]}'
+
+sentinel update-job vuln-scan-1-subnet '{"time": "2020-09-20 00:00:00", "job": "vuln-scan", "ips": ["192.168.0.1/24"]}'
+sentinel update-job port-scan-discover-lvl2 '{"time": "2020-09-20 00:00:00", "job": "port-scan2", "ips": []}'
+
+
+
+
