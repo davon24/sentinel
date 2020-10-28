@@ -303,7 +303,7 @@ def nmapVulnScanStoreDict(ip, db_store, gDict, name):
     #PROM INTEGRATION
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     _key = 'vuln-scan-' + str(ip)
-    prom = 'name="' + str(name) + '",job="vuln-scan",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str(report) + '"'
+    prom = 'name="' + str(name) + '",sentinel_job="vuln-scan",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str(report) + '"'
     gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
     return insert
@@ -375,7 +375,7 @@ def nmapScanStoreDict(ip, level, db_store, gDict, name):
     #PROM INTEGRATION
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     _key = 'port-scan-' + str(ip)
-    prom = 'name="' + str(name) + '",job="port-scan",level="' + str(level) + '",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str(report) + '"'
+    prom = 'name="' + str(name) + '",sentinel_job="port-scan",level="' + str(level) + '",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str(report) + '"'
     gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
     return True
@@ -2004,22 +2004,24 @@ def establishedCheck(name, db_store, gDict, _name):
 
         pdata = ''
         #_c = len(ppDict.keys()) 
+        _c = 0
         for _k,_v in ppDict.items():
             #_c -= 1
+            _c += 1
             vLL = _v.split()
             prog = vLL[2]
             user = vLL[3]
 
-            pdata += ',prog="'+str(prog)+'",user="'+str(user)+'"'
+            #pdata += ',prog'+str(_c)+'="'+str(prog)+'",user'+str(_c)+'="'+str(user)+'"'
 
-            #if _c == 0:
-            #    pdata += ',prog="'+str(prog)+'",user="'+str(user)+'"'
-            #else:
-            #    pdata += 'prog="'+str(prog)+'",user="'+str(user)+'",'
+            if _c > 1:
+                pdata += ',prog'+str(_c)+'="'+str(prog)+'",user'+str(_c)+'="'+str(user)+'"'
+            else:
+                pdata += ',prog="'+str(prog)+'",user="'+str(user)+'"'
 
 
         data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"' + pdata
-        prom = 'name="' + str(_name) + '",job="established-check",' + data + ',done="' + str(now) + '"'
+        prom = 'name="' + str(_name) + '",sentinel_job="established-check",' + data + ',done="' + str(now) + '"'
 
         #Dict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
         gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
@@ -2052,7 +2054,7 @@ def establishedCheck__1__(name, db_store, gDict, _name):
         _key = 'est-established-check-' + str(_name) + '-' + str(c)
 
         data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"'
-        prom = 'name="' + str(_name) + '",job="established-check",' + data + ',done="' + str(now) + '"'
+        prom = 'name="' + str(_name) + '",sentinel_job="established-check",' + data + ',done="' + str(now) + '"'
         #Dict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
         gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
