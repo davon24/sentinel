@@ -776,6 +776,29 @@ def listenPortsLst():
 
     return portsLst
 
+#def lsofProtoPort(protoport):
+#def getLsOfProtoPortDict(proto, port):
+#
+#    print('getLsOfProtoPortDict')
+#    print('needs proto.revers 4tcp, 6tcp , 4udp, 6udp')
+#
+#    Dict = {}
+#    cmd = 'lsof -n -i' + proto + ':' + port
+#    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+#    out = proc.stdout.readlines()
+#
+#    c = 0
+#    for line in out:
+#        c += 1
+#        #line = line.decode('utf-8').strip('\n').split()
+#        line = line.decode('utf-8').strip('\n')
+#        print(line)
+#        Dict[c] = line
+#
+#    #print('done')
+#    return Dict
+
+
 def printLsOfPort(port):
 
     protoLst = [ '4tcp', '6tcp', '4udp', '6udp' ]
@@ -1005,6 +1028,40 @@ def printEstablished():
     return True
 
 
+def printEstablishedLsOf():
+
+    Dct = getEstablishedDct()
+    for k,v in Dct.items():
+        #print(k, v)
+
+        vL = v.split()
+
+        #print(str(type(v)))
+        #print(str(type(vL)))
+
+        lport = vL[2]
+        proto = vL[0]
+        #print('lport: ' + str(lport), ' proto: ' + str(proto))
+
+        #ppDict = getLsOfProtoPortDict(proto, lport)
+
+        protoport = str(proto) + ':' + str(lport)
+        ppDict = lsofProtoPort(protoport)
+        L = []
+        for _k,_v in ppDict.items():
+            #print('ppDict ' + str(_k),_v)
+            vLL = _v.split()
+            prog = vLL[2]
+            user = vLL[3]
+            L.append(prog)
+            L.append(user)
+            #we'll use prod as over-write key
+
+        print(v, L)
+
+    return True
+
+
 def getEstablishedDct():
     udp, listen, established, time_wait = getNetStatDcts()
     Dct = {}
@@ -1047,6 +1104,100 @@ def getEstablishedDct():
 
     return Dct
     #tcp6 fe80::aede:48ff:.49210
+
+
+def getEstablishedRulesMatchDct(db_store):
+
+    #rtnDct = {}
+    allowDct = {}
+    denyDct = {}
+
+    estDct = getEstablishedDct()
+    _estDct = {}
+    e = 0
+    r = 0
+    for k,v in estDct.items():
+        #print(v)
+        proto_ = v.split(' ')[0]
+        laddr_ = v.split(' ')[1]
+        lport_ = v.split(' ')[2]
+        faddr_ = v.split(' ')[3]
+        fport_ = v.split(' ')[4]
+        #print(proto, laddr, lport, faddr, fport)
+        e += 1
+        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
+
+    #print('split')
+
+    rlsDct = getEstablishedRulesDct(db_store)
+    _rlsDct = {}
+    for k,v in rlsDct.items():
+        #print(v)
+        rule__  = v[0]
+        proto__ = v[1]
+        laddr__ = v[2]
+        lport__ = v[3]
+        faddr__ = v[4]
+        fport__ = v[5]
+        #print(proto, laddr, lport, faddr, fport)
+        r += 1
+        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
+
+    #print(_estDct)
+    #print(_rlsDct)
+
+    c = 0
+    for k,v in _rlsDct.items():
+
+        #print('rule  ' + str(v))
+        rule_r  = str(v[0])
+        proto_r = str(v[1])
+        laddr_r = str(v[2])
+        lport_r = str(v[3])
+        faddr_r = str(v[4])
+        fport_r = str(v[5])
+        #print(proto)
+
+        for _k,_v in _estDct.items():
+            #print(v)
+            _proto = str(_v[0])
+            _laddr = str(_v[1])
+            _lport = str(_v[2])
+            _faddr = str(_v[3])
+            _fport = str(_v[4])
+
+            if (proto_r == _proto) or (proto_r == '*'):
+                #print('match1 ' + str(_v))
+                if (laddr_r == _laddr) or (laddr_r == '*'):
+                    #print('match2 ' + str(_v))
+                    if (lport_r == _lport) or (lport_r == '*'):
+                        #print('match3 ' + str(_v))
+                        if (faddr_r == _faddr) or (faddr_r == '*'):
+                            #print('match4 ' + str(_v))
+                            if (fport_r == _fport) or (fport_r == '*'):
+                                #continue
+                                #break
+                                #print('match ' + str(_v))
+                                c += 1
+                                #rtnDct[c] = _v
+                                if rule_r == 'ALLOW':
+                                    allowDct[c] = _v
+
+                                if rule_r == 'DENY':
+                                    denyDct[c] = _v
+
+    #print('done')
+    #return rtnDct
+    return allowDct, denyDct
+
+def printEstablishedRules(db_file):
+    #print('id  proto  laddr  lport  faddr  fport')
+    Dct = store.getEstablishedRulesDct(db_file)
+    for k,v in Dct.items():
+        print(k,v)
+    return True
+
+
 
 def getSelfIPLst(): #socket.gaierror: [Errno 8] nodename nor servname provided, or not known
 
@@ -1852,7 +2003,7 @@ def psCheck(name, db_store, gDict, _name):
 def establishedCheck(name, db_store, gDict, _name):
     #print('establishedCheck')
     #getEstablishedAlertsDct should really get moved to tools
-    eaDct = store.getEstablishedAlertsDct(db_store)
+    eaDct = getEstablishedAlertsDct(db_store)
 
     for key in gDict.keys():
         if key.startswith('est-established-check-'):
@@ -1910,6 +2061,114 @@ def establishedCheck(name, db_store, gDict, _name):
 
 
     return True
+
+
+def printEstablishedAlerts(db_store):
+    eaDct = getEstablishedAlertsDct(db_store)
+    for k,v in eaDct.items():
+        print(v)
+    return True
+
+
+def getEstablishedAlertsDct(db_store):
+
+    estDct = getEstablishedDct()
+    allowDct, denyDct = getEstablishedRulesMatchDct(db_store)
+
+    estDct_ = {}
+    for ek,ev in estDct.items():
+        line = ev.split(' ')
+        estDct_[ek] = line
+
+    returnADct = {}
+    for key,value in estDct_.items():
+        if value not in allowDct.values():
+            returnADct[key] = value
+
+    returnDct = {}
+    c = 0
+
+    for k,v in returnADct.items():
+        c += 1
+        returnDct[c] = v
+
+    for k,v in denyDct.items():
+        c += 1
+        returnDct[c] = v
+
+    return returnDct
+
+def printEstablishedRulesMatch(db_store):
+    estDct = getEstablishedDct()
+    _estDct = {}
+    e = 0
+    r = 0
+    for k,v in estDct.items():
+        #print(v)
+        proto_ = v.split(' ')[0]
+        laddr_ = v.split(' ')[1]
+        lport_ = v.split(' ')[2]
+        faddr_ = v.split(' ')[3]
+        fport_ = v.split(' ')[4]
+        #print(proto, laddr, lport, faddr, fport)
+        e += 1
+        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
+
+    #print('split')
+
+    rlsDct = getEstablishedRulesDct(db_store)
+    _rlsDct = {}
+    for k,v in rlsDct.items():
+        #print(v)
+        rule__  = v[0]
+        proto__ = v[1]
+        laddr__ = v[2]
+        lport__ = v[3]
+        faddr__ = v[4]
+        fport__ = v[5]
+        #print(proto, laddr, lport, faddr, fport)
+        r += 1
+        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
+
+    #print(_estDct)
+    #print(_rlsDct)
+
+    for k,v in _rlsDct.items():
+        #print('rule  ' + str(v))
+        rule_r  = str(v[0])
+        proto_r = str(v[1])
+        laddr_r = str(v[2])
+        lport_r = str(v[3])
+        faddr_r = str(v[4])
+        fport_r = str(v[5])
+        #print(proto)
+        _l = [ proto_r, laddr_r, lport_r, faddr_r, fport_r ]
+        print(str(rule_r).lower() + ' ' + str(_l))
+
+        for _k,_v in _estDct.items():
+            #print(v)
+            _proto = str(_v[0])
+            _laddr = str(_v[1])
+            _lport = str(_v[2])
+            _faddr = str(_v[3])
+            _fport = str(_v[4])
+
+            if (proto_r == _proto) or (proto_r == '*'):
+                #print('match1 ' + str(_v))
+                if (laddr_r == _laddr) or (laddr_r == '*'):
+                    #print('match2 ' + str(_v))
+                    if (lport_r == _lport) or (lport_r == '*'):
+                        #print('match3 ' + str(_v))
+                        if (faddr_r == _faddr) or (faddr_r == '*'):
+                            #print('match4 ' + str(_v))
+                            if (fport_r == _fport) or (fport_r == '*'):
+                                #print('match5 ' + str(_v))
+                                #continue
+                                #break
+                                print('match ' + str(_v))
+    #print('done')
+    return True
+
 
 options = {
  'vuln-scan' : vulnScan,

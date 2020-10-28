@@ -9,44 +9,6 @@ import threading
 import manuf as mf
 import tools
 
-class DNSUpDateTask:
-    def __init__(self):
-        self._running = True
-
-    def terminate(self):
-        self._running = False
-
-    def sqlConnection(self, db_file):
-        con = sqlite3.connect(db_file)
-        return con
-
-    def run(self, mac, ip, db_file):
-        #print(mac, ip, db_file)
-        ip = ip.strip('(')
-        ip = ip.strip(')')
-        #print('IP: ' + ip)
-
-        #dnsname = tools.getDNSName(ip)
-        dnsname = str(tools.getNSlookup(ip))
-
-        #print('DNS: ' + dnsname)
-        con = self.sqlConnection(db_file)
-        cur = con.cursor()
-        cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
-        record = cur.fetchone()
-        if record is None:
-            return False
-        #print(record[0])
-        jdata = json.loads(record[0])
-        jdata['dns'] = dnsname
-        update = json.dumps(jdata)
-        cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
-        con.commit()
-        print('updated dns ' + str(mac) + ' ' + str(update))
-        if cur.rowcount == 0:
-            return False
-        return True
-
 def sqlConnection(db_file):
     if not os.path.isfile(db_file):
         con = createDB(db_file)
@@ -142,6 +104,49 @@ def createDB(db_file):
 #    return True
 # Within one process it is possible to share an in-memory database if you use the file::memory:?cache=shared
 # but this is still not accessible from other another process.
+
+
+
+###############################################################################################################################################
+
+class DNSUpDateTask:
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def sqlConnection(self, db_file):
+        con = sqlite3.connect(db_file)
+        return con
+
+    def run(self, mac, ip, db_file):
+        #print(mac, ip, db_file)
+        ip = ip.strip('(')
+        ip = ip.strip(')')
+        #print('IP: ' + ip)
+
+        #dnsname = tools.getDNSName(ip)
+        dnsname = str(tools.getNSlookup(ip))
+
+        #print('DNS: ' + dnsname)
+        con = self.sqlConnection(db_file)
+        cur = con.cursor()
+        cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
+        record = cur.fetchone()
+        if record is None:
+            return False
+        #print(record[0])
+        jdata = json.loads(record[0])
+        jdata['dns'] = dnsname
+        update = json.dumps(jdata)
+        cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
+        con.commit()
+        print('updated dns ' + str(mac) + ' ' + str(update))
+        if cur.rowcount == 0:
+            return False
+        return True
+
 
 def update_arp_data(db_file, arpDict, manuf_file):
 
@@ -352,12 +357,13 @@ def printListeningAlerts(db_file):
     #tools.listenPortsLst() #unsorted list tcp4:631, tcp6:631
 
 
-def printEstablishedRules(db_file):
-    #print('id  proto  laddr  lport  faddr  fport')
-    Dct = getEstablishedRulesDct(db_file)
-    for k,v in Dct.items():
-        print(k,v)
-    return True
+#moved to tools
+#def printEstablishedRules(db_file):
+#    #print('id  proto  laddr  lport  faddr  fport')
+#    Dct = getEstablishedRulesDct(db_file)
+#    for k,v in Dct.items():
+#        print(k,v)
+#    return True
 
 def getEstablishedRulesDct(db_file):
     con = sqlConnection(db_file)
@@ -384,195 +390,198 @@ def insertEstablishedRules(rule, proto, laddr, lport, faddr, fport, db_file):
     con.commit()
     return True
 
-def getEstablishedRulesMatchDct(db_store):
+#moved to tools
+#def getEstablishedRulesMatchDct(db_store):
+#
+#    #rtnDct = {}
+#    allowDct = {}
+#    denyDct = {}
+#
+#    estDct = tools.getEstablishedDct()
+#    _estDct = {}
+#    e = 0
+#    r = 0
+#    for k,v in estDct.items():
+#        #print(v)
+#        proto_ = v.split(' ')[0]
+#        laddr_ = v.split(' ')[1]
+#        lport_ = v.split(' ')[2]
+#        faddr_ = v.split(' ')[3]
+#        fport_ = v.split(' ')[4]
+#        #print(proto, laddr, lport, faddr, fport)
+#        e += 1
+#        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
+#
+#    #print('split')
+#
+#    rlsDct = getEstablishedRulesDct(db_store)
+#    _rlsDct = {}
+#    for k,v in rlsDct.items():
+#        #print(v)
+#        rule__  = v[0]
+#        proto__ = v[1]
+#        laddr__ = v[2]
+#        lport__ = v[3]
+#        faddr__ = v[4]
+#        fport__ = v[5]
+#        #print(proto, laddr, lport, faddr, fport)
+#        r += 1
+#        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
+#
+#    #print(_estDct)
+#    #print(_rlsDct)
+#
+#    c = 0
+#    for k,v in _rlsDct.items():
+#
+#        #print('rule  ' + str(v))
+#        rule_r  = str(v[0])
+#        proto_r = str(v[1])
+#        laddr_r = str(v[2])
+#        lport_r = str(v[3])
+#        faddr_r = str(v[4])
+#        fport_r = str(v[5])
+#        #print(proto)
+#
+#        for _k,_v in _estDct.items():
+#            #print(v)
+#            _proto = str(_v[0])
+#            _laddr = str(_v[1])
+#            _lport = str(_v[2])
+#            _faddr = str(_v[3])
+#            _fport = str(_v[4])
+#
+#            if (proto_r == _proto) or (proto_r == '*'):
+#                #print('match1 ' + str(_v))
+#                if (laddr_r == _laddr) or (laddr_r == '*'):
+#                    #print('match2 ' + str(_v))
+#                    if (lport_r == _lport) or (lport_r == '*'):
+#                        #print('match3 ' + str(_v))
+#                        if (faddr_r == _faddr) or (faddr_r == '*'):
+#                            #print('match4 ' + str(_v))
+#                            if (fport_r == _fport) or (fport_r == '*'):
+#                                #continue
+#                                #break
+#                                #print('match ' + str(_v))
+#                                c += 1
+#                                #rtnDct[c] = _v
+#                                if rule_r == 'ALLOW':
+#                                    allowDct[c] = _v
+#
+#                                if rule_r == 'DENY':
+#                                    denyDct[c] = _v
+#
+#    #print('done')
+#    #return rtnDct
+#    return allowDct, denyDct
 
-    #rtnDct = {}
-    allowDct = {}
-    denyDct = {}
+#moved to tools
+#def printEstablishedRulesMatch(db_store):
+#    estDct = tools.getEstablishedDct()
+#    _estDct = {}
+#    e = 0
+#    r = 0
+#    for k,v in estDct.items():
+#        #print(v)
+#        proto_ = v.split(' ')[0]
+#        laddr_ = v.split(' ')[1]
+#        lport_ = v.split(' ')[2]
+#        faddr_ = v.split(' ')[3]
+#        fport_ = v.split(' ')[4]
+#        #print(proto, laddr, lport, faddr, fport)
+#        e += 1
+#        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
+#
+#    #print('split')
+#
+#    rlsDct = getEstablishedRulesDct(db_store)
+#    _rlsDct = {}
+#    for k,v in rlsDct.items():
+#        #print(v)
+#        rule__  = v[0]
+#        proto__ = v[1]
+#        laddr__ = v[2]
+#        lport__ = v[3]
+#        faddr__ = v[4]
+#        fport__ = v[5]
+#        #print(proto, laddr, lport, faddr, fport)
+#        r += 1
+#        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
+#
+#    #print(_estDct)
+#    #print(_rlsDct)
+#
+#    for k,v in _rlsDct.items():
+#        #print('rule  ' + str(v))
+#        rule_r  = str(v[0])
+#        proto_r = str(v[1])
+#        laddr_r = str(v[2])
+#        lport_r = str(v[3])
+#        faddr_r = str(v[4])
+#        fport_r = str(v[5])
+#        #print(proto)
+#        _l = [ proto_r, laddr_r, lport_r, faddr_r, fport_r ]
+#        print(str(rule_r).lower() + ' ' + str(_l))
+#
+#        for _k,_v in _estDct.items():
+#            #print(v)
+#            _proto = str(_v[0])
+#            _laddr = str(_v[1])
+#            _lport = str(_v[2])
+#            _faddr = str(_v[3])
+#            _fport = str(_v[4])
+#
+#            if (proto_r == _proto) or (proto_r == '*'):
+#                #print('match1 ' + str(_v))
+#                if (laddr_r == _laddr) or (laddr_r == '*'):
+#                    #print('match2 ' + str(_v))
+#                    if (lport_r == _lport) or (lport_r == '*'):
+#                        #print('match3 ' + str(_v))
+#                        if (faddr_r == _faddr) or (faddr_r == '*'):
+#                            #print('match4 ' + str(_v))
+#                            if (fport_r == _fport) or (fport_r == '*'):
+#                                #print('match5 ' + str(_v))
+#                                #continue
+#                                #break
+#                                print('match ' + str(_v))
+#    #print('done')
+#    return True
 
-    estDct = tools.getEstablishedDct()
-    _estDct = {}
-    e = 0
-    r = 0
-    for k,v in estDct.items():
-        #print(v)
-        proto_ = v.split(' ')[0]
-        laddr_ = v.split(' ')[1]
-        lport_ = v.split(' ')[2]
-        faddr_ = v.split(' ')[3]
-        fport_ = v.split(' ')[4]
-        #print(proto, laddr, lport, faddr, fport)
-        e += 1
-        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
-
-    #print('split')
-
-    rlsDct = getEstablishedRulesDct(db_store)
-    _rlsDct = {}
-    for k,v in rlsDct.items():
-        #print(v)
-        rule__  = v[0]
-        proto__ = v[1]
-        laddr__ = v[2]
-        lport__ = v[3]
-        faddr__ = v[4]
-        fport__ = v[5]
-        #print(proto, laddr, lport, faddr, fport)
-        r += 1
-        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
-
-    #print(_estDct)
-    #print(_rlsDct)
-
-    c = 0
-    for k,v in _rlsDct.items():
-
-        #print('rule  ' + str(v))
-        rule_r  = str(v[0])
-        proto_r = str(v[1])
-        laddr_r = str(v[2])
-        lport_r = str(v[3])
-        faddr_r = str(v[4])
-        fport_r = str(v[5])
-        #print(proto)
-
-        for _k,_v in _estDct.items():
-            #print(v)
-            _proto = str(_v[0])
-            _laddr = str(_v[1])
-            _lport = str(_v[2])
-            _faddr = str(_v[3])
-            _fport = str(_v[4])
-
-            if (proto_r == _proto) or (proto_r == '*'):
-                #print('match1 ' + str(_v))
-                if (laddr_r == _laddr) or (laddr_r == '*'):
-                    #print('match2 ' + str(_v))
-                    if (lport_r == _lport) or (lport_r == '*'):
-                        #print('match3 ' + str(_v))
-                        if (faddr_r == _faddr) or (faddr_r == '*'):
-                            #print('match4 ' + str(_v))
-                            if (fport_r == _fport) or (fport_r == '*'):
-                                #continue
-                                #break
-                                #print('match ' + str(_v))
-                                c += 1
-                                #rtnDct[c] = _v
-                                if rule_r == 'ALLOW':
-                                    allowDct[c] = _v
-
-                                if rule_r == 'DENY':
-                                    denyDct[c] = _v
-
-    #print('done')
-    #return rtnDct
-    return allowDct, denyDct
-
-def printEstablishedRulesMatch(db_store):
-    estDct = tools.getEstablishedDct()
-    _estDct = {}
-    e = 0
-    r = 0
-    for k,v in estDct.items():
-        #print(v)
-        proto_ = v.split(' ')[0]
-        laddr_ = v.split(' ')[1]
-        lport_ = v.split(' ')[2]
-        faddr_ = v.split(' ')[3]
-        fport_ = v.split(' ')[4]
-        #print(proto, laddr, lport, faddr, fport)
-        e += 1
-        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
-
-    #print('split')
-
-    rlsDct = getEstablishedRulesDct(db_store)
-    _rlsDct = {}
-    for k,v in rlsDct.items():
-        #print(v)
-        rule__  = v[0]
-        proto__ = v[1]
-        laddr__ = v[2]
-        lport__ = v[3]
-        faddr__ = v[4]
-        fport__ = v[5]
-        #print(proto, laddr, lport, faddr, fport)
-        r += 1
-        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
-
-    #print(_estDct)
-    #print(_rlsDct)
-
-    for k,v in _rlsDct.items():
-        #print('rule  ' + str(v))
-        rule_r  = str(v[0])
-        proto_r = str(v[1])
-        laddr_r = str(v[2])
-        lport_r = str(v[3])
-        faddr_r = str(v[4])
-        fport_r = str(v[5])
-        #print(proto)
-        _l = [ proto_r, laddr_r, lport_r, faddr_r, fport_r ]
-        print(str(rule_r).lower() + ' ' + str(_l))
-
-        for _k,_v in _estDct.items():
-            #print(v)
-            _proto = str(_v[0])
-            _laddr = str(_v[1])
-            _lport = str(_v[2])
-            _faddr = str(_v[3])
-            _fport = str(_v[4])
-
-            if (proto_r == _proto) or (proto_r == '*'):
-                #print('match1 ' + str(_v))
-                if (laddr_r == _laddr) or (laddr_r == '*'):
-                    #print('match2 ' + str(_v))
-                    if (lport_r == _lport) or (lport_r == '*'):
-                        #print('match3 ' + str(_v))
-                        if (faddr_r == _faddr) or (faddr_r == '*'):
-                            #print('match4 ' + str(_v))
-                            if (fport_r == _fport) or (fport_r == '*'):
-                                #print('match5 ' + str(_v))
-                                #continue
-                                #break
-                                print('match ' + str(_v))
-    #print('done')
-    return True
-
-def printEstablishedAlerts(db_store):
-    eaDct = getEstablishedAlertsDct(db_store)
-    for k,v in eaDct.items():
-        print(v)
-    return True
-
-
-def getEstablishedAlertsDct(db_store):
-
-    estDct = tools.getEstablishedDct()
-    allowDct, denyDct = getEstablishedRulesMatchDct(db_store)
-
-    estDct_ = {}
-    for ek,ev in estDct.items():
-        line = ev.split(' ')
-        estDct_[ek] = line
-
-    returnADct = {}
-    for key,value in estDct_.items():
-        if value not in allowDct.values():
-            returnADct[key] = value
-
-    returnDct = {}
-    c = 0
-
-    for k,v in returnADct.items():
-        c += 1
-        returnDct[c] = v
-
-    for k,v in denyDct.items():
-        c += 1
-        returnDct[c] = v
-
-    return returnDct
+#moved to tools
+#def printEstablishedAlerts(db_store):
+#    eaDct = getEstablishedAlertsDct(db_store)
+#    for k,v in eaDct.items():
+#        print(v)
+#    return True
+#
+#
+#def getEstablishedAlertsDct(db_store):
+#
+#    estDct = tools.getEstablishedDct()
+#    allowDct, denyDct = getEstablishedRulesMatchDct(db_store)
+#
+#    estDct_ = {}
+#    for ek,ev in estDct.items():
+#        line = ev.split(' ')
+#        estDct_[ek] = line
+#
+#    returnADct = {}
+#    for key,value in estDct_.items():
+#        if value not in allowDct.values():
+#            returnADct[key] = value
+#
+#    returnDct = {}
+#    c = 0
+#
+#    for k,v in returnADct.items():
+#        c += 1
+#        returnDct[c] = v
+#
+#    for k,v in denyDct.items():
+#        c += 1
+#        returnDct[c] = v
+#
+#    return returnDct
 
 #def printIPs(db_file):
 #    rows = getIPs(db_file)

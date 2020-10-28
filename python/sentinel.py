@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.7-8'
+__version__ = '1.6.8-1.pre1'
 
 import sys
 import os
-#sys.path.insert(0,'db')
-
 import json
 
 import tools
@@ -55,6 +53,7 @@ def usage():
         listening-remove port
 
         established
+        established-lsof
         established-rules
         established-rules-filter
         established-rule ALLOW|DENY proto laddr lport faddr fport
@@ -150,17 +149,12 @@ def run():
         return True
 
 if __name__ == '__main__':
-
+    #sys.path.insert(0,'db')
     #print(os.path.dirname(__file__))
-
     #sys.path.insert(0, os.path.dirname(__file__))
 
     db_store = str(os.path.dirname(__file__)) + '/db/sentinel.db'
     db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
-
-    #print(db_store)
-    #print(db_manuf)
-
 
     if sys.argv[1:]:
 
@@ -259,8 +253,12 @@ if __name__ == '__main__':
             established = tools.printEstablished()
             sys.exit(0)
 
+        if sys.argv[1] == 'established-lsof':
+            established = tools.printEstablishedLsOf()
+            sys.exit(0)
+
         if sys.argv[1] == 'established-rules':
-            established_rules = store.printEstablishedRules(db_store)
+            established_rules = tools.printEstablishedRules(db_store)
             sys.exit(0)
 
         if sys.argv[1] == 'established-rule':
@@ -275,11 +273,11 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'established-rules-filter':
-            print_alerts = store.printEstablishedRulesMatch(db_store)
+            print_alerts = tools.printEstablishedRulesMatch(db_store)
             sys.exit(0)
 
         if sys.argv[1] == 'established-alerts':
-            print_alerts = store.printEstablishedAlerts(db_store)
+            print_alerts = tools.printEstablishedAlerts(db_store)
             sys.exit(0)
 
         if sys.argv[1] == 'delete-established-rule':
