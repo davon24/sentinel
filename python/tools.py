@@ -776,29 +776,6 @@ def listenPortsLst():
 
     return portsLst
 
-#def lsofProtoPort(protoport):
-#def getLsOfProtoPortDict(proto, port):
-#
-#    print('getLsOfProtoPortDict')
-#    print('needs proto.revers 4tcp, 6tcp , 4udp, 6udp')
-#
-#    Dict = {}
-#    cmd = 'lsof -n -i' + proto + ':' + port
-#    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
-#    out = proc.stdout.readlines()
-#
-#    c = 0
-#    for line in out:
-#        c += 1
-#        #line = line.decode('utf-8').strip('\n').split()
-#        line = line.decode('utf-8').strip('\n')
-#        print(line)
-#        Dict[c] = line
-#
-#    #print('done')
-#    return Dict
-
-
 def printLsOfPort(port):
 
     protoLst = [ '4tcp', '6tcp', '4udp', '6udp' ]
@@ -1129,7 +1106,7 @@ def getEstablishedRulesMatchDct(db_store):
 
     #print('split')
 
-    rlsDct = getEstablishedRulesDct(db_store)
+    rlsDct = store.getEstablishedRulesDct(db_store)
     _rlsDct = {}
     for k,v in rlsDct.items():
         #print(v)
@@ -2001,6 +1978,56 @@ def psCheck(name, db_store, gDict, _name):
     return True
 
 def establishedCheck(name, db_store, gDict, _name):
+    eaDct = getEstablishedAlertsDct(db_store)
+
+    for key in gDict.keys():
+        if key.startswith('est-established-check-'):
+            del gDict[key]
+
+    c = 0
+    for k,v in eaDct.items():
+        #print(k,v)
+        val = 1
+        c += 1
+        proto = v[0]
+        laddr = v[1]
+        lport = v[2]
+        faddr = v[3]
+        fport = v[4]
+
+        now = time.strftime("%Y-%m-%d %H:%M:%S")
+        _key = 'est-established-check-' + str(_name) + '-' + str(c)
+
+
+        protoport = str(proto) + ':' + str(lport)
+        ppDict = lsofProtoPort(protoport)
+
+        pdata = ''
+        #_c = len(ppDict.keys()) 
+        for _k,_v in ppDict.items():
+            #_c -= 1
+            vLL = _v.split()
+            prog = vLL[2]
+            user = vLL[3]
+
+            pdata += ',prog="'+str(prog)+'",user="'+str(user)+'"'
+
+            #if _c == 0:
+            #    pdata += ',prog="'+str(prog)+'",user="'+str(user)+'"'
+            #else:
+            #    pdata += 'prog="'+str(prog)+'",user="'+str(user)+'",'
+
+
+        data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"' + pdata
+        prom = 'name="' + str(_name) + '",job="established-check",' + data + ',done="' + str(now) + '"'
+
+        #Dict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+        gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+    return True
+
+
+def establishedCheck__1__(name, db_store, gDict, _name):
     #print('establishedCheck')
     #getEstablishedAlertsDct should really get moved to tools
     eaDct = getEstablishedAlertsDct(db_store)
@@ -2030,35 +2057,8 @@ def establishedCheck(name, db_store, gDict, _name):
         gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
     #compare local Dict w/ gDict, but gDict has more keys...
-
     #first_dict  = gDict
     #second_dict = Dict
-
-    #print('gDict ' + str(type(gDict)) + ' ' + str(len(gDict)) + ' ' + str(gDict))
-    #gDict <class 'multiprocessing.managers.DictProxy'> 
-    #print('secondDict ' + str(type(Dict)) + ' ' + str(len(Dict)) + ' ' + str(Dict))
-    #secondDict <class 'dict'>
-
-    #value = { k : second_dict[k] for k in set(second_dict) - set(first_dict) }
-    #print('value is ' + str(value))
-
-    #gDict <class 'multiprocessing.managers.DictProxy'> 
-    #print('secondDict ' + str(type(Dict)) + ' ' + str(len(Dict)) + ' ' + str(Dict))
-    #set1 = set(gDict.items()) #TypeError: unhashable type: 'list'
-    #set2 = set(Dict.items())
-    #sdiff = set1 ^ set2
-    #print('sdifff ' + str(sdiff))
-
-    #for key in gDict.keys():
-    #    if key in Dict: 
-    #        if key.startswith('established-check-'):
-    #            print('yes Keystarts ' + str(key))
-    #        else:
-    #            print('no StartsWith  ' + str(key))
-    #    else:
-    #        print('Not in Dict skipping ' + str(key))
-
-
 
     return True
 
@@ -2116,7 +2116,7 @@ def printEstablishedRulesMatch(db_store):
 
     #print('split')
 
-    rlsDct = getEstablishedRulesDct(db_store)
+    rlsDct = store.getEstablishedRulesDct(db_store)
     _rlsDct = {}
     for k,v in rlsDct.items():
         #print(v)
