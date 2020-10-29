@@ -31,7 +31,7 @@ Local
 - Listening Ports and Services  
 - Established Connections  
 - File Integrity Monitoring
-- Git File Integrigy //IN-PROGRESS     
+- Git File Integrity //IN-PROGRESS     
 - Snort Integration  //TODO        
 - Virus Scanner //TODO (clam-av)      
   
