@@ -17,8 +17,6 @@ for me, its a command line tool for scanning networks via nmap and collecting th
 since, it has evolved and integrated into prometheus   https://prometheus.io/     
 sentry mode is simply a daemon that runs as a service,  
 and outputs prometheus data structures that can be consumed by prometheus.   
-which has since helped in achieving compliance.   
-
 
 ---   
 
