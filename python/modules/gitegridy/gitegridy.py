@@ -4,8 +4,9 @@
 import os
 from subprocess import Popen, PIPE
 
+import sys
 
-def setupGitStore(git_store, List):
+def gitStoreLink(git_store, List):
 
     if not os.path.isdir(git_store):
         print('mkdir ' + str(git_store))
@@ -23,12 +24,13 @@ def setupGitStore(git_store, List):
             print('link ' + str(gfile))
             os.link(f, gfile)
 
+    return True
 
-    os.chdir(git_store)
-
+def gitStoreInit(git_store):
+    #os.chdir(git_store)
     if not os.path.isdir(git_store + '/.git'):
-        print('git init .')
-        cmd = 'git init .'
+        print('git init ' + str(git_store))
+        cmd = 'git init ' + str(git_store)
         proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
         #out = proc.stdout.readlines()
 
@@ -39,7 +41,32 @@ def setupGitStore(git_store, List):
 
     return True
 
+def gitStoreAdd(git_store, f):
+    os.chdir(git_store)
+    print('git add ' + git_store + f)
+    cmd = 'git add ' + git_store + f
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    for line in proc.stdout.readlines():
+        print(line.decode('utf-8').strip('\n'))
+    return True
 
+def gitStoreCommit(git_store, f):
+    os.chdir(git_store)
+    print('git commit -m "commit" ' + git_store + f)
+    cmd = 'git commit -m "commit" ' + git_store + f
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    for line in proc.stdout.readlines():
+        print(line.decode('utf-8').strip('\n'))
+    return True
+
+
+def gitStoreStatus(git_store):
+    os.chdir(git_store)
+    cmd = 'git status'
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    for line in proc.stdout.readlines():
+        print(line.decode('utf-8').strip('\n'))
+    return True
 
 
 if __name__ == '__main__':
@@ -47,16 +74,19 @@ if __name__ == '__main__':
     git_store = '/opt/sentinel/db/git'
     L = [ '/etc/hosts', '/etc/ssh/sshd_config' ]
 
-    setup = setupGitStore(git_store, L)
+    git_init = gitStoreInit(git_store)
+    git_link = gitStoreLink(git_store, L)
+
+    #for f in L:
+    #    git_add  = gitStoreAdd(git_store, f)
+    #    git_commit = gitStoreCommit(git_store, f)
 
 
-
+    if sys.argv[1:]:
+        if sys.argv[1] == 'status':
+            git_status = gitStoreStatus(git_store)
 
 
 # git + tegridy
-
-
-
-
 
 
