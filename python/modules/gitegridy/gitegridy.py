@@ -1,27 +1,56 @@
 #!/usr/bin/env python3
 
-git_store = '/opt/sentinel/db/git'
 
 import os
-
-if not os.path.isdir(git_store):
-    print('mkdir ' + str(db_store))
-    os.mkdir(db_store, 0o755)
+from subprocess import Popen, PIPE
 
 
-L = [ '/etc/hosts', '/etc/ssh/sshd_config' ]
+def setupGitStore(git_store, List):
 
-for f in L:
+    if not os.path.isdir(git_store):
+        print('mkdir ' + str(git_store))
+        os.mkdir(git_store, 0o755)
 
-    gfile = git_store + f
+    for f in List:
 
-    if not os.path.isdir(os.path.dirname(gfile)):
-        print('mkdir ' + str(os.path.dirname(gfile)))
-        os.mkdir(os.path.dirname(gfile), 0o755)
+        gfile = git_store + f
 
-    if not os.path.isfile(gfile):
-        print('link ' + str(gfile))
-        os.link(f, gfile)
+        if not os.path.isdir(os.path.dirname(gfile)):
+            print('mkdir ' + str(os.path.dirname(gfile)))
+            os.mkdir(os.path.dirname(gfile), 0o755)
+
+        if not os.path.isfile(gfile):
+            print('link ' + str(gfile))
+            os.link(f, gfile)
+
+
+    os.chdir(git_store)
+
+    if not os.path.isdir(git_store + '/.git'):
+        print('git init .')
+        cmd = 'git init .'
+        proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+        #out = proc.stdout.readlines()
+
+        for line in proc.stdout.readlines():
+            #print(line)
+            line = line.decode('utf-8').strip('\n')
+            print(line)
+
+    return True
+
+
+
+
+if __name__ == '__main__':
+
+    git_store = '/opt/sentinel/db/git'
+    L = [ '/etc/hosts', '/etc/ssh/sshd_config' ]
+
+    setup = setupGitStore(git_store, L)
+
+
+
 
 
 # git + tegridy
