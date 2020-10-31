@@ -1,0 +1,6 @@
+
+new_file = open('bar.txt', 'rw')
+shutil.copyfileobj(f, new_file)
+
+
+
