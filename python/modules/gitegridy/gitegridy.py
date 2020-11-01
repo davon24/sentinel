@@ -49,7 +49,7 @@ def gitStoreAdd(git_store, f, verbose=False):
 
 def gitStoreCommit(git_store, f, verbose=False):
     os.chdir(git_store)
-    if verbose: print('git commit -m "commit" ' + git_store + f)
+    if verbose: print('git commit -m "sentinel" ' + git_store + f)
     cmd = 'git commit -m "commit" ' + git_store + f
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     if verbose:
@@ -61,6 +61,24 @@ def gitStoreCommit(git_store, f, verbose=False):
 def gitStoreStatus(git_store, verbose=False):
     os.chdir(git_store)
     cmd = 'git status'
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    if verbose:
+        for line in proc.stdout.readlines():
+            print(line.decode('utf-8').strip('\n'))
+    return proc.stdout.readlines()
+
+def gitStoreLsFiles(git_store, verbose=False):
+    os.chdir(git_store)
+    cmd = 'git ls-files'
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    if verbose:
+        for line in proc.stdout.readlines():
+            print(line.decode('utf-8').strip('\n'))
+    return proc.stdout.readlines()
+
+def gitStoreLog(git_store, verbose=False):
+    os.chdir(git_store)
+    cmd = 'git log'
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     if verbose:
         for line in proc.stdout.readlines():
@@ -83,11 +101,25 @@ if __name__ == '__main__':
 
     if sys.argv[1:]:
 
-        if sys.argv[1] == 'status':
+        if sys.argv[1] == 'git-status':
             git_status = gitStoreStatus(git_store, verbose=True)
 
-        if sys.argv[1] == 'add':
+        if sys.argv[1] == 'git-files':
+            git_files = gitStoreLsFiles(git_store, verbose=True)
+
+        if sys.argv[1] == 'git-log':
+            git_log = gitStoreLog(git_store, verbose=True)
+
+        if sys.argv[1] == 'git-add':
             _file = sys.argv[2]
+
+            if not os.access(_file, os.F_OK):
+                print('Not Found: ' + str(_file))
+                sys.exit(1)
+            elif not os.access(_file, os.R_OK):
+                print('No Access: ' + str(_file))
+                sys.exit(1)
+
             git_link = gitStoreLink(git_store, [_file], verbose=True)
             git_add  = gitStoreAdd(git_store, _file, verbose=True)
             git_commit = gitStoreCommit(git_store, _file, verbose=True)
