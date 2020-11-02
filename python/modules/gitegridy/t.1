@@ -1,0 +1,5 @@
+
+for f in `ls /bin/*`; do echo $f; ./gitegridy.py file-type $f ; done | grep -B3 unknown
+
+
+

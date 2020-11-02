@@ -1,0 +1,14 @@
+
+docker run `pwd`:/run -it ubuntu:20.20
+
+root@1a9f63cb5ecc:/run# ./gitegridy.py file-type /bin/bash
+Traceback (most recent call last):
+  File "./gitegridy.py", line 205, in <module>
+    git_link = gitStoreLink(git_store, L)
+  File "./gitegridy.py", line 24, in gitStoreLink
+    os.link(f, gfile)
+OSError: [Errno 18] Invalid cross-device link: '/etc/hosts' -> '/opt/sentinel/db/git/etc/hosts'
+root@1a9f63cb5ecc:/run#
+
+
+
