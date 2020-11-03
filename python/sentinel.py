@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.8-2.pre1'
+__version__ = '1.6.8-2.pre2'
 
 import sys
 import os
@@ -108,7 +108,7 @@ def usage():
         git-log
         git-init
         git-add /dir/file
-        git-del dir/file
+        git-del /dir/file
         git-commit
         git-clear-history
         file-type /dir/file
@@ -863,13 +863,6 @@ if __name__ == '__main__':
         if sys.argv[1] == 'git-add':
             import modules.gitegridy.gitegridy as git
             _file = sys.argv[2]
-
-            if not os.access(_file, os.F_OK):
-                print('Not Found: ' + str(_file))
-                sys.exit(1)
-            elif not os.access(_file, os.R_OK):
-                print('No Access: ' + str(_file))
-                sys.exit(1)
 
             git_link = git.gitStoreLink(git_store, [_file], verbose=True)
             git_add  = git.gitStoreAdd(git_store, _file, verbose=True)

@@ -1,0 +1,72 @@
+
+root@prod-proxy:/etc/default# /usr/bin/prometheus-node-exporter --version
+node_exporter, version 0.15.2+ds (branch: debian/sid, revision: 0.15.2+ds-1)
+  build user:       pkg-go-maintainers@lists.alioth.debian.org
+  build date:       20171214-15:26:08
+  go version:       go1.9.2
+root@prod-proxy:/etc/default#
+
+
+root@prod-proxy:/etc/default# cat /etc/lsb-release 
+DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=18.04
+DISTRIB_CODENAME=bionic
+DISTRIB_DESCRIPTION="Ubuntu 18.04.5 LTS"
+
+prometheus-node-exporter                0.15.2+ds-1                                     amd64        Prometheus exporter for machine metrics
+
+sentinel_job_output{name="established-check-1",sentinel_job="established-check",proto="tcp",laddr="192.168.2.241",lport="14222",faddr="172.126.200.238",fport="58201",prog="sshd",user="root",prog2="sshd",user2="root",prog3="sshd",user3="root",prog4="sshd",user4="root",prog5="sshd",user5="root",prog6="sshd",user6="yuzhang",prog7="sshd",user7="yuzhang",prog8="sshd",user8="yuzhang",prog9="sshd",user9="root",prog10="sshd",user10="yuzhang",prog11="sshd",user11="root",prog12="sshd",user12="root",prog13="sshd",user13="root",prog14="sshd",user14="root",prog15="sshd",user15="yuzhang",prog16="sshd",user16="yuzhang",prog17="sshd",user17="yuzhang",prog18="sshd",user18="yuzhang",prog19="sshd",user19="root",prog20="sshd",user20="ron.rowe",prog21="sshd",user21="root",prog22="sshd",user22="ron.rowe",prog23="sshd",user23="root",prog24="sshd",user24="root",prog25="sshd",user25="jiaj",prog26="sshd",user26="jiaj",done="2020-11-02 09:43:19"} 1
+
+
+
+
+Nov 02 09:42:38 prod-proxy prometheus-node-exporter[875]: * collected metric sentinel_job_output label:<name:\"done\" value:\"2020-11-02 09:38:15\" > label:<name:\"faddr\" value:\"70.185.151.52\" > label:<name:\"fport\" value:\"62028\" > label:<name:\"laddr\" value:\"192.168.2.241\" > label:<name:\"lport\" value:\"14222\" > label:<name:\"name\" value:\"established-check-1\" > label:<name:\"prog\" value:\"sshd\" > label:<name:\"prog10\" value:\"sshd\" > label:<name:\"prog11\" value:\"sshd\" > label:<name:\"prog12\" value:\"sshd\" > label:<name:\"prog13\" value:\"sshd\" > label:<name:\"prog14\" value:\"sshd\" > label:<name:\"prog15\" value:\"sshd\" > label:<name:\"prog16\" value:\"sshd\" > label:<name:\"prog17\" value:\"sshd\" > label:<name:\"prog18\" value:\"sshd\" > label:<name:\"prog19\" value:\"sshd\" > label:<name:\"prog2\" value:\"sshd\" > label:<name:\"prog20\" value:\"sshd\" > label:<name:\"prog21\" value:\"sshd\" > label:<name:\"prog22\" value:\"sshd\" > label:<name:\"prog23\" value:\"sshd\" > label:<name:\"prog24\" value:\"sshd\" > label:<name:\"prog25\" value:\"sshd\" > label:<name:\"prog26\" value:\"sshd\" > label:<name:\"prog3\" value:\"sshd\" > label:<name:\"prog4\" value:\"sshd\" > label:<name:\"prog5\" value:\"sshd\" > label:<name:\"prog6\" value:\"sshd\" > label:<name:\"prog7\" value:\"sshd\" > label:<name:\"prog8\" value:\"sshd\" > label:<name:\"prog9\" value:\"sshd\" > label:<name:\"proto\" value:\"tcp\" > label:<name:\"sentinel_job\" value:\"established-check\" > label:<name:\"user\" value:\"root\" > label:<name:\"user10\" value:\"yuzhang\" > label:<name:\"user11\" value:\"root\" > label:<name:\"user12\" value:\"root\" > label:<name:\"user13\" value:\"root\" > label:<name:\"user14\" value:\"root\" > label:<name:\"user15\" value:\"yuzhang\" > label:<name:\"user16\" value:\"yuzhang\" > label:<name:\"user17\" value:\"yuzhang\" > label:<name:\"user18\" value:\"yuzhang\" > label:<name:\"user19\" value:\"root\" > label:<name:\"user2\" value:\"root\" > label:<name:\"user20\" value:\"ron.rowe\" > label:<name:\"user21\" value:\"root\" > label:<name:\"user22\" value:\"ron.rowe\" > label:<name:\"user23\" value:\"root\" > label:<name:\"user24\" value:\"root\" > label:<name:\"user25\" value:\"jiaj\" > label:<name:\"user26\" value:\"jiaj\" > label:<name:\"user3\" value:\"root\" > label:<name:\"user4\" value:\"root\" > label:<name:\"user5\" value:\"root\" > label:<name:\"user6\" value:\"yuzhang\" > label:<name:\"user7\" value:\"yuzhang\" > label:<name:\"user8\" value:\"yuzhang\" > label:<name:\"user9\" value:\"root\" > untyped:<value:1 >  has label dimensions inconsistent with previously collected metrics in the same metric family
+
+
+
+
+root@prod-proxy:/opt/j# curl -L -O https://github.com/prometheus/node_exporter/releases/download/v1.0.1/node_exporter-1.0.1.linux-amd64.tar.gz
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   660  100   660    0     0   2291      0 --:--:-- --:--:-- --:--:--  2291
+100 9297k  100 9297k    0     0  5223k      0  0:00:01  0:00:01 --:--:-- 6742k
+root@prod-proxy:/opt/j# tar xvfz node_exporter-1.0.1.linux-amd64.tar.gz 
+node_exporter-1.0.1.linux-amd64/
+node_exporter-1.0.1.linux-amd64/NOTICE
+node_exporter-1.0.1.linux-amd64/node_exporter
+node_exporter-1.0.1.linux-amd64/LICENSE
+root@prod-proxy:/opt/j# cp node_exporter-1.0.1.linux-amd64/node_exporter /usr/bin/prometheus-node-exporter
+
+
+
+root@prod-proxy:/opt/j#  /usr/bin/prometheus-node-exporter --version
+node_exporter, version 1.0.1 (branch: HEAD, revision: 3715be6ae899f2a9b9dbfd9c39f3e09a7bd4559f)
+  build user:       root@1f76dbbcfa55
+  build date:       20200616-12:44:12
+  go version:       go1.14.4
+
+
+works now...
+
+sentinel_job_output{defunct="",done="2020-11-02 09:53:26",faddr="192.168.2.135",fport="3306",job="",laddr="192.168.2.241",lport="42100",name="established-check-1",procs="",prog="sshd",prog10="",prog11="",prog12="",prog13="",prog14="",prog15="",prog16="",prog17="",prog18="",prog19="",prog2="",prog20="",prog21="",prog22="",prog23="",prog24="",prog3="",prog4="",prog5="",prog6="",prog7="",prog8="",prog9="",proto="tcp",sentinel_job="established-check",user="ron.rowe",user10="",user11="",user12="",user13="",user14="",user15="",user16="",user17="",user18="",user19="",user2="",user20="",user21="",user22="",user23="",user24="",user3="",user4="",user5="",user6="",user7="",user8="",user9=""} 1
+sentinel_job_output{defunct="",done="2020-11-02 09:53:26",faddr="70.185.151.52",fport="62394",job="",laddr="192.168.2.241",lport="14222",name="established-check-1",procs="",prog="sshd",prog10="sshd",prog11="sshd",prog12="sshd",prog13="sshd",prog14="sshd",prog15="sshd",prog16="sshd",prog17="sshd",prog18="sshd",prog19="sshd",prog2="sshd",prog20="sshd",prog21="sshd",prog22="sshd",prog23="sshd",prog24="sshd",prog3="sshd",prog4="sshd",prog5="sshd",prog6="sshd",prog7="sshd",prog8="sshd",prog9="sshd",proto="tcp",sentinel_job="established-check",user="root",user10="yuzhang",user11="root",user12="yuzhang",user13="root",user14="root",user15="root",user16="root",user17="yuzhang",user18="yuzhang",user19="yuzhang",user2="root",user20="yuzhang",user21="root",user22="root",user23="jiaj",user24="jiaj",user3="root",user4="ron.rowe",user5="root",user6="root",user7="root",user8="yuzhang",user9="yuzhang"} 1
+sentinel_job_output{defunct="0",done="",faddr="",fport="",job="proc-monster",laddr="",lport="",name="",procs="118",prog="",prog10="",prog11="",prog12="",prog13="",prog14="",prog15="",prog16="",prog17="",prog18="",prog19="",prog2="",prog20="",prog21="",prog22="",prog23="",prog24="",prog3="",prog4="",prog5="",prog6="",prog7="",prog8="",prog9="",proto="",sentinel_job="",user="",user10="",user11="",user12="",user13="",user14="",user15="",user16="",user17="",user18="",user19="",user2="",user20="",user21="",user22="",user23="",user24="",user3="",user4="",user5="",user6="",user7="",user8="",user9=""} 1
+# HELP sentinel_process Metric read from /usr/libexec/sentinel/db/sentinel.db.prom
+# TYPE sentinel_process untyped
+sentinel_process 1
+# HELP sentinel_python_info Metric read from /usr/libexec/sentinel/db/sentinel.db.prom
+# TYPE sentinel_python_info untyped
+sentinel_python_info{arch="x86_64-linux-gnu",implementation="cpython",major="3",micro="6",minor="8",version="3.8.6"} 1
+# HELP sentinel_python_sqlite_info Metric read from /usr/libexec/sentinel/db/sentinel.db.prom
+# TYPE sentinel_python_sqlite_info untyped
+sentinel_python_sqlite_info{library="3.33.0",sqlite3="2.6.0"} 1
+# HELP sentinel_threads Metric read from /usr/libexec/sentinel/db/sentinel.db.prom
+# TYPE sentinel_threads untyped
+sentinel_threads 4
+# HELP sentinel_up Metric read from /usr/libexec/sentinel/db/sentinel.db.prom
+# TYPE sentinel_up untyped
+sentinel_up 1
+root@prod-proxy:/opt/j# curl localhost:9100/metrics
+
+
+

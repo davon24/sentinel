@@ -43,9 +43,22 @@ def gitStoreInit(git_store, verbose=False):
     return True
 
 def gitStoreAdd(git_store, f, verbose=False):
-    os.chdir(git_store)
-    if verbose: print('git add ' + git_store + f)
+    try:
+        os.chdir(git_store)
+    except FileNotFoundError as e:
+        if verbose: print('FileNotFoundError: ' + str(e))
+        return 'FileNotFoundError: ' + str(e)
+
+    if not os.access(f, os.F_OK):
+        if verbose: print('Not Found: ' + str(f))
+        return 'Not Found: ' + str(f)
+    elif not os.access(f, os.R_OK):
+        if verbose: print('No Access: ' + str(f))
+        return 'No Access: ' + str(f)
+
     cmd = 'git add ' + git_store + f
+    if verbose: print('git add ' + git_store + f)
+
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     if verbose:
         for line in proc.stdout.readlines():
@@ -73,20 +86,11 @@ def gitStoreDel(git_store, f, verbose=False):
 def gitStoreCommit(git_store, f, verbose=False):
     os.chdir(git_store)
     if verbose: print('git commit ' + git_store + f)
-    #cmd = 'git commit -m "sentinel ' + str(f) + '" ' + git_store + f
-    #cmd = 'git commit -m "sentinel ' + str(f) + '" ' + git_store + f
-    #cmd = 'git commit -m "sentinel ' + str(f) + '" ' + str(git_store + f)
-    #cmd = 'git commit -m "sentinel" ' + git_store + f
-    #print(str(cmd))
-    #print(str(cmd.split(' ')))
-
     #import shlex
     #shlex.split(cmd)
-
     #proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
 
     cmd = ['git', 'commit', '-m', '"sentinel ' + str(f) + '"', git_store + f ]
-    #print(str(cmd))
 
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
     if verbose:
@@ -96,7 +100,12 @@ def gitStoreCommit(git_store, f, verbose=False):
 
 
 def gitStoreStatus(git_store, verbose=False):
-    os.chdir(git_store)
+    try:
+        os.chdir(git_store)
+    except FileNotFoundError as e:
+        if verbose: print('FileNotFoundError: ' + str(e))
+        return 'FileNotFoundError: ' + str(e)
+
     cmd = 'git status'
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     if verbose:
@@ -105,7 +114,12 @@ def gitStoreStatus(git_store, verbose=False):
     return proc.stdout.readlines()
 
 def gitStoreLsFiles(git_store, verbose=False):
-    os.chdir(git_store)
+    try:
+        os.chdir(git_store)
+    except FileNotFoundError as e:
+        if verbose: print('FileNotFoundError: ' + str(e))
+        return 'FileNotFoundError: ' + str(e)
+
     cmd = 'git ls-files'
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     if verbose:
@@ -114,7 +128,12 @@ def gitStoreLsFiles(git_store, verbose=False):
     return proc.stdout.readlines()
 
 def gitStoreLog(git_store, verbose=False):
-    os.chdir(git_store)
+    try:
+        os.chdir(git_store)
+    except FileNotFoundError as e:
+        if verbose: print('FileNotFoundError: ' + str(e))
+        return 'FileNotFoundError: ' + str(e)
+
     cmd = 'git log'
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     if verbose:
@@ -174,37 +193,41 @@ def fileType(_file):
     except UnicodeDecodeError:
         return 'binary'
 
-def fileType__1(_file):
-    file_data = open(_file, 'rb').read()
-
-    import codecs
-    header_3byte = codecs.encode(file_data[0:3], 'hex')
-
-    print(str(header_3byte))
-
-    if header_3byte == b'474946':
-        return 'image/gif'
-    elif header_3byte == b'89504e':
-        return 'image/png'
-    elif header_3byte == b'ffd8ff':
-        return 'image/jpeg'
-    elif header_3byte == b'cffaed':
-        return 'mach-o/binary'
-    elif header_3byte == b'cafeba':
-        return 'mach-o/u-binary'
-    elif header_3byte == b'7f454c':
-        return 'elf/binary'
-    elif header_3byte == b'23212f':
-        return 'text/plain'
-    elif header_3byte == b'2d2d2d':
-        return 'text/plain'
-    else:
-        return 'unknown/file'
+#def fileType__1(_file):
+#    file_data = open(_file, 'rb').read()
+#
+#    import codecs
+#    header_3byte = codecs.encode(file_data[0:3], 'hex')
+#
+#    print(str(header_3byte))
+#
+#    if header_3byte == b'474946':
+#        return 'image/gif'
+#    elif header_3byte == b'89504e':
+#        return 'image/png'
+#    elif header_3byte == b'ffd8ff':
+#        return 'image/jpeg'
+#    elif header_3byte == b'cffaed':
+#        return 'mach-o/binary'
+#    elif header_3byte == b'cafeba':
+#        return 'mach-o/u-binary'
+#    elif header_3byte == b'7f454c':
+#        return 'elf/binary'
+#    elif header_3byte == b'23212f':
+#        return 'text/plain'
+#    elif header_3byte == b'2d2d2d':
+#        return 'text/plain'
+#    else:
+#        return 'unknown/file'
 
 
 
 def gitStoreDiff(git_store, f=None, verbose=False):
-    os.chdir(git_store)
+    try:
+        os.chdir(git_store)
+    except FileNotFoundError as e:
+        if verbose: print('FileNotFoundError: ' + str(e))
+        return 'FileNotFoundError: ' + str(e)
 
     if f is None:
         f = ''
