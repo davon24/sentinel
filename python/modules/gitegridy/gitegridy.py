@@ -26,7 +26,13 @@ def gitStoreLink(git_store, List, verbose=False):
     return True
 
 def gitStoreInit(git_store, verbose=False):
+
+    if not os.path.isdir(git_store):
+        if verbose: print('mkdir ' + str(git_store))
+        os.mkdir(git_store, 0o755)
+
     os.chdir(git_store)
+
     if not os.path.isdir(git_store + '/.git'):
         if verbose: print('git init ' + str(git_store))
         cmd = 'git init ' + str(git_store)
@@ -214,7 +220,7 @@ def gitStoreDiff(git_store, f=None, verbose=False):
 
 if __name__ == '__main__':
 
-    git_store = '/opt/sentinel/db/git'
+    git_store = '/opt/sentinel/db/git/dir2'
     L = [ '/etc/hosts', '/etc/ssh/sshd_config' ]
 
     git_init = gitStoreInit(git_store)
@@ -273,7 +279,10 @@ if __name__ == '__main__':
         if sys.argv[1] == 'git-diff':
             try: _file = sys.argv[2]
             except IndexError: _file = None
-            git_del = gitStoreDiff(git_store, _file, verbose=True)
+            git_diff = gitStoreDiff(git_store, _file, verbose=True)
+
+        if sys.argv[1] == 'git-init':
+            git_init = gitStoreInit(git_store)
 
         if sys.argv[1] == 'file-type':
             _file = sys.argv[2]
