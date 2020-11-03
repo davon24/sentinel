@@ -157,8 +157,18 @@ def gitStoreClearHistory(git_store, verbose=False):
 
     return True
 
+#import mimetypes
+#mime = mimetypes.guess_type(file)
 
 def fileType(_file):
+    try:
+        with open(_file, 'r', encoding='utf-8') as f:
+            f.read(4)
+            return 'text'
+    except UnicodeDecodeError:
+        return 'binary'
+
+def fileType__1(_file):
     file_data = open(_file, 'rb').read()
 
     import codecs
