@@ -8,6 +8,9 @@ echo 'deb [trusted=yes] https://gitlab.com/_pkg/sentinel/-/raw/master/deb/focal 
 
 apt-get update
 
+# python3.8
+apt-get install -y python3.8
+
 # arp
 apt-get install -y net-tools
 
@@ -17,6 +20,8 @@ apt-get install -y dnsutils
 # nmap
 apt-get install -y nmap
 
+# git
+apt-get install -y git
 
 apt-get install -y sentinel-runtime
 apt-get install -y sentinel
