@@ -31,8 +31,6 @@ def gitStoreInit(git_store, verbose=False):
         if verbose: print('mkdir ' + str(git_store))
         os.mkdir(git_store, 0o755)
 
-    os.chdir(git_store)
-
     if not os.path.isdir(git_store + '/.git'):
         if verbose: print('git init ' + str(git_store))
         cmd = 'git init ' + str(git_store)
@@ -40,6 +38,7 @@ def gitStoreInit(git_store, verbose=False):
         if verbose:
             for line in proc.stdout.readlines():
                 print(line.decode('utf-8').strip('\n'))
+    #os.chdir(git_store)
     return True
 
 def gitStoreAdd(git_store, f, verbose=False):
@@ -85,18 +84,37 @@ def gitStoreDel(git_store, f, verbose=False):
 
 def gitStoreCommit(git_store, f, verbose=False):
     os.chdir(git_store)
-    if verbose: print('git commit ' + git_store + f)
+    if verbose: print('git commit me ' + git_store + f)
     #import shlex
     #shlex.split(cmd)
+    #cmd = 'git commit -m "sentinel" ' + git_store + f
     #proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
 
     cmd = ['git', 'commit', '-m', '"sentinel ' + str(f) + '"', git_store + f ]
 
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    if verbose:
-        for line in proc.stdout.readlines():
-            print(line.decode('utf-8').strip('\n'))
-    return proc.stdout.readlines()
+    stdout, stderr = proc.communicate()
+    exit_code = proc.wait()
+    #print(stdout, stderr, exit_code)
+
+    print(exit_code)
+    print(str(type(stderr)))
+
+    e = stderr.decode('utf-8') 
+    print(e)
+
+    #if verbose:
+    #    for line in proc.stdout.readlines():
+    #        print(line.decode('utf-8').strip('\n'))
+    #    for line in proc.stderr.readlines():
+    #        print(line.decode('utf-8').strip('\n'))
+    #return proc.stdout.readlines()
+
+    #git config --global user.email "you@example.com"\n  
+    #git config --global user.name "Your Name"\n
+    #\nto set your account\'s default identity.
+
+    return True
 
 
 def gitStoreStatus(git_store, verbose=False):
