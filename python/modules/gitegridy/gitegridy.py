@@ -59,10 +59,15 @@ def gitStoreAdd(git_store, f, verbose=False):
     if verbose: print('git add ' + git_store + f)
 
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    stdout, stderr = proc.communicate()
+    exit_code = proc.wait()
+
     if verbose:
-        for line in proc.stdout.readlines():
-            print(line.decode('utf-8').strip('\n'))
-    return proc.stdout.readlines()
+        print(stdout.decode('utf-8'))
+        print(stderr.decode('utf-8'))
+        print(str(exit_code))
+
+    return stdout, stderr, exit_code
 
 def gitStoreDel(git_store, f, verbose=False):
     os.chdir(git_store)
@@ -95,27 +100,13 @@ def gitStoreCommit(git_store, f, verbose=False):
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout, stderr = proc.communicate()
     exit_code = proc.wait()
-    #print(stdout, stderr, exit_code)
 
-    print(exit_code)
-    print(str(type(stderr)))
+    if verbose:
+        print(stdout.decode('utf-8'))
+        print(stderr.decode('utf-8'))
+        print(str(exit_code))
 
-    e = stderr.decode('utf-8') 
-    print(e)
-
-    #if verbose:
-    #    for line in proc.stdout.readlines():
-    #        print(line.decode('utf-8').strip('\n'))
-    #    for line in proc.stderr.readlines():
-    #        print(line.decode('utf-8').strip('\n'))
-    #return proc.stdout.readlines()
-
-    #git config --global user.email "you@example.com"\n  
-    #git config --global user.name "Your Name"\n
-    #\nto set your account\'s default identity.
-
-    return True
-
+    return stdout, stderr, exit_code
 
 def gitStoreStatus(git_store, verbose=False):
     try:
@@ -126,10 +117,16 @@ def gitStoreStatus(git_store, verbose=False):
 
     cmd = 'git status'
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    stdout, stderr = proc.communicate()
+    exit_code = proc.wait()
+
     if verbose:
-        for line in proc.stdout.readlines():
-            print(line.decode('utf-8').strip('\n'))
-    return proc.stdout.readlines()
+        print(stdout.decode('utf-8'))
+        print(stderr.decode('utf-8'))
+        print(str(exit_code))
+
+    return stdout, stderr, exit_code
+
 
 def gitStoreLsFiles(git_store, verbose=False):
     try:
@@ -140,10 +137,16 @@ def gitStoreLsFiles(git_store, verbose=False):
 
     cmd = 'git ls-files'
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    stdout, stderr = proc.communicate()
+    exit_code = proc.wait()
+
     if verbose:
-        for line in proc.stdout.readlines():
-            print(line.decode('utf-8').strip('\n'))
-    return proc.stdout.readlines()
+        print(stdout.decode('utf-8'))
+        print(stderr.decode('utf-8'))
+        print(str(exit_code))
+
+    return stdout, stderr, exit_code
+
 
 def gitStoreLog(git_store, verbose=False):
     try:
@@ -211,34 +214,6 @@ def fileType(_file):
     except UnicodeDecodeError:
         return 'binary'
 
-#def fileType__1(_file):
-#    file_data = open(_file, 'rb').read()
-#
-#    import codecs
-#    header_3byte = codecs.encode(file_data[0:3], 'hex')
-#
-#    print(str(header_3byte))
-#
-#    if header_3byte == b'474946':
-#        return 'image/gif'
-#    elif header_3byte == b'89504e':
-#        return 'image/png'
-#    elif header_3byte == b'ffd8ff':
-#        return 'image/jpeg'
-#    elif header_3byte == b'cffaed':
-#        return 'mach-o/binary'
-#    elif header_3byte == b'cafeba':
-#        return 'mach-o/u-binary'
-#    elif header_3byte == b'7f454c':
-#        return 'elf/binary'
-#    elif header_3byte == b'23212f':
-#        return 'text/plain'
-#    elif header_3byte == b'2d2d2d':
-#        return 'text/plain'
-#    else:
-#        return 'unknown/file'
-
-
 
 def gitStoreDiff(git_store, f=None, verbose=False):
     try:
@@ -253,10 +228,16 @@ def gitStoreDiff(git_store, f=None, verbose=False):
     cmd = 'git diff ' + f
 
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    stdout, stderr = proc.communicate()
+    exit_code = proc.wait()
+
     if verbose:
-        for line in proc.stdout.readlines():
-            print(line.decode('utf-8').strip('\n'))
-    return proc.stdout.readlines()
+        print(stdout.decode('utf-8'))
+        print(stderr.decode('utf-8'))
+        print(str(exit_code))
+
+    return stdout, stderr, exit_code
+
 
 
 if __name__ == '__main__':
