@@ -28,8 +28,8 @@ Remote
 Local  
 - Listening Ports and Services  
 - Established Connections  
-- File Integrity Monitoring
-- Git File Integrity //IN-PROGRESS     
+- File Integrity Monitoring (blake2b, blake2s)  https://docs.python.org/3/library/hashlib.html    
+- File Backup and Diff //IN-PROGRESS     
 - Snort Integration  //TODO        
 - Virus Scanner //TODO (clam-av)      
   

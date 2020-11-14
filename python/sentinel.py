@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.8-2.pre2'
+__version__ = '1.6.9-0.pre1'
 
 import sys
 import os
@@ -102,16 +102,20 @@ def usage():
         add-fim name /dir/file
         del-fim name /dir/file
 
-        git-status
-        git-files
-        git-diff [file]
-        git-log
-        git-init
-        git-add /dir/file
-        git-del /dir/file
-        git-commit
-        git-clear-history
-        file-type /dir/file
+
+        fim-
+
+        ##########
+        #git-status
+        #git-files
+        #git-diff [file]
+        #git-log
+        #git-init
+        #git-add /dir/file
+        #git-del /dir/file
+        #git-commit
+        #git-clear-history
+        #file-type /dir/file
 
         list-proms
 
