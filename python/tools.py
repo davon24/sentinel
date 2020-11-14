@@ -2171,6 +2171,27 @@ def printEstablishedRulesMatch(db_store):
     #print('done')
     return True
 
+#--------
+
+def fimDiff(_file, db_store):
+
+    store_file = store.getData('files', _file, db_store)
+    store_file_blob = store_file[0]
+   
+    with open(_file, 'rb') as binary_file:
+        disk_file_blob = binary_file.read()
+
+    #print(disk_file_blob)
+    #print(store_file_blob)
+
+    if disk_file_blob != store_file_blob:
+        print('diff')
+
+
+    return 'done'
+
+
+#--------
 
 options = {
  'vuln-scan' : vulnScan,

@@ -59,10 +59,15 @@ def createDB(db_file):
     cur.execute(create_configsi)
 
     #create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
-    create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
+    create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL, timestamp TEXT, data JSON) WITHOUT ROWID;"
     create_fimsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_fims ON fims (name);"
     cur.execute(create_fims)
     cur.execute(create_fimsi)
+
+    create_files  = "CREATE TABLE IF NOT EXISTS files (name TEXT PRIMARY KEY NOT NULL, timestamp TEXT, data BLOB) WITHOUT ROWID;"
+    create_filesi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_files ON files (name);"
+    cur.execute(create_files)
+    cur.execute(create_filesi)
 
     #create_reports  = "CREATE TABLE IF NOT EXISTS reports (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
     create_reports  = "CREATE TABLE IF NOT EXISTS reports (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
@@ -357,14 +362,6 @@ def printListeningAlerts(db_file):
     #tools.listenPortsLst() #unsorted list tcp4:631, tcp6:631
 
 
-#moved to tools
-#def printEstablishedRules(db_file):
-#    #print('id  proto  laddr  lport  faddr  fport')
-#    Dct = getEstablishedRulesDct(db_file)
-#    for k,v in Dct.items():
-#        print(k,v)
-#    return True
-
 def getEstablishedRulesDct(db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
@@ -389,213 +386,6 @@ def insertEstablishedRules(rule, proto, laddr, lport, faddr, fport, db_file):
     cur.execute("INSERT INTO established VALUES(?,?,?,?,?,?)", (rule, proto, laddr, lport, faddr, fport))
     con.commit()
     return True
-
-#moved to tools
-#def getEstablishedRulesMatchDct(db_store):
-#
-#    #rtnDct = {}
-#    allowDct = {}
-#    denyDct = {}
-#
-#    estDct = tools.getEstablishedDct()
-#    _estDct = {}
-#    e = 0
-#    r = 0
-#    for k,v in estDct.items():
-#        #print(v)
-#        proto_ = v.split(' ')[0]
-#        laddr_ = v.split(' ')[1]
-#        lport_ = v.split(' ')[2]
-#        faddr_ = v.split(' ')[3]
-#        fport_ = v.split(' ')[4]
-#        #print(proto, laddr, lport, faddr, fport)
-#        e += 1
-#        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
-#
-#    #print('split')
-#
-#    rlsDct = getEstablishedRulesDct(db_store)
-#    _rlsDct = {}
-#    for k,v in rlsDct.items():
-#        #print(v)
-#        rule__  = v[0]
-#        proto__ = v[1]
-#        laddr__ = v[2]
-#        lport__ = v[3]
-#        faddr__ = v[4]
-#        fport__ = v[5]
-#        #print(proto, laddr, lport, faddr, fport)
-#        r += 1
-#        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
-#
-#    #print(_estDct)
-#    #print(_rlsDct)
-#
-#    c = 0
-#    for k,v in _rlsDct.items():
-#
-#        #print('rule  ' + str(v))
-#        rule_r  = str(v[0])
-#        proto_r = str(v[1])
-#        laddr_r = str(v[2])
-#        lport_r = str(v[3])
-#        faddr_r = str(v[4])
-#        fport_r = str(v[5])
-#        #print(proto)
-#
-#        for _k,_v in _estDct.items():
-#            #print(v)
-#            _proto = str(_v[0])
-#            _laddr = str(_v[1])
-#            _lport = str(_v[2])
-#            _faddr = str(_v[3])
-#            _fport = str(_v[4])
-#
-#            if (proto_r == _proto) or (proto_r == '*'):
-#                #print('match1 ' + str(_v))
-#                if (laddr_r == _laddr) or (laddr_r == '*'):
-#                    #print('match2 ' + str(_v))
-#                    if (lport_r == _lport) or (lport_r == '*'):
-#                        #print('match3 ' + str(_v))
-#                        if (faddr_r == _faddr) or (faddr_r == '*'):
-#                            #print('match4 ' + str(_v))
-#                            if (fport_r == _fport) or (fport_r == '*'):
-#                                #continue
-#                                #break
-#                                #print('match ' + str(_v))
-#                                c += 1
-#                                #rtnDct[c] = _v
-#                                if rule_r == 'ALLOW':
-#                                    allowDct[c] = _v
-#
-#                                if rule_r == 'DENY':
-#                                    denyDct[c] = _v
-#
-#    #print('done')
-#    #return rtnDct
-#    return allowDct, denyDct
-
-#moved to tools
-#def printEstablishedRulesMatch(db_store):
-#    estDct = tools.getEstablishedDct()
-#    _estDct = {}
-#    e = 0
-#    r = 0
-#    for k,v in estDct.items():
-#        #print(v)
-#        proto_ = v.split(' ')[0]
-#        laddr_ = v.split(' ')[1]
-#        lport_ = v.split(' ')[2]
-#        faddr_ = v.split(' ')[3]
-#        fport_ = v.split(' ')[4]
-#        #print(proto, laddr, lport, faddr, fport)
-#        e += 1
-#        _estDct[e] = [ proto_, laddr_, lport_, faddr_, fport_ ]
-#
-#    #print('split')
-#
-#    rlsDct = getEstablishedRulesDct(db_store)
-#    _rlsDct = {}
-#    for k,v in rlsDct.items():
-#        #print(v)
-#        rule__  = v[0]
-#        proto__ = v[1]
-#        laddr__ = v[2]
-#        lport__ = v[3]
-#        faddr__ = v[4]
-#        fport__ = v[5]
-#        #print(proto, laddr, lport, faddr, fport)
-#        r += 1
-#        _rlsDct[r] = [ rule__, proto__, laddr__, lport__, faddr__, fport__ ]
-#
-#    #print(_estDct)
-#    #print(_rlsDct)
-#
-#    for k,v in _rlsDct.items():
-#        #print('rule  ' + str(v))
-#        rule_r  = str(v[0])
-#        proto_r = str(v[1])
-#        laddr_r = str(v[2])
-#        lport_r = str(v[3])
-#        faddr_r = str(v[4])
-#        fport_r = str(v[5])
-#        #print(proto)
-#        _l = [ proto_r, laddr_r, lport_r, faddr_r, fport_r ]
-#        print(str(rule_r).lower() + ' ' + str(_l))
-#
-#        for _k,_v in _estDct.items():
-#            #print(v)
-#            _proto = str(_v[0])
-#            _laddr = str(_v[1])
-#            _lport = str(_v[2])
-#            _faddr = str(_v[3])
-#            _fport = str(_v[4])
-#
-#            if (proto_r == _proto) or (proto_r == '*'):
-#                #print('match1 ' + str(_v))
-#                if (laddr_r == _laddr) or (laddr_r == '*'):
-#                    #print('match2 ' + str(_v))
-#                    if (lport_r == _lport) or (lport_r == '*'):
-#                        #print('match3 ' + str(_v))
-#                        if (faddr_r == _faddr) or (faddr_r == '*'):
-#                            #print('match4 ' + str(_v))
-#                            if (fport_r == _fport) or (fport_r == '*'):
-#                                #print('match5 ' + str(_v))
-#                                #continue
-#                                #break
-#                                print('match ' + str(_v))
-#    #print('done')
-#    return True
-
-#moved to tools
-#def printEstablishedAlerts(db_store):
-#    eaDct = getEstablishedAlertsDct(db_store)
-#    for k,v in eaDct.items():
-#        print(v)
-#    return True
-#
-#
-#def getEstablishedAlertsDct(db_store):
-#
-#    estDct = tools.getEstablishedDct()
-#    allowDct, denyDct = getEstablishedRulesMatchDct(db_store)
-#
-#    estDct_ = {}
-#    for ek,ev in estDct.items():
-#        line = ev.split(' ')
-#        estDct_[ek] = line
-#
-#    returnADct = {}
-#    for key,value in estDct_.items():
-#        if value not in allowDct.values():
-#            returnADct[key] = value
-#
-#    returnDct = {}
-#    c = 0
-#
-#    for k,v in returnADct.items():
-#        c += 1
-#        returnDct[c] = v
-#
-#    for k,v in denyDct.items():
-#        c += 1
-#        returnDct[c] = v
-#
-#    return returnDct
-
-#def printIPs(db_file):
-#    rows = getIPs(db_file)
-#    for row in rows:
-#        print(row)
-#    return True
-#
-#def getIPs(db_file):
-#    con = sqlConnection(db_file)
-#    cur = con.cursor()
-#    #cur.execute('SELECT rowid,* FROM ips ORDER by rowid DESC;')
-#    cur.execute('SELECT * FROM ips ORDER by rowid DESC;')
-#    rows = cur.fetchall()
-#    return rows
 
 def insertIPs(ip, db_file):
     con = sqlConnection(db_file)
@@ -911,7 +701,6 @@ def deleteFrom(tbl, name, db_file):
         return False
     return True
 
-
 #def selectAllrowid(tbl, db_file):
 #    con = sqlConnection(db_file)
 #    cur = con.cursor()
@@ -1032,6 +821,15 @@ def getAllCounts(db_file):
 #    return True
 
 
+def storeFile(_file, db_file):
+    with open(_file, 'rb') as bfile:
+        fblob = bfile.read()
+    store_file = replaceINTO('files', _file, fblob, db_file)
+    return store_file
+
+def unstoreFile(_file, db_file):
+    unstore_file = deleteFrom('files', _file, db_file)
+    return unstore_file
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.9-0.pre1'
+__version__ = '1.6.9-0.pre2'
 
 import sys
 import os
@@ -102,20 +102,17 @@ def usage():
         add-fim name /dir/file
         del-fim name /dir/file
 
-
-        fim-
+        list-files
+        add-file /dir/file
+        del-file /dir/file
+        fim-restore /dir/file
+        fim-diff
+        fim-track|tag /dir/file
+        clear-files
 
         ##########
         #git-status
-        #git-files
-        #git-diff [file]
-        #git-log
-        #git-init
-        #git-add /dir/file
-        #git-del /dir/file
-        #git-commit
-        #git-clear-history
-        #file-type /dir/file
+        file-type /dir/file
 
         list-proms
 
@@ -170,7 +167,6 @@ if __name__ == '__main__':
     #sys.path.insert(0, os.path.dirname(__file__))
 
     db_store = str(os.path.dirname(__file__)) + '/db/sentinel.db'
-    git_store = str(os.path.dirname(__file__)) + '/db/git'
     db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
 
     if sys.argv[1:]:
@@ -649,12 +645,6 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'sentry':
-
-            #import multiprocessing
-            #manager = multiprocessing.Manager()
-            #global gDict
-            #gDict = manager.dict()
-
             run = tools.sentryMode(db_store)
             print(str(run))
             sys.exit(0)
@@ -854,73 +844,45 @@ if __name__ == '__main__':
             print(run)
             sys.exit(0)
 
-        if sys.argv[1] == 'git-status':
-            import modules.gitegridy.gitegridy as git
-            git_status = git.gitStoreStatus(git_store, verbose=True)
-            sys.exit(0)
-
-        if sys.argv[1] == 'git-init':
-            import modules.gitegridy.gitegridy as git
-            git_init = git.gitStoreInit(git_store, verbose=True)
-            sys.exit(0)
-
-        if sys.argv[1] == 'git-add':
-            import modules.gitegridy.gitegridy as git
-            _file = sys.argv[2]
-
-            git_link = git.gitStoreLink(git_store, [_file], verbose=True)
-            git_add  = git.gitStoreAdd(git_store, _file, verbose=True)
-            git_commit = git.gitStoreCommit(git_store, _file, verbose=True)
-            sys.exit(0)
-
-        if sys.argv[1] == 'git-del':
-            import modules.gitegridy.gitegridy as git
-            _file = sys.argv[2]
-            git_del = git.gitStoreDel(git_store, _file, verbose=True)
-            sys.exit(0)
-
-        if sys.argv[1] == 'git-files':
-            import modules.gitegridy.gitegridy as git
-            git_files = git.gitStoreLsFiles(git_store, verbose=True)
-            sys.exit(0)
-
-        if sys.argv[1] == 'git-log':
-            import modules.gitegridy.gitegridy as git
-            git_log = git.gitStoreLog(git_store, verbose=True)
-            sys.exit(0)
-
-        if sys.argv[1] == 'git-commit':
-            import modules.gitegridy.gitegridy as git
-            _file = sys.argv[2]
-
-            if not os.access(_file, os.F_OK):
-                print('Not Found: ' + str(_file))
-                sys.exit(1)
-            elif not os.access(_file, os.R_OK):
-                print('No Access: ' + str(_file))
-                sys.exit(1)
-
-            git_commit = git.gitStoreCommit(git_store, _file, verbose=True)
-            sys.exit(0)
-
-        if sys.argv[1] == 'git-diff':
-            import modules.gitegridy.gitegridy as git
-            try: _file = sys.argv[2]
-            except IndexError: _file = None
-            git_diff = git.gitStoreDiff(git_store, _file, verbose=True)
-            sys.exit(0)
-
-        if sys.argv[1] == 'git-clear-history':
-            import modules.gitegridy.gitegridy as git
-            git_clear_hist = git.gitStoreClearHistory(git_store, verbose=True)
-            sys.exit(0)
-
         if sys.argv[1] == 'file-type':
             import modules.gitegridy.gitegridy as git
             _file = sys.argv[2]
             file_type = git.fileType(_file)
             print(file_type)
             sys.exit(0)
+
+        #if sys.argv[1] == 'fim-store':
+        if sys.argv[1] == 'add-file':
+            _file = sys.argv[2]
+            store_file = store.storeFile(_file, db_store)
+            print(store_file)
+            sys.exit(0)
+
+        #if sys.argv[1] == 'fim-unstore':
+        if sys.argv[1] == 'del-file':
+            _file = sys.argv[2]
+            unstore_file = store.unstoreFile(_file, db_store)
+            print(unstore_file)
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-files':
+            list_files = store.selectAll('files', db_store)
+            for row in list_files:
+                #print(row)
+                print(row[0], row[1])
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-files':
+            clear = store.clearAll('files', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'fim-diff':
+            _file = sys.argv[2]
+            fim_diff = tools.fimDiff(_file, db_store)
+            print(fim_diff)
+            sys.exit(0)
+
 
         else:
             usage()
