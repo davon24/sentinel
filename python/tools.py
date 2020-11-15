@@ -2203,6 +2203,8 @@ def fimDiff(_file, db_store):
     #print(disk_file_blob)
     #print(store_file_blob)
 
+    disk_file_type = store_file_type = None
+
     try:
         disk_file = disk_file_blob.decode('utf-8')
     except UnicodeDecodeError as e:
@@ -2240,8 +2242,6 @@ def fimDiff(_file, db_store):
             print(delta)
         return True
     return False
-
-
 
 
 #--------

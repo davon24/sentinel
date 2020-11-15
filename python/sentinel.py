@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.9-0.pre4'
+__version__ = '1.6.9-1'
 
 import sys
 import os
@@ -105,13 +105,10 @@ def usage():
         list-files
         add-file /dir/file
         del-file /dir/file
-        fim-restore /dir/file
+        fim-restore /dir/file [/dir/file]
         fim-diff
-        fim-track|tag /dir/file
         clear-files
 
-        ##########
-        #git-status
         file-type /dir/file
 
         list-proms
@@ -881,6 +878,25 @@ if __name__ == '__main__':
             _file = sys.argv[2]
             fim_diff = tools.fimDiff(_file, db_store)
             print(fim_diff)
+            sys.exit(0)
+
+        if sys.argv[1] == 'fim-restore':
+            _file = sys.argv[2]
+            try: _dest = sys.argv[3]
+            except IndexError: _dest = None
+
+            store_file_ = store.getData('files', _file, db_store)
+            store_file_blob = store_file_[0]
+            
+            if _dest:
+                dest = _dest
+            else:
+                dest = _file
+
+            with open(dest, 'wb+') as outfile:
+                outfile.write(store_file_blob)
+
+            print('fim-restore ' + dest)
             sys.exit(0)
 
 
