@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.9-0.pre3'
+__version__ = '1.6.9-0.pre4'
 
 import sys
 import os

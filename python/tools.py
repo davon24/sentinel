@@ -1906,16 +1906,19 @@ def addFimFile(name, _file, db_store):
     except json.decoder.JSONDecodeError:
         return 'invalid json ' + str(fim)
 
-    jdata[_file] = ""
+    #jdata[_file] = ""
 
-    #print('new.jdata ' + str(jdata))
+    bsum = b2sum(_file)
+
+    jdata[_file] = bsum
+
     update = store.updateData('fims', name, json.dumps(jdata), db_store)
-    #update = store.updateFims(name, json.dumps(jdata), db_store)
-    #replace = store.replaceINTO('fims', name, json.dumps(jdata), db_store)
-    #print(update)
+    store_file = store.storeFile(_file, db_store)
 
-    #return True
-    return update
+    if update == True and store_file == True:
+        return True
+    else:
+        return False
 
 def delFimFile(name, _file, db_store):
     fim = store.getFim(name, db_store)
@@ -1937,7 +1940,14 @@ def delFimFile(name, _file, db_store):
         return 'not found ' + str(_file)
 
     update = store.updateData('fims', name, json.dumps(jdata), db_store)
-    return update
+    unstore_file = store.unstoreFile(_file, db_store)
+
+    if update == True and unstore_file == True:
+        return True
+    else:
+        return False
+
+
 
 def psCheck(name, db_store, gDict, _name):
     #print(str(_data)) #None
