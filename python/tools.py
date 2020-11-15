@@ -2173,10 +2173,19 @@ def printEstablishedRulesMatch(db_store):
 
 #--------
 
+def fileType(_file):
+    try:
+        with open(_file, 'r', encoding='utf-8') as f:
+            f.read(4)
+            return 'text'
+    except UnicodeDecodeError:
+        return 'binary'
+
+
 def fimDiff(_file, db_store):
 
-    store_file = store.getData('files', _file, db_store)
-    store_file_blob = store_file[0]
+    store_file_ = store.getData('files', _file, db_store)
+    store_file_blob = store_file_[0]
    
     with open(_file, 'rb') as binary_file:
         disk_file_blob = binary_file.read()
@@ -2184,11 +2193,45 @@ def fimDiff(_file, db_store):
     #print(disk_file_blob)
     #print(store_file_blob)
 
+    try:
+        disk_file = disk_file_blob.decode('utf-8')
+    except UnicodeDecodeError as e:
+        disk_file_type = 'binary'
+
+    try:
+        store_file = store_file_blob.decode('utf-8')
+    except UnicodeDecodeError as e:
+        store_file_type = 'binary'
+
+    #print(disk_file)
+    #print(store_file)
+
+
     if disk_file_blob != store_file_blob:
-        print('diff')
+        #print('diff')
+        #file_type = fileType(disk_file)
+
+        #if file_type == 'text':
+        #    import difflib
+        #    diff = difflib.ndiff(disk_file, store_file)
+        #    delta = ''.join(x[2:] for x in diff if x.startswith('- '))
+        #    print(delta)
+        #else:
+        #    print('diff ' + str(file_type))
+        #output_list = [li for li in difflib.ndiff(disk_file, store_file) if li[0] != ' ']
+        #print(output_list)
+
+        if disk_file_type == 'binary':
+            print('diff binary')
+        else:
+            import difflib
+            diff = difflib.ndiff(disk_file, store_file)
+            delta = ''.join(x[2:] for x in diff if x.startswith('- '))
+            print(delta)
+        return True
+    return False
 
 
-    return 'done'
 
 
 #--------
