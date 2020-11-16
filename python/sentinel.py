@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.9-1'
+__version__ = '1.6.10-0.pre1'
 
 import sys
 import os
@@ -110,6 +110,9 @@ def usage():
         clear-files
 
         file-type /dir/file
+
+        av-scan dir|file
+        list-avs
 
         list-proms
 
@@ -897,6 +900,12 @@ if __name__ == '__main__':
                 outfile.write(store_file_blob)
 
             print('fim-restore ' + dest)
+            sys.exit(0)
+
+        if sys.argv[1] == 'av-scan':
+            filedir = sys.argv[2]
+            av_scan = tools.avScan(filedir, db_store)
+            print(av_scan)
             sys.exit(0)
 
 

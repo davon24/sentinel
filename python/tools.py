@@ -2246,6 +2246,28 @@ def fimDiff(_file, db_store):
 
 #--------
 
+def avScan(filedir, db_store):
+
+    cmd = 'clamscan -r -i ' + str(filedir)
+
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    stdout, stderr = proc.communicate()
+    exit_code = proc.wait()
+
+    #print(stdout,stderr,exit_code)
+
+    print(stdout.decode('utf-8'))
+
+
+    #save av-scan
+
+
+
+    return True
+    
+
+#--------
+
 options = {
  'vuln-scan' : vulnScan,
  'port-scan' : portScan1,

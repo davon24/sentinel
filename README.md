@@ -13,8 +13,8 @@ noun.  a soldier or guard whose job is to stand and keep watch.
 
 seriously, what is it?  
 
-for me, its a command line tool for scanning networks via nmap and collecting the output for pci and soc2 audits.    
-since, it has evolved and integrated into prometheus   https://prometheus.io/     
+its a command line tool for scanning networks and collecting the output for pci and soc2 audits.    
+it has evolved and integrated with prometheus   https://prometheus.io/     
 sentry mode is simply a daemon that runs as a service,  
 and outputs prometheus data structures that can be consumed by prometheus.   
 
@@ -29,9 +29,9 @@ Local
 - Listening Ports and Services  
 - Established Connections  
 - File Integrity Monitoring (blake2b, blake2s)  https://docs.python.org/3/library/hashlib.html    
-- File Backup and Diff //IN-PROGRESS     
+- File Backup and Diff  
+- Virus Scanner //IN-PROGRESS (clam-av)      
 - Snort Integration  //TODO        
-- Virus Scanner //TODO (clam-av)      
   
 ---
 
