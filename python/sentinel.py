@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.10-1'
+__version__ = '1.6.10-2'
 
 import sys
 import os
@@ -122,7 +122,7 @@ def usage():
 
         sentry
 
-        follow file
+        tail file
 
         ---
 
@@ -910,11 +910,11 @@ if __name__ == '__main__':
             print(av_scan)
             sys.exit(0)
 
-        if sys.argv[1] == 'follow':
+        if sys.argv[1] == 'tail':
             _file = sys.argv[2]
             #follow = tools.follow(_file)
             #print(follow)
-            for line in tools.follow(_file):
+            for line in tools.tail(_file):
                 print(line)
             sys.exit(0)
 

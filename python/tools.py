@@ -179,7 +179,11 @@ def b2sum(_file):
     blake.update(_f)
     return str(blake.hexdigest())
 
-def follow(_file):
+def tail(_file):
+
+    if not os.path.isfile(_file):
+        logging.critical('Sentry tail no file handle ' + str(_file))
+        return False
 
     if sys.platform == 'darwin':
         cmd = ['tail', '-0', '-F', _file] #macos
@@ -201,21 +205,14 @@ def follow(_file):
             time.sleep(1)
 
     except Exception as e:
-        print('Exception ' + str(e))
+        logging.critical('Exception ' + str(e))
         return False
     return True
 
-#//mark
-def sentryFollowFile(db_store, gDict, _file):
-
-    if not os.path.isfile(_file):
-        #needs restart
-        return False
-
-    for line in follow(_file):
+def sentryTailFile(db_store, gDict, _file):
+    for line in tail(_file):
         print(line)
-        #a = 1
-
+    return True
 
 
 def pingIp(ip):
@@ -2751,7 +2748,7 @@ def sentryMode(db_file):
     processor.setDaemon(True)
     processor.start()
 
-    tailer = threading.Thread(target=sentryFollowFile, args=(db_store, gDict, '/tmp/log.txt'), name="FollowFile")
+    tailer = threading.Thread(target=sentryTailFile, args=(db_store, gDict, '/tmp/log.txt'), name="TailFile")
     tailer.setDaemon(True)
     tailer.start()
 
