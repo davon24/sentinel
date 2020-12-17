@@ -5,7 +5,6 @@ import threading
 import multiprocessing
 #from multiprocessing import shared_memory
 
-
 import sys
 import time
 import datetime
@@ -16,20 +15,21 @@ import json
 
 import sqlite3
 
+from hashlib import blake2b, blake2s
+
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+import os, pwd, grp
+import select
+
+import store
+
 #import smtplib
 #import ssl
 #import certifi
 
 #import atexit
 #import signal
-
-from hashlib import blake2b, blake2s
-
-from http.server import HTTPServer, BaseHTTPRequestHandler
-
-import store
-
-import os, pwd, grp
 
 #import queue
 #gQ = queue.Queue()
@@ -178,6 +178,44 @@ def b2sum(_file):
 
     blake.update(_f)
     return str(blake.hexdigest())
+
+def follow(_file):
+
+    if sys.platform == 'darwin':
+        cmd = ['tail', '-0', '-F', _file] #macos
+    elif sys.platform == 'linux' or sys.platform == 'linux2':
+        cmd = ['tail', '-n', '0', '-F', _file] #linux
+    else:
+        cmd = ['tail', '-F', _file]
+
+    try:
+        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+        p = select.poll()
+        p.register(f.stdout)
+
+        while (f.returncode == None):
+            if p.poll(1):
+                line = f.stdout.readline()
+                #print(line)
+                yield line
+            time.sleep(1)
+
+    except Exception as e:
+        print('Exception ' + str(e))
+        return False
+    return True
+
+#//mark
+def sentryFollowFile(db_store, gDict, _file):
+
+    if not os.path.isfile(_file):
+        #needs restart
+        return False
+
+    for line in follow(_file):
+        print(line)
+        #a = 1
+
 
 
 def pingIp(ip):
@@ -2713,18 +2751,22 @@ def sentryMode(db_file):
     processor.setDaemon(True)
     processor.start()
 
-    conf = store.getData('configs', 'prometheus', db_store)
+    tailer = threading.Thread(target=sentryFollowFile, args=(db_store, gDict, '/tmp/log.txt'), name="FollowFile")
+    tailer.setDaemon(True)
+    tailer.start()
+
+    prometheus_config = store.getData('configs', 'prometheus', db_store)
     #if not conf:
     #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
     #    conf = store.getData('configs', 'prometheus', db_store)
     #conf = json.loads(conf[0])
 
-    if conf:
+    if prometheus_config:
         prometheus = True
-        conf = json.loads(conf[0])
-        _port = conf['port']
+        prometheus_config = json.loads(prometheus_config[0])
+        _port = prometheus_config['port']
         global _metric_path
-        _metric_path = conf['path']
+        _metric_path = prometheus_config['path']
 
     try:
         if prometheus:

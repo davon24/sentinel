@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.10-0.pre1'
+__version__ = '1.6.10-1'
 
 import sys
 import os
@@ -121,6 +121,8 @@ def usage():
         clear-proms-db
 
         sentry
+
+        follow file
 
         ---
 
@@ -906,6 +908,14 @@ if __name__ == '__main__':
             filedir = sys.argv[2]
             av_scan = tools.avScan(filedir, db_store)
             print(av_scan)
+            sys.exit(0)
+
+        if sys.argv[1] == 'follow':
+            _file = sys.argv[2]
+            #follow = tools.follow(_file)
+            #print(follow)
+            for line in tools.follow(_file):
+                print(line)
             sys.exit(0)
 
 
