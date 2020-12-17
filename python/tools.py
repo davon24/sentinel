@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, STDOUT
 import threading
 import multiprocessing
 #from multiprocessing import shared_memory
@@ -21,6 +21,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 import os, pwd, grp
 import select
+import re
 
 import store
 
@@ -179,7 +180,7 @@ def b2sum(_file):
     blake.update(_f)
     return str(blake.hexdigest())
 
-def tail(_file):
+def tail_nonblocking(_file):
 
     if not os.path.isfile(_file):
         logging.critical('Sentry tail no file handle ' + str(_file))
@@ -209,11 +210,63 @@ def tail(_file):
         return False
     return True
 
+def tail(_file):
+
+    if not os.path.isfile(_file):
+        logging.critical('Sentry tail no file handle ' + str(_file))
+        return False
+
+    if sys.platform == 'darwin':
+        cmd = ['tail', '-0', '-F', _file] #macos
+    elif sys.platform == 'linux' or sys.platform == 'linux2':
+        cmd = ['tail', '-n', '0', '-F', _file] #linux
+    else:
+        cmd = ['tail', '-F', _file]
+
+    try:
+        #f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+        f = Popen(cmd, shell=False, stdout=PIPE,stderr=STDOUT)
+        while (f.returncode == None):
+            line = f.stdout.readline()
+            if not line:
+                #break
+                time.sleep(1)
+            else:
+                yield line
+            sys.stdout.flush()
+
+    except Exception as e:
+        logging.critical('Exception ' + str(e))
+        return False
+
+    return True
+
+
 def sentryTailFile(db_store, gDict, _file):
     for line in tail(_file):
         print(line)
     return True
 
+def sentryTailResinLog(db_store, gDict, _file):
+
+    logging.info('Sentry Tail resin ' + str(_file))
+
+    re_match1 = re.compile(r'Watchdog starting Resin',re.I)
+    c=0
+    for line in tail(_file):
+        #print('resin ' + line)
+        #line = line.decode('utf-8')
+        line = line.decode('utf-8').strip('\n')
+        #print(line)
+        if re_match1.search(line):
+            #print('Sentry Tail resin match ' + str(line))
+            c+=1
+            _key = 'sentry-resin-tail-match-' + str(c)
+            prom = 'prog="resin",logfile="' + str(_file) + '",match="' + str(line) + '"'
+            gDict[_key] = [ 'sentinel_watch_resin{' + prom + '} ' + str(c) ]
+
+
+    return True
 
 def pingIp(ip):
     cmd = 'ping -c 1 ' + ip
@@ -2480,16 +2533,27 @@ def getDuration(_repeat):
     return scale, amt
 
 def sentryProcessor(db_store, gDict):
-    while (sigterm == False):
+
+    #while (sigterm == False):
+    while True:
         #print('process Reports')
 
         _prom = str(db_store) + '.prom'
+        #try:
+        #    with open(_prom, 'w+') as _file:
+        #        for k,v in gDict.items():
+        #            for item in v:
+        #                #print(k, v)
+        #                _file.write(item + '\n')
+        #except EOFError as e:
+        #    print('EOFError ' + str(e))
+
         with open(_prom, 'w+') as _file:
             for k,v in gDict.items():
                 for item in v:
-                    #print(k, v)
                     _file.write(item + '\n')
 
+        #print('sentryProcessor')
         time.sleep(10)
 
     return True
@@ -2678,6 +2742,11 @@ def sentryScheduler(db_store, gDict):
         #for p in process:
         #    p.join()
 
+        #try:
+        #    processD(List)
+        #except Exception as e:
+        #    print(str(e))
+
         processD(List)
 
         time.sleep(3)
@@ -2741,48 +2810,66 @@ def sentryMode(db_file):
     logging.info("Sentry startup")
 
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
-    scheduler.setDaemon(True)
+    #scheduler.setDaemon(True)
     scheduler.start()
 
     processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
-    processor.setDaemon(True)
+    #processor.setDaemon(True)
     processor.start()
 
-    tailer = threading.Thread(target=sentryTailFile, args=(db_store, gDict, '/tmp/log.txt'), name="TailFile")
-    tailer.setDaemon(True)
-    tailer.start()
-
-    prometheus_config = store.getData('configs', 'prometheus', db_store)
     #if not conf:
     #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
     #    conf = store.getData('configs', 'prometheus', db_store)
     #conf = json.loads(conf[0])
 
+    #tailer = threading.Thread(target=sentryTailFile, args=(db_store, gDict, '/tmp/log.txt'), name="TailFile")
+    #tailer.setDaemon(True)
+    #tailer.start()
+
+    resin_watch = store.getData('configs', 'watch-resin-log', db_store)
+    if resin_watch:
+        resin_watch_config = json.loads(resin_watch[0])
+        _logfile = resin_watch_config['logfile']
+        _match   = resin_watch_config['match']
+        #resin_tailer = threading.Thread(target=sentryTailResinLog, args=(db_store, gDict, _logfile), name="ResinLogWatch")
+        #resin_tailer.setDaemon(True)
+        #resin_tailer.start()
+        resin_tailer = multiprocessing.Process(target=sentryTailResinLog, args=(db_store, gDict, _logfile))
+        resin_tailer.start()
+        #resin_tailer.join()
+
+
+    prometheus_config = store.getData('configs', 'prometheus', db_store)
+    #print(str(type(prometheus_config)) + ' prometheus_config ' + str(prometheus_config))
     if prometheus_config:
-        prometheus = True
         prometheus_config = json.loads(prometheus_config[0])
         _port = prometheus_config['port']
         global _metric_path
         _metric_path = prometheus_config['path']
 
     try:
-        if prometheus:
+        if prometheus_config:
             p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
             p.start()
             p.join()
         else:
             time.sleep(60)
+        #print('the big 60')
 
     except (KeyboardInterrupt, SystemExit, Exception):
         sigterm = True
         scheduler.join()
+        processor.join()
+        if resin_watch:
+            resin_tailer.join()
         httpd.server_close()
         logging.info("Sentry shutdown: " + str(sigterm))
         sys.exit(1)
+
     return True
 
 
 if __name__ == '__main__':
-# requires cli tools: arp, ping, lsof, nslookup, nmap
+# requires cli tools: arp, ping, lsof, nslookup, nmap, tail
     pass
 

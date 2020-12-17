@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.10-2'
+__version__ = '1.6.10-3'
 
 import sys
 import os
@@ -78,7 +78,7 @@ def usage():
 
         list-configs
         update-config name data
-        delete-config id
+        delete-config name
 
         list-reports
         update-report name data
