@@ -180,6 +180,18 @@ def b2sum(_file):
     blake.update(_f)
     return str(blake.hexdigest())
 
+def b2checksum(_string):
+    is_64bits = sys.maxsize > 2**32
+    if is_64bits:
+        blake = blake2b(digest_size=20)
+    else:
+        blake = blake2s(digest_size=20)
+
+    s = _string.encode('utf-8')
+
+    blake.update(s)
+    return str(blake.hexdigest())
+
 def tail_nonblocking(_file):
 
     if not os.path.isfile(_file):
@@ -249,7 +261,7 @@ def sentryTailFile(db_store, gDict, _file):
 
 def sentryTailResinLog(db_store, gDict, _file):
 
-    logging.info('Sentry Tail resin ' + str(_file))
+    logging.info('Sentry resin.match ' + str(_file))
 
     re_match1 = re.compile(r'Watchdog starting Resin',re.I)
     c=0
@@ -267,6 +279,48 @@ def sentryTailResinLog(db_store, gDict, _file):
 
 
     return True
+
+def sentryTailMariaDBAuditLog(db_store, gDict, _file):
+    #https://mariadb.com/kb/en/mariadb-audit-plugin-log-format/
+
+    logging.info('Sentry mariadb.audit ' + str(_file))
+
+    #re_match1 = re.compile(r'Watchdog starting Resin',re.I)
+
+    c=0
+    for line in tail(_file):
+        line = line.decode('utf-8').strip('\n')
+        #print(line)
+        _line = line.split(',')
+        #print(str(lineL))
+        _timestamp    = _line[0]
+        _serverhost   = _line[1]
+        _username     = _line[2]
+        _host         = _line[3]
+        _connectionid = _line[4]
+        _queryid      = _line[5]
+        _operation    = _line[6]
+        _database     = _line[7]
+        _object       = _line[7]
+        _retcode      = _line[8]
+
+        uline = _serverhost + _username + _host + _operation + _database + _object + _retcode
+
+        b = b2checksum(uline)
+        print('b2checksum ' + str(b))
+
+        #if re_match1.search(line):
+        #    #print('Sentry Tail resin match ' + str(line))
+        #    c+=1
+        #    _key = 'sentry-resin-tail-match-' + str(c)
+        #    prom = 'prog="resin",logfile="' + str(_file) + '",match="' + str(line) + '"'
+        #    gDict[_key] = [ 'sentinel_watch_resin{' + prom + '} ' + str(c) ]
+
+
+    return True
+
+
+
 
 def pingIp(ip):
     cmd = 'ping -c 1 ' + ip
@@ -2691,7 +2745,8 @@ def processD(List):
 
 
 def sentryScheduler(db_store, gDict):
-    while (sigterm == False):
+    #while (sigterm == False):
+    while True:
 
         List = []
         job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
@@ -2838,6 +2893,14 @@ def sentryMode(db_file):
         resin_tailer.start()
         #resin_tailer.join()
 
+    mariadb_watch = store.getData('configs', 'watch-mariadb-audit-log', db_store)
+    if mariadb_watch:
+        mariadb_watch_config = json.loads(mariadb_watch[0])
+        _logfile = mariadb_watch_config['logfile']
+        mariadb_tailer = multiprocessing.Process(target=sentryTailMariaDBAuditLog, args=(db_store, gDict, _logfile))
+        mariadb_tailer.start()
+        #mariadb_tailer.join()
+
 
     prometheus_config = store.getData('configs', 'prometheus', db_store)
     #print(str(type(prometheus_config)) + ' prometheus_config ' + str(prometheus_config))
@@ -2853,15 +2916,17 @@ def sentryMode(db_file):
             p.start()
             p.join()
         else:
-            time.sleep(60)
-        #print('the big 60')
+            #time.sleep(60)
+            time.sleep(-1)
+
+        print('pid ' + str(os.getpid()))
 
     except (KeyboardInterrupt, SystemExit, Exception):
         sigterm = True
         scheduler.join()
         processor.join()
-        if resin_watch:
-            resin_tailer.join()
+        if resin_watch: resin_tailer.join()
+        if mariadb_watch: mariadb_tailer.join()
         httpd.server_close()
         logging.info("Sentry shutdown: " + str(sigterm))
         sys.exit(1)
