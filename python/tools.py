@@ -287,31 +287,56 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
 
     #re_match1 = re.compile(r'Watchdog starting Resin',re.I)
 
+    import csv
+
+    kDict = {}
+    #load kDict
+    rows = store.selectAll('b2sum', db_store)
+    for k,v in rows:
+        #print(k,v)
+        kDict[k] = '' #empty val
+
     c=0
     for line in tail(_file):
         line = line.decode('utf-8').strip('\n')
+        #line = line.decode('utf-8')
         #print(line)
-        _line = line.split(',')
-        #print(str(lineL))
-        _timestamp    = _line[0]
-        _serverhost   = _line[1]
-        _username     = _line[2]
-        _host         = _line[3]
-        _connectionid = _line[4]
-        _queryid      = _line[5]
-        _operation    = _line[6]
-        _database     = _line[7]
-        _object       = _line[7]
-        _retcode      = _line[8]
+        _csv = csv.reader(line.splitlines(), quotechar="'")
+        #_csv = csv.reader(line)
+        #print(list(_csv))
+        _line = list(_csv)
+        #print(_line)
 
-        uline = _serverhost + _username + _host + _operation + _database + _object + _retcode
+        #_line = line.split(',')
+        #_line = line.splitlines()
 
-        b = b2checksum(uline)
-        print('b2checksum ' + str(b))
+        #print(_line)
+        #print(_line[0])
+        #print(_line[1])
+        _timestamp    = _line[0][0]
+        _serverhost   = _line[0][1]
+        _username     = _line[0][2]
+        _host         = _line[0][3]
+        _connectionid = _line[0][4]
+        _queryid      = _line[0][5]
+        _operation    = _line[0][6]
+        _database     = _line[0][7]
+        _object       = _line[0][8]
+        _retcode      = _line[0][9]
 
-        #update = store.replaceINTO('b2sum', b, uline, db_store)
-        #update = store.updateData('b2sum', b, uline, db_store)
-        update = store.replaceINTO2('b2sum', b, uline, db_store)
+        bline = _serverhost +' '+ _username +' '+ _host +' '+ _operation +' '+ _database +' '+ _object +' '+ _retcode
+        #print(str(bline))
+
+        b = b2checksum(bline)
+        #print('b2checksum ' + str(b))
+
+        if b in kDict.keys():
+            print('exist ' + b)
+        else:
+            print('new ' + b)
+            update_sql = store.replaceINTO2('b2sum', b, bline, db_store)
+            kDict[b] = ''
+
 
         #if re_match1.search(line):
         #    #print('Sentry Tail resin match ' + str(line))
