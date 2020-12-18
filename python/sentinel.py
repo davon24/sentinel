@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.10-4'
+__version__ = '1.6.10-5'
 
 import sys
 import os
@@ -119,6 +119,8 @@ def usage():
         list-proms-db
         update-prom-db name data
         clear-proms-db
+
+        list-b2sums
 
         sentry
 
@@ -918,6 +920,17 @@ if __name__ == '__main__':
                 print(line)
             sys.exit(0)
 
+
+        if sys.argv[1] == 'list-b2sums':
+            rows = store.selectAll('b2sum', db_store)
+            for row in rows:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-b2sums':
+            clear = store.clearAll('b2sum', db_store)
+            print(clear)
+            sys.exit(0)
 
         else:
             usage()

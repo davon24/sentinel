@@ -309,6 +309,10 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
         b = b2checksum(uline)
         print('b2checksum ' + str(b))
 
+        #update = store.replaceINTO('b2sum', b, uline, db_store)
+        #update = store.updateData('b2sum', b, uline, db_store)
+        update = store.replaceINTO2('b2sum', b, uline, db_store)
+
         #if re_match1.search(line):
         #    #print('Sentry Tail resin match ' + str(line))
         #    c+=1

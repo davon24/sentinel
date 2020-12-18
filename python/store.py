@@ -97,6 +97,11 @@ def createDB(db_file):
     cur.execute(create_proms)
     cur.execute(create_promsi)
 
+    create_b2sums  = "CREATE TABLE IF NOT EXISTS b2sum (name TEXT PRIMARY KEY NOT NULL,data TEXT) WITHOUT ROWID;"
+    create_b2sumsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_b2sum ON b2sum (name);"
+    cur.execute(create_b2sums)
+    cur.execute(create_b2sumsi)
+
     con.commit()
 
     return con
@@ -626,6 +631,15 @@ def replaceINTOproms(name, data, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("REPLACE INTO proms VALUES(?,?)", (name, data))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
+def replaceINTO2(tbl, name, data, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('REPLACE INTO ' + str(tbl) + ' VALUES(?,?)', (name, data))
     con.commit()
     if cur.rowcount == 0:
         return False
