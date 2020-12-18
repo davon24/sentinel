@@ -294,7 +294,8 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
     rows = store.selectAll('b2sum', db_store)
     for k,v in rows:
         #print(k,v)
-        kDict[k] = '' #empty val
+        #kDict[k] = '' #empty val
+        kDict[k] = 1
 
     c=0
     for line in tail(_file):
@@ -313,30 +314,45 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
         #print(_line)
         #print(_line[0])
         #print(_line[1])
-        _timestamp    = _line[0][0]
-        _serverhost   = _line[0][1]
-        _username     = _line[0][2]
-        _host         = _line[0][3]
-        _connectionid = _line[0][4]
-        _queryid      = _line[0][5]
-        _operation    = _line[0][6]
-        _database     = _line[0][7]
-        _object       = _line[0][8]
-        _retcode      = _line[0][9]
+        jdata = {
+        #"timestamp"    : _line[0][0],
+        "serverhost"   : _line[0][1],
+        "username"     : _line[0][2],
+        "host"         : _line[0][3],
+        #"connectionid" : _line[0][4],
+        #"queryid"      : _line[0][5],
+        "operation"    : _line[0][6],
+        "database"     : _line[0][7],
+        "object"       : _line[0][8],
+        "retcode"      : _line[0][9] }
 
-        bline = _serverhost +' '+ _username +' '+ _host +' '+ _operation +' '+ _database +' '+ _object +' '+ _retcode
+        #bline = _serverhost +' '+ _username +' '+ _host +' '+ _operation +' '+ _database +' '+ _object +' '+ _retcode
         #print(str(bline))
+
+        bline = json.dumps(jdata)
 
         b = b2checksum(bline)
         #print('b2checksum ' + str(b))
 
         if b in kDict.keys():
-            print('exist ' + b)
+            #print('exist ' + b)
+            v = kDict[b]
+            v += 1
+            kDict[b] = v
         else:
-            print('new ' + b)
+            #print('new ' + b)
             update_sql = store.replaceINTO2('b2sum', b, bline, db_store)
-            kDict[b] = ''
+            kDict[b] = 1
 
+        #if b not in kDict.keys():
+        #    #print('new ' + b)
+        #    kDict[b] = 1
+        #    update_sql = store.replaceINTO2('b2sum', b, bline, db_store)
+
+        #for k,v in kDict.items():
+        #    print(k,v)
+
+        #print(kDict)
 
         #if re_match1.search(line):
         #    #print('Sentry Tail resin match ' + str(line))
@@ -345,6 +361,18 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
         #    prom = 'prog="resin",logfile="' + str(_file) + '",match="' + str(line) + '"'
         #    gDict[_key] = [ 'sentinel_watch_resin{' + prom + '} ' + str(c) ]
 
+    ###############################
+        
+        #print(max(kDict, key=kDict.get))
+        max_key = max(kDict, key=kDict.get)
+        max_val = kDict[max_key]
+        print(max_key, max_val)
+       
+        min_key = min(kDict, key=kDict.get)
+        min_val = kDict[min_key]
+        print(min_key, min_val)
+
+        print(len(kDict))
 
     return True
 

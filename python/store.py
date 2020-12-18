@@ -97,7 +97,7 @@ def createDB(db_file):
     cur.execute(create_proms)
     cur.execute(create_promsi)
 
-    create_b2sums  = "CREATE TABLE IF NOT EXISTS b2sum (name TEXT PRIMARY KEY NOT NULL,data TEXT) WITHOUT ROWID;"
+    create_b2sums  = "CREATE TABLE IF NOT EXISTS b2sum (name TEXT PRIMARY KEY NOT NULL,data JSON) WITHOUT ROWID;"
     create_b2sumsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_b2sum ON b2sum (name);"
     cur.execute(create_b2sums)
     cur.execute(create_b2sumsi)
