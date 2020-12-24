@@ -376,8 +376,86 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
 
     return True
 
+#sentryIPSLinuxSSH
+##############################################################################################3
+##############################################################################################3
 
+iplist = [0]*attempts
+tmlist = [0]*attempts
+blocklist = []
+blocktime = []
 
+def sentryIPSLinuxSSH(db_store, gDict, _file):
+    logging.info('Sentry IPS ssh.watch ' + str(_file))
+
+    re_sshd = re.compile(r'sshd')
+    re_invalid_user = re.compile(r'Invalid user',re.I)
+    re_failed_password = re.compile(r'Failed password',re.I)
+
+    for line in tail(_file):
+        line = line.decode('utf-8').strip('\n')
+        #print(line)
+
+        if re_sshd.search(line) and re_failed_password.search(line) and re_invalid_user.search(line):
+            ip = line.split()[12]
+            logging.info("match 12: %s", ip)
+            tm = time.time()
+            recordip(ip,tm)
+        elif re_sshd.search(line) and re_failed_password.search(line) and not re_invalid_user.search(line):
+            ip = line.split()[10]
+            logging.info("match 10: %s", ip)
+            tm = time.time()
+            recordip(ip,tm)
+        else:
+            continue
+
+        if compare() >= len(iplist):
+            elapsed = (tmlist[0] - tmlist[2])
+            if thresh > elapsed:
+                logging.info("THRESH: %s %s", ip, elapsed)
+                tm = time.time()
+                ipblock(ip,tm)
+                logging.info("ip: %s will clear in %s", ip, clear)
+
+    return True
+
+def recordblock(ip,tm):
+  logging.info("blocked ip: %s", ip)
+  blocklist.insert(0,ip)
+  blocktime.insert(0,tm)
+
+def compare():
+  count = 0
+  for index, item in enumerate(iplist):
+    if item == iplist[0]:
+      count += 1
+  return count
+
+def ipblock(ip,tm):
+  cmd = "iptables -I INPUT -s %s -p tcp --dport %s -j DROP" % (ip, ssh_port)
+  os.system(cmd)
+  logging.info("%s", cmd)
+  recordblock(ip,tm)
+
+def ipremove(ip):
+  cmd = "iptables -D INPUT -s %s -p tcp --dport %s -j DROP" % (ip, ssh_port)
+  os.system(cmd)
+  logging.info("%s", cmd)
+
+def checkblocklist():
+  if len(blocklist) > 0:
+    now = time.time()
+    for index, item in enumerate(blocktime):
+      diff = (now - item)
+      logging.debug("diff: %s clear: %s", diff, clear)
+      if diff > clear:
+        ip = blocklist[index]
+        ipremove(ip)
+        del blocklist[index]
+        del blocktime[index]
+
+##############################################################################################3
+##############################################################################################3
 
 def pingIp(ip):
     cmd = 'ping -c 1 ' + ip
@@ -2958,6 +3036,17 @@ def sentryMode(db_file):
         mariadb_tailer.start()
         #mariadb_tailer.join()
 
+    ssh_watch = store.getData('configs', 'watch-ssh-linux-log', db_store)
+    if ssh_watch:
+        ssh_watch_config = json.loads(ssh_watch[0])
+        _logfile  = ssh_watch_config['logfile']
+        _thresh   = ssh_watch_config['thresh']
+        _attempts = ssh_watch_config['attempts']
+        _clear    = ssh_watch_config['clear']
+        ssh_tailer = multiprocessing.Process(target=sentryIPSLinuxSSH, args=(db_store, gDict, _logfile))
+        ssh_tailer.start()
+        #ssh_tailer.join()
+
 
     prometheus_config = store.getData('configs', 'prometheus', db_store)
     #print(str(type(prometheus_config)) + ' prometheus_config ' + str(prometheus_config))
@@ -2984,6 +3073,7 @@ def sentryMode(db_file):
         processor.join()
         if resin_watch: resin_tailer.join()
         if mariadb_watch: mariadb_tailer.join()
+        if ssh_watch: ssh_tailer.join()
         httpd.server_close()
         logging.info("Sentry shutdown: " + str(sigterm))
         sys.exit(1)
