@@ -380,6 +380,11 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
 ##############################################################################################3
 ##############################################################################################3
 
+thresh = 60
+attempts = 3
+clear = 600
+ssh_port = 22
+
 iplist = [0]*attempts
 tmlist = [0]*attempts
 blocklist = []
@@ -394,7 +399,7 @@ def sentryIPSLinuxSSH(db_store, gDict, _file):
 
     for line in tail(_file):
         line = line.decode('utf-8').strip('\n')
-        #print(line)
+        print(line)
 
         if re_sshd.search(line) and re_failed_password.search(line) and re_invalid_user.search(line):
             ip = line.split()[12]
