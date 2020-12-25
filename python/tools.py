@@ -393,13 +393,16 @@ blocktime = []
 def sentryIPSLinuxSSH(db_store, gDict, _file):
     logging.info('Sentry IPS ssh.watch ' + str(_file))
 
+    ip = None
+
     re_sshd = re.compile(r'sshd')
     re_invalid_user = re.compile(r'Invalid user',re.I)
     re_failed_password = re.compile(r'Failed password',re.I)
+    re_preauth = re.compile(r'preauth',re.I)
 
     for line in tail(_file):
         line = line.decode('utf-8').strip('\n')
-        print(line)
+        #print(line)
 
         if re_sshd.search(line) and re_failed_password.search(line) and re_invalid_user.search(line):
             ip = line.split()[12]
@@ -411,8 +414,15 @@ def sentryIPSLinuxSSH(db_store, gDict, _file):
             logging.info("match 10: %s", ip)
             tm = time.time()
             recordip(ip,tm)
-        else:
-            continue
+        #else:
+        #    continue
+
+        if re_sshd.search(line) and re_invalid_user.search(line) and not re_preauth.search(line):
+            ip = line.split()[9]
+            logging.info("match 9: %s", ip)
+            tm = time.time()
+            recordip(ip,tm)
+
 
         if compare() >= len(iplist):
             elapsed = (tmlist[0] - tmlist[2])
@@ -422,7 +432,16 @@ def sentryIPSLinuxSSH(db_store, gDict, _file):
                 ipblock(ip,tm)
                 logging.info("ip: %s will clear in %s", ip, clear)
 
+        #print('loop')
+
     return True
+
+def recordip(ip,tm):
+  logging.info("listed: %s", ip)
+  iplist.insert(0,ip)
+  tmlist.insert(0,tm)
+  iplist.pop()
+  tmlist.pop()
 
 def recordblock(ip,tm):
   logging.info("blocked ip: %s", ip)
@@ -447,6 +466,8 @@ def ipremove(ip):
   os.system(cmd)
   logging.info("%s", cmd)
 
+
+
 def checkblocklist():
   if len(blocklist) > 0:
     now = time.time()
@@ -458,6 +479,7 @@ def checkblocklist():
         ipremove(ip)
         del blocklist[index]
         del blocktime[index]
+
 
 ##############################################################################################3
 ##############################################################################################3
