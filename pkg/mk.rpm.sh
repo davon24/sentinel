@@ -2,6 +2,7 @@
 #docker run -v `pwd`:/build -it centos:7
 #bash /build/mk.rpm.sh
 
+yum -y update
 yum install -y rpm-build
 bash /build/pkg_rpm.sh
 
