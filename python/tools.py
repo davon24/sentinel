@@ -406,12 +406,12 @@ def sentryIPSLinuxSSH(db_store, gDict, _file):
 
         if re_sshd.search(line) and re_failed_password.search(line) and re_invalid_user.search(line):
             ip = line.split()[12]
-            logging.info("match 12: %s", ip)
+            logging.info("IPS ssh.watch match 12: %s", ip)
             tm = time.time()
             recordip(ip,tm)
         elif re_sshd.search(line) and re_failed_password.search(line) and not re_invalid_user.search(line):
             ip = line.split()[10]
-            logging.info("match 10: %s", ip)
+            logging.info("IPS ssh.watch match 10: %s", ip)
             tm = time.time()
             recordip(ip,tm)
         #else:
@@ -419,32 +419,34 @@ def sentryIPSLinuxSSH(db_store, gDict, _file):
 
         if re_sshd.search(line) and re_invalid_user.search(line) and not re_preauth.search(line):
             ip = line.split()[9]
-            logging.info("match 9: %s", ip)
+            logging.info("IPS ssh.watch match 9: %s", ip)
             tm = time.time()
             recordip(ip,tm)
 
+        if ip is None:
+            continue
 
         if compare() >= len(iplist):
             elapsed = (tmlist[0] - tmlist[2])
             if thresh > elapsed:
-                logging.info("THRESH: %s %s", ip, elapsed)
+                logging.info("IPS ssh.watch THRESH: %s %s", ip, elapsed)
                 tm = time.time()
                 ipblock(ip,tm)
-                logging.info("ip: %s will clear in %s", ip, clear)
+                logging.info("IPS ssh.watch ip: %s will clear in %s", ip, clear)
 
         #print('loop')
 
     return True
 
 def recordip(ip,tm):
-  logging.info("listed: %s", ip)
+  logging.info("IPS ssh.watch listed: %s", ip)
   iplist.insert(0,ip)
   tmlist.insert(0,tm)
   iplist.pop()
   tmlist.pop()
 
 def recordblock(ip,tm):
-  logging.info("blocked ip: %s", ip)
+  logging.info("IPS ssh.watch blocked ip: %s", ip)
   blocklist.insert(0,ip)
   blocktime.insert(0,tm)
 
@@ -466,8 +468,6 @@ def ipremove(ip):
   os.system(cmd)
   logging.info("%s", cmd)
 
-
-
 def checkblocklist():
   if len(blocklist) > 0:
     now = time.time()
@@ -479,6 +479,11 @@ def checkblocklist():
         ipremove(ip)
         del blocklist[index]
         del blocktime[index]
+
+def cleanup():
+  if len(blocklist) > 0:
+    for ip in blocklist:
+      ipremove(ip)
 
 
 ##############################################################################################3
@@ -3102,6 +3107,7 @@ def sentryMode(db_file):
         if mariadb_watch: mariadb_tailer.join()
         if ssh_watch: ssh_tailer.join()
         httpd.server_close()
+        clear_iptables = cleanup()
         logging.info("Sentry shutdown: " + str(sigterm))
         sys.exit(1)
 
