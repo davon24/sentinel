@@ -1,6 +1,14 @@
 
 %define __brp_mangle_shebangs /usr/bin/true
 
+%global _python_bytecompile_extra 0
+
+# Turn off the brp-python-bytecompile script
+%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
+
+# Turn off automatic python bytecompilation
+%undefine __brp_python_bytecompile
+
 %define bindir  /usr/bin
 %define sbindir /usr/sbin
 
