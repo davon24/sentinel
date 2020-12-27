@@ -80,6 +80,9 @@ build-centos7-runtime:
 build-centos6:
    image: centos:6
    script:
+      - cp pkg/fix.centos6.repo.sh .
+      - ./fix.centos6.repo.sh
+      - yum -y update
       - yum install -y rpm-build
       - echo "Building RPM"
       - mkdir package
@@ -97,6 +100,9 @@ build-centos6:
 build-centos6-runtime:
    image: centos:6
    script:
+      - cp pkg/fix.centos6.repo.sh .
+      - ./fix.centos6.repo.sh
+      - yum -y update
       - yum install -y rpm-build
       - yum -y update
       - yum -y groupinstall "Development Tools"
