@@ -1,0 +1,39 @@
+
+```
+$ yum install -y rpm-build
+Loaded plugins: fastestmirror, ovl
+Setting up Install Process
+Error: Cannot retrieve repository metadata (repomd.xml) for repository: base. Please verify its path and try again
+YumRepo Error: All mirror URLs are not using ftp, http[s] or file.
+ Eg. Invalid release/repo/arch combination/
+removing mirrorlist with no valid mirrors: /var/cache/yum/x86_64/6/base/mirrorlist.txt
+Cleaning up file based variables
+00:01
+ERROR: Job failed: exit code 1
+```
+
+cat <<-'EOE' > /etc/yum.repos.d/CentOS-Base.repo
+
+[base]
+name=CentOS-$releasever - Base
+baseurl=https://vault.centos.org/6.10/os/$basearch/
+gpgcheck=0
+enabled=1
+
+[updates]
+name=CentOS-$releasever - Updates
+baseurl=https://vault.centos.org/6.10/updates/$basearch/
+gpgcheck=0
+enabled=1
+
+[extras]
+name=CentOS-$releasever - Extras
+baseurl=https://vault.centos.org/6.10/extras/$basearch/
+gpgcheck=0
+enabled=1
+
+EOE
+
+https://arstech.net/centos-6-error-yumrepo-error-all-mirror-urls-are-not-using-ftp-http/
+
+
