@@ -102,6 +102,12 @@ def createDB(db_file):
     cur.execute(create_b2sums)
     cur.execute(create_b2sumsi)
 
+    create_sshwatch  = "CREATE TABLE IF NOT EXISTS sshwatch (name TEXT PRIMARY KEY NOT NULL,data JSON) WITHOUT ROWID;"
+    create_sshwatchi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_sshwatch ON sshwatch (name);"
+    cur.execute(create_sshwatch)
+    cur.execute(create_sshwatchi)
+
+
     con.commit()
 
     return con

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.10-10'
+__version__ = '1.6.11-0.pre1'
 
 import sys
 import os
@@ -121,10 +121,14 @@ def usage():
         clear-proms-db
 
         list-b2sums
+        clear-b2sums
 
-        sentry
+        list-sshwatch
+        clear-sshwatch
 
         tail file
+
+        sentry
 
         ---
 
@@ -929,6 +933,17 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'clear-b2sums':
             clear = store.clearAll('b2sum', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-sshwatch':
+            rows = store.selectAll('sshwatch', db_store)
+            for row in rows:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-sshwatch':
+            clear = store.clearAll('sshwatch', db_store)
             print(clear)
             sys.exit(0)
 

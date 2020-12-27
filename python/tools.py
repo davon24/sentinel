@@ -275,7 +275,7 @@ def sentryTailResinLog(db_store, gDict, _file):
             c+=1
             _key = 'sentry-resin-tail-match-' + str(c)
             prom = 'prog="resin",logfile="' + str(_file) + '",match="' + str(line) + '"'
-            gDict[_key] = [ 'sentinel_watch_resin{' + prom + '} ' + str(c) ]
+            gDict[_key] = [ 'sentinel_resin_watch{' + prom + '} ' + str(c) ]
 
 
     return True
@@ -431,7 +431,7 @@ def sentryIPSLinuxSSH(db_store, gDict, _file):
             if thresh > elapsed:
                 logging.info("IPS ssh.watch THRESH: %s %s", ip, elapsed)
                 tm = time.time()
-                ipblock(ip,tm)
+                ipblock(ip,tm, _file, gDict, db_store)
                 logging.info("IPS ssh.watch ip: %s will clear in %s", ip, clear)
 
         #print('loop')
@@ -445,10 +445,33 @@ def recordip(ip,tm):
   iplist.pop()
   tmlist.pop()
 
-def recordblock(ip,tm):
+def recordblock(ip,tm, _file, gDict, db_store):
   logging.info("IPS ssh.watch blocked ip: %s", ip)
   blocklist.insert(0,ip)
   blocktime.insert(0,tm)
+
+  tmstr = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(tm))
+
+  # get existing count,
+  ipcount = store.getData('sshwatch', ip, db_store)
+  if ipcount:
+      _config = json.loads(ipcount[0])
+      _c = _config['count']
+      #print('existing _c ' + str(_c))
+      _c += 1
+  else:
+      _c = 1
+
+  #prom
+  #_c=1
+  _key  = 'sentry-sshwatch-' + str(ip)
+  _prom = 'prog="sshwatch",logfile="' + str(_file) + '",block="' + str(ip) + '",time="' + str(tmstr) + '"'
+  gDict[_key] = [ 'sentinel_ssh_watch{' + _prom + '} ' + str(_c) ]
+
+  #sqlite
+  jdata = { "logfile": str(_file), "time": str(tmstr), "count": _c }
+  _json = json.dumps(jdata)
+  replace_sql = store.replaceINTO2('sshwatch', ip, _json, db_store)
 
 def compare():
   count = 0
@@ -457,16 +480,18 @@ def compare():
       count += 1
   return count
 
-def ipblock(ip,tm):
+def ipblock(ip,tm, _file, gDict, db_store):
   cmd = "iptables -I INPUT -s %s -p tcp --dport %s -j DROP" % (ip, ssh_port)
   os.system(cmd)
   logging.info("%s", cmd)
-  recordblock(ip,tm)
+  recordblock(ip,tm, _file, gDict, db_store)
 
-def ipremove(ip):
+def ipremove(ip, gDict):
   cmd = "iptables -D INPUT -s %s -p tcp --dport %s -j DROP" % (ip, ssh_port)
   os.system(cmd)
   logging.info("%s", cmd)
+  _key  = 'sentry-sshwatch-' + str(ip)
+  gDict.pop(_key, None)
 
 def checkblocklist():
   if len(blocklist) > 0:
@@ -476,14 +501,14 @@ def checkblocklist():
       logging.debug("diff: %s clear: %s", diff, clear)
       if diff > clear:
         ip = blocklist[index]
-        ipremove(ip)
+        ipremove(ip, gDict)
         del blocklist[index]
         del blocktime[index]
 
 def cleanup():
   if len(blocklist) > 0:
     for ip in blocklist:
-      ipremove(ip)
+      ipremove(ip, gDict)
 
 
 ##############################################################################################3
