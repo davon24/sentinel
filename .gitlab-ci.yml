@@ -80,6 +80,7 @@ build-centos7-runtime:
 build-centos6:
    image: centos:6
    script:
+      - echo "Set Centos 6 RPM repo"
       - cp pkg/fix.centos6.repo.sh .
       - ./fix.centos6.repo.sh
       - yum -y update
@@ -100,6 +101,7 @@ build-centos6:
 build-centos6-runtime:
    image: centos:6
    script:
+      - echo "Set Centos 6 RPM repo"
       - cp pkg/fix.centos6.repo.sh .
       - ./fix.centos6.repo.sh
       - yum -y update

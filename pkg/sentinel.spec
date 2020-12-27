@@ -1,14 +1,6 @@
 
 %define __brp_mangle_shebangs /usr/bin/true
 
-%global _python_bytecompile_extra 0
-
-# Turn off the brp-python-bytecompile script
-%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
-
-# Turn off automatic python bytecompilation
-%undefine __brp_python_bytecompile
-
 %define bindir  /usr/bin
 %define sbindir /usr/sbin
 
@@ -24,15 +16,22 @@ Source0: sentinel-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 
-
 %if 0%{?rhel} == 8
 AutoReqProv: no
 #Requires: python38
+# Turn off the brp-python-bytecompile script
+%global _python_bytecompile_extra 0
+%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
+%undefine __brp_python_bytecompile
 %endif
 
 %if 0%{?rhel} == 7
 AutoReqProv: no
 #Requires: python38
+# Turn off the brp-python-bytecompile script
+%global _python_bytecompile_extra 0
+%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
+%undefine __brp_python_bytecompile
 %endif
 
 %if 0%{?rhel} == 6
