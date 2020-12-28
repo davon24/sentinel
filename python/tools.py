@@ -44,6 +44,8 @@ logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
 datefmt = "%b %d %H:%M:%S"
 logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
+#from sklearn.feature_extraction.text import CountVectorizer
+#from sklearn.naive_bayes import MultinomialNB
 
 #manager = multiprocessing.Manager()
 #global gDict
@@ -289,15 +291,58 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
 
     import csv
 
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.model_selection import train_test_split
+
+
+    ##X = df.text
+    ##y = df.label_num 0|1 #0=ham,1=spam
+    #X = bline
+    #y = 0
+    #X = list(range(15))
+    #y = [x * x for x in X]
+
+    #X_train, X_test, y_train, y_test = train_test_split(X, y)
+    #vectorizer = CountVectorizer()
+    #counts = vectorizer.fit_transform(X_train.values)
+    #classifier = MultinomialNB()
+    #targets = y_train.values
+    #calssifier.fit(counts, targets)
+
+    X = []
+    y = []
+
     kDict = {}
     #load kDict
     rows = store.selectAll('b2sum', db_store)
     for k,v in rows:
         #print(k,v)
         #kDict[k] = '' #empty val
-        kDict[k] = 1
+        #kDict[k] = 1
+        kDict[k] = v
 
-    c=0
+        X.append(v)
+        y.append(0)
+
+    #print(X)
+    #print(y)
+
+    #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    #X_train, y_train = train_test_split(X, y)
+
+    print(X_train)
+
+    vectorizer = CountVectorizer()
+    counts = vectorizer.fit_transform(X_train.values)
+    classifier = MultinomialNB()
+    targets = y_train.values
+    calssifier.fit(counts, targets)
+
+
+    #c=0
+
     for line in tail(_file):
         line = line.decode('utf-8').strip('\n')
         #line = line.decode('utf-8')
@@ -341,8 +386,10 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
             kDict[b] = v
         else:
             #print('new ' + b)
-            update_sql = store.replaceINTO2('b2sum', b, bline, db_store)
             kDict[b] = 1
+            update_sql = store.replaceINTO2('b2sum', b, bline, db_store)
+
+    ###############################
 
         #if b not in kDict.keys():
         #    #print('new ' + b)
@@ -366,13 +413,44 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
         #print(max(kDict, key=kDict.get))
         max_key = max(kDict, key=kDict.get)
         max_val = kDict[max_key]
-        print(max_key, max_val)
+        #print(max_key, max_val)
        
         min_key = min(kDict, key=kDict.get)
         min_val = kDict[min_key]
-        print(min_key, min_val)
+        #print(min_key, min_val)
+        #print(len(kDict))
+    ###############################
 
-        print(len(kDict))
+        #_key  = 'sentry-mariadb_watch-max_key-' + str(max_key)
+        _key  = 'sentry-mariadb_watch-max_key'
+        _prom = 'prog="mariadb_watch",logfile="' + str(_file) + '",blake2="' + str(max_key) + '"'
+        gDict[_key] = [ 'sentinel_mariadb_watch_max_key{' + _prom + '} ' + str(max_val) ]
+
+        #_key  = 'sentry-mariadb_watch-min_key-' + str(min_key)
+        _key  = 'sentry-mariadb_watch-min_key'
+        _prom = 'prog="mariadb_watch",logfile="' + str(_file) + '",blake2="' + str(min_key) + '"'
+        gDict[_key] = [ 'sentinel_mariadb_watch_min_key{' + _prom + '} ' + str(min_val) ]
+
+    ###############################
+
+        ##X = df.text
+        ##y = df.label_num 0|1 #0=ham,1=spam
+        #X = bline
+        #y = 0
+        #X_train, X_test, y_train, y_test = train_test_split(X, y)
+        #vectorizer = CountVectorizer()
+        #counts = vectorizer.fit_transform(X_train.values)
+        #classifier = MultinomialNB()
+        #targets = y_train.values
+        #calssifier.fit(counts, targets)
+
+
+
+
+
+
+    ###############################
+    ###############################
 
     return True
 
