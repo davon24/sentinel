@@ -320,7 +320,8 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
         #print(k,v)
         #kDict[k] = '' #empty val
         #kDict[k] = 1
-        kDict[k] = v
+        #kDict[k] = v
+        kDict[k] = 1
 
         X.append(v)
         y.append(0)
@@ -332,13 +333,13 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
     X_train, X_test, y_train, y_test = train_test_split(X, y)
     #X_train, y_train = train_test_split(X, y)
 
-    print(X_train)
-
     vectorizer = CountVectorizer()
-    counts = vectorizer.fit_transform(X_train.values)
+    #counts = vectorizer.fit_transform(X_train.values)
+    counts = vectorizer.fit_transform(X_train)
     classifier = MultinomialNB()
-    targets = y_train.values
-    calssifier.fit(counts, targets)
+    #targets = y_train.values
+    targets = y_train
+    classifier.fit(counts, targets)
 
 
     #c=0
@@ -444,9 +445,20 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
         #targets = y_train.values
         #calssifier.fit(counts, targets)
 
+        sample = [ bline ] 
+        sample_count = vectorizer.transform(sample)
+        prediction = classifier.predict(sample_count)
+        #print(prediction)
 
-
-
+        p=0
+        if prediction == 0:
+            #print('Zero: ' + str(prediction))
+            p+=1
+        else:
+            print('One: ' + str(prediction))
+            _key  = 'sentry-mariadb_watch-naive-bayes'
+            _prom = 'prog="mariadb_watch_naive-bayes",logfile="' + str(_file) + '",blake2="' + str(b) + '"'
+            gDict[_key] = [ 'sentinel_mariadb_watch_naive_bayes{' + _prom + '} ' + str('1') ]
 
 
     ###############################
