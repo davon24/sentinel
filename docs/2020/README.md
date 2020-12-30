@@ -1,10 +1,38 @@
 # sentinel  
 
-```
-./sentinel.py [option]
-```
+noun.  a soldier or guard whose job is to stand and keep watch.  
+
+Python program for the automation of mundane security tasks.  Relies on command line tools nmap, netstat, ping, arp, nslookup.  
+
+---  
+
+IN-PROGRESS  
+
+prometheus integration  
 
 ```
+./sentinel.py update-config prometheus '{"port": 9111, "path": "/metrics"}'    
+```
+
+
+---  
+
+Remote  
+- Network Discovery  
+- Port Scanner  
+- Vulnerability Scanner  
+
+Local  
+- Listening Ports and Services  
+- Established Connections  
+- File Integrity Monitoring  
+- Virus Scanner //TODO (clam-av)  
+
+---
+
+```
+./sentinel.py [option]
+
 ./sentinel.py --help   
 
     options:
@@ -24,6 +52,12 @@
         clear-vulns
         check-vuln id
         email-vuln id
+
+        detect-scan-net [ip/net]
+        detect-scan ip
+        list-detects [id]
+        del-detect id
+        clear-detects
 
         arps
         manuf mac
@@ -48,13 +82,10 @@
         listening-remove port
 
         established
-        established-lsof
         established-rules
         established-rules-filter
         established-rule ALLOW|DENY proto laddr lport faddr fport
         established-alerts
-        delete-established-rule rowid
-        clear-established-rules
 
         list-ips
         update-ip ip data
@@ -73,12 +104,10 @@
 
         list-configs
         update-config name data
-        delete-config name
+        delete-config id
 
         list-reports
-        update-report name data
-        delete-report name
-        clear-reports
+        delete-report id
 
         list-alerts
         delete-alert id
@@ -97,41 +126,12 @@
         add-fim name /dir/file
         del-fim name /dir/file
 
-        list-files
-        add-file /dir/file
-        del-file /dir/file
-        fim-restore /dir/file [/dir/file]
-        fim-diff
-        clear-files
-
-        file-type /dir/file
-
-        av-scan dir|file
-        list-avs
-
-        list-proms
-
-        list-proms-db
-        update-prom-db name data
-        clear-proms-db
-
-        list-b2sums
-        clear-b2sums
-
-        list-sshwatch
-        clear-sshwatch
-
-        tail file
-
         sentry
 
         ---
 
         list-counts
-        clear-counts
         run-create-db
         run-ps
-
-```
 
 
