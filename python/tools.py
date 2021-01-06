@@ -255,6 +255,113 @@ def tail(_file):
 
     return True
 
+def logstream(_format='json'):
+
+    if sys.platform == 'darwin':
+        #cmd = ['log', 'stream', '--style', _format] #macos
+        cmd = ['log', 'stream', '--style', 'ndjson'] #macos
+    elif sys.platform == 'linux' or sys.platform == 'linux2':
+        cmd = ['journalctl', '-f', '-o', _format] #linux
+    else:
+        logging.critical('Fail: No log stream.  No such file or directory')
+        return False
+
+    try:
+        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+        while (f.returncode == None):
+            line = f.stdout.readline()
+            if not line:
+                #break
+                time.sleep(1)
+            else:
+                yield line
+            sys.stdout.flush()
+
+    except Exception as e:
+        logging.critical('Exception ' + str(e))
+        return False
+
+    return True
+
+
+def logstreamMac(verbose=False):
+    for line in logstream():
+        line = line.decode('utf-8')
+        jdata = json.loads(line)
+
+        #for k,v in jdata.items():
+        #    print(k, ' ', v)
+
+        #print(jdata.keys())
+        #dict_keys(['traceID', 'eventMessage', 'eventType', 'source', 'formatString', 'activityIdentifier', 'subsystem', 'category', 'threadID', 'senderImageUUID', 'backtrace', 'bootUUID', 'processImagePath', 'timestamp', 'senderImagePath', 'machTimestamp', 'messageType', 'processImageUUID', 'processID', 'senderProgramCounter', 'parentActivityIdentifier', 'timezoneName'])
+
+        #print(jdata.get('eventType', None))
+        #print(jdata.get('messageType', None))
+        #print(jdata.get('eventMessage', None))
+        #print(jdata.get('process', None))
+        #print(jdata.get('processImagePath', None))
+        #print(jdata.get('sender', None))
+        #print(jdata.get('senderImagePath', None))
+        #print(jdata.get('subsystem', None))
+        #print(jdata.get('catetory', None))
+        #print(jdata.get('processID', None))
+        #print(jdata.get('source', None))
+
+        eventType        = jdata.get('eventType', None)
+        messageType      = jdata.get('messageType', None)
+        category         = jdata.get('category', None)
+        subsystem        = jdata.get('subsystem', None)
+        process          = jdata.get('process', None)
+        processImagePath = jdata.get('processImagePath', None)
+        sender           = jdata.get('sender', None)
+        senderImagePath  = jdata.get('senderImagePath', None)
+        processID        = jdata.get('processID', None)
+        eventMessage     = jdata.get('eventMessage', None)
+        source           = jdata.get('source', None)
+
+        data_string = str(eventType) +' '+ str(messageType) +' '+ str(category) +' '+ \
+                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
+        #print(data_string)
+
+    
+
+def logstreamLinux():
+    for line in logstream():
+        print(line)
+
+
+def sentryLogStream(db_store, gDict):
+
+    logging.info('Sentry syslog logstream')
+
+    from re import search
+
+    ec=0
+    fc=0
+
+    for line in logstream():
+        line = line.decode('utf-8')
+
+        #jdata = json.loads(line)
+
+        if search('error', line, re.IGNORECASE):
+            ec += 1
+            print('error')
+            _key  = 'sentry-syslog-watch-error-' + str(ec)
+            #_prom = 'prog="syslog_watch",json="' + str(json.dumps(jdata)) + '"'
+            _prom = 'prog="syslog_watch",json="' + str(line) + '"'
+            gDict[_key] = [ 'sentinel_syslog_watch_error{' + _prom + '} ' + str(ec) ]
+
+        if search('fatal', line, re.IGNORECASE):
+            fc += 1
+            print('fatal')
+            _key  = 'sentry-syslog-watch-fatal-' + str(fc)
+            #_prom = 'prog="syslog_watch",json="' + str(json.dumps(jdata)) + '"'
+            _prom = 'prog="syslog_watch",json="' + str(line) + '"'
+            gDict[_key] = [ 'sentinel_syslog_watch_fatal{' + _prom + '} ' + str(fc) ]
+
+    return True
+
 
 def sentryTailFile(db_store, gDict, _file):
     for line in tail(_file):
@@ -3194,6 +3301,14 @@ def sentryMode(db_file):
         ssh_tailer.start()
         #ssh_tailer.join()
 
+    syslog_watch = store.getData('configs', 'watch-syslog', db_store)
+    if syslog_watch:
+        syslog_watch_config = json.loads(syslog_watch[0])
+        _logfile  = syslog_watch_config['logfile']
+        _format   = syslog_watch_config['format']
+        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict))
+        syslog_tailer.start()
+        #syslog_tailer.join()
 
     prometheus_config = store.getData('configs', 'prometheus', db_store)
     #print(str(type(prometheus_config)) + ' prometheus_config ' + str(prometheus_config))

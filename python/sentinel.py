@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-1'
+__version__ = '1.6.11-2.test.1'
 
 import sys
 import os
@@ -127,6 +127,7 @@ def usage():
         clear-sshwatch
 
         tail file
+        logstream
 
         sentry
 
@@ -921,6 +922,22 @@ if __name__ == '__main__':
             #follow = tools.follow(_file)
             #print(follow)
             for line in tools.tail(_file):
+                print(line)
+            sys.exit(0)
+
+        if sys.argv[1] == 'logstream':
+            for line in tools.logstream():
+                #line = line.decode('utf-8')
+                print(line)
+                #jdata = json.loads(line)
+                #print(jdata['eventMessage'])
+                #print(jdata['XeventMessage'])
+                #print(line.get('eventMessage',None))
+                #print(line['eventMessage'])
+            sys.exit(0)
+
+        if sys.argv[1] == 'logstream-mac':
+            for line in tools.logstreamMac():
                 print(line)
             sys.exit(0)
 
