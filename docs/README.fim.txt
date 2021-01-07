@@ -24,9 +24,10 @@ sentinel update-job fim-job-1 '{"repeat":"12hour", "job":"fim-check", "config":"
 #list/view sentinel sentry prom output
 sentinel list-proms
 
-should look something like,
-```
-sentinel_job{repeat="12hour",job="fim-check",config="fim-1",start="2020-12-29 18:55:10",name="fim-job-1",done="2020-12-29 18:55:10",success="True"} 1
-sentinel_job_output{config="fim-1",job="fim-job-1",done="2020-12-29 18:55:10"} 0
-```
+#should look something like,
+#```
+#sentinel_job{repeat="12hour",job="fim-check",config="fim-1",start="2020-12-29 18:55:10",name="fim-job-1",done="2020-12-29 18:55:10",success="True"} 1
+#sentinel_job_output{config="fim-1",job="fim-job-1",done="2020-12-29 18:55:10"} 0
+#```
+
  

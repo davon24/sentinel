@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.test.1'
+__version__ = '1.6.11-2.inprogress.2'
 
 import sys
 import os
@@ -919,28 +919,19 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'tail':
             _file = sys.argv[2]
-            #follow = tools.follow(_file)
-            #print(follow)
             for line in tools.tail(_file):
                 print(line)
             sys.exit(0)
 
         if sys.argv[1] == 'logstream':
             for line in tools.logstream():
-                #line = line.decode('utf-8')
                 print(line)
-                #jdata = json.loads(line)
-                #print(jdata['eventMessage'])
-                #print(jdata['XeventMessage'])
-                #print(line.get('eventMessage',None))
-                #print(line['eventMessage'])
             sys.exit(0)
 
         if sys.argv[1] == 'logstream-mac':
             for line in tools.logstreamMac():
                 print(line)
             sys.exit(0)
-
 
         if sys.argv[1] == 'list-b2sums':
             rows = store.selectAll('b2sum', db_store)
