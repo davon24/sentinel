@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.3'
+__version__ = '1.6.11-2.inprogress.4'
 
 import sys
 import os
@@ -77,6 +77,10 @@ def usage():
         clear-jobs
 
         list-configs
+        update-config name data
+        delete-config name
+
+        list-rules
         update-config name data
         delete-config name
 
@@ -616,6 +620,30 @@ if __name__ == '__main__':
             run = store.deleteFrom('configs', rowid, db_store)
             print(run)
             sys.exit(0)
+
+        if sys.argv[1] == 'list-rules':
+            rows = store.selectAll('rules', db_store)
+            for row in rows:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'update-rule':
+            name = sys.argv[2]
+            data = sys.argv[3]
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError:
+                print('invalid json')
+                sys.exit(1)
+            run = store.replaceINTO('rules', name, data, db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-rule':
+            name = sys.argv[2]
+            run = store.deleteFrom('rule', name, db_store)
+            print(run)
+            sys.exit(0)
+
 
         if sys.argv[1] == 'list-jobs':
             #run = tools.printJobs(db_store)

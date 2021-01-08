@@ -107,6 +107,10 @@ def createDB(db_file):
     cur.execute(create_sshwatch)
     cur.execute(create_sshwatchi)
 
+    create_rules  = "CREATE TABLE IF NOT EXISTS rules (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
+    create_rulesi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_rules ON rules (name);"
+    cur.execute(create_rules)
+    cur.execute(create_rulesi)
 
     con.commit()
 

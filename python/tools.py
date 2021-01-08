@@ -332,67 +332,120 @@ def logstreamLinux():
         print(line)
 
 
-def sentryLogStream(db_store, gDict, _search):
+def sentryLogStream(db_store, gDict):
 
     if sys.platform == 'darwin':
-        sentryLogStreamMac(db_store, gDict, _search)
+        sentryLogStreamMac(db_store, gDict)
     elif sys.platform == 'linux' or sys.platform == 'linux2':
-        sentryLogStreamLinux(db_store, gDict, _search)
+        sentryLogStreamLinux(db_store, gDict)
     else:
         logging.critical('Unknown OS.  fail sentryLogStream')
         return False
 
     return True
 
+def expertLogStreamRulesEngineMac(line, _rules, gDict):
+    print('expertLogStreamRulesEngine')
+    return True
+    
 
-def sentryLogStreamMac(db_store, gDict, _search):
-    #from re import search
+def sentryLogStreamMac(db_store, gDict):
     logging.info('Sentry syslog logstream')
 
-    kDict={}
+    rules = store.selectAll('rules', db_store)
+    if rules:
+        #_conf = json.loads(rules[0])
+        #print(str(_conf))
+        #print(str(rules))
+        for rule in rules:
+            name = rule[0]
+            jconf = rule[2]
+            #print(jconf)
+            jdata = json.loads(jconf)
+            config = jdata.get('config', None)
 
-    if _search:
-        #print(str(_search))
-        #print(str(type(_search))) #be a list pls
-        logging.info('Sentry syslog watch for ' + str(_search))
+            if config == 'watch-syslog':
+                #print('process json keys ' + str(name) + ' from config ' + str(config))
+                config_data = store.getData('rules', name, db_store)
+                #print(config_data)
+                config_data_json = json.loads(config_data[0])
+                for k,v in config_data_json.items():
+                    if k == 'config':
+                        continue
+                    print(k,v)
 
 
-    #ec=0
-    #fc=0
+                _rules = [] #empty list
+
+
 
     for line in logstream():
         line = line.decode('utf-8')
-        jdata = json.loads(line)
-
-        eventType        = jdata.get('eventType', None)
-        messageType      = jdata.get('messageType', None)
-        category         = jdata.get('category', None)
-        subsystem        = jdata.get('subsystem', None)
-        process          = jdata.get('process', None)
-        processImagePath = jdata.get('processImagePath', None)
-        sender           = jdata.get('sender', None)
-        senderImagePath  = jdata.get('senderImagePath', None)
-        processID        = jdata.get('processID', None)
-        eventMessage     = jdata.get('eventMessage', None)
-        source           = jdata.get('source', None)
-
-        data_string = str(eventType) +' '+ str(messageType) +' '+ str(category) +' '+ \
-                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ \
-                      str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
-
-        b = b2checksum(data_string)
-        #print(identifier)
-        if b in kDict.keys():
-            #print('seen ' + b)
-            v = kDict[b]
-            v += 1
-            kDict[b] = v
-        else:
-            #print('new ' + b)
-            kDict[b] = 1
+        run_rules = expertLogStreamRulesEngineMac(line, _rules, gDict)
 
 
 
+
+#def sentryLogStreamMac(db_store, gDict, _search):
+#    #from re import search
+#    logging.info('Sentry syslog logstream')
+#
+#    kDict={}
+#
+#    if _search:
+#        #print(str(_search))
+#        #print(str(type(_search))) #be a list pls
+#        logging.info('Sentry syslog watch ' + str(_search))
+#
+#
+#    #ec=0
+#    #fc=0
+#
+#    for line in logstream():
+#        line = line.decode('utf-8')
+#        jdata = json.loads(line)
+#
+#        eventType        = jdata.get('eventType', None)
+#        messageType      = jdata.get('messageType', None)
+#        category         = jdata.get('category', None)
+#        subsystem        = jdata.get('subsystem', None)
+#        process          = jdata.get('process', None)
+#        processImagePath = jdata.get('processImagePath', None)
+#        sender           = jdata.get('sender', None)
+#        senderImagePath  = jdata.get('senderImagePath', None)
+#        processID        = jdata.get('processID', None)
+#        eventMessage     = jdata.get('eventMessage', None)
+#        source           = jdata.get('source', None)
+#
+#        data_string = str(eventType) +' '+ str(messageType) +' '+ str(category) +' '+ \
+#                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ \
+#                      str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
+#
+#        b = b2checksum(data_string)
+#        #print(identifier)
+#        if b in kDict.keys():
+#            seen = True
+#            #print('seen ' + b)
+#            v = kDict[b]
+#            v += 1
+#            kDict[b] = v
+#        else:
+#            seen = False
+#            #print('new ' + b)
+#            kDict[b] = 1
+#
+#
+#        if _search:
+#            for s in _search:
+#                if re.search(s, line, re.IGNORECASE):
+#                    rulesEngine
+#                    print('found ' + str(s) + ' seen ' + str(seen))
+#                    _key  = 'sentry-syslog-watch-' + str(s) + '-' + str(b)
+#                    _prom = 'prog="syslog_watch",match="' + str(s) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(line) + '"'
+#                    gDict[_key] = [ 'sentinel_syslog_watch_search{' + _prom + '} ' + str(kDict[b]) ]
+#
+#
+#
 
         #if search('error', line, re.IGNORECASE):
         #    ec += 1
@@ -412,9 +465,9 @@ def sentryLogStreamMac(db_store, gDict, _search):
 
         #jdata = json.loads(line)
 
-    return True
+#    return True
 
-def sentryLogStreamLinux(db_store, gDict, _search):
+def sentryLogStreamLinux(db_store, gDict):
     print('TBD')
 
 def sentryTailFile(db_store, gDict, _file):
@@ -3360,7 +3413,7 @@ def sentryMode(db_file):
         syslog_watch_config = json.loads(syslog_watch[0])
         #_search   = syslog_watch_config['search'] #KeyError:
         _search   = syslog_watch_config.get('search', None)
-        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict, _search))
+        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict))
         syslog_tailer.start()
         #syslog_tailer.join()
 
