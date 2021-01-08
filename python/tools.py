@@ -284,7 +284,7 @@ def logstream(_format='json'):
     return True
 
 
-def logstreamMac(verbose=False):
+def logstreamMac(verbose=True):
     for line in logstream():
         line = line.decode('utf-8')
         jdata = json.loads(line)
@@ -320,8 +320,10 @@ def logstreamMac(verbose=False):
         source           = jdata.get('source', None)
 
         data_string = str(eventType) +' '+ str(messageType) +' '+ str(category) +' '+ \
-                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
+                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ \
+                      str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
         #print(data_string)
+        if verbose: print(data_string)
 
     
 
@@ -330,38 +332,90 @@ def logstreamLinux():
         print(line)
 
 
-def sentryLogStream(db_store, gDict):
+def sentryLogStream(db_store, gDict, _search):
 
-    logging.info('Sentry syslog logstream')
-
-    from re import search
-
-    ec=0
-    fc=0
-
-    for line in logstream():
-        line = line.decode('utf-8')
-
-        #jdata = json.loads(line)
-
-        if search('error', line, re.IGNORECASE):
-            ec += 1
-            print('error')
-            _key  = 'sentry-syslog-watch-error-' + str(ec)
-            #_prom = 'prog="syslog_watch",json="' + str(json.dumps(jdata)) + '"'
-            _prom = 'prog="syslog_watch",json="' + str(line) + '"'
-            gDict[_key] = [ 'sentinel_syslog_watch_error{' + _prom + '} ' + str(ec) ]
-
-        if search('fatal', line, re.IGNORECASE):
-            fc += 1
-            print('fatal')
-            _key  = 'sentry-syslog-watch-fatal-' + str(fc)
-            #_prom = 'prog="syslog_watch",json="' + str(json.dumps(jdata)) + '"'
-            _prom = 'prog="syslog_watch",json="' + str(line) + '"'
-            gDict[_key] = [ 'sentinel_syslog_watch_fatal{' + _prom + '} ' + str(fc) ]
+    if sys.platform == 'darwin':
+        sentryLogStreamMac(db_store, gDict, _search)
+    elif sys.platform == 'linux' or sys.platform == 'linux2':
+        sentryLogStreamLinux(db_store, gDict, _search)
+    else:
+        logging.critical('Unknown OS.  fail sentryLogStream')
+        return False
 
     return True
 
+
+def sentryLogStreamMac(db_store, gDict, _search):
+    #from re import search
+    logging.info('Sentry syslog logstream')
+
+    kDict={}
+
+    if _search:
+        #print(str(_search))
+        #print(str(type(_search))) #be a list pls
+        logging.info('Sentry syslog watch for ' + str(_search))
+
+
+    #ec=0
+    #fc=0
+
+    for line in logstream():
+        line = line.decode('utf-8')
+        jdata = json.loads(line)
+
+        eventType        = jdata.get('eventType', None)
+        messageType      = jdata.get('messageType', None)
+        category         = jdata.get('category', None)
+        subsystem        = jdata.get('subsystem', None)
+        process          = jdata.get('process', None)
+        processImagePath = jdata.get('processImagePath', None)
+        sender           = jdata.get('sender', None)
+        senderImagePath  = jdata.get('senderImagePath', None)
+        processID        = jdata.get('processID', None)
+        eventMessage     = jdata.get('eventMessage', None)
+        source           = jdata.get('source', None)
+
+        data_string = str(eventType) +' '+ str(messageType) +' '+ str(category) +' '+ \
+                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ \
+                      str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
+
+        b = b2checksum(data_string)
+        #print(identifier)
+        if b in kDict.keys():
+            #print('seen ' + b)
+            v = kDict[b]
+            v += 1
+            kDict[b] = v
+        else:
+            #print('new ' + b)
+            kDict[b] = 1
+
+
+
+
+        #if search('error', line, re.IGNORECASE):
+        #    ec += 1
+        #    print('error')
+        #    _key  = 'sentry-syslog-watch-error-' + str(ec)
+        #    #_prom = 'prog="syslog_watch",json="' + str(json.dumps(jdata)) + '"'
+        #    _prom = 'prog="syslog_watch",json="' + str(line) + '"'
+        #    gDict[_key] = [ 'sentinel_syslog_watch_error{' + _prom + '} ' + str(ec) ]
+
+        #if search('fatal', line, re.IGNORECASE):
+        #    fc += 1
+        #    print('fatal')
+        #    _key  = 'sentry-syslog-watch-fatal-' + str(fc)
+        #    #_prom = 'prog="syslog_watch",json="' + str(json.dumps(jdata)) + '"'
+        #    _prom = 'prog="syslog_watch",json="' + str(line) + '"'
+        #    gDict[_key] = [ 'sentinel_syslog_watch_fatal{' + _prom + '} ' + str(fc) ]
+
+        #jdata = json.loads(line)
+
+    return True
+
+def sentryLogStreamLinux(db_store, gDict, _search):
+    print('TBD')
 
 def sentryTailFile(db_store, gDict, _file):
     for line in tail(_file):
@@ -3304,9 +3358,9 @@ def sentryMode(db_file):
     syslog_watch = store.getData('configs', 'watch-syslog', db_store)
     if syslog_watch:
         syslog_watch_config = json.loads(syslog_watch[0])
-        _logfile  = syslog_watch_config['logfile']
-        _format   = syslog_watch_config['format']
-        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict))
+        #_search   = syslog_watch_config['search'] #KeyError:
+        _search   = syslog_watch_config.get('search', None)
+        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict, _search))
         syslog_tailer.start()
         #syslog_tailer.join()
 
