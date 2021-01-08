@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.4'
-
 import sys
 import os
 import json
 
 import tools
 import store
+
+__version__ = tools.__version__
 
 def usage():
     print(sys.argv[0] + ''' [option]
@@ -142,7 +142,7 @@ def usage():
         run-create-db
         run-ps
 
-    ''')
+Version: {} '''.format(__version__))
 
 
         #fix this later...

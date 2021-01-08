@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+__version__ = '1.6.11-2.inprogress.5'
+
 from subprocess import Popen, PIPE, STDOUT
 import threading
 import multiprocessing
@@ -374,10 +376,7 @@ def sentryLogStreamMac(db_store, gDict):
                         continue
                     print(k,v)
 
-
                 _rules = [] #empty list
-
-
 
     for line in logstream():
         line = line.decode('utf-8')
@@ -3084,8 +3083,8 @@ def getDuration(_repeat):
 
 def sentryProcessor(db_store, gDict):
 
-    #while (sigterm == False):
-    while True:
+    while (sigterm == False):
+    #while True:
         #print('process Reports')
 
         _prom = str(db_store) + '.prom'
@@ -3208,6 +3207,8 @@ def processD(List):
         k = 'sentinel_up_' + str(c)
         gDict[k] = [ item ]
 
+    promDATA = 'sentinel_app_info{version="' + __version__ + '"} 1.0'
+    gDict['sentinel_app_info'] = [ promDATA ]
 
     #print(sys.version)
     #print(sys.version_info)
@@ -3241,12 +3242,12 @@ def processD(List):
 
 
 def sentryScheduler(db_store, gDict):
-    #while (sigterm == False):
-    while True:
+    while (sigterm == False):
+    #while True:
 
         List = []
         job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
-        job.setDaemon(True)
+        #job.setDaemon(True)
         job.start()
 
         ##run = sentryProcessAlerts(db_store)
@@ -3412,7 +3413,7 @@ def sentryMode(db_file):
     if syslog_watch:
         syslog_watch_config = json.loads(syslog_watch[0])
         #_search   = syslog_watch_config['search'] #KeyError:
-        _search   = syslog_watch_config.get('search', None)
+        #_search   = syslog_watch_config.get('search', None)
         syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict))
         syslog_tailer.start()
         #syslog_tailer.join()
@@ -3432,18 +3433,27 @@ def sentryMode(db_file):
             p.join()
         else:
             #time.sleep(60)
-            time.sleep(-1)
+            #time.sleep(-1)
+            #ValueError: sleep length must be non-negative
+            signal.pause()
+
+            #import asyncio
+            #loop = asyncio.get_event_loop()
+            #try:
+            #    loop.run_forever()
+            #finally:
+            #    loop.close()
 
         print('pid ' + str(os.getpid()))
 
     except (KeyboardInterrupt, SystemExit, Exception):
         sigterm = True
-        scheduler.join()
-        processor.join()
-        if resin_watch: resin_tailer.join()
-        if mariadb_watch: mariadb_tailer.join()
-        if ssh_watch: ssh_tailer.join()
-        httpd.server_close()
+        #scheduler.join()
+        #processor.join()
+        #if resin_watch: resin_tailer.join()
+        #if mariadb_watch: mariadb_tailer.join()
+        #if ssh_watch: ssh_tailer.join()
+        #httpd.server_close()
         clear_iptables = cleanup()
         logging.info("Sentry shutdown: " + str(sigterm))
         sys.exit(1)
