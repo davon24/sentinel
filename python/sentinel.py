@@ -81,8 +81,9 @@ def usage():
         delete-config name
 
         list-rules
-        update-config name data
-        delete-config name
+        update-rule name data
+        delete-rule name
+        clear-rules
 
         list-reports
         update-report name data
@@ -640,10 +641,14 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'delete-rule':
             name = sys.argv[2]
-            run = store.deleteFrom('rule', name, db_store)
+            run = store.deleteFrom('rules', name, db_store)
             print(run)
             sys.exit(0)
 
+        if sys.argv[1] == 'clear-rules':
+            clear = store.clearAll('rules', db_store)
+            print(clear)
+            sys.exit(0)
 
         if sys.argv[1] == 'list-jobs':
             #run = tools.printJobs(db_store)

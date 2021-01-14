@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.6'
+__version__ = '1.6.11-2.inprogress.7'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -348,75 +348,151 @@ def sentryLogStream(db_store, gDict):
 
 def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
     #print('expertLogStreamRulesEngine')
-    #print(rulesDict)
+    print(rulesDict)
     #print(jline.keys())
 
-    _key = rulesDict.get('key', None)
     _search = rulesDict.get('search', None)
-    data = jline.get(_key, None)
+    _match  = rulesDict.get('match', None)
+    _not = rulesDict.get('not', None)
+
+    #data = jline.get(_data, None)
+    #print(_key)
+    #set rules order here
+    #print(_key)
 
     kDict={}
 
-    if data and _search:
-        for item in _search:
-            #print(item)
-            #print(_key)
-            #print(jline.get(_key, None))
-            if re.search(item, data, re.IGNORECASE):
-
-                b = b2checksum(data)
-                if b in kDict.keys():
-                    seen = True
-                    v = kDict[b]
-                    v += 1
-                    kDict[b] = v
-                else:
-                    seen = False
-                    kDict[b] = 1
+    #print(str(_search), str(_match), str(_not))
 
 
-                print('hit ' + str(item))
-                _key  = 'sentry-syslog-watch-search' + str(b)
-                _prom = 'prog="syslog_watch",search="' + str(item) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(jline) + '"'
-                gDict[_key] = [ 'sentinel_syslog_watch_search{' + _prom + '} ' + str(kDict[b]) ]
+    #if _search:
 
+
+
+
+
+
+#    if data and _search:
+#        for item in _search:
+#            #print(item)
+#            #print(_key)
+#            #print(jline.get(_key, None))
+#            if re.search(item, data, re.IGNORECASE):
+#
+#                if _not:
+#                    print('_except this one ')
+#
+#                b = b2checksum(data)
+#                if b in kDict.keys():
+#                    seen = True
+#                    v = kDict[b]
+#                    v += 1
+#                    kDict[b] = v
+#                else:
+#                    seen = False
+#                    kDict[b] = 1
+#
+#
+#                print('hit ' + str(item))
+#                _key  = 'sentry-syslog-watch-search' + str(b)
+#                _prom = 'prog="syslog_watch",search="' + str(item) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(jline) + '"'
+#                gDict[_key] = [ 'sentinel_syslog_watch_search{' + _prom + '} ' + str(kDict[b]) ]
+#
     #WORKING.HERE
 
     return True
     
 
+def getExpertRules(config, db_store):
+    # ('watch-syslog-1', '2021-01-14 22:46:06', '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError"]}')
+    rulesDict = {}
+    rules = store.selectAll('rules', db_store)
+    for rule in rules:
+        name = rule[0]
+        jconf = rule[2]
+
+        jdata = json.loads(jconf)
+        jconfig = jdata.get('config', None)
+
+        if config == jconfig:
+            #print(name, jconf)
+            rulesDict[name] = jconf
+    return rulesDict
+
+
+
 def sentryLogStreamMac(db_store, gDict):
     logging.info('Sentry syslog logstream')
 
-    rulesDict = {}
-    rules = store.selectAll('rules', db_store)
-    if rules:
-        #_conf = json.loads(rules[0])
-        #print(str(_conf))
-        #print(str(rules))
-        for rule in rules:
-            name = rule[0]
-            jconf = rule[2]
-            #print(jconf)
-            jdata = json.loads(jconf)
-            config = jdata.get('config', None)
+    rulesDict = getExpertRules('watch-syslog', db_store)
 
-            if config == 'watch-syslog':
+
+    #rulesDict = {}
+    #rules = store.selectAll('rules', db_store)
+    #if rules:
+    #    #_conf = json.loads(rules[0])
+    #    #print(str(_conf))
+    #    #print(str(rules))
+    #    for rule in rules:
+    #        name = rule[0]
+    #        jconf = rule[2]
+    #        #print(jconf)
+    #        jdata = json.loads(jconf)
+    #        config = jdata.get('config', None)
+#
+#            if config == 'watch-syslog':
+#                print(name, jconf)
+
+
+
+
+
+
                 #print('process json keys ' + str(name) + ' from config ' + str(config))
-                config_data = store.getData('rules', name, db_store)
-                #print(config_data)
-                config_data_json = json.loads(config_data[0])
-                #for k,v in config_data_json.items():
+
+
+                #rules = store.getData('rules', name, db_store)
+                #rules = store.getData('rules', name, db_store)
+                #print(rules)
+
+                #rules = store.selectAll('rules', db_store)
+                #for rule in rules:
+                #    #print(rule)
+                #    name = rule[0]
+                #    data = rule[2]
+                    #print(name, data)
+
+                    
+
+                    #if name == 'watch-syslog':
+                    #if name == config:
+                    #    print(name,data)
+
+
+
+                #config_data = store.getData('rules', name, db_store)
+                #print(' - ',config_data)
+                #config_data_json = json.loads(config_data[0])
+
                 #    if k == 'config':
                 #        continue
                 #    print(k,v)
                 #if 'search' in config_data_json.keys():
                 #    print('search ' + str(config_data_json.get('search', None)))
                 #_rules = [] #empty list
-                for k,v in config_data_json.items():
-                    if k == 'config':
-                        continue
-                    rulesDict[k] = v
+
+                #for k,v in config_data_json.items():
+                #    if k == 'config':
+                #        continue
+                #    rulesDict[k] = v
+
+                #for k,v in config_data_json.items():
+                #    #if k == 'config':
+                #    #    continue
+                #    #rulesDict[k] = v
+                #    print(k,' --- ', v)
+
+
 
     for line in logstream():
         line = line.decode('utf-8')
