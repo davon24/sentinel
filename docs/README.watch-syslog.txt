@@ -1,4 +1,11 @@
 
+
+#[Privacy] Did stop advertising with error: (null)
+sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError","[Privacy] Did stop advertising with error: (null)"]}'
+
+
+
+
 #Linux......................................................
 
 sentinel update-config watch-syslog '{"logfile":"stream"}'
@@ -12,6 +19,8 @@ sentinel update-rule watch-syslog-2 '{"config":"watch-syslog","search":[{"MESSAG
 #MAC........................................................
 
 sentinel update-config watch-syslog '{"logfile":"stream"}'
+
+sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError"],"pass":["952ac1cce6fe8b80d9f75f3718bc1943ddb63241","7282d72d7518628bcc9cc643fd663bd20ec0a112"]}'
 
 sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError"]}'
 
