@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.10'
+__version__ = '1.6.11-2.inprogress.jan.15-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -290,44 +290,46 @@ def logstreamMac(verbose=True):
     for line in logstream():
         line = line.decode('utf-8')
         jdata = json.loads(line)
+        print(jdata)
 
-        #for k,v in jdata.items():
-        #    print(k, ' ', v)
+    return True
 
-        #print(jdata.keys())
-        #dict_keys(['traceID', 'eventMessage', 'eventType', 'source', 'formatString', 'activityIdentifier', 'subsystem', 'category', 'threadID', 'senderImageUUID', 'backtrace', 'bootUUID', 'processImagePath', 'timestamp', 'senderImagePath', 'machTimestamp', 'messageType', 'processImageUUID', 'processID', 'senderProgramCounter', 'parentActivityIdentifier', 'timezoneName'])
+#        #for k,v in jdata.items():
+#        #    print(k, ' ', v)
+#
+#        #print(jdata.keys())
+#        #dict_keys(['traceID', 'eventMessage', 'eventType', 'source', 'formatString', 'activityIdentifier', 'subsystem', 'category', 'threadID', 'senderImageUUID', 'backtrace', 'bootUUID', 'processImagePath', 'timestamp', 'senderImagePath', 'machTimestamp', 'messageType', 'processImageUUID', 'processID', 'senderProgramCounter', 'parentActivityIdentifier', 'timezoneName'])
+#
+#        #print(jdata.get('eventType', None))
+#        #print(jdata.get('messageType', None))
+#        #print(jdata.get('eventMessage', None))
+#        #print(jdata.get('process', None))
+#        #print(jdata.get('processImagePath', None))
+#        #print(jdata.get('sender', None))
+#        #print(jdata.get('senderImagePath', None))
+#        #print(jdata.get('subsystem', None))
+#        #print(jdata.get('catetory', None))
+#        #print(jdata.get('processID', None))
+#        #print(jdata.get('source', None))
+#
+#        eventType        = jdata.get('eventType', None)
+#        messageType      = jdata.get('messageType', None)
+#        category         = jdata.get('category', None)
+#        subsystem        = jdata.get('subsystem', None)
+#        process          = jdata.get('process', None)
+#        processImagePath = jdata.get('processImagePath', None)
+#        sender           = jdata.get('sender', None)
+#        senderImagePath  = jdata.get('senderImagePath', None)
+#        processID        = jdata.get('processID', None)
+#        eventMessage     = jdata.get('eventMessage', None)
+#        source           = jdata.get('source', None)
+#
+#        data_string = str(eventType) +' '+ str(messageType) +' '+ str(category) +' '+ \
+#                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ \
+#                      str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
+#        #print(data_string)
+#        #if verbose: print(data_string)
 
-        #print(jdata.get('eventType', None))
-        #print(jdata.get('messageType', None))
-        #print(jdata.get('eventMessage', None))
-        #print(jdata.get('process', None))
-        #print(jdata.get('processImagePath', None))
-        #print(jdata.get('sender', None))
-        #print(jdata.get('senderImagePath', None))
-        #print(jdata.get('subsystem', None))
-        #print(jdata.get('catetory', None))
-        #print(jdata.get('processID', None))
-        #print(jdata.get('source', None))
-
-        eventType        = jdata.get('eventType', None)
-        messageType      = jdata.get('messageType', None)
-        category         = jdata.get('category', None)
-        subsystem        = jdata.get('subsystem', None)
-        process          = jdata.get('process', None)
-        processImagePath = jdata.get('processImagePath', None)
-        sender           = jdata.get('sender', None)
-        senderImagePath  = jdata.get('senderImagePath', None)
-        processID        = jdata.get('processID', None)
-        eventMessage     = jdata.get('eventMessage', None)
-        source           = jdata.get('source', None)
-
-        data_string = str(eventType) +' '+ str(messageType) +' '+ str(category) +' '+ \
-                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ \
-                      str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
-        #print(data_string)
-        if verbose: print(data_string)
-
-    
 
 def logstreamLinux():
     for line in logstream():
@@ -346,73 +348,114 @@ def sentryLogStream(db_store, gDict):
 
     return True
 
+#def extractRule(rules):
+#    return _search
 
 def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
     h={}
     #k={}
-    n={}
-    r={}
+    #n={}
+    #r={}
 
     ######################################################################
     # process each rule one at a time
-    c=0
-    b=None
+    b = None
     for _r,v in rulesDict.items():
-        c += 1
-        #print('rule ',r,v)
-
         #extract each rule and apply it to jline (jline is multi k,v)
-        #jrules = json.loads(v[0])
+        #print('rule ',_r,v)
+
         jrules = json.loads(v)
         #print(jrules)
 
+        _data   = jrules.get('data', None)
+        data = jline.get(_data)
+        if data:
+            b = b2checksum(data)
+        _k = str(_r) +'-'+ str(b)
+
         _search = jrules.get('search', None)
-        _match = jrules.get('match', None)
-        _not = jrules.get('not', None)
-        _pass = jrules.get('pass', None)
+        _match  = jrules.get('match', None)
+        _not    = jrules.get('not', None)
+        _pass   = jrules.get('pass', None)
 
         if _search:
-            for idict in _search:
-                for d,s in idict.items():
+            #print('yes, apply rule search ' , _r,' ',_search,' ', data)
+            if re.search(_search, data, re.IGNORECASE):
+                h[_k] = data
 
-                    data = jline.get(d, None)
+                if _not:
+                    for no in _not:
+                        if no in data:
+                            if h.pop(_k, None):
+                                print('_not this one...', _k, ' ', data)
 
-                    if re.search(s, data, re.IGNORECASE):
-                        #b = b2checksum(str(k)+str(s)+str(data))
-                        b = b2checksum(data)
-
-                        #if b in k.keys():
-                        #    seen = True
-                        #    c = k[b]
-                        #    c += 1
-                        #    k[b] = c
-                        #else:
-                        #    seen = False
-                        #    k[b] = 1
-
-                        h[b] = data
-
-                        if _not:
-                            for no in _not:
-                                if no in data:
-                                    h.pop(b, None)
+                #print('hit ', _search, ' ',b,' ', data)
+                #if _not:
+                #    for no in _not:
+                #        if no in data:
+                #            print('skip... ', _k, ' ' , data)
+                #            continue
+                #        else:
+                #            h[_k] = data
 
         if _pass:
             for p in _pass:
-                #print('pass ', p)
-                #n.append(p)
-                n[p] = 1
-               
+                if h.pop(_k, None):
+                    print('pass this one...', p)
 
-        # remove any hash matches
-        for _n in n:
-            h.pop(_n, None)
+    ######################################################################
+    
+    for k,v in h.items():
+        print(k,v)
 
-        #_c = str(_r) +'-'+ str(c)
-        _c = str(_r) +'-'+ str(b)
-        r[_c] = h
-        
+
+    return True
+
+
+
+
+            #for idict in _search:
+            #    for d,s in idict.items():
+            #        data = jline.get(d, None)
+#
+#                    if re.search(s, data, re.IGNORECASE):
+#                        #b = b2checksum(str(k)+str(s)+str(data))
+#                        b = b2checksum(data)
+#
+#                        #if b in k.keys():
+#                        #    seen = True
+#                        #    c = k[b]
+#                        #    c += 1
+#                        #    k[b] = c
+#                        #else:
+#                        #    seen = False
+#                        #    k[b] = 1
+#
+#                        h[b] = data
+#
+#                        if _not:
+#                            for no in _not:
+#                                if no in data:
+#                                    h.pop(b, None)
+#
+#        if _pass:
+#            for p in _pass:
+#                #print('pass ', p)
+#                #n.append(p)
+#                n[p] = 1
+#               
+#
+#        # remove any hash matches
+#        for _n in n:
+#            h.pop(_n, None)
+#            #if h.pop(_n, None):
+#            #    print('pop ', _n)
+#
+#        #_c = str(_r) +'-'+ str(c)
+#        _c = str(_r) +'-'+ str(b)
+#        r[_c] = h
+#        
     ######################################################################
     #print(h)
     #if h:
@@ -424,14 +467,13 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
     #        print(i,'  ', r[i])
 
     #print(r)
-    for y,z in r.items():
-        #print(y, z)
-        if z:
-            print(y, z)
+#    for y,z in r.items():
+#        #print(y, z)
+#        if z:
+#            print(y, z)
         
                  
 
-    return True
                     
 
 

@@ -136,6 +136,7 @@ def usage():
 
         tail file
         logstream
+        logstream-mac
         run-create-db
         run-ps
 
