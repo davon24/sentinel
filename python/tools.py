@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.9'
+__version__ = '1.6.11-2.inprogress.10'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -351,10 +351,15 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
     h={}
     #k={}
+    n={}
+    r={}
 
     ######################################################################
     # process each rule one at a time
-    for r,v in rulesDict.items():
+    c=0
+    b=None
+    for _r,v in rulesDict.items():
+        c += 1
         #print('rule ',r,v)
 
         #extract each rule and apply it to jline (jline is multi k,v)
@@ -365,6 +370,7 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
         _search = jrules.get('search', None)
         _match = jrules.get('match', None)
         _not = jrules.get('not', None)
+        _pass = jrules.get('pass', None)
 
         if _search:
             for idict in _search:
@@ -392,12 +398,40 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
                                 if no in data:
                                     h.pop(b, None)
 
+        if _pass:
+            for p in _pass:
+                #print('pass ', p)
+                #n.append(p)
+                n[p] = 1
+               
+
+        # remove any hash matches
+        for _n in n:
+            h.pop(_n, None)
+
+        #_c = str(_r) +'-'+ str(c)
+        _c = str(_r) +'-'+ str(b)
+        r[_c] = h
+        
     ######################################################################
     #print(h)
-    if h:
-        print(h)
+    #if h:
+    #    print(h)
+    
+    #for i in r:
+    #    #print(i, r[i])
+    #    if r[i]:
+    #        print(i,'  ', r[i])
+
+    #print(r)
+    for y,z in r.items():
+        #print(y, z)
+        if z:
+            print(y, z)
+        
                  
 
+    return True
                     
 
 
@@ -429,7 +463,6 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 #                        print(s, ' ',k,' ',  data)
 
 
-    return True
 
 #https://en.wikipedia.org/wiki/Rule-based_system
 
