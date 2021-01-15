@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.8'
+__version__ = '1.6.11-2.inprogress.9'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -346,17 +346,92 @@ def sentryLogStream(db_store, gDict):
 
     return True
 
+
 def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
+    h={}
+    #k={}
+
+    ######################################################################
     # process each rule one at a time
-    for k,v in rulesDict.items():
-        print('rule ',k,v)
+    for r,v in rulesDict.items():
+        #print('rule ',r,v)
 
         #extract each rule and apply it to jline (jline is multi k,v)
+        #jrules = json.loads(v[0])
+        jrules = json.loads(v)
+        #print(jrules)
+
+        _search = jrules.get('search', None)
+        _match = jrules.get('match', None)
+        _not = jrules.get('not', None)
+
+        if _search:
+            for idict in _search:
+                for d,s in idict.items():
+
+                    data = jline.get(d, None)
+
+                    if re.search(s, data, re.IGNORECASE):
+                        #b = b2checksum(str(k)+str(s)+str(data))
+                        b = b2checksum(data)
+
+                        #if b in k.keys():
+                        #    seen = True
+                        #    c = k[b]
+                        #    c += 1
+                        #    k[b] = c
+                        #else:
+                        #    seen = False
+                        #    k[b] = 1
+
+                        h[b] = data
+
+                        if _not:
+                            for no in _not:
+                                if no in data:
+                                    h.pop(b, None)
+
+    ######################################################################
+    #print(h)
+    if h:
+        print(h)
+                 
+
+                    
+
+
+
+        #print(_search,_match,_not)
+
+#        if _search:
+#            #print('search.rule ' + str(k), ' _search type ', str(type(_search))) #<class 'list'>
+#            for items in _search:
+#                #print('item ', items, ' items type ', str(type(items))) #<class 'dict'>
+#                #k,v here is {"eventMessage":"error"}
+#                for d,s in items.items():
+#                    #print('d ',d,' s ',s)
+#                    data = jline.get(d, None)
+#                    if re.search(s, data, re.IGNORECASE):
+#                    #if re.search(s, data):
+#                        #hit.now
+#                        #print(s, ' ',k,' ',  data)
+#
+#                        if _not:
+#                            for no in _not:
+#                                #print('no ', no)
+#                                #if re.search(no, data, re.IGNORECASE):
+#                                #if no.lower() in data:
+#                                if no in data:
+#                                    print('   ...skip ',no, ' ',data)
+#                                    continue
+#
+#                        print(s, ' ',k,' ',  data)
 
 
     return True
 
+#https://en.wikipedia.org/wiki/Rule-based_system
 
     #print('expertLogStreamRulesEngine')
     #print(rulesDict)
