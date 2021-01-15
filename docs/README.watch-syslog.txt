@@ -1,5 +1,13 @@
 
 
+sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"sudo"},{"PRIORITY":"5"}],"data":"MESSAAGE","not":["open /etc/securetty: No such file or directory"]}'
+
+-
+-
+-
+
+
+
 sentinel update-config watch-syslog '{"logfile":"stream"}'
 sentinel update-config watch-syslog '{"logfile":"stream","engine":["rules"]}'
 sentinel update-config watch-syslog '{"logfile":"stream","engine":["rules","naive_bayes"]}'

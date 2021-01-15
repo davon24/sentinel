@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.jan.15-1'
+__version__ = '1.6.11-2.inprogress.jan.15-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -387,8 +387,9 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
                 if _not:
                     for no in _not:
                         if no in data:
-                            if h.pop(_k, None):
-                                print('_not this one...', _k, ' ', data)
+                            h.pop(_k, None)
+                            #if h.pop(_k, None):
+                            #    print('   _not this one...', _k, ' ', data)
 
                 #print('hit ', _search, ' ',b,' ', data)
                 #if _not:
@@ -401,8 +402,10 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
         if _pass:
             for p in _pass:
-                if h.pop(_k, None):
-                    print('pass this one...', p)
+                __k = str(_r) +'-'+ str(p)
+                h.pop(__k, None)
+                #if h.pop(__k, None):
+                #    print('   _pass this one...', __k, ' ', data)
 
     ######################################################################
     
