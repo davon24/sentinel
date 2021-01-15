@@ -131,17 +131,24 @@ def usage():
         list-sshwatch
         clear-sshwatch
 
+        list-counts
+        clear-counts
+
         tail file
         logstream
+        run-create-db
+        run-ps
 
         sentry
 
         ---
 
-        list-counts
-        clear-counts
-        run-create-db
-        run-ps
+        config
+
+                watch-syslog
+                watch-resin-log
+                watch-mariadb-audit-log
+                watch-ssh
 
 Version: {} '''.format(__version__))
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.7'
+__version__ = '1.6.11-2.inprogress.8'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -347,31 +347,34 @@ def sentryLogStream(db_store, gDict):
     return True
 
 def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
-    #print('expertLogStreamRulesEngine')
-    print(rulesDict)
-    #print(jline.keys())
 
-    _search = rulesDict.get('search', None)
-    _match  = rulesDict.get('match', None)
-    _not = rulesDict.get('not', None)
+    # process each rule one at a time
+    for k,v in rulesDict.items():
+        print('rule ',k,v)
+
+        #extract each rule and apply it to jline (jline is multi k,v)
+
+
+    return True
+
+
+    #print('expertLogStreamRulesEngine')
+    #print(rulesDict)
+    #print(jline.keys())
+    #kDict={}
+
+    #_search = rulesDict.get('search', None)
+    #_match  = rulesDict.get('match', None)
+    #_not = rulesDict.get('not', None)
 
     #data = jline.get(_data, None)
     #print(_key)
     #set rules order here
     #print(_key)
 
-    kDict={}
-
     #print(str(_search), str(_match), str(_not))
 
-
     #if _search:
-
-
-
-
-
-
 #    if data and _search:
 #        for item in _search:
 #            #print(item)
@@ -400,7 +403,6 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 #
     #WORKING.HERE
 
-    return True
     
 
 def getExpertRules(config, db_store):
@@ -422,76 +424,9 @@ def getExpertRules(config, db_store):
 
 
 def sentryLogStreamMac(db_store, gDict):
-    logging.info('Sentry syslog logstream')
+    logging.info('Sentry syslog logstream MACOSX')
 
     rulesDict = getExpertRules('watch-syslog', db_store)
-
-
-    #rulesDict = {}
-    #rules = store.selectAll('rules', db_store)
-    #if rules:
-    #    #_conf = json.loads(rules[0])
-    #    #print(str(_conf))
-    #    #print(str(rules))
-    #    for rule in rules:
-    #        name = rule[0]
-    #        jconf = rule[2]
-    #        #print(jconf)
-    #        jdata = json.loads(jconf)
-    #        config = jdata.get('config', None)
-#
-#            if config == 'watch-syslog':
-#                print(name, jconf)
-
-
-
-
-
-
-                #print('process json keys ' + str(name) + ' from config ' + str(config))
-
-
-                #rules = store.getData('rules', name, db_store)
-                #rules = store.getData('rules', name, db_store)
-                #print(rules)
-
-                #rules = store.selectAll('rules', db_store)
-                #for rule in rules:
-                #    #print(rule)
-                #    name = rule[0]
-                #    data = rule[2]
-                    #print(name, data)
-
-                    
-
-                    #if name == 'watch-syslog':
-                    #if name == config:
-                    #    print(name,data)
-
-
-
-                #config_data = store.getData('rules', name, db_store)
-                #print(' - ',config_data)
-                #config_data_json = json.loads(config_data[0])
-
-                #    if k == 'config':
-                #        continue
-                #    print(k,v)
-                #if 'search' in config_data_json.keys():
-                #    print('search ' + str(config_data_json.get('search', None)))
-                #_rules = [] #empty list
-
-                #for k,v in config_data_json.items():
-                #    if k == 'config':
-                #        continue
-                #    rulesDict[k] = v
-
-                #for k,v in config_data_json.items():
-                #    #if k == 'config':
-                #    #    continue
-                #    #rulesDict[k] = v
-                #    print(k,' --- ', v)
-
 
 
     for line in logstream():
