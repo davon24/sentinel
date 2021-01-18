@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.jan.17-1'
+__version__ = '1.6.11-2.inprogress.jan.18-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -401,20 +401,40 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
             d1 = _mDct
             d2 = jline
+            d3 = {}
 
-            print('d1 ', str(type(d1)), ' ', str(d1))
-            print('d2 ', str(type(d2)), ' ', str(d2))
+            #print('d1 ', str(type(d1)), ' ', str(d1))
+            #print('d2 ', str(type(d2)), ' ', str(d2))
 
             dup_keys = d1.keys() & d2.keys()
-            print('dup_keys ' , dup_keys)
+            #print('dup_keys ' , dup_keys)
 
             diff_keys = d1.keys() - d2.keys()
-            print('diff_keys ' , diff_keys)
+            #print('diff_keys ' , diff_keys)
 
-            kv_pairs = d1.items() & d2.items()
-            print('kv_pairs ' , str(kv_pairs))
+            #kv_pairs = d1.items() & d2.items() #TypeError: unhashable type: 'dict'
+            #kv_pairs = set(d1.items()) & set(d2.items()) #TypeError: unhashable type: 'dict'
+            #print('kv_pairs ' , str(kv_pairs))
 
+            #shared_items = {k: d1[k] for k in d1 if k in d2 and d1[k] == d2[k]}
+            #print(shared_items)
 
+            for key in d1:
+                if key in d2:
+                    if d1[key] == d2[key]:
+                        d3[key] = d1[key]
+            #            #print('match ', d1[key], d2[key], ' ', 'jline')
+            #            h[_k] = jline
+
+            #print('d1 ',d1)
+            #print('d3 ',d3)
+
+            if d1 == d3:
+                #print('match ', d3)
+                h[_k] = jline
+
+            #kv_pairs = set(d1) & set(d2)
+            #print(kv_pairs)
 
             #for key in d1.keys():
             #    if key in d2.keys():
@@ -424,6 +444,11 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
                         
                     #else:
                     #    print('        nomatch', d1[key], d2[key])
+
+            #c = [json.dumps(d1) , json.dumps(d2)]
+            #set(c)
+            #json.dumps(d1) in c
+
 
 
             #print(_mDct)
@@ -454,7 +479,8 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
                 if _not:
                     for no in _not:
-                        if no in data:
+                        #if no in data:
+                        if no.lower() in data.lower():
                             h.pop(_k, None)
                             #if h.pop(_k, None):
                             #    print('   _not this one...', _k, ' ', data)
