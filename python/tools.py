@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.jan.18-1'
+__version__ = '1.6.11-2.inprogress.jan.18-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -358,6 +358,20 @@ def extractLstDct(_list):
             Dct[k]=v
     return Dct
 
+def expertSysLogDataMac(jline):
+    #watch-syslog-7-87ad765e22162c803d6f000fbbfd7d248a5b238d {'traceID': 517488102584090628, 'eventMessage': '<private> Bad response from apsd: <private>', 'eventType': 'logEvent', 'source': None, 'formatString': '%@ Bad response from apsd: %@', 'activityIdentifier': 0, 'subsystem': 'com.apple.apsd', 'category': 'connection', 'threadID': 68073, 'senderImageUUID': 'F8FAEB30-AFCF-36A1-9E72-25681E6C5BF7', 'backtrace': {'frames': [{'imageOffset': 62718, 'imageUUID': 'F8FAEB30-AFCF-36A1-9E72-25681E6C5BF7'}]}, 'bootUUID': '', 'processImagePath': '/System/Library/PrivateFrameworks/AppleMediaServices.framework/Versions/A/Resources/amsaccountsd', 'timestamp': '2021-01-18 11:26:13.578258-0800', 'senderImagePath': '/System/Library/PrivateFrameworks/ApplePushService.framework/Versions/A/ApplePushService', 'machTimestamp': 7063236091148, 'messageType': 'Default', 'processImageUUID': '43CD11D7-E02A-3F09-9DDC-E020D4059DD3', 'processID': 479, 'senderProgramCounter': 62718, 'parentActivityIdentifier': 0, 'timezoneName': ''}
+
+    exclude_non_unique = ['traceID','threadID','senderImageUUID','backtrace','imageUUID','bootUUID','timestamp','machTimestamp','processImageUUID','senderProgramCounter']
+    #'formatString'
+    use_these = ['eventMessage','eventType','source','subsystem','category','processImagePath','senderImagePath','messageType','processID','parentActivityIdentifier']
+
+    uline={}
+    for i in use_these:
+        if i in jline.keys():
+            uline[i]=jline[i]
+        #KeyError: 'source'
+    return uline
+
 def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
     h={}
@@ -378,11 +392,15 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
         _data   = jrules.get('data', None)
         data = jline.get(_data)
         if data:
-            b = b2checksum(data)
+            b = b2checksum(str(data))
         else:
             #print('jline ', str(type(jline)), str(jline))
             #b = b2checksum(jline)
-            b = b2checksum(str(jline))
+            #b = b2checksum(str(jline))
+            __data = expertSysLogDataMac(jline)
+            #print('mac syslog ', __data)
+            b = b2checksum(str(__data))
+            
 
         _k = str(_r) +'-'+ str(b)
 
@@ -394,8 +412,6 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
         if _match:
             #print('apply rule ' , _r,' ',_match,' ', data)
-            #print(_match)
-            #extract vals
             #"match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}
             _mDct = extractLstDct(_match)
 
@@ -432,44 +448,6 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
             if d1 == d3:
                 #print('match ', d3)
                 h[_k] = jline
-
-            #kv_pairs = set(d1) & set(d2)
-            #print(kv_pairs)
-
-            #for key in d1.keys():
-            #    if key in d2.keys():
-            #        if d1[key] == d2[key]:
-            #            #print('match ', d1[key], d2[key], ' ', jline)
-            #            h[_k] = jline
-                        
-                    #else:
-                    #    print('        nomatch', d1[key], d2[key])
-
-            #c = [json.dumps(d1) , json.dumps(d2)]
-            #set(c)
-            #json.dumps(d1) in c
-
-
-
-            #print(_mDct)
-
-            #for k,v in _mDct.items():
-            #    print(' ...kv ',k,v)
-
-            #for key in d1.keys():
-            #    if key in d2.keys():
-            #        #print('matching keys ', key)
-            #        v1 = d1[key]
-            #        v2 = d2[key]
-            #        #print(v1, ' compare ', v2)
-            #        if v1 == v2:
-            #            print('match ', v1, v2)
-
-            #print('x ', str(type(x)), str(x))
-            #print('y ', str(type(y)), str(y))
-            #for (key, value) in set(x.items()) & set(y.items()):
-            #    print('%s: %s is present in both x and y' % (key, value))
-
 
 
         if _search:
