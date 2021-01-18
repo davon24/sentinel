@@ -1,5 +1,38 @@
 
 
+
+sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError"],"pass":["952ac1cce6fe8b80d9f75f3718bc1943ddb63241","7282d72d7518628bcc9cc643fd663bd20ec0a112"]}'
+
+sentinel update-rule watch-syslog-2 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"sudo"},{"PRIORITY":"5"}], not:[{"MESSAGE":"open /etc/securetty: No such file or directory"}]}'
+
+sentinel update-rule watch-syslog-7 '{"config":"watch-syslog","match":[{"category":"connection"}]}'
+
+sentinel update-rule watch-syslog-7 '{"config":"watch-syslog","match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}'
+
+
+
+sold_more_than_five[c["name"]] = c["sold"]
+
+https://careerkarma.com/blog/python-typeerror-unhashable-type-dict/
+
+
+
+
+sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError"],"pass":["952ac1cce6fe8b80d9f75f3718bc1943ddb63241","7282d72d7518628bcc9cc643fd663bd20ec0a112"]}'
+
+sentinel update-rule watch-syslog-2 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"sudo"},{"PRIORITY":"5"}]}'
+
+
+sentinel update-rule watch-syslog-2 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"sudo"},{"PRIORITY":"5"}], search:[{"MESSAGE":"open /etc/securetty: No such file or directory"}]}'
+
+,"not":["search":{"MESSAGE":"open /etc/securetty: No such file or directory"}]}'
+
+
+# https://tools.ietf.org/html/rfc8259
+# https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html
+
+
+
 sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"sudo"},{"PRIORITY":"5"}],"data":"MESSAAGE","not":["open /etc/securetty: No such file or directory"]}'
 
 -

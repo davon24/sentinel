@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.jan.15-2'
+__version__ = '1.6.11-2.inprogress.jan.17-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -351,6 +351,13 @@ def sentryLogStream(db_store, gDict):
 #def extractRule(rules):
 #    return _search
 
+def extractLstDct(_list):
+    Dct={}
+    for _dct in _list:
+        for k,v in _dct.items():
+            Dct[k]=v
+    return Dct
+
 def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
     h={}
@@ -372,12 +379,73 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
         data = jline.get(_data)
         if data:
             b = b2checksum(data)
+        else:
+            #print('jline ', str(type(jline)), str(jline))
+            #b = b2checksum(jline)
+            b = b2checksum(str(jline))
+
         _k = str(_r) +'-'+ str(b)
 
         _search = jrules.get('search', None)
         _match  = jrules.get('match', None)
         _not    = jrules.get('not', None)
         _pass   = jrules.get('pass', None)
+
+
+        if _match:
+            #print('apply rule ' , _r,' ',_match,' ', data)
+            #print(_match)
+            #extract vals
+            #"match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}
+            _mDct = extractLstDct(_match)
+
+            d1 = _mDct
+            d2 = jline
+
+            print('d1 ', str(type(d1)), ' ', str(d1))
+            print('d2 ', str(type(d2)), ' ', str(d2))
+
+            dup_keys = d1.keys() & d2.keys()
+            print('dup_keys ' , dup_keys)
+
+            diff_keys = d1.keys() - d2.keys()
+            print('diff_keys ' , diff_keys)
+
+            kv_pairs = d1.items() & d2.items()
+            print('kv_pairs ' , str(kv_pairs))
+
+
+
+            #for key in d1.keys():
+            #    if key in d2.keys():
+            #        if d1[key] == d2[key]:
+            #            #print('match ', d1[key], d2[key], ' ', jline)
+            #            h[_k] = jline
+                        
+                    #else:
+                    #    print('        nomatch', d1[key], d2[key])
+
+
+            #print(_mDct)
+
+            #for k,v in _mDct.items():
+            #    print(' ...kv ',k,v)
+
+            #for key in d1.keys():
+            #    if key in d2.keys():
+            #        #print('matching keys ', key)
+            #        v1 = d1[key]
+            #        v2 = d2[key]
+            #        #print(v1, ' compare ', v2)
+            #        if v1 == v2:
+            #            print('match ', v1, v2)
+
+            #print('x ', str(type(x)), str(x))
+            #print('y ', str(type(y)), str(y))
+            #for (key, value) in set(x.items()) & set(y.items()):
+            #    print('%s: %s is present in both x and y' % (key, value))
+
+
 
         if _search:
             #print('yes, apply rule search ' , _r,' ',_search,' ', data)
