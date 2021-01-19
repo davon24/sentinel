@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.jan.18-3'
+__version__ = '1.6.11-2.inprogress.jan.18-4'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -291,7 +291,6 @@ def logstreamMac(verbose=True):
         line = line.decode('utf-8')
         jdata = json.loads(line)
         print(jdata)
-
     return True
 
 #        #for k,v in jdata.items():
@@ -372,16 +371,13 @@ def expertSysLogDataMac(jline):
         #KeyError: 'source'
     return uline
 
-def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
+#def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
+def expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict):
 
     h={}
-    #k={}
-    #n={}
-    #r={}
 
     ######################################################################
     # process each rule one at a time
-    b = None
     for _r,v in rulesDict.items():
         #extract each rule and apply it to jline (jline is multi k,v)
         #print('rule ',_r,v)
@@ -394,13 +390,7 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
         if data:
             b = b2checksum(str(data))
         else:
-            #print('jline ', str(type(jline)), str(jline))
-            #b = b2checksum(jline)
-            #b = b2checksum(str(jline))
-            __data = expertSysLogDataMac(jline)
-            #print('mac syslog ', __data)
-            b = b2checksum(str(__data))
-            
+            b = b2checksum(str(jline))
 
         _k = str(_r) +'-'+ str(b)
 
@@ -411,9 +401,8 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
 
 
         if _match: 
-            _mDct = extractLstDct(_match)
 
-            d1 = _mDct
+            d1 = extractLstDct(_match)
             d2 = jline
             d3 = {}
 
@@ -421,8 +410,8 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
                 if key in d2:
                     if d1[key] == d2[key]:
                         d3[key] = d1[key]
-            if d1 == d3:
-                #print('match ', d3)
+
+            if d1 == d3: #print('match ', d3)
                 h[_k] = jline
 
 
@@ -445,158 +434,22 @@ def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
                 #if h.pop(__k, None):
                 #    print('   _pass this one...', __k, ' ', data)
 
-    #"match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}
     ######################################################################
     
     for k,v in h.items():
-        print(k,v)
+        #print(k,v)
+        #_prom = 'prog="syslog_watch",match="' + str(s) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(line) + '"'
+        #gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(kDict[b]) ]
 
+        _prom = 'prog="syslog_watch",engine="rules",rule="' + str(k) + '",value="' + str(v) + '"'
+        gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} 1']
 
     #return True
     return h
 
-
-
-
-            #for idict in _search:
-            #    for d,s in idict.items():
-            #        data = jline.get(d, None)
-#
-#                    if re.search(s, data, re.IGNORECASE):
-#                        #b = b2checksum(str(k)+str(s)+str(data))
-#                        b = b2checksum(data)
-#
-#                        #if b in k.keys():
-#                        #    seen = True
-#                        #    c = k[b]
-#                        #    c += 1
-#                        #    k[b] = c
-#                        #else:
-#                        #    seen = False
-#                        #    k[b] = 1
-#
-#                        h[b] = data
-#
-#                        if _not:
-#                            for no in _not:
-#                                if no in data:
-#                                    h.pop(b, None)
-#
-#        if _pass:
-#            for p in _pass:
-#                #print('pass ', p)
-#                #n.append(p)
-#                n[p] = 1
-#               
-#
-#        # remove any hash matches
-#        for _n in n:
-#            h.pop(_n, None)
-#            #if h.pop(_n, None):
-#            #    print('pop ', _n)
-#
-#        #_c = str(_r) +'-'+ str(c)
-#        _c = str(_r) +'-'+ str(b)
-#        r[_c] = h
-#        
-    ######################################################################
-    #print(h)
-    #if h:
-    #    print(h)
-    
-    #for i in r:
-    #    #print(i, r[i])
-    #    if r[i]:
-    #        print(i,'  ', r[i])
-
-    #print(r)
-#    for y,z in r.items():
-#        #print(y, z)
-#        if z:
-#            print(y, z)
-        
-                 
-
-                    
-
-
-
-        #print(_search,_match,_not)
-
-#        if _search:
-#            #print('search.rule ' + str(k), ' _search type ', str(type(_search))) #<class 'list'>
-#            for items in _search:
-#                #print('item ', items, ' items type ', str(type(items))) #<class 'dict'>
-#                #k,v here is {"eventMessage":"error"}
-#                for d,s in items.items():
-#                    #print('d ',d,' s ',s)
-#                    data = jline.get(d, None)
-#                    if re.search(s, data, re.IGNORECASE):
-#                    #if re.search(s, data):
-#                        #hit.now
-#                        #print(s, ' ',k,' ',  data)
-#
-#                        if _not:
-#                            for no in _not:
-#                                #print('no ', no)
-#                                #if re.search(no, data, re.IGNORECASE):
-#                                #if no.lower() in data:
-#                                if no in data:
-#                                    print('   ...skip ',no, ' ',data)
-#                                    continue
-#
-#                        print(s, ' ',k,' ',  data)
-
-
-
+#"match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}
 #https://en.wikipedia.org/wiki/Rule-based_system
 
-    #print('expertLogStreamRulesEngine')
-    #print(rulesDict)
-    #print(jline.keys())
-    #kDict={}
-
-    #_search = rulesDict.get('search', None)
-    #_match  = rulesDict.get('match', None)
-    #_not = rulesDict.get('not', None)
-
-    #data = jline.get(_data, None)
-    #print(_key)
-    #set rules order here
-    #print(_key)
-
-    #print(str(_search), str(_match), str(_not))
-
-    #if _search:
-#    if data and _search:
-#        for item in _search:
-#            #print(item)
-#            #print(_key)
-#            #print(jline.get(_key, None))
-#            if re.search(item, data, re.IGNORECASE):
-#
-#                if _not:
-#                    print('_except this one ')
-#
-#                b = b2checksum(data)
-#                if b in kDict.keys():
-#                    seen = True
-#                    v = kDict[b]
-#                    v += 1
-#                    kDict[b] = v
-#                else:
-#                    seen = False
-#                    kDict[b] = 1
-#
-#
-#                print('hit ' + str(item))
-#                _key  = 'sentry-syslog-watch-search' + str(b)
-#                _prom = 'prog="syslog_watch",search="' + str(item) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(jline) + '"'
-#                gDict[_key] = [ 'sentinel_syslog_watch_search{' + _prom + '} ' + str(kDict[b]) ]
-#
-    #WORKING.HERE
-
-    
 
 def getExpertRules(config, db_store):
     # ('watch-syslog-1', '2021-01-14 22:46:06', '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError"]}')
@@ -621,11 +474,26 @@ def sentryLogStreamMac(db_store, gDict):
 
     rulesDict = getExpertRules('watch-syslog', db_store)
 
+    for line in logstream():
+        line = line.decode('utf-8')
+        jline = json.loads(line)
+        #run_rules = expertLogStreamRulesEngineMac(jline, rulesDict, gDict)
+        run_rules = expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict)
+
+    return True
+
+
+def sentryLogStreamLinux(db_store, gDict):
+    logging.info('Sentry syslog logstream Linux')
+
+    rulesDict = getExpertRules('watch-syslog', db_store)
 
     for line in logstream():
         line = line.decode('utf-8')
         jline = json.loads(line)
-        run_rules = expertLogStreamRulesEngineMac(jline, rulesDict, gDict)
+        run_rules = expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict)
+
+    return True
 
 
 
@@ -711,8 +579,6 @@ def sentryLogStreamMac(db_store, gDict):
 
 #    return True
 
-def sentryLogStreamLinux(db_store, gDict):
-    print('TBD')
 
 def sentryTailFile(db_store, gDict, _file):
     for line in tail(_file):
