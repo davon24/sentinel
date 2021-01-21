@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.jan.19-1'
+__version__ = '1.6.11-2.inprogress.jan.20-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -52,6 +52,9 @@ logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 #manager = multiprocessing.Manager()
 #global gDict
 #gDict = manager.dict()
+
+import atexit
+import signal
 
 sigterm = False
 
@@ -270,7 +273,11 @@ def logstream(_format='json'):
 
     try:
         f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-        while (f.returncode == None):
+        #while (f.returncode == None):
+
+        #print('pid ', str(f.pid))
+
+        while (sigterm == False):
             line = f.stdout.readline()
             if not line:
                 #break
@@ -279,8 +286,12 @@ def logstream(_format='json'):
                 yield line
             sys.stdout.flush()
 
-    except Exception as e:
-        logging.critical('Exception ' + str(e))
+    #except Exception as e:
+    except (KeyboardInterrupt, SystemExit, Exception) as e:
+        os.kill(f.pid, signal.SIGKILL)
+        f.terminate()
+        f.kill()
+        logging.critical('Exception in logstream ' + str(e))
         return False
 
     return True
@@ -415,7 +426,9 @@ def expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict):
                 h[_k] = jline
 
 
-        if _search:
+        if _search and data:
+            #print(_search)
+            #print(data) #data is None #TypeError: expected string or bytes-like object
             if re.search(_search, data, re.IGNORECASE):
                 h[_k] = data
 
@@ -426,6 +439,8 @@ def expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict):
                             h.pop(_k, None)
                             #if h.pop(_k, None):
                             #    print('   _not this one...', _k, ' ', data)
+        #else:
+        #    print('no.search.no.data ',_r, ' ', str(_search), ' ' , str(data))
 
         if _pass:
             for p in _pass:
@@ -442,7 +457,7 @@ def expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict):
         #gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(kDict[b]) ]
 
         _prom = 'prog="syslog_watch",engine="rules",rule="' + str(k) + '",value="' + str(v) + '"'
-        gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} 1']
+        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} 1']
 
     #return True
     return h
@@ -3423,6 +3438,8 @@ def sentryCleanup(db_store):
     _prom = str(db_store) + '.prom'
     with open(_prom, "w") as _file:
         _file.write('')
+
+
     return True
 
 
@@ -3464,21 +3481,25 @@ def sentryMode(db_file):
     global gDict
     gDict = manager.dict()
 
-    import atexit
-    import signal
+    #import atexit
+    #import signal
 
     atexit.register(sentryCleanup, db_store)
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry startup")
 
+    runlist=[]
+
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
     #scheduler.setDaemon(True)
     scheduler.start()
+    runlist.append(scheduler)
 
     processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
     #processor.setDaemon(True)
     processor.start()
+    runlist.append(processor)
 
     #if not conf:
     #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
@@ -3488,6 +3509,14 @@ def sentryMode(db_file):
     #tailer = threading.Thread(target=sentryTailFile, args=(db_store, gDict, '/tmp/log.txt'), name="TailFile")
     #tailer.setDaemon(True)
     #tailer.start()
+
+    #confs = store.selectAll('configs', db_store)
+    #for conf in confs:
+    #    print(conf[0], conf[1], conf[2])
+    #    resin_watch = store.getData('configs', 'watch-resin-log', db_store)
+    #    watch = store.getData('configs', conf[0], db_store)
+    #    jconf = json.loads(conf[0])
+
 
     resin_watch = store.getData('configs', 'watch-resin-log', db_store)
     if resin_watch:
@@ -3500,6 +3529,7 @@ def sentryMode(db_file):
         resin_tailer = multiprocessing.Process(target=sentryTailResinLog, args=(db_store, gDict, _logfile))
         resin_tailer.start()
         #resin_tailer.join()
+        runlist.append(resin_tailer)
 
     mariadb_watch = store.getData('configs', 'watch-mariadb-audit-log', db_store)
     if mariadb_watch:
@@ -3508,6 +3538,7 @@ def sentryMode(db_file):
         mariadb_tailer = multiprocessing.Process(target=sentryTailMariaDBAuditLog, args=(db_store, gDict, _logfile))
         mariadb_tailer.start()
         #mariadb_tailer.join()
+        runlist.append(mariadb_tailer)
 
     ssh_watch = store.getData('configs', 'watch-ssh-linux-log', db_store)
     if ssh_watch:
@@ -3519,6 +3550,7 @@ def sentryMode(db_file):
         ssh_tailer = multiprocessing.Process(target=sentryIPSLinuxSSH, args=(db_store, gDict, _logfile))
         ssh_tailer.start()
         #ssh_tailer.join()
+        runlist.append(ssh_tailer)
 
     syslog_watch = store.getData('configs', 'watch-syslog', db_store)
     if syslog_watch:
@@ -3528,6 +3560,7 @@ def sentryMode(db_file):
         syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict))
         syslog_tailer.start()
         #syslog_tailer.join()
+        runlist.append(syslog_tailer)
 
     prometheus_config = store.getData('configs', 'prometheus', db_store)
     #print(str(type(prometheus_config)) + ' prometheus_config ' + str(prometheus_config))
@@ -3559,13 +3592,24 @@ def sentryMode(db_file):
 
     except (KeyboardInterrupt, SystemExit, Exception):
         sigterm = True
+        sentryCleanup(db_store)
+        #for run in runlist: run.join()
+
         #scheduler.join()
         #processor.join()
         #if resin_watch: resin_tailer.join()
         #if mariadb_watch: mariadb_tailer.join()
         #if ssh_watch: ssh_tailer.join()
         #httpd.server_close()
-        clear_iptables = cleanup()
+        #clear_iptables = cleanup()
+
+        #for proc in multiprocessing.active_children():
+        #    print('proc name ', proc)
+
+        #for thread in threading.enumerate():
+
+
+
         logging.info("Sentry shutdown: " + str(sigterm))
         sys.exit(1)
 
