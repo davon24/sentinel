@@ -79,6 +79,7 @@ def usage():
         list-configs
         update-config name data
         delete-config name
+        clear-configs
 
         list-rules
         update-rule name data
@@ -136,7 +137,8 @@ def usage():
 
         tail file
         logstream
-        logstream-mac
+        logstream-json
+        logstream-keys
         run-create-db
         run-ps
 
@@ -323,6 +325,11 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'clear-established-rules':
             clear = store.clearAll('established', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-configs':
+            clear = store.clearAll('configs', db_store)
             print(clear)
             sys.exit(0)
 
@@ -969,9 +976,17 @@ if __name__ == '__main__':
                 print(line)
             sys.exit(0)
 
-        if sys.argv[1] == 'logstream-mac':
-            for line in tools.logstreamMac():
-                print(line)
+        if sys.argv[1] == 'logstream-json':
+            for line in tools.logstream():
+                print(line.decode('utf-8'))
+            sys.exit(0)
+
+        if sys.argv[1] == 'logstream-keys':
+            for line in tools.logstream():
+                #print(line.decode('utf-8'))
+                jline = json.loads(line.decode('utf-8'))
+                n = len(jline.keys())
+                print(n, ' ' , jline.keys())
             sys.exit(0)
 
         if sys.argv[1] == 'list-b2sums':

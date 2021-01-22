@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-2.inprogress.jan.20-1'
+__version__ = '1.6.11-01.21-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -273,11 +273,11 @@ def logstream(_format='json'):
 
     try:
         f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-        #while (f.returncode == None):
+        while (f.returncode == None):
 
         #print('pid ', str(f.pid))
+        #while (sigterm == False):
 
-        while (sigterm == False):
             line = f.stdout.readline()
             if not line:
                 #break
@@ -288,78 +288,14 @@ def logstream(_format='json'):
 
     #except Exception as e:
     except (KeyboardInterrupt, SystemExit, Exception) as e:
-        os.kill(f.pid, signal.SIGKILL)
-        f.terminate()
-        f.kill()
+        #os.kill(f.pid, signal.SIGKILL)
+        #f.terminate() #SIGTERM
+        f.kill() #SIGKILL
         logging.critical('Exception in logstream ' + str(e))
         return False
 
     return True
 
-
-def logstreamMac(verbose=True):
-    for line in logstream():
-        line = line.decode('utf-8')
-        jdata = json.loads(line)
-        print(jdata)
-    return True
-
-#        #for k,v in jdata.items():
-#        #    print(k, ' ', v)
-#
-#        #print(jdata.keys())
-#        #dict_keys(['traceID', 'eventMessage', 'eventType', 'source', 'formatString', 'activityIdentifier', 'subsystem', 'category', 'threadID', 'senderImageUUID', 'backtrace', 'bootUUID', 'processImagePath', 'timestamp', 'senderImagePath', 'machTimestamp', 'messageType', 'processImageUUID', 'processID', 'senderProgramCounter', 'parentActivityIdentifier', 'timezoneName'])
-#
-#        #print(jdata.get('eventType', None))
-#        #print(jdata.get('messageType', None))
-#        #print(jdata.get('eventMessage', None))
-#        #print(jdata.get('process', None))
-#        #print(jdata.get('processImagePath', None))
-#        #print(jdata.get('sender', None))
-#        #print(jdata.get('senderImagePath', None))
-#        #print(jdata.get('subsystem', None))
-#        #print(jdata.get('catetory', None))
-#        #print(jdata.get('processID', None))
-#        #print(jdata.get('source', None))
-#
-#        eventType        = jdata.get('eventType', None)
-#        messageType      = jdata.get('messageType', None)
-#        category         = jdata.get('category', None)
-#        subsystem        = jdata.get('subsystem', None)
-#        process          = jdata.get('process', None)
-#        processImagePath = jdata.get('processImagePath', None)
-#        sender           = jdata.get('sender', None)
-#        senderImagePath  = jdata.get('senderImagePath', None)
-#        processID        = jdata.get('processID', None)
-#        eventMessage     = jdata.get('eventMessage', None)
-#        source           = jdata.get('source', None)
-#
-#        data_string = str(eventType) +' '+ str(messageType) +' '+ str(category) +' '+ \
-#                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ \
-#                      str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
-#        #print(data_string)
-#        #if verbose: print(data_string)
-
-
-def logstreamLinux():
-    for line in logstream():
-        print(line)
-
-
-def sentryLogStream(db_store, gDict):
-
-    if sys.platform == 'darwin':
-        sentryLogStreamMac(db_store, gDict)
-    elif sys.platform == 'linux' or sys.platform == 'linux2':
-        sentryLogStreamLinux(db_store, gDict)
-    else:
-        logging.critical('Unknown OS. fail sentryLogStream')
-        return False
-
-    return True
-
-#def extractRule(rules):
-#    return _search
 
 def extractLstDct(_list):
     Dct={}
@@ -368,24 +304,97 @@ def extractLstDct(_list):
             Dct[k]=v
     return Dct
 
-def expertSysLogDataMac(jline):
-    #watch-syslog-7-87ad765e22162c803d6f000fbbfd7d248a5b238d {'traceID': 517488102584090628, 'eventMessage': '<private> Bad response from apsd: <private>', 'eventType': 'logEvent', 'source': None, 'formatString': '%@ Bad response from apsd: %@', 'activityIdentifier': 0, 'subsystem': 'com.apple.apsd', 'category': 'connection', 'threadID': 68073, 'senderImageUUID': 'F8FAEB30-AFCF-36A1-9E72-25681E6C5BF7', 'backtrace': {'frames': [{'imageOffset': 62718, 'imageUUID': 'F8FAEB30-AFCF-36A1-9E72-25681E6C5BF7'}]}, 'bootUUID': '', 'processImagePath': '/System/Library/PrivateFrameworks/AppleMediaServices.framework/Versions/A/Resources/amsaccountsd', 'timestamp': '2021-01-18 11:26:13.578258-0800', 'senderImagePath': '/System/Library/PrivateFrameworks/ApplePushService.framework/Versions/A/ApplePushService', 'machTimestamp': 7063236091148, 'messageType': 'Default', 'processImageUUID': '43CD11D7-E02A-3F09-9DDC-E020D4059DD3', 'processID': 479, 'senderProgramCounter': 62718, 'parentActivityIdentifier': 0, 'timezoneName': ''}
 
-    exclude_non_unique = ['traceID','threadID','senderImageUUID','backtrace','imageUUID','bootUUID','timestamp','machTimestamp','processImageUUID','senderProgramCounter']
-    #'formatString'
-    use_these = ['eventMessage','eventType','source','subsystem','category','processImagePath','senderImagePath','messageType','processID','parentActivityIdentifier']
+#def expertLogStreamRulesEngineGeneral_V1(jline, rulesDict, gDict):
+#    h={}
+#    ######################################################################
+#    # process each rule one at a time
+#    for _r,v in rulesDict.items():
+#        #extract each rule and apply it to jline (jline is multi k,v)
+#        #print('rule ',_r,v)
+#
+#        jrules = json.loads(v)
+#        #print(jrules)
+#
+#        _data   = jrules.get('data', None)
+#        data = jline.get(_data)
+#        if data:
+#            b = b2checksum(str(data))
+#        else:
+#            b = b2checksum(str(jline))
+#
+#        _k = str(_r) +'-'+ str(b)
+#
+#        _search = jrules.get('search', None)
+#        _match  = jrules.get('match', None)
+#        _not    = jrules.get('not', None)
+#        _pass   = jrules.get('pass', None)
+#
+#
+#        if _match: 
+#
+#            d1 = extractLstDct(_match)
+#            d2 = jline
+#            d3 = {}
+#
+#            for key in d1:
+#                if key in d2:
+#                    if d1[key] == d2[key]:
+#                        d3[key] = d1[key]
+#
+#            if d1 == d3: #print('match ', d3)
+#                h[_k] = jline
+#
+#
+#        if _search and data:
+#            #print(_search)
+#            #print(data) #data is None #TypeError: expected string or bytes-like object
+#            if re.search(_search, data, re.IGNORECASE):
+#                h[_k] = data
+#
+#                if _not:
+#                    for no in _not:
+#                        #if no in data:
+#                        if no.lower() in data.lower(): #ignorecase
+#                            h.pop(_k, None)
+#                            #if h.pop(_k, None):
+#                            #    print('   _not this one...', _k, ' ', data)
+#        #else:
+#        #    print('no.search.no.data ',_r, ' ', str(_search), ' ' , str(data))
+#
+#        if _pass:
+#            for p in _pass:
+#                __k = str(_r) +'-'+ str(p)
+#                h.pop(__k, None)
+#                #if h.pop(__k, None):
+#                #    print('   _pass this one...', __k, ' ', data)
+#
+#    ######################################################################
+#    
+#    for k,v in h.items():
+#        #print(k,v)
+#        #_prom = 'prog="syslog_watch",match="' + str(s) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(line) + '"'
+#        #gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(kDict[b]) ]
+#
+#        _prom = 'prog="syslog_watch",engine="rules",rule="' + str(k) + '",value="' + str(v) + '"'
+#        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} 1']
+#
+#    #return True
+#    return h
 
-    uline={}
-    for i in use_these:
-        if i in jline.keys():
-            uline[i]=jline[i]
-        #KeyError: 'source'
-    return uline
+def getKeysDict(keys, jline):
+    keysDct={}
+    for key in keys:
+        if key in jline.keys():
+            keysDct[key] = jline[key]
+    return keysDct
 
-#def expertLogStreamRulesEngineMac(jline, rulesDict, gDict):
-def expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict):
+def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict):
 
     h={}
+    #keysDct = getKeysDict(keys, jline)
+    #print('keysDct ', keysDct)
+
 
     ######################################################################
     # process each rule one at a time
@@ -396,12 +405,15 @@ def expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict):
         jrules = json.loads(v)
         #print(jrules)
 
+
         _data   = jrules.get('data', None)
         data = jline.get(_data)
         if data:
             b = b2checksum(str(data))
         else:
-            b = b2checksum(str(jline))
+            #b = b2checksum(str(jline))
+            keysDct = getKeysDict(keys, jline)
+            b = b2checksum(str(keysDct))
 
         _k = str(_r) +'-'+ str(b)
 
@@ -462,8 +474,6 @@ def expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict):
     #return True
     return h
 
-#"match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}
-#https://en.wikipedia.org/wiki/Rule-based_system
 
 
 def getExpertRules(config, db_store):
@@ -482,33 +492,58 @@ def getExpertRules(config, db_store):
             rulesDict[name] = jconf
     return rulesDict
 
+def sentryLogStream(db_store, gDict):
+    logging.info('Sentry syslog logstream ')
 
+    conf = store.getData('configs','watch-syslog', db_store)
+    if conf:
+        config = json.loads(conf[0])
+        #print('config.logfile ',config.get('logfile', None))
+        logfile = config.get('logfile', None)
+        engines = config.get('engine', None)
+        keys    = config.get('keys', None)
 
-def sentryLogStreamMac(db_store, gDict):
-    logging.info('Sentry syslog logstream MACOSX')
+    if keys is None:
+        logging.critical('Sentry logstream keys is None in config ')
+        return False
 
     rulesDict = getExpertRules('watch-syslog', db_store)
+    #print(rulesDict)
 
     for line in logstream():
         line = line.decode('utf-8')
         jline = json.loads(line)
         #run_rules = expertLogStreamRulesEngineMac(jline, rulesDict, gDict)
-        run_rules = expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict)
+        run_rules = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict)
 
     return True
 
 
-def sentryLogStreamLinux(db_store, gDict):
-    logging.info('Sentry syslog logstream Linux')
-
-    rulesDict = getExpertRules('watch-syslog', db_store)
-
-    for line in logstream():
-        line = line.decode('utf-8')
-        jline = json.loads(line)
-        run_rules = expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict)
-
-    return True
+#def sentryLogStreamMac(db_store, gDict):
+#    logging.info('Sentry syslog logstream MACOSX')
+#
+#    rulesDict = getExpertRules('watch-syslog', db_store)
+#
+#    for line in logstream():
+#        line = line.decode('utf-8')
+#        jline = json.loads(line)
+#        #run_rules = expertLogStreamRulesEngineMac(jline, rulesDict, gDict)
+#        run_rules = expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict)
+#
+#    return True
+#
+#
+#def sentryLogStreamLinux(db_store, gDict):
+#    logging.info('Sentry syslog logstream Linux')
+#
+#    rulesDict = getExpertRules('watch-syslog', db_store)
+#
+#    for line in logstream():
+#        line = line.decode('utf-8')
+#        jline = json.loads(line)
+#        run_rules = expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict)
+#
+#    return True
 
 
 
@@ -3317,6 +3352,8 @@ def sentryProcessJobs(db_store, gDict):
     return run
 
 def processD(List):
+
+    #try:
     sentinel_up = 1
     #start = time.time()
 
@@ -3363,6 +3400,10 @@ def processD(List):
 
     promDATA = 'sentinel_python_sqlite_info{sqlite3="' + sqlite3_version + '",library="' + sqlite3_sqlite_version + '"} 1.0'
     gDict['sentinel_python_sqlite_info'] = [ promDATA ]
+
+    #except BrokenPipeError:
+    #    sigterm = True
+    #    sys.exit(1)
 
     return True
 
@@ -3434,12 +3475,10 @@ def sentryScheduler(db_store, gDict):
 
 
 def sentryCleanup(db_store):
-    logging.info("Sentry Cleanup:")
     _prom = str(db_store) + '.prom'
     with open(_prom, "w") as _file:
         _file.write('')
-
-
+    logging.info("Sentry Cleanup: True")
     return True
 
 
@@ -3487,19 +3526,19 @@ def sentryMode(db_file):
     atexit.register(sentryCleanup, db_store)
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
-    logging.info("Sentry startup")
+    logging.info("Sentry Startup")
 
-    runlist=[]
+    #runlist=[]
 
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
     #scheduler.setDaemon(True)
     scheduler.start()
-    runlist.append(scheduler)
+    #runlist.append(scheduler)
 
     processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
     #processor.setDaemon(True)
     processor.start()
-    runlist.append(processor)
+    #runlist.append(processor)
 
     #if not conf:
     #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
@@ -3529,7 +3568,7 @@ def sentryMode(db_file):
         resin_tailer = multiprocessing.Process(target=sentryTailResinLog, args=(db_store, gDict, _logfile))
         resin_tailer.start()
         #resin_tailer.join()
-        runlist.append(resin_tailer)
+        #runlist.append(resin_tailer)
 
     mariadb_watch = store.getData('configs', 'watch-mariadb-audit-log', db_store)
     if mariadb_watch:
@@ -3538,7 +3577,7 @@ def sentryMode(db_file):
         mariadb_tailer = multiprocessing.Process(target=sentryTailMariaDBAuditLog, args=(db_store, gDict, _logfile))
         mariadb_tailer.start()
         #mariadb_tailer.join()
-        runlist.append(mariadb_tailer)
+        #runlist.append(mariadb_tailer)
 
     ssh_watch = store.getData('configs', 'watch-ssh-linux-log', db_store)
     if ssh_watch:
@@ -3550,17 +3589,18 @@ def sentryMode(db_file):
         ssh_tailer = multiprocessing.Process(target=sentryIPSLinuxSSH, args=(db_store, gDict, _logfile))
         ssh_tailer.start()
         #ssh_tailer.join()
-        runlist.append(ssh_tailer)
+        #runlist.append(ssh_tailer)
 
     syslog_watch = store.getData('configs', 'watch-syslog', db_store)
     if syslog_watch:
-        syslog_watch_config = json.loads(syslog_watch[0])
+        #syslog_watch_config = json.loads(syslog_watch[0])
         #_search   = syslog_watch_config['search'] #KeyError:
         #_search   = syslog_watch_config.get('search', None)
+
         syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict))
         syslog_tailer.start()
         #syslog_tailer.join()
-        runlist.append(syslog_tailer)
+        #runlist.append(syslog_tailer)
 
     prometheus_config = store.getData('configs', 'prometheus', db_store)
     #print(str(type(prometheus_config)) + ' prometheus_config ' + str(prometheus_config))
@@ -3608,9 +3648,26 @@ def sentryMode(db_file):
 
         #for thread in threading.enumerate():
 
+        #for run in runlist: run.join()
 
+        for proc in multiprocessing.active_children():
+            print('proc name ', proc, ' ', proc.pid)
+            #print('proc pid ', proc.pid)
+            os.kill(proc.pid, 9)
 
-        logging.info("Sentry shutdown: " + str(sigterm))
+        #for run in runlist: run.join()
+
+        for thread in threading.enumerate():
+            #print('thread name', thread, ' ', thread.name)
+            #print('thread name.Name', thread.name)
+            #thread.join()
+            if thread.name == 'MainThread':
+                continue
+            else:
+                print('thread name', thread, ' ', thread.name)
+                thread.join()
+
+        logging.info("Sentry Shutdown: " + str(sigterm))
         sys.exit(1)
 
     return True
