@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-01.21-2'
+__version__ = '1.6.11-01.22-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -389,12 +389,13 @@ def getKeysDict(keys, jline):
             keysDct[key] = jline[key]
     return keysDct
 
-def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict):
+#def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict):
+def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
 
     h={}
     #keysDct = getKeysDict(keys, jline)
     #print('keysDct ', keysDct)
-
+    #s={}
 
     ######################################################################
     # process each rule one at a time
@@ -409,11 +410,20 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict):
         _data   = jrules.get('data', None)
         data = jline.get(_data)
         if data:
-            b = b2checksum(str(data))
+            b = b2checksum(data)
         else:
             #b = b2checksum(str(jline))
             keysDct = getKeysDict(keys, jline)
             b = b2checksum(str(keysDct))
+
+        #if b in s.keys():
+        #    seen = True
+        #    v=s[b]
+        #    v+=1
+        #    s[b]=v
+        #else:
+        #    seen = False
+        #    s[b]=1
 
         _k = str(_r) +'-'+ str(b)
 
@@ -435,14 +445,16 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict):
                         d3[key] = d1[key]
 
             if d1 == d3: #print('match ', d3)
-                h[_k] = jline
+                #h[_k] = [_r,b,seen,s[b],jline]
+                h[_k] = [_r,b,jline]
 
 
         if _search and data:
             #print(_search)
             #print(data) #data is None #TypeError: expected string or bytes-like object
             if re.search(_search, data, re.IGNORECASE):
-                h[_k] = data
+                #h[_k] = [_r,b,seen,s[b],data]
+                h[_k] = [_r,b,data]
 
                 if _not:
                     for no in _not:
@@ -463,13 +475,19 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict):
 
     ######################################################################
     
-    for k,v in h.items():
-        #print(k,v)
-        #_prom = 'prog="syslog_watch",match="' + str(s) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(line) + '"'
-        #gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(kDict[b]) ]
-
-        _prom = 'prog="syslog_watch",engine="rules",rule="' + str(k) + '",value="' + str(v) + '"'
-        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} 1']
+#    for k,v in h.items():
+#        #print(k,v)
+#        #_prom = 'prog="syslog_watch",match="' + str(s) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(line) + '"'
+#        #gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(kDict[b]) ]
+#
+#        _rule  = v[0]
+#        _b2sum = v[1]
+#        _seen  = v[2]
+#        _count = v[3]
+#        _tdata = v[4]
+#
+#        _prom = 'prog="syslog_watch",engine="rules",rule="'+str(_rule)+'",b2sum="'+str(_b2sum)+'",seen="'+str(_seen)+'",data="' + str(_tdata) + '"'
+#        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(_count)]
 
     #return True
     return h
@@ -510,11 +528,18 @@ def sentryLogStream(db_store, gDict):
     rulesDict = getExpertRules('watch-syslog', db_store)
     #print(rulesDict)
 
+    #ht={}
+
     for line in logstream():
         line = line.decode('utf-8')
         jline = json.loads(line)
         #run_rules = expertLogStreamRulesEngineMac(jline, rulesDict, gDict)
-        run_rules = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict)
+        #run_rules = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict)
+        rule_hit = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict)
+        #print(rule_hit)
+        if rule_hit:
+            print('rule_hit ', str(rules_hit))
+            # x.here
 
     return True
 
