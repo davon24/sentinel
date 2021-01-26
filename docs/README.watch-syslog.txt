@@ -3,6 +3,8 @@ sentinel update-config watch-syslog '{"logfile":"stream","engine":["rules","naiv
 
 sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":"error","data":"eventMessage"}'
 
+sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":"error","data":"eventMessage"}'
+
 sentinel update-rule watch-syslog-2 '{"config":"watch-syslog","match":[{"processImagePath":"\\/usr\\/bin\\/sudo"},{"eventType":"logEvent"}]}'
 
 

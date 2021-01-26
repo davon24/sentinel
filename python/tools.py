@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-01.22-1'
+__version__ = '1.6.11-01.25-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -510,6 +510,35 @@ def getExpertRules(config, db_store):
             rulesDict[name] = jconf
     return rulesDict
 
+
+def updategDictR(gDict, rule_hit, s):
+
+    for key in rule_hit:
+
+        r = rule_hit[key][0]
+        b = rule_hit[key][1]
+        d = rule_hit[key][2]
+
+        if b in s.keys():
+            seen = True
+            v=s[b]
+            v+=1
+            s[b]=v
+        else:
+            seen = False
+            s[b]=1
+
+        #gDict
+        _k = str(r)+'-'+str(b)
+        _prom = 'prog="syslog_watch",rule="' + str(r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d) + '"'
+        gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(s[b]) ]
+        print(gDict[_k])
+
+    return True
+
+
+
+
 def sentryLogStream(db_store, gDict):
     logging.info('Sentry syslog logstream ')
 
@@ -528,20 +557,73 @@ def sentryLogStream(db_store, gDict):
     rulesDict = getExpertRules('watch-syslog', db_store)
     #print(rulesDict)
 
-    #ht={}
+    s={}
 
     for line in logstream():
         line = line.decode('utf-8')
         jline = json.loads(line)
         #run_rules = expertLogStreamRulesEngineMac(jline, rulesDict, gDict)
         #run_rules = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict)
+
         rule_hit = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict)
         #print(rule_hit)
+
         if rule_hit:
-            print('rule_hit ', str(rules_hit))
-            # x.here
+            #print('rule_hit ', str(rule_hit))
+            #for k,v in rule_hit.items():
+            update_gDict = updategDictR(gDict,rule_hit, s)
+            #for key in rule_hit:
+
+            #    r = rule_hit[key][0]
+            #    b = rule_hit[key][1]
+            #    d = rule_hit[key][2]
+
+            #    if b in s.keys():
+            #        seen = True
+            #        v=s[b]
+            #        v+=1
+            #        s[b]=v
+            #    else:
+            #        seen = False
+            #        s[b]=1
+
+            #    #gDict
+            #    _k = str(r)+'-'+str(b)
+            #    _prom = 'prog="syslog_watch",rule="' + str(r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d) + '"'
+            #    gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(s[b]) ]
+            #    print(gDict[_k])
 
     return True
+
+
+#        if rule_hit:
+#            #print('rule_hit ', str(rule_hit))
+#
+#            for k,v in rule_hit.items():
+#                #print(k, '  wow ', v)
+#                b = rule_hit[k][1]
+#                #print('seen ', b)
+#
+#                if b in s.keys():
+#                    seen = True
+#                    v=s[b]
+#                    v+=1
+#                    s[b]=v
+#                else:
+#                    seen = False
+#                    s[b]=1
+
+
+        #if b in s.keys():
+        #    seen = True
+        #    v=s[b]
+        #    v+=1
+        #    s[b]=v
+        #else:
+        #    seen = False
+        #    s[b]=1
+
+
 
 
 #def sentryLogStreamMac(db_store, gDict):
