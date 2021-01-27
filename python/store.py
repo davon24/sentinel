@@ -112,6 +112,11 @@ def createDB(db_file):
     cur.execute(create_rules)
     cur.execute(create_rulesi)
 
+    create_training  = "CREATE TABLE IF NOT EXISTS training (tag TEXT,data JSON);"
+    create_trainingi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_training ON training (tag,data);"
+    cur.execute(create_training)
+    cur.execute(create_trainingi)
+
     con.commit()
 
     return con
@@ -660,6 +665,15 @@ def replaceINTO(tbl, name, data, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute("REPLACE INTO " + str(tbl) + " VALUES(?,DATETIME('now'),?)", (name, data))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
+def updateTraining(tag, data, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO training VALUES(?,?)", (tag, data))
     con.commit()
     if cur.rowcount == 0:
         return False

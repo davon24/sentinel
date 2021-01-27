@@ -1,4 +1,12 @@
 
+
+
+
+sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":"error","data":"eventMessage","not":["noerror","XPC_ERROR_CONNECTION_INVALID","com.apple.Maps.MapsSync.store"]}'
+
+sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":"error","data":"eventMessage","not":["noerror"]}'
+
+
 sentinel update-config watch-syslog '{"logfile":"stream","engine":["rules","naive_bayes"],"keys":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]}'
 
 sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":"error","data":"eventMessage"}'

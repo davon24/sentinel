@@ -135,6 +135,11 @@ def usage():
         list-counts
         clear-counts
 
+        list-training
+        update-training tag json
+        delete-training id
+        clear-training
+
         tail file
         logstream
         logstream-json
@@ -1010,6 +1015,38 @@ if __name__ == '__main__':
             clear = store.clearAll('sshwatch', db_store)
             print(clear)
             sys.exit(0)
+
+        if sys.argv[1] == 'clear-training':
+            clear = store.clearAll('training', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-training':
+            #rows = store.selectAll('training', db_store)
+            rows = store.getAll('training', db_store)
+            for row in rows:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'update-training':
+            tag = sys.argv[2]
+            data = sys.argv[3]
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError:
+                print('invalid json')
+                sys.exit(1)
+            #run = store.replaceINTO('training', tag, data, db_store)
+            run = store.updateTraining(tag, data, db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-training':
+            rowid = sys.argv[2]
+            delete = store.deleteFromRowid('training', rowid, db_store)
+            print(delete)
+            sys.exit(0)
+
+
 
         else:
             usage()

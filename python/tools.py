@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-01.25-1'
+__version__ = '1.6.11-01.26-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -389,14 +389,9 @@ def getKeysDict(keys, jline):
             keysDct[key] = jline[key]
     return keysDct
 
-#def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict):
 def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
 
     h={}
-    #keysDct = getKeysDict(keys, jline)
-    #print('keysDct ', keysDct)
-    #s={}
-
     ######################################################################
     # process each rule one at a time
     for _r,v in rulesDict.items():
@@ -536,7 +531,39 @@ def updategDictR(gDict, rule_hit, s):
 
     return True
 
+def sklearnNaiveBayesMNB(db_store):
+    logging.info('sklearn.naive_bayes MultinomialNB')
 
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.model_selection import train_test_split
+
+    X=[]
+    y=[]
+
+    #open/load training data
+    rows = store.getAll('training', db_store)
+    c=0
+    for row in rows:
+        c+=1
+        #print(row)
+        _id = row[0]
+        _tag = row[1]
+        _jsn = row[2]
+        #print(_id, _tag, _jsn)
+        y.append(_tag)
+        X.append(_jsn)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    vectorizer = CountVectorizer()
+    counts = vectorizer.fit_transform(X_train)
+    classifier = MultinomialNB()
+    targets = y_train
+    classifier.fit(counts, targets)
+
+    print('training records ',str(c))
+
+    return (vectorizer, classifier)
 
 
 def sentryLogStream(db_store, gDict):
@@ -557,184 +584,47 @@ def sentryLogStream(db_store, gDict):
     rulesDict = getExpertRules('watch-syslog', db_store)
     #print(rulesDict)
 
-    s={}
+    if engines:
+        #supervised learning...
+        #print('engines is True ' + str(engines))
+        #init_bayes = sklearnNaiveBayesMNB(db_store)
+        vectorizer, classifier = sklearnNaiveBayesMNB(db_store)
 
+
+    s={}
+    ##########################################################################
     for line in logstream():
         line = line.decode('utf-8')
         jline = json.loads(line)
-        #run_rules = expertLogStreamRulesEngineMac(jline, rulesDict, gDict)
-        #run_rules = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict, gDict)
 
         rule_hit = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict)
+        if rule_hit: updategDictR(gDict,rule_hit, s)
+
         #print(rule_hit)
+        #if rule_hit:
+        #    #print('rule_hit ', str(rule_hit))
+        #    #for k,v in rule_hit.items():
+        #    update_gDict = updategDictR(gDict,rule_hit, s)
+        #    #for key in rule_hit:
 
-        if rule_hit:
-            #print('rule_hit ', str(rule_hit))
-            #for k,v in rule_hit.items():
-            update_gDict = updategDictR(gDict,rule_hit, s)
-            #for key in rule_hit:
+        if engines:
+            #print(jline)
+            #p = sklearnNaiveBayes(jline)
 
-            #    r = rule_hit[key][0]
-            #    b = rule_hit[key][1]
-            #    d = rule_hit[key][2]
+            
+            #prepdoc = 'This is a test'
+            _s = json.dumps(jline)
 
-            #    if b in s.keys():
-            #        seen = True
-            #        v=s[b]
-            #        v+=1
-            #        s[b]=v
-            #    else:
-            #        seen = False
-            #        s[b]=1
+            sample = []
+            sample.append(_s)
+            sample_count = vectorizer.transform(sample)
+            prediction = classifier.predict(sample_count)
+            #print('prediction ' + str(prediction) )
+            print('prediction ' + str(prediction) + ' ' + str(_s) )
 
-            #    #gDict
-            #    _k = str(r)+'-'+str(b)
-            #    _prom = 'prog="syslog_watch",rule="' + str(r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d) + '"'
-            #    gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(s[b]) ]
-            #    print(gDict[_k])
+    ##########################################################################
 
     return True
-
-
-#        if rule_hit:
-#            #print('rule_hit ', str(rule_hit))
-#
-#            for k,v in rule_hit.items():
-#                #print(k, '  wow ', v)
-#                b = rule_hit[k][1]
-#                #print('seen ', b)
-#
-#                if b in s.keys():
-#                    seen = True
-#                    v=s[b]
-#                    v+=1
-#                    s[b]=v
-#                else:
-#                    seen = False
-#                    s[b]=1
-
-
-        #if b in s.keys():
-        #    seen = True
-        #    v=s[b]
-        #    v+=1
-        #    s[b]=v
-        #else:
-        #    seen = False
-        #    s[b]=1
-
-
-
-
-#def sentryLogStreamMac(db_store, gDict):
-#    logging.info('Sentry syslog logstream MACOSX')
-#
-#    rulesDict = getExpertRules('watch-syslog', db_store)
-#
-#    for line in logstream():
-#        line = line.decode('utf-8')
-#        jline = json.loads(line)
-#        #run_rules = expertLogStreamRulesEngineMac(jline, rulesDict, gDict)
-#        run_rules = expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict)
-#
-#    return True
-#
-#
-#def sentryLogStreamLinux(db_store, gDict):
-#    logging.info('Sentry syslog logstream Linux')
-#
-#    rulesDict = getExpertRules('watch-syslog', db_store)
-#
-#    for line in logstream():
-#        line = line.decode('utf-8')
-#        jline = json.loads(line)
-#        run_rules = expertLogStreamRulesEngineGeneral(jline, rulesDict, gDict)
-#
-#    return True
-
-
-
-
-#def sentryLogStreamMac(db_store, gDict, _search):
-#    #from re import search
-#    logging.info('Sentry syslog logstream')
-#
-#    kDict={}
-#
-#    if _search:
-#        #print(str(_search))
-#        #print(str(type(_search))) #be a list pls
-#        logging.info('Sentry syslog watch ' + str(_search))
-#
-#
-#    #ec=0
-#    #fc=0
-#
-#    for line in logstream():
-#        line = line.decode('utf-8')
-#        jdata = json.loads(line)
-#
-#        eventType        = jdata.get('eventType', None)
-#        messageType      = jdata.get('messageType', None)
-#        category         = jdata.get('category', None)
-#        subsystem        = jdata.get('subsystem', None)
-#        process          = jdata.get('process', None)
-#        processImagePath = jdata.get('processImagePath', None)
-#        sender           = jdata.get('sender', None)
-#        senderImagePath  = jdata.get('senderImagePath', None)
-#        processID        = jdata.get('processID', None)
-#        eventMessage     = jdata.get('eventMessage', None)
-#        source           = jdata.get('source', None)
-#
-#        data_string = str(eventType) +' '+ str(messageType) +' '+ str(category) +' '+ \
-#                      str(subsystem) +' '+ str(process) +' '+ str(processImagePath) +' '+ str(sender) +' '+ \
-#                      str(senderImagePath) +' '+ str(processID) +' '+ str(eventMessage) +' '+ str(source)
-#
-#        b = b2checksum(data_string)
-#        #print(identifier)
-#        if b in kDict.keys():
-#            seen = True
-#            #print('seen ' + b)
-#            v = kDict[b]
-#            v += 1
-#            kDict[b] = v
-#        else:
-#            seen = False
-#            #print('new ' + b)
-#            kDict[b] = 1
-#
-#
-#        if _search:
-#            for s in _search:
-#                if re.search(s, line, re.IGNORECASE):
-#                    rulesEngine
-#                    print('found ' + str(s) + ' seen ' + str(seen))
-#                    _key  = 'sentry-syslog-watch-' + str(s) + '-' + str(b)
-#                    _prom = 'prog="syslog_watch",match="' + str(s) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(line) + '"'
-#                    gDict[_key] = [ 'sentinel_syslog_watch_search{' + _prom + '} ' + str(kDict[b]) ]
-#
-#
-#
-
-        #if search('error', line, re.IGNORECASE):
-        #    ec += 1
-        #    print('error')
-        #    _key  = 'sentry-syslog-watch-error-' + str(ec)
-        #    #_prom = 'prog="syslog_watch",json="' + str(json.dumps(jdata)) + '"'
-        #    _prom = 'prog="syslog_watch",json="' + str(line) + '"'
-        #    gDict[_key] = [ 'sentinel_syslog_watch_error{' + _prom + '} ' + str(ec) ]
-
-        #if search('fatal', line, re.IGNORECASE):
-        #    fc += 1
-        #    print('fatal')
-        #    _key  = 'sentry-syslog-watch-fatal-' + str(fc)
-        #    #_prom = 'prog="syslog_watch",json="' + str(json.dumps(jdata)) + '"'
-        #    _prom = 'prog="syslog_watch",json="' + str(line) + '"'
-        #    gDict[_key] = [ 'sentinel_syslog_watch_fatal{' + _prom + '} ' + str(fc) ]
-
-        #jdata = json.loads(line)
-
-#    return True
 
 
 def sentryTailFile(db_store, gDict, _file):
