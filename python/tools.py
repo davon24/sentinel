@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-01.26-1'
+__version__ = '1.6.11-01.27-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -531,8 +531,8 @@ def updategDictR(gDict, rule_hit, s):
 
     return True
 
-def sklearnNaiveBayesMNB(db_store):
-    logging.info('sklearn.naive_bayes MultinomialNB')
+def sklearnNaiveBayesMultinomialNB(db_store):
+    logging.info('naive_bayes.MultinomialNB')
 
     from sklearn.feature_extraction.text import CountVectorizer
     from sklearn.naive_bayes import MultinomialNB
@@ -574,21 +574,31 @@ def sentryLogStream(db_store, gDict):
         config = json.loads(conf[0])
         #print('config.logfile ',config.get('logfile', None))
         logfile = config.get('logfile', None)
-        engines = config.get('engine', None)
-        keys    = config.get('keys', None)
+        #engines = config.get('engine', None)
+        #keys    = config.get('keys', None)
 
-    if keys is None:
-        logging.critical('Sentry logstream keys is None in config ')
-        return False
+        rules   = config.get('rules', None)
+        sklearn = config.get('sklearn', None)
 
-    rulesDict = getExpertRules('watch-syslog', db_store)
+        #naive_bayes_multinomialnb = config.get('naive_bayes_multinomialnb', None)
+
+    if rules:
+        rulesDict = getExpertRules('watch-syslog', db_store)
+        #print(rulesDict)
+        #print(rules)
+        #keys = rules
+
+        #if keys is None:
+        #    logging.critical('Sentry logstream keys is None in config ')
+        #    return False
+
     #print(rulesDict)
 
-    if engines:
+    #if engines:
         #supervised learning...
         #print('engines is True ' + str(engines))
         #init_bayes = sklearnNaiveBayesMNB(db_store)
-        vectorizer, classifier = sklearnNaiveBayesMNB(db_store)
+        #vectorizer, classifier = sklearnNaiveBayesMNB(db_store)
 
 
     s={}
@@ -597,8 +607,10 @@ def sentryLogStream(db_store, gDict):
         line = line.decode('utf-8')
         jline = json.loads(line)
 
-        rule_hit = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict)
-        if rule_hit: updategDictR(gDict,rule_hit, s)
+        if rules:
+            #rule_hit = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict)
+            rule_hit = expertLogStreamRulesEngineGeneral(jline, rules, rulesDict)
+            if rule_hit: updategDictR(gDict,rule_hit, s)
 
         #print(rule_hit)
         #if rule_hit:
@@ -607,20 +619,20 @@ def sentryLogStream(db_store, gDict):
         #    update_gDict = updategDictR(gDict,rule_hit, s)
         #    #for key in rule_hit:
 
-        if engines:
+        #if engines:
             #print(jline)
             #p = sklearnNaiveBayes(jline)
 
             
             #prepdoc = 'This is a test'
-            _s = json.dumps(jline)
+            #_s = json.dumps(jline)
 
-            sample = []
-            sample.append(_s)
-            sample_count = vectorizer.transform(sample)
-            prediction = classifier.predict(sample_count)
+            #sample = []
+            #sample.append(_s)
+            #sample_count = vectorizer.transform(sample)
+            #prediction = classifier.predict(sample_count)
             #print('prediction ' + str(prediction) )
-            print('prediction ' + str(prediction) + ' ' + str(_s) )
+            #print('prediction ' + str(prediction) + ' ' + str(_s) )
 
     ##########################################################################
 

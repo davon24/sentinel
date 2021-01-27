@@ -153,7 +153,11 @@ def usage():
 
         config
 
-                watch-syslog
+                watch-syslog:
+                    rules
+                    sklearn naive_bayes.MultinomialNB
+                            naive_bayes.BernoulliNB
+
                 watch-resin-log
                 watch-mariadb-audit-log
                 watch-ssh
