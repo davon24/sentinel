@@ -712,7 +712,9 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'sentry':
-            run = tools.sentryMode(db_store)
+            try: v = sys.argv[2]
+            except IndexError: v = False
+            run = tools.sentryMode(db_store, verbose=v)
             print(str(run))
             sys.exit(0)
 

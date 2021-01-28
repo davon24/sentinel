@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-01.27-3'
+__version__ = '1.6.12-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -506,7 +506,7 @@ def getExpertRules(config, db_store):
     return rulesDict
 
 
-def updategDictR(gDict, rule_hit, s):
+def updategDictR(gDict, rule_hit, s, verbose=False):
 
     for key in rule_hit:
 
@@ -525,14 +525,14 @@ def updategDictR(gDict, rule_hit, s):
 
         #gDict
         _k = str(r)+'-'+str(b)
-        _prom = 'prog="syslog_watch",rule="' + str(r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d) + '"'
-        gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(s[b]) ]
-        print(gDict[_k])
+        _prom = 'config="watch-syslog",rule="' + str(r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d) + '"'
+        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(s[b]) ]
+        if verbose: print(_k, gDict[_k])
 
     return True
 
 def sklearnNaiveBayesMultinomialNB(db_store):
-    logging.info('naive_bayes.MultinomialNB')
+    logging.info('Sentry watch-syslog naive_bayes.MultinomialNB')
 
     from sklearn.feature_extraction.text import CountVectorizer
     from sklearn.naive_bayes import MultinomialNB
@@ -575,7 +575,8 @@ def sklearnNaiveBayesMultinomialNB(db_store):
     targets = y_train
     classifier.fit(counts, targets)
 
-    print('training records ',str(c), ' tagged ', str(t))
+    #print('training records ',str(c), ' tagged ', str(t))
+    logging.info('training records '+str(c)+' tagged '+str(t))
 
     return (vectorizer, classifier)
 
@@ -589,8 +590,8 @@ def getAlgoDict(sklearn):
     return algoDict
 
 
-def sentryLogStream(db_store, gDict):
-    logging.info('Sentry syslog logstream ')
+def sentryLogStream(db_store, gDict, verbose=False):
+    logging.info('Sentry watch-syslog logstream ')
 
     conf = store.getData('configs','watch-syslog', db_store)
     if conf:
@@ -606,6 +607,7 @@ def sentryLogStream(db_store, gDict):
         #naive_bayes_multinomialnb = config.get('naive_bayes_multinomialnb', None)
 
     if rules:
+        logging.info('Sentry watch-syslog expert_rules')
         rulesDct = getExpertRules('watch-syslog', db_store)
         #print(rulesDict)
         #print(rules)
@@ -642,7 +644,7 @@ def sentryLogStream(db_store, gDict):
         if rules:
             #rule_hit = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict)
             rule_hit = expertLogStreamRulesEngineGeneral(jline, rules, rulesDct)
-            if rule_hit: updategDictR(gDict,rule_hit, s)
+            if rule_hit: updategDictR(gDict,rule_hit, s, verbose)
 
         if sklearn:
 
@@ -657,29 +659,16 @@ def sentryLogStream(db_store, gDict):
                 #print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str('  '))
                 if int(p_nbm) == 1:
                     #print('hit')
-                    print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str(_sample))
+                    #print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str(_sample))
 
-        #print(rule_hit)
-        #if rule_hit:
-        #    #print('rule_hit ', str(rule_hit))
-        #    #for k,v in rule_hit.items():
-        #    update_gDict = updategDictR(gDict,rule_hit, s)
-        #    #for key in rule_hit:
+                    #gDict
+                    _k = 'naive_bayes.MultinomialNB-'+str(b2checksum(_sample))
+                    _prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="' + str(p_nbm) + '",data="' + str(json.dumps(jline)) + '"'
+                    gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' + str(p_nbm) ]
+                    if verbose: print(_k, gDict[_k])
 
-        #if engines:
-            #print(jline)
-            #p = sklearnNaiveBayes(jline)
 
-            
-            #prepdoc = 'This is a test'
-            #_s = json.dumps(jline)
 
-            #sample = []
-            #sample.append(_s)
-            #sample_count = vectorizer.transform(sample)
-            #prediction = classifier.predict(sample_count)
-            #print('prediction ' + str(prediction) )
-            #print('prediction ' + str(prediction) + ' ' + str(_s) )
 
     ##########################################################################
 
@@ -3588,7 +3577,7 @@ def procHTTPServer(port, metric_path, db_file):
 
 
 
-def sentryMode(db_file):
+def sentryMode(db_file, verbose=False):
 
     global db_store
     db_store = db_file
@@ -3674,7 +3663,7 @@ def sentryMode(db_file):
         #_search   = syslog_watch_config['search'] #KeyError:
         #_search   = syslog_watch_config.get('search', None)
 
-        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict))
+        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict, verbose))
         syslog_tailer.start()
         #syslog_tailer.join()
         #runlist.append(syslog_tailer)
