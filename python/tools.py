@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-01.27-1'
+__version__ = '1.6.11-01.27-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -543,6 +543,15 @@ def sklearnNaiveBayesMultinomialNB(db_store):
 
     #open/load training data
     rows = store.getAll('training', db_store)
+    if len(rows) == 0:
+        #print('Zero training data')
+        logging.error('Zero training data. Can not perform naive_bayes.MultinomialNB')
+        #print('pid ' + str(os.getpid()))
+        #os.kill(os.getpid(),9)
+        #sys.exit(1)
+        #sigterm = True
+        return (False, False)
+
     c=0
     for row in rows:
         c+=1
@@ -565,6 +574,15 @@ def sklearnNaiveBayesMultinomialNB(db_store):
 
     return (vectorizer, classifier)
 
+def getAlgoDict(sklearn):
+    algoDict={}
+    for item in sklearn:
+        #print('item ',item, ' ', str(type(item))) #<class 'dict'>
+        for k,v in item.items():
+            #print(k,v)
+            algoDict[k]=v
+    return algoDict
+
 
 def sentryLogStream(db_store, gDict):
     logging.info('Sentry syslog logstream ')
@@ -583,7 +601,7 @@ def sentryLogStream(db_store, gDict):
         #naive_bayes_multinomialnb = config.get('naive_bayes_multinomialnb', None)
 
     if rules:
-        rulesDict = getExpertRules('watch-syslog', db_store)
+        rulesDct = getExpertRules('watch-syslog', db_store)
         #print(rulesDict)
         #print(rules)
         #keys = rules
@@ -600,6 +618,15 @@ def sentryLogStream(db_store, gDict):
         #init_bayes = sklearnNaiveBayesMNB(db_store)
         #vectorizer, classifier = sklearnNaiveBayesMNB(db_store)
 
+    if sklearn:
+        algoDct = getAlgoDict(sklearn)
+
+    #print(algoDct)
+
+    if 'naive_bayes.MultinomialNB' in algoDct.keys():
+        #print('naive_bayes.MultinomialNB')
+        nbm_vectorizer, nbm_classifier = sklearnNaiveBayesMultinomialNB(db_store)
+
 
     s={}
     ##########################################################################
@@ -609,8 +636,20 @@ def sentryLogStream(db_store, gDict):
 
         if rules:
             #rule_hit = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict)
-            rule_hit = expertLogStreamRulesEngineGeneral(jline, rules, rulesDict)
+            rule_hit = expertLogStreamRulesEngineGeneral(jline, rules, rulesDct)
             if rule_hit: updategDictR(gDict,rule_hit, s)
+
+        if sklearn:
+
+            _sample = json.dumps(jline) #this needs to be same as trained on
+            sample = []
+            sample.append(_sample)
+
+            if 'naive_bayes.MultinomialNB' in algoDct.keys():
+                sample_count = nbm_vectorizer.transform(sample)
+                p_nbm = nbm_classifier.predict(sample_count)
+                #print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str(_sample))
+                print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str('  '))
 
         #print(rule_hit)
         #if rule_hit:
@@ -635,6 +674,27 @@ def sentryLogStream(db_store, gDict):
             #print('prediction ' + str(prediction) + ' ' + str(_s) )
 
     ##########################################################################
+
+    return True
+
+def sampleLogStream(count, db_store):
+
+    count=int(count)
+
+    for line in logstream():
+
+        count-=1
+        if count == 0:
+            break
+
+        line = line.decode('utf-8')
+        #jline = json.loads(line)
+        #print(jline)
+
+        tag=0
+
+        run = store.updateTraining(tag, line, db_store)
+        print(line)
 
     return True
 

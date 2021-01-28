@@ -137,8 +137,12 @@ def usage():
 
         list-training
         update-training tag json
+        update-training-tag id tag
         delete-training id
         clear-training
+
+        sample-logstream count
+        #train-logstream count
 
         tail file
         logstream
@@ -1044,12 +1048,23 @@ if __name__ == '__main__':
             print(run)
             sys.exit(0)
 
+        if sys.argv[1] == 'update-training-tag':
+            _id = sys.argv[2]
+            tag = sys.argv[3]
+            run = store.updateTrainingTag(_id, tag, db_store)
+            print(run)
+            sys.exit(0)
+
         if sys.argv[1] == 'delete-training':
             rowid = sys.argv[2]
             delete = store.deleteFromRowid('training', rowid, db_store)
             print(delete)
             sys.exit(0)
 
+        if sys.argv[1] == 'sample-logstream':
+            count = sys.argv[2]
+            run = tools.sampleLogStream(count, db_store)
+            sys.exit(0)
 
 
         else:
