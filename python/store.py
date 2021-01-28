@@ -679,6 +679,17 @@ def updateTraining(tag, data, db_file):
         return False
     return True
 
+def updateTrainingTag(_id, tag, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("UPDATE training SET tag=? WHERE rowid=?", (tag, _id))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
+
+
 # need to standardize on name, timestamp, data for all...
 # create_fims  = "CREATE TABLE IF NOT EXISTS fims (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data TEXT);"
 #def updateTbl(tbl, name, data, db_file):
@@ -762,10 +773,31 @@ def getAll(tbl, db_file):
     cur = con.cursor()
     cur.execute('SELECT rowid,* FROM ' + str(tbl) + ';')
     rows = cur.fetchall()
-    #if cur.rowcount == 0:
-    #    return False
     return rows
 
+def getByID(tbl, rowid, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("SELECT rowid,* FROM " + str(tbl) + " WHERE rowid=? ;", (rowid,))
+    row = cur.fetchone()
+    return row
+
+
+def getAllTrainingTags(tag, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM training WHERE tag=? ORDER by rowid DESC;', (tag,))
+    rows = cur.fetchall()
+    return rows
+
+def markAllTraining(tag, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('UPDATE training SET tag=? ;', (tag,))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
 
 def getJob(name, db_file):
     con = sqlConnection(db_file)

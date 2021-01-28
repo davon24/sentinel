@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.11-01.27-2'
+__version__ = '1.6.11-01.27-3'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -553,6 +553,7 @@ def sklearnNaiveBayesMultinomialNB(db_store):
         return (False, False)
 
     c=0
+    t=0
     for row in rows:
         c+=1
         #print(row)
@@ -560,6 +561,10 @@ def sklearnNaiveBayesMultinomialNB(db_store):
         _tag = row[1]
         _jsn = row[2]
         #print(_id, _tag, _jsn)
+
+        if int(_tag) != 0:
+            t+=1
+
         y.append(_tag)
         X.append(_jsn)
 
@@ -570,7 +575,7 @@ def sklearnNaiveBayesMultinomialNB(db_store):
     targets = y_train
     classifier.fit(counts, targets)
 
-    print('training records ',str(c))
+    print('training records ',str(c), ' tagged ', str(t))
 
     return (vectorizer, classifier)
 
@@ -649,7 +654,10 @@ def sentryLogStream(db_store, gDict):
                 sample_count = nbm_vectorizer.transform(sample)
                 p_nbm = nbm_classifier.predict(sample_count)
                 #print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str(_sample))
-                print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str('  '))
+                #print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str('  '))
+                if int(p_nbm) == 1:
+                    #print('hit')
+                    print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str(_sample))
 
         #print(rule_hit)
         #if rule_hit:

@@ -135,13 +135,16 @@ def usage():
         list-counts
         clear-counts
 
-        list-training
+        list-training [id|tags tag]
         update-training tag json
         update-training-tag id tag
         delete-training id
         clear-training
 
         sample-logstream count
+        mark-training tag
+        mark-training-on name
+
         #train-logstream count
 
         tail file
@@ -169,12 +172,6 @@ def usage():
 Version: {} '''.format(__version__))
 
 
-        #fix this later...
-        #detect-scan-net [ip/net]
-        #detect-scan ip
-        #list-detects [id]
-        #del-detect id
-        #clear-detects
 
 
 
@@ -1030,10 +1027,27 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-training':
-            #rows = store.selectAll('training', db_store)
-            rows = store.getAll('training', db_store)
-            for row in rows:
-                print(row)
+            try: _id = sys.argv[2]
+            except IndexError: _id = None
+
+            if _id:
+                #print(_id)
+
+                if _id  == 'tags':
+                    #print('tags...')
+                    _tag = sys.argv[3]
+                    rows = store.getAllTrainingTags(_tag, db_store)
+                    for row in rows:
+                        print(row)
+
+                else:
+                    row = store.getByID('training', _id, db_store)
+                    print(row)
+
+            else:
+                rows = store.getAll('training', db_store)
+                for row in rows:
+                    print(row)
             sys.exit(0)
 
         if sys.argv[1] == 'update-training':
@@ -1066,6 +1080,16 @@ if __name__ == '__main__':
             run = tools.sampleLogStream(count, db_store)
             sys.exit(0)
 
+        if sys.argv[1] == 'mark-training':
+            tag = sys.argv[2]
+            run = store.markAllTraining(tag, db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'mark-training-on':
+            name = sys.argv[2]
+            run = store.markTrainingOn(name, db_store)
+            sys.exit(0)
 
         else:
             usage()
@@ -1073,4 +1097,11 @@ if __name__ == '__main__':
     else:
         sys.exit(run())
 
-            
+
+        #fix this later...
+        #detect-scan-net [ip/net]
+        #detect-scan ip
+        #list-detects [id]
+        #del-detect id
+        #clear-detects
+
