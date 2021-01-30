@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.12-1'
+__version__ = '1.6.13-1-jan-29-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -598,41 +598,18 @@ def sentryLogStream(db_store, gDict, verbose=False):
         config = json.loads(conf[0])
         #print('config.logfile ',config.get('logfile', None))
         logfile = config.get('logfile', None)
-        #engines = config.get('engine', None)
-        #keys    = config.get('keys', None)
-
         rules   = config.get('rules', None)
         sklearn = config.get('sklearn', None)
-
-        #naive_bayes_multinomialnb = config.get('naive_bayes_multinomialnb', None)
 
     if rules:
         logging.info('Sentry watch-syslog expert_rules')
         rulesDct = getExpertRules('watch-syslog', db_store)
-        #print(rulesDict)
-        #print(rules)
-        #keys = rules
-
-        #if keys is None:
-        #    logging.critical('Sentry logstream keys is None in config ')
-        #    return False
-
-    #print(rulesDict)
-
-    #if engines:
-        #supervised learning...
-        #print('engines is True ' + str(engines))
-        #init_bayes = sklearnNaiveBayesMNB(db_store)
-        #vectorizer, classifier = sklearnNaiveBayesMNB(db_store)
 
     if sklearn:
         algoDct = getAlgoDict(sklearn)
 
-    #print(algoDct)
-
-    if 'naive_bayes.MultinomialNB' in algoDct.keys():
-        #print('naive_bayes.MultinomialNB')
-        nbm_vectorizer, nbm_classifier = sklearnNaiveBayesMultinomialNB(db_store)
+        if 'naive_bayes.MultinomialNB' in algoDct.keys():
+            nbm_vectorizer, nbm_classifier = sklearnNaiveBayesMultinomialNB(db_store)
 
 
     s={}
@@ -642,12 +619,10 @@ def sentryLogStream(db_store, gDict, verbose=False):
         jline = json.loads(line)
 
         if rules:
-            #rule_hit = expertLogStreamRulesEngineGeneral(jline, keys, rulesDict)
             rule_hit = expertLogStreamRulesEngineGeneral(jline, rules, rulesDct)
             if rule_hit: updategDictR(gDict,rule_hit, s, verbose)
 
         if sklearn:
-
             _sample = json.dumps(jline) #this needs to be same as trained on
             sample = []
             sample.append(_sample)
@@ -655,20 +630,13 @@ def sentryLogStream(db_store, gDict, verbose=False):
             if 'naive_bayes.MultinomialNB' in algoDct.keys():
                 sample_count = nbm_vectorizer.transform(sample)
                 p_nbm = nbm_classifier.predict(sample_count)
-                #print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str(_sample))
-                #print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str('  '))
-                if int(p_nbm) == 1:
-                    #print('hit')
-                    #print('naive_bayes.MultinomialNB predict ' + str(p_nbm) + ' ' + str(_sample))
 
+                if int(p_nbm) == 1:
                     #gDict
                     _k = 'naive_bayes.MultinomialNB-'+str(b2checksum(_sample))
                     _prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="' + str(p_nbm) + '",data="' + str(json.dumps(jline)) + '"'
                     gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' + str(p_nbm) ]
                     if verbose: print(_k, gDict[_k])
-
-
-
 
     ##########################################################################
 
