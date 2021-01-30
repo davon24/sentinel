@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.13-1-jan-29-1'
+__version__ = '1.6.13-1-jan-30-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -506,27 +506,27 @@ def getExpertRules(config, db_store):
     return rulesDict
 
 
-def updategDictR(gDict, rule_hit, s, verbose=False):
+def updategDictR(gDict, rule_hit, r, verbose=False):
 
     for key in rule_hit:
 
-        r = rule_hit[key][0]
+        _r = rule_hit[key][0]
         b = rule_hit[key][1]
         d = rule_hit[key][2]
 
-        if b in s.keys():
+        if b in r.keys():
             seen = True
-            v=s[b]
+            v=r[b]
             v+=1
-            s[b]=v
+            r[b]=v
         else:
             seen = False
-            s[b]=1
+            r[b]=1
 
         #gDict
-        _k = str(r)+'-'+str(b)
-        _prom = 'config="watch-syslog",rule="' + str(r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d) + '"'
-        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(s[b]) ]
+        _k = str(_r)+'-'+str(b)
+        _prom = 'config="watch-syslog",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d) + '"'
+        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(r[b]) ]
         if verbose: print(_k, gDict[_k])
 
     return True
@@ -546,10 +546,6 @@ def sklearnNaiveBayesMultinomialNB(db_store):
     if len(rows) == 0:
         #print('Zero training data')
         logging.error('Zero training data. Can not perform naive_bayes.MultinomialNB')
-        #print('pid ' + str(os.getpid()))
-        #os.kill(os.getpid(),9)
-        #sys.exit(1)
-        #sigterm = True
         return (False, False)
 
     c=0
@@ -576,9 +572,55 @@ def sklearnNaiveBayesMultinomialNB(db_store):
     classifier.fit(counts, targets)
 
     #print('training records ',str(c), ' tagged ', str(t))
-    logging.info('training records '+str(c)+' tagged '+str(t))
+    logging.info('naive_bayes.MultinomialNB training records '+str(c)+' tagged '+str(t))
 
     return (vectorizer, classifier)
+
+def sklearnNaiveBayesBernoulliNB(db_store):
+    logging.info('Sentry watch-syslog naive_bayes.BernoulliNB')
+
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.naive_bayes import BernoulliNB
+    from sklearn.model_selection import train_test_split
+
+    X=[]
+    y=[]
+
+    #open/load training data
+    rows = store.getAll('training', db_store)
+    if len(rows) == 0:
+        #print('Zero training data')
+        logging.error('Zero training data. Can not perform naive_bayes.BernoulliNB')
+        return (False, False)
+
+    c=0
+    t=0
+    for row in rows:
+        c+=1
+        #print(row)
+        _id = row[0]
+        _tag = row[1]
+        _jsn = row[2]
+        #print(_id, _tag, _jsn)
+
+        if int(_tag) != 0:
+            t+=1
+
+        y.append(_tag)
+        X.append(_jsn)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    vectorizer = CountVectorizer()
+    counts = vectorizer.fit_transform(X_train)
+    classifier = BernoulliNB()
+    targets = y_train
+    classifier.fit(counts, targets)
+
+    #print('training records ',str(c), ' tagged ', str(t))
+    logging.info('naive_bayes.BernoulliNB training records '+str(c)+' tagged '+str(t))
+
+    return (vectorizer, classifier)
+
 
 def getAlgoDict(sklearn):
     algoDict={}
@@ -611,8 +653,13 @@ def sentryLogStream(db_store, gDict, verbose=False):
         if 'naive_bayes.MultinomialNB' in algoDct.keys():
             nbm_vectorizer, nbm_classifier = sklearnNaiveBayesMultinomialNB(db_store)
 
+        if 'naive_bayes.BernoulliNB' in algoDct.keys():
+            nbb_vectorizer, nbb_classifier = sklearnNaiveBayesBernoulliNB(db_store)
 
+
+    r={}
     s={}
+
     ##########################################################################
     for line in logstream():
         line = line.decode('utf-8')
@@ -620,9 +667,10 @@ def sentryLogStream(db_store, gDict, verbose=False):
 
         if rules:
             rule_hit = expertLogStreamRulesEngineGeneral(jline, rules, rulesDct)
-            if rule_hit: updategDictR(gDict,rule_hit, s, verbose)
+            if rule_hit: updategDictR(gDict,rule_hit, r, verbose)
 
         if sklearn:
+
             _sample = json.dumps(jline) #this needs to be same as trained on
             sample = []
             sample.append(_sample)
@@ -634,9 +682,21 @@ def sentryLogStream(db_store, gDict, verbose=False):
                 if int(p_nbm) == 1:
                     #gDict
                     _k = 'naive_bayes.MultinomialNB-'+str(b2checksum(_sample))
-                    _prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="' + str(p_nbm) + '",data="' + str(json.dumps(jline)) + '"'
-                    gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' + str(p_nbm) ]
+                    _prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="' + str(int(p_nbm)) + '",data="' + str(json.dumps(jline)) + '"'
+                    gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' + str(int(p_nbm)) ]
                     if verbose: print(_k, gDict[_k])
+
+            if 'naive_bayes.BernoulliNB' in algoDct.keys():
+                sample_count = nbb_vectorizer.transform(sample)
+                p_nbb = nbb_classifier.predict(sample_count)
+
+                if int(p_nbb) == 1:
+                    #gDict
+                    _k = 'naive_bayes.BernoulliNB-'+str(b2checksum(_sample))
+                    _prom = 'config="watch-syslog",algo="naive_bayes.BernoulliNB",predict="' + str(int(p_nbb)) + '",data="' + str(json.dumps(jline)) + '"'
+                    gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_bernoullinb{' + _prom + '} ' + str(int(p_nbb)) ]
+                    if verbose: print(_k, gDict[_k])
+
 
     ##########################################################################
 
@@ -663,6 +723,19 @@ def sampleLogStream(count, db_store):
 
     return True
 
+def markTrainingRe(_search, db_store):
+    
+    rows = store.getAll('training', db_store)
+    for rowid,tag,data in rows:
+        #print(data)
+        #jdata = json.loads(data)
+        #print(jdata.get('eventMessage', None))
+        if re.search(_search, data, re.IGNORECASE):
+            print('mark ', rowid, ' ', data)
+            mark = store.updateTrainingTag(rowid, '1', db_store)
+            print(mark)
+
+    return True
 
 def sentryTailFile(db_store, gDict, _file):
     for line in tail(_file):

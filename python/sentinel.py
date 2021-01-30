@@ -1090,7 +1090,7 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'mark-training-on':
             name = sys.argv[2]
-            run = store.markTrainingOn(name, db_store)
+            run = tools.markTrainingRe(name, db_store)
             sys.exit(0)
 
         else:

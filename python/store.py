@@ -799,6 +799,17 @@ def markAllTraining(tag, db_file):
         return False
     return True
 
+#def markTrainingOn(name, db_file):
+#    con = sqlConnection(db_file)
+#    cur = con.cursor()
+#    cur.execute('UPDATE training SET tag=? WHERE ;', (tag,))
+#    con.commit()
+#    if cur.rowcount == 0:
+#        return False
+#    return True
+
+
+
 def getJob(name, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
