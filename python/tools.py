@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.13-1-jan-30-2'
+__version__ = '1.6.13-1-jan-31-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -657,6 +657,149 @@ def getAlgoDict(_sklearn):
             algoDict[k]=v
     return algoDict
 
+def sklearnPredict(line, algoDct, skInitDct):
+    sDct={}
+
+    sample = []
+    _sample = concatJsnData(algoDct['naive_bayes.MultinomialNB'], line)
+    sample.append(_sample)
+
+    #for key in algoDct.keys():
+    #    print(key)
+        #naive_bayes.MultinomialNB
+        #naive_bayes.BernoulliNB
+
+    #for k,v in skInitDct.items():
+    #    print(k,v)
+        #naive_bayes.MultinomialNB [CountVectorizer(), MultinomialNB()]
+        #naive_bayes.BernoulliNB [CountVectorizer(), BernoulliNB()]
+
+    for key in algoDct.keys():
+        vc = skInitDct[key]
+        #print(vc, ' ', str(type(vc)))
+        vectorizer=vc[0]
+        classifier=vc[1]
+        #vectorizer, classifier = 
+        sample_count = vectorizer.transform(sample)
+        p = classifier.predict(sample_count)
+        sDct[key]=[ _sample, p ]
+
+
+#    if 'naive_bayes.MultinomialNB' in algoDct.keys():
+#        _sample = concatJsnData(algoDct['naive_bayes.MultinomialNB'], line)
+#
+#        #print(_sample)
+#        #print('MultinomialNB _sample ' , _sample)
+#        sample.append(_sample)
+#        sample_count = nbm_vectorizer.transform(sample)
+#        p_nbm = nbm_classifier.predict(sample_count)
+#        #print('p_nbm ', str(p_nbm), ' ', str(type(p_nbm)))
+#
+#        #if int(p_nbm) == 1: #p_nbm  ['0']   <class 'numpy.ndarray'>
+#        if '1' in p_nbm: #['0']   <class 'numpy.ndarray'>
+#            _k = 'naive_bayes.MultinomialNB-'+str(b2checksum(_sample))
+#            _prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="1",seen="'+str(seen)+'",scope="'+str(algoDct['naive_bayes.MultinomialNB'])+'",data="' + str(json.dumps(jline)) + '"'
+#            gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' +str(s[b])]
+#
+#    if 'naive_bayes.BernoulliNB' in algoDct.keys():
+#        #_sample = str(concatJsnData(algoDct['naive_bayes.BernoulliNB'], line))
+#        _sample = concatJsnData(algoDct['naive_bayes.BernoulliNB'], line)
+#
+#        #print('Bernoulli _sample     ' , _sample)
+#        sample.append(_sample)
+#        sample_count = nbb_vectorizer.transform(sample)
+#        p_nbb = nbb_classifier.predict(sample_count)
+#        #print('p_nbb ', str(p_nbb), ' ', str(type(p_nbb)))
+#
+#        #if int(p_nbb) == 1: #p_nbb  ['1' '1']   <class 'numpy.ndarray'>
+#        if '1' in p_nbb: #['1' '1']   <class 'numpy.ndarray'>
+#            _k = 'naive_bayes.BernoulliNB-'+str(b2checksum(_sample))
+#            _prom = 'config="watch-syslog",algo="naive_bayes.BernoulliNB",predict="1",seen="'+str(seen)+'",scope="'+str(algoDct['naive_bayes.BernoulliNB'])+'",data="' + str(json.dumps(jline)) + '"'
+#            gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_bernoullinb{' + _prom + '} ' +str(s[b])]
+
+
+    return sDct
+
+def updategDictS(gDict, sklearn_hit, s, verbose=False):
+
+
+#                b = b2checksum(_sample)
+#
+#                if b in s.keys():
+#                    seen = True
+#                    v=s[b]
+#                    v+=1
+#                    s[b]=v
+#                else:
+#                    seen = False
+#                    s[b]=1
+#
+
+
+    for k,v in sklearn_hit.items():
+        #print('updategDictS ', k, v)
+        #updategDictS  naive_bayes.MultinomialNB ['1']
+        #updategDictS  naive_bayes.BernoulliNB ['1']
+
+        _sample  = v[0]
+        _predict = v[1]
+
+
+        b = b2checksum(_sample)
+        if b in s.keys():
+            seen = True
+            v=s[b]
+            v+=1
+            s[b]=v
+        else:
+            seen = False
+            s[b]=1
+
+        if '1' in _predict:
+            #gDict
+            #_k = 'naive_bayes.MultinomialNB-'+str(b2checksum(_sample))
+            #_prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="' + str(int(p_nbm)) + '",data="' + str(json.dumps(jline)) + '"'
+            #gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' + str(int(p_nbm)) ]
+
+
+            _k = str(k)+'-'+str(b)
+            #_prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="1",seen="'+str(seen)+'",scope="'+str(algoDct['naive_bayes.MultinomialNB'])+'",sample="' + str(_sample) + '"'
+            #gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' +str(s[b])]
+            _prom = 'config="watch-syslog",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(_sample) + '"'
+            gDict[_k] = [ 'sentinel_watch_syslog_sklearn{' + _prom + '} ' +str(s[b])]
+
+            if verbose: print(_k, gDict[_k])
+
+
+#                #if int(p_nbm) == 1: #p_nbm  ['0']   <class 'numpy.ndarray'>
+#                if '1' in p_nbm: #['0']   <class 'numpy.ndarray'>
+#                    #gDict
+#                    _k = 'naive_bayes.MultinomialNB-'+str(b2checksum(_sample))
+#                    #_prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="' + str(int(p_nbm)) + '",data="' + str(json.dumps(jline)) + '"'
+#                    #gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' + str(int(p_nbm)) ]
+#
+#                    _prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="1",seen="'+str(seen)+'",scope="'+str(algoDct['naive_bayes.MultinomialNB'])+'",data="' + str(json.dumps(jline)) + '"'
+#                    gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' +str(s[b])]
+#                    if verbose: print(_k, gDict[_k])
+#
+
+
+    return True
+
+def sklearnInitAlgoDict(algoDct, db_store):
+    skInitDct={}
+
+    if 'naive_bayes.MultinomialNB' in algoDct.keys():
+        vectorizer, classifier = sklearnNaiveBayesMultinomialNB(algoDct['naive_bayes.MultinomialNB'], db_store)
+        skInitDct['naive_bayes.MultinomialNB'] = [vectorizer, classifier]
+
+    if 'naive_bayes.BernoulliNB' in algoDct.keys():
+        vectorizer, classifier = sklearnNaiveBayesBernoulliNB(algoDct['naive_bayes.BernoulliNB'], db_store)
+        skInitDct['naive_bayes.BernoulliNB'] = [vectorizer, classifier]
+
+    return skInitDct
+
+
 
 def sentryLogStream(db_store, gDict, verbose=False):
     logging.info('Sentry watch-syslog logstream ')
@@ -675,12 +818,16 @@ def sentryLogStream(db_store, gDict, verbose=False):
 
     if sklearn:
         algoDct = getAlgoDict(sklearn)
+        skInitDct = sklearnInitAlgoDict(algoDct, db_store)
 
-        if 'naive_bayes.MultinomialNB' in algoDct.keys():
-            nbm_vectorizer, nbm_classifier = sklearnNaiveBayesMultinomialNB(algoDct['naive_bayes.MultinomialNB'], db_store)
+        #skInitDct={}
+        #if 'naive_bayes.MultinomialNB' in algoDct.keys():
+        #    nbm_vectorizer, nbm_classifier = sklearnNaiveBayesMultinomialNB(algoDct['naive_bayes.MultinomialNB'], db_store)
+        #    skInitDct['naive_bayes.MultinomialNB'] = [nbm_vectorizer, nbm_classifier]
 
-        if 'naive_bayes.BernoulliNB' in algoDct.keys():
-            nbb_vectorizer, nbb_classifier = sklearnNaiveBayesBernoulliNB(algoDct['naive_bayes.BernoulliNB'], db_store)
+        #if 'naive_bayes.BernoulliNB' in algoDct.keys():
+        #    nbb_vectorizer, nbb_classifier = sklearnNaiveBayesBernoulliNB(algoDct['naive_bayes.BernoulliNB'], db_store)
+        #    skInitDct['naive_bayes.BernoulliNB'] = [nbb_vectorizer, nbb_classifier]
 
 
     r={}
@@ -693,89 +840,97 @@ def sentryLogStream(db_store, gDict, verbose=False):
 
         if rules:
             rule_hit = expertLogStreamRulesEngineGeneral(jline, rules, rulesDct)
-            if rule_hit: updategDictR(gDict,rule_hit, r, verbose)
+            if rule_hit: updategDictR(gDict, rule_hit, r, verbose)
 
         if sklearn:
+            sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
+            if sklearn_hit: updategDictS(gDict, sklearn_hit, s, verbose)
 
-            #_samplX = json.dumps(jline.get('eventMessage', None)) #this needs to be same as trained on
-            #print(_samplX)
+            #print(str(s_hit))
+            #if s_hit:
+            #    print('hit ', s_hit)
+            #    print('hlen ', len(s_hit))
+                #updategDictS(gDict, s_hit, s, verbose)
 
-            #_sample = concatJsnData(jline)
-
-            #_sample = json.dumps(jline) #this needs to be same as trained on
-
-            #data = concatJsnData(algoDct['naive_bayes.BernoulliNB'], jline)
-
-            sample = []
-            #sample.append(_sample)
-
-            if 'naive_bayes.MultinomialNB' in algoDct.keys():
-                _sample = concatJsnData(algoDct['naive_bayes.MultinomialNB'], line)
-
-                b = b2checksum(_sample)
-
-                if b in s.keys():
-                    seen = True
-                    v=s[b]
-                    v+=1
-                    s[b]=v
-                else:
-                    seen = False
-                    s[b]=1
-
-
-                #print(_sample)
-                #print('MultinomialNB _sample ' , _sample)
-                sample.append(_sample)
-                sample_count = nbm_vectorizer.transform(sample)
-                p_nbm = nbm_classifier.predict(sample_count)
-                #print('p_nbm ', str(p_nbm), ' ', str(type(p_nbm)))
-
-                #if int(p_nbm) == 1: #p_nbm  ['0']   <class 'numpy.ndarray'>
-                if '1' in p_nbm: #['0']   <class 'numpy.ndarray'>
-                    #gDict
-                    _k = 'naive_bayes.MultinomialNB-'+str(b2checksum(_sample))
-                    #_prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="' + str(int(p_nbm)) + '",data="' + str(json.dumps(jline)) + '"'
-                    #gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' + str(int(p_nbm)) ]
-
-                    _prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="1",seen="'+str(seen)+'",scope="'+str(algoDct['naive_bayes.MultinomialNB'])+'",data="' + str(json.dumps(jline)) + '"'
-                    gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' +str(s[b])]
-                    if verbose: print(_k, gDict[_k])
-
-            if 'naive_bayes.BernoulliNB' in algoDct.keys():
-                #_sample = str(concatJsnData(algoDct['naive_bayes.BernoulliNB'], line))
-                _sample = concatJsnData(algoDct['naive_bayes.BernoulliNB'], line)
-
-                b = b2checksum(_sample)
-
-                if b in s.keys():
-                    seen = True
-                    v=s[b]
-                    v+=1
-                    s[b]=v
-                else:
-                    seen = False
-                    s[b]=1
-
-
-                #print('Bernoulli _sample     ' , _sample)
-                sample.append(_sample)
-                sample_count = nbb_vectorizer.transform(sample)
-                p_nbb = nbb_classifier.predict(sample_count)
-                #print('p_nbb ', str(p_nbb), ' ', str(type(p_nbb)))
-
-                #if int(p_nbb) == 1: #p_nbb  ['1' '1']   <class 'numpy.ndarray'>
-                if '1' in p_nbb: #['1' '1']   <class 'numpy.ndarray'>
-                    #gDict
-                    _k = 'naive_bayes.BernoulliNB-'+str(b2checksum(_sample))
-                    #_prom = 'config="watch-syslog",algo="naive_bayes.BernoulliNB",predict="' + str(int(p_nbb)) + '",data="' + str(json.dumps(jline)) + '"'
-                    #gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_bernoullinb{' + _prom + '} ' + str(int(p_nbb)) ]
-
-                    _prom = 'config="watch-syslog",algo="naive_bayes.BernoulliNB",predict="1",seen="'+str(seen)+'",scope="'+str(algoDct['naive_bayes.BernoulliNB'])+'",data="' + str(json.dumps(jline)) + '"'
-                    gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_bernoullinb{' + _prom + '} ' +str(s[b])]
-                    if verbose: print(_k, gDict[_k])
-
-
+#            #_samplX = json.dumps(jline.get('eventMessage', None)) #this needs to be same as trained on
+#            #print(_samplX)
+#
+#            #_sample = concatJsnData(jline)
+#
+#            #_sample = json.dumps(jline) #this needs to be same as trained on
+#
+#            #data = concatJsnData(algoDct['naive_bayes.BernoulliNB'], jline)
+#
+#            sample = []
+#            #sample.append(_sample)
+#
+#            if 'naive_bayes.MultinomialNB' in algoDct.keys():
+#                _sample = concatJsnData(algoDct['naive_bayes.MultinomialNB'], line)
+#
+#                b = b2checksum(_sample)
+#
+#                if b in s.keys():
+#                    seen = True
+#                    v=s[b]
+#                    v+=1
+#                    s[b]=v
+#                else:
+#                    seen = False
+#                    s[b]=1
+#
+#
+#                #print(_sample)
+#                #print('MultinomialNB _sample ' , _sample)
+#                sample.append(_sample)
+#                sample_count = nbm_vectorizer.transform(sample)
+#                p_nbm = nbm_classifier.predict(sample_count)
+#                #print('p_nbm ', str(p_nbm), ' ', str(type(p_nbm)))
+#
+#                #if int(p_nbm) == 1: #p_nbm  ['0']   <class 'numpy.ndarray'>
+#                if '1' in p_nbm: #['0']   <class 'numpy.ndarray'>
+#                    #gDict
+#                    _k = 'naive_bayes.MultinomialNB-'+str(b2checksum(_sample))
+#                    #_prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="' + str(int(p_nbm)) + '",data="' + str(json.dumps(jline)) + '"'
+#                    #gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' + str(int(p_nbm)) ]
+#
+#                    _prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="1",seen="'+str(seen)+'",scope="'+str(algoDct['naive_bayes.MultinomialNB'])+'",data="' + str(json.dumps(jline)) + '"'
+#                    gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' +str(s[b])]
+#                    if verbose: print(_k, gDict[_k])
+#
+#            if 'naive_bayes.BernoulliNB' in algoDct.keys():
+#                #_sample = str(concatJsnData(algoDct['naive_bayes.BernoulliNB'], line))
+#                _sample = concatJsnData(algoDct['naive_bayes.BernoulliNB'], line)
+#
+#                b = b2checksum(_sample)
+#
+#                if b in s.keys():
+#                    seen = True
+#                    v=s[b]
+#                    v+=1
+#                    s[b]=v
+#                else:
+#                    seen = False
+#                    s[b]=1
+#
+#
+#                #print('Bernoulli _sample     ' , _sample)
+#                sample.append(_sample)
+#                sample_count = nbb_vectorizer.transform(sample)
+#                p_nbb = nbb_classifier.predict(sample_count)
+#                #print('p_nbb ', str(p_nbb), ' ', str(type(p_nbb)))
+#
+#                #if int(p_nbb) == 1: #p_nbb  ['1' '1']   <class 'numpy.ndarray'>
+#                if '1' in p_nbb: #['1' '1']   <class 'numpy.ndarray'>
+#                    #gDict
+#                    _k = 'naive_bayes.BernoulliNB-'+str(b2checksum(_sample))
+#                    #_prom = 'config="watch-syslog",algo="naive_bayes.BernoulliNB",predict="' + str(int(p_nbb)) + '",data="' + str(json.dumps(jline)) + '"'
+#                    #gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_bernoullinb{' + _prom + '} ' + str(int(p_nbb)) ]
+#
+#                    _prom = 'config="watch-syslog",algo="naive_bayes.BernoulliNB",predict="1",seen="'+str(seen)+'",scope="'+str(algoDct['naive_bayes.BernoulliNB'])+'",data="' + str(json.dumps(jline)) + '"'
+#                    gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_bernoullinb{' + _prom + '} ' +str(s[b])]
+#                    if verbose: print(_k, gDict[_k])
+#
+#
     ##########################################################################
 
     return True
