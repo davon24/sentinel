@@ -4,7 +4,13 @@ sentinel update-config watch-syslog '{"logfile":"stream","sklearn":[{"naive_baye
 
 sentinel update-config watch-syslog '{"logfile":"stream","sklearn":[{"naive_bayes.MultinomialNB":["eventMessage"]},{"naive_bayes.BernoulliNB":["eventMessage"]}]}'
 
+sentinel update-rule watch-syslog-1 '{"config":"watch-syslog","search":"error","data":"eventMessage","not":["noerror","XPC_ERROR_CONNECTION_INVALID","com.apple.Maps.MapsSync.store"]}'
 
+sentinel update-rule watch-syslog-3 '{"config":"watch-syslog","match":[{"messageType":"Error"}]}'
+
+sentinel update-rule watch-syslog-7 '{"config":"watch-syslog","match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}'
+
+sentinel update-rule watch-syslog-9 '{"config":"watch-syslog","search":"error","data":"eventMessage"}'
 
 ---
 
