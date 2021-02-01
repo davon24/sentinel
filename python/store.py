@@ -117,7 +117,7 @@ def createDB(db_file):
     cur.execute(create_training)
     cur.execute(create_trainingi)
 
-    create_occurrence  = "CREATE TABLE IF NOT EXISTS occurrence (name TEXT PRIMARY KEY NOT NULL, tag TEXT, data JSON) WITHOUT ROWID;"
+    create_occurrence  = "CREATE TABLE IF NOT EXISTS occurrence (name TEXT PRIMARY KEY NOT NULL, tag INTEGER, data JSON) WITHOUT ROWID;"
     create_occurrencei = "CREATE UNIQUE INDEX IF NOT EXISTS idx_occurrence ON occurrence (name);"
     cur.execute(create_occurrence)
     cur.execute(create_occurrencei)
@@ -816,6 +816,9 @@ def getByOp(tbl, op, num, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
 
+    #num = int(num)
+    #https://www.sqlite.org/datatype3.html
+
     rows = None
 
     if '-eq' in op:
@@ -823,6 +826,8 @@ def getByOp(tbl, op, num, db_file):
 
     elif '-gt' in op:
         cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag > ? ;', (num,))
+        #cur.execute('SELECT tag > ? FROM '+str(tbl)+' ;', (num,))
+        #cur.execute('SELECT tag < ? FROM '+str(tbl)+' ;', (num,))
 
     elif '-lt' in op:
         cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag < ? ;', (num,))

@@ -1,5 +1,16 @@
 
 
+
+
+
+naive_bayes.MultinomialNB-42047251b8e11507fc53df6aa161b66c328d7059 ['sentinel_watch_syslog_sklearn{config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="1",seen="False",b2sum="42047251b8e11507fc53df6aa161b66c328d7059",sample="[corewifi] LQM: rssi=-32dBm noise=-93dBm snr=35 cca=28.0% txRate=650.0Mbps txFrames=1 txFail=0 txRetrans=0 txFallbackRate=175.5Mbps rxRate=866.7Mbps rxFrames=1 rxRetryFrames=1 beaconRecv=73 beaconSched=73 txFwFrames=1 txFwFail=0 txFwRetrans=0 Default "} 1']
+
+
+naive_bayes.BernoulliNB-42047251b8e11507fc53df6aa161b66c328d7059 ['sentinel_watch_syslog_sklearn{config="watch-syslog",algo="naive_bayes.BernoulliNB",predict="1",seen="True",b2sum="42047251b8e11507fc53df6aa161b66c328d7059",sample="[corewifi] LQM: rssi=-32dBm noise=-93dBm snr=35 cca=28.0% txRate=650.0Mbps txFrames=1 txFail=0 txRetrans=0 txFallbackRate=175.5Mbps rxRate=866.7Mbps rxFrames=1 rxRetryFrames=1 beaconRecv=73 beaconSched=73 txFwFrames=1 txFwFail=0 txFwRetrans=0 Default "} 2']
+
+
+
+
 false positives
 
 
