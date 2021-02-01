@@ -18,5 +18,12 @@ sentinel update-rule watch-syslog-2 '{"config":"watch-syslog","match":[{"SYSLOG_
 ```
 
 
+#
+#mac has
+#"messageType":"Error"
+
+sentinel update-rule watch-syslog-rule-11 '{"config":"watch-syslog","match":[{"messageType":"Error"}]}'
+
+
 
 

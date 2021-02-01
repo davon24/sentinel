@@ -141,6 +141,11 @@ def usage():
         delete-training id
         clear-training
 
+        list-occurrence [name|-eq,-gt,-lt,-ne,-le,-ge num]
+        delete-occurrence name
+        copy-occurrence name
+        clear-occurrence
+
         sample-logstream count
         mark-training tag
         mark-training-on name
@@ -372,8 +377,8 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'del-ip':
             ip = sys.argv[2]
-            insert = store.deleteIPs(ip, db_store)
-            print(insert)
+            _del = store.deleteIPs(ip, db_store)
+            print(_del)
             sys.exit(0)
 
         if sys.argv[1] == 'update-ip':
@@ -1092,6 +1097,49 @@ if __name__ == '__main__':
             name = sys.argv[2]
             run = tools.markTrainingRe(name, db_store)
             sys.exit(0)
+
+        #list-occurrence [name|-gt,-lt,-eq num]
+        if sys.argv[1] == 'list-occurrence':
+
+            try: opn = sys.argv[2]
+            except IndexError: opn=None
+            try: val = sys.argv[3]
+            except IndexError: val=None
+
+            if val:
+                #print('print all gt,lt,eq...')
+                rows = store.getByOp('occurrence', opn, val, db_store)
+                for row in rows:
+                    print(row)
+            elif opn:
+                #print('do this one name...')
+                row = store.getByName('occurrence', opn, db_store)
+                print(row)
+            else:
+                rows = store.selectAll('occurrence', db_store)
+                for row in rows:
+                    print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-occurrence':
+            clear = store.clearAll('occurrence', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-occurrence':
+            name = sys.argv[2]
+            delete = store.deleteFrom('occurrence', name, db_store)
+            print(delete)
+            sys.exit(0)
+
+        if sys.argv[1] == 'copy-occurrence':
+            name = sys.argv[2]
+            _copy = store.copyOccurrenceToTraining(name, db_store)
+            print(_copy)
+            sys.exit(0)
+
+
+
 
         else:
             usage()

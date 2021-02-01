@@ -13,7 +13,7 @@
 
 Summary: Sentinel Python 3.8.6 runtime tools
 Name: sentinel-runtime
-Version: 1.6.12
+Version: 1.6.13
 Release: 1%{?dist}
 License: GPL
 #URL: https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz
@@ -180,6 +180,9 @@ rm -rf $RPM_BUILD_ROOT
 #%exclude /usr/libexec/sentinel/Python3.8.6/modules/ps/*.pyo
 
 %changelog
+* Sun Jan 31 2021 Karl Rink <karl@rink.us> v1.6.13-1
+- 1.6.13-1 Kent Bradley Hovland
+
 * Thu Jan 28 2021 Karl Rink <karl@rink.us> v1.6.12-1
 - 1.6.12-1
 

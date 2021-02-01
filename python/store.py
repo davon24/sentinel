@@ -112,10 +112,15 @@ def createDB(db_file):
     cur.execute(create_rules)
     cur.execute(create_rulesi)
 
-    create_training  = "CREATE TABLE IF NOT EXISTS training (tag TEXT,data JSON);"
-    create_trainingi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_training ON training (tag,data);"
+    create_training  = "CREATE TABLE IF NOT EXISTS training (tag TEXT, data JSON);"
+    create_trainingi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_training ON training (tag, data);"
     cur.execute(create_training)
     cur.execute(create_trainingi)
+
+    create_occurrence  = "CREATE TABLE IF NOT EXISTS occurrence (name TEXT PRIMARY KEY NOT NULL, tag TEXT, data JSON) WITHOUT ROWID;"
+    create_occurrencei = "CREATE UNIQUE INDEX IF NOT EXISTS idx_occurrence ON occurrence (name);"
+    cur.execute(create_occurrence)
+    cur.execute(create_occurrencei)
 
     con.commit()
 
@@ -651,10 +656,19 @@ def replaceINTOproms(name, data, db_file):
         return False
     return True
 
-def replaceINTO2(tbl, name, data, db_file):
+def replaceINTOduce(tbl, name, data, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('REPLACE INTO ' + str(tbl) + ' VALUES(?,?)', (name, data))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
+def replaceINTOtrio(tbl, name, tag, data, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('REPLACE INTO ' + str(tbl) + ' VALUES(?,?,?)', (name, tag, data))
     con.commit()
     if cur.rowcount == 0:
         return False
@@ -781,6 +795,54 @@ def getByID(tbl, rowid, db_file):
     cur.execute("SELECT rowid,* FROM " + str(tbl) + " WHERE rowid=? ;", (rowid,))
     row = cur.fetchone()
     return row
+
+def getByName(tbl, name, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("SELECT * FROM " + str(tbl) + " WHERE name=? ;", (name,))
+    row = cur.fetchone()
+    return row
+
+def getByOp(tbl, op, num, db_file):
+
+# man bash
+#       arg1 OP arg2
+#              OP is one of -eq, -ne, -lt, -le, -gt, or -ge.  These  arithmetic
+#              binary  operators return true if arg1 is equal to, not equal to,
+#              less than, less than or equal to, greater than, or greater  than
+#              or  equal  to arg2, respectively.  Arg1 and arg2 may be positive
+#              or negative integers.
+
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+
+    rows = None
+
+    if '-eq' in op:
+        cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag = ? ;', (num,))
+
+    elif '-gt' in op:
+        cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag > ? ;', (num,))
+
+    elif '-lt' in op:
+        cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag < ? ;', (num,))
+
+    elif '-ne' in op:
+        cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag <> ? ;', (num,))
+
+    elif '-le' in op:
+        cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag <= ? ;', (num,))
+
+    elif '-ge' in op:
+        cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag >= ? ;', (num,))
+
+    #con = sqlConnection(db_file)
+    #cur = con.cursor()
+    #cur.execute('SELECT rowid,* FROM training WHERE tag=? ORDER by rowid DESC;', (tag,))
+
+    rows = cur.fetchall()
+    return rows
+
 
 
 def getAllTrainingTags(tag, db_file):
@@ -911,6 +973,16 @@ def storeFile(_file, db_file):
 def unstoreFile(_file, db_file):
     unstore_file = deleteFrom('files', _file, db_file)
     return unstore_file
+
+def copyOccurrenceToTraining(name, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    tag='1'
+    cur.execute('INSERT INTO training (tag,data) SELECT name,data FROM occurrence WHERE name=? ;', (name,))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
 
 
 if __name__ == '__main__':
