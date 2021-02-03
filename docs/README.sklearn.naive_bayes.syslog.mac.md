@@ -1,4 +1,3 @@
-
 # machine learning with syslog data (supervised)  
 
 supervised learning with naive bayes algorithms  
@@ -36,12 +35,12 @@ sentinel update-training-tag 124 1
 ```
 
 Once all 3000 samples have been reviewed and marked either '0' or '1',    
-this is our base model,    
-we'll train our program and adjust the data as necessary.    
+this is our base model.    
+I manually tagged 114 different rowids and we'll train our program and adjust the data as necessary.   
 
 ---
 
- We'll run two classifiers simultaneously so we can compare and contrast.    
+We'll run two classifiers simultaneously so we can compare and contrast.    
 Syslog data is text, so we'll use naive_bayes MultinomialNB and BernoulliNB    
 
 naive_bayes.MultinomialNB (Naive Bayes classifier for multinomial models)    
@@ -108,7 +107,7 @@ sentinel copy-occurrence naive_bayes.MultinomialNB-f01910b0a4ecd16c2632dcb78cd8f
 sentinel list-training |grep naive_bayes.MultinomialNB-f01910b0a4ecd16c2632dcb78cd8f4b0b362ab7b
 (3001, 'naive_bayes.MultinomialNB-f01910b0a4ecd16c2632dcb78cd8f4b0b362ab7b', '{"traceID":5567583286198276,"eventMessage":"LQM-WiFi:TX(58:D9:D5:2F:4C:65) AC<SU MS NB NRS NA CM EX TF FFP MRET FLE> BE<0 0 0 0 0 0 0 0 0 0 0> (5000ms)","eventType":"logEvent","source":null,"formatString":"LQM-WiFi:TX(%02X:%02X:%02X:%02X:%02X:%02X) AC<SU MS NB NRS NA CM EX TF FFP MRET FLE> %s<%lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld> (%llums)\\n","activityIdentifier":0,"subsystem":"","category":"","threadID":1717646,"senderImageUUID":"0E77C487-4C15-3458-AAFA-A9224B8A5D67","backtrace":{"frames":[{"imageOffset":894250,"imageUUID":"0E77C487-4C15-3458-AAFA-A9224B8A5D67"}]},"bootUUID":"","processImagePath":"\\/kernel","timestamp":"2021-01-31 21:18:16.824507-0800","senderImagePath":"\\/System\\/Library\\/Extensions\\/IO80211FamilyV2.kext\\/Contents\\/MacOS\\/IO80211FamilyV2","machTimestamp":615528960064307,"messageType":"Default","processImageUUID":"82E2050C-5936-3D24-AD3B-EC4EC5C09E11","processID":0,"senderProgramCounter":894250,"parentActivityIdentifier":0,"timezoneName":""}\n')
 ```    
-Assign this new piece of training data (rowid 3001) with a tag of '0'.    
+Assign this new piece of training data (rowid 3001) with a tag value of '0'.    
 ```
 sentinel update-training-tag 3001 0
 ```    
@@ -125,7 +124,7 @@ sentinel Feb 01 11:16:30 tools.py INFO: naive_bayes.BernoulliNB training records
 ```    
 
 We can keep adjusting our model until we no longer occur these types of occurrences.  In this training session, I added 5 more occurrences that I deemed false-positives.    
-Tagging all five new entries as '0', the model now has a training set of 3006 records with 114 tagged as '1'.    
+Tagging all five new entries as '0', the model now has a training set of 3006 total records with 114 tagged as '1'.    
 ```
 sentinel sentry --verbose
 sentinel Feb 01 11:20:56 tools.py INFO: naive_bayes.MultinomialNB training records 3006 tagged 114 scope ['eventMessage', 'messageType', 'category']
@@ -144,7 +143,7 @@ Using the "bag of words" approach for text analysis on syslog data does appear t
 An interesting observation;   
 While training my model sets on syslog data,     
 I have found that the naive_bayes BernoulliNB has less false-positives than MultinomialNB,    
-which was a interesting to me since naive_bayes MultinomialNB is the ?common?/?popular? text classification algorithm.    
+which is interesting to me since naive_bayes MultinomialNB is the ?common?/?popular? text classification algorithm.    
 
 "How To Train Your Syslog_(model)" #https://en.wikipedia.org/wiki/How_to_Train_Your_Dragon_(film)    
 
