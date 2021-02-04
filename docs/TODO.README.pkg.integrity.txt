@@ -1,0 +1,9 @@
+TODO: package integrity
+
+to know when an installed package has change (and what changed). 
+and note if it was proper update or unknown/malicious
+
+Linux, rpm/dpkg
+Mac, pkgutil
+Win, hive/registry/?
+
