@@ -145,8 +145,6 @@
         mark-training tag
         mark-training-on name
 
-        #train-logstream count
-
         tail file
         logstream
         logstream-json
