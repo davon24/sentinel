@@ -29,6 +29,17 @@ sentinel update-rule watch-syslog-rule-1 '{"config":"watch-syslog","search":"err
 ```
 The rule searches for the word 'error' through the text data values in ["eventMessage","messageType","category"].   
 
+---
+
+To run the rule, simply run sentinel in sentry (daemon) mode.  There is a verbose mode.    
+You should see the following startup output   
+```
+sentinel sentry --verbose
+sentinel Feb 05 14:16:46 tools.py INFO: Sentry Startup
+sentinel Feb 05 14:16:46 tools.py INFO: Sentry watch-syslog logstream 
+sentinel Feb 05 14:16:46 tools.py INFO: Sentry watch-syslog expert_rules scope ['eventMessage', 'eventType', 'messageType', 'subsystem', 'category', 'processImagePath', 'senderImagePath', 'source']
+``` 
+
 
 Any data that matches a rule is added to the occurrence table.
 ```
