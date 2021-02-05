@@ -94,9 +94,9 @@ sentinel list-occurrence naive_bayes.MultinomialNB-f01910b0a4ecd16c2632dcb78cd8f
 ('naive_bayes.MultinomialNB-f01910b0a4ecd16c2632dcb78cd8f4b0b362ab7b', 21, '{"traceID":5567583286198276,"eventMessage":"LQM-WiFi:TX(58:D9:D5:2F:4C:65) AC<SU MS NB NRS NA CM EX TF FFP MRET FLE> BE<0 0 0 0 0 0 0 0 0 0 0> (5000ms)","eventType":"logEvent","source":null,"formatString":"LQM-WiFi:TX(%02X:%02X:%02X:%02X:%02X:%02X) AC<SU MS NB NRS NA CM EX TF FFP MRET FLE> %s<%lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld> (%llums)\\n","activityIdentifier":0,"subsystem":"","category":"","threadID":1717080,"senderImageUUID":"0E77C487-4C15-3458-AAFA-A9224B8A5D67","backtrace":{"frames":[{"imageOffset":894250,"imageUUID":"0E77C487-4C15-3458-AAFA-A9224B8A5D67"}]},"bootUUID":"","processImagePath":"\\/kernel","timestamp":"2021-01-31 21:17:26.816110-0800","senderImagePath":"\\/System\\/Library\\/Extensions\\/IO80211FamilyV2.kext\\/Contents\\/MacOS\\/IO80211FamilyV2","machTimestamp":615478952438929,"messageType":"Default","processImageUUID":"82E2050C-5936-3D24-AD3B-EC4EC5C09E11","processID":0,"senderProgramCounter":894250,"parentActivityIdentifier":0,"timezoneName":""}\n')
 ```
 
-The above piece of data is not an error or a fault.  The data is simply wifi activity.      
+The above piece of data is not an error or fault.  The data is simply wifi activity.      
 Training this model on syslog data is not much different than training your every day spam filter.  
-Instead of viagra, we're training our model on patterns and words with error or fault.    
+Instead of viagra, we're training our model on patterns or words with error or fault.    
 
 So, we'll need to adjust our model in order to eliminate this false-positive,   
 We can add this occurrence to the training data and mark it with the appropriate tag.     
