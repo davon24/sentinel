@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1_feb_04-1'
+__version__ = '1.6.14-1_feb_05-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -383,11 +383,14 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
 
         #print('_data data data', str(_data))
 
-        if not _data:
-            logging.error('no data expertLogStreamRulesEngineGeneral')
-            return False
+        #if not _data:
+        #    logging.error('no data expertLogStreamRulesEngineGeneral')
+        #    return False
 
-        data = concatJsnData(_data, json.dumps(jline))
+        if _data:
+            data = concatJsnData(_data, json.dumps(jline))
+        else:
+            data = None
 
         #data = concatJsnData(scope, _jsn)
         #data = jline.get(_data)
@@ -767,7 +770,7 @@ def sentryLogStream(db_store, gDict, verbose=False):
         sklearn = config.get('sklearn', None)
 
     if rules:
-        logging.info('Sentry watch-syslog expert_rules')
+        logging.info('Sentry watch-syslog expert_rules scope '+ str(rules))
         rulesDct = getExpertRules('watch-syslog', db_store)
 
     if sklearn:
