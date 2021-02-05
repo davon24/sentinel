@@ -27,7 +27,7 @@ Next, we'll configure an expert rule.
 ```
 sentinel update-rule watch-syslog-rule-1 '{"config":"watch-syslog","search":"error","data":["eventMessage","messageType","category"]}'
 ```
-The search rule searches through the text data in ["eventMessage","messageType","category"] for the word 'error'.    
+The rule searches for the word 'error' through the text data values in ["eventMessage","messageType","category"].   
 
 
 Any data that matches a rule is added to the occurrence table.
@@ -41,9 +41,9 @@ There can be multiple rules.  We'll add a rule to match on exact key/value pairs
 ```
 sentinel update-rule watch-syslog-rule-2 '{"config":"watch-syslog","match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}'
 ``` 
-The match rule will match any time my Apple Time Machine backup occurs.
+The rule will match any time my Apple Time Machine backup occurs.
 
-Rules are run in the order displayed top down.  The names of rules can be anything, I typically choose easy names like 'watch-syslog-rule-1'.
+Rules are run in the order displayed, top down.  The names of rules can be anything, I typically choose easy names like 'watch-syslog-rule-1'.
 ```
 sentinel list-rules
 ('watch-syslog-rule-1', '2021-02-05 19:37:22', '{"config":"watch-syslog","search":"error","data":["eventMessage","messageType","category"]}')
