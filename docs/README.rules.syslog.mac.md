@@ -93,7 +93,7 @@ sentinel update-rule watch-syslog-rule-1 '{"config":"watch-syslog","search":"Err
 ```
 ---
 
-The b2sum is the cryptographic BLAKE2 hash of the data in the rules configuration "rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]       
+The b2sum 866d144919148df7e27de9e6a0b68f59a994577d is the cryptographic BLAKE2 hash of the data in the rules configuration "rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]       
 
 The b2sum is used to verify if a piece of data has been seen or not, much like a "finger print" of the data.   
 Note-Warning: that including continuously-changing data such as "timestamp":"2021-02-05 11:43:22.859569-0800" will prevent the b2sum "finger print" from ever repeating.    
