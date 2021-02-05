@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1_feb_01-2'
+__version__ = '1.6.14-1_feb_04-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
 import multiprocessing
-#from multiprocessing import shared_memory
 
 import sys
 import time
@@ -24,21 +23,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import os, pwd, grp
 import select
 import re
-
-import store
-
-#import smtplib
-#import ssl
-#import certifi
-
-#import atexit
-#import signal
-
-#import queue
-#gQ = queue.Queue()
-#gList = []
-#global gDict
-#gDict = {}
+import atexit
+import signal
 
 import logging
 loglevel = logging.INFO
@@ -46,32 +32,18 @@ logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
 datefmt = "%b %d %H:%M:%S"
 logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
-#from sklearn.feature_extraction.text import CountVectorizer
-#from sklearn.naive_bayes import MultinomialNB
-
-#manager = multiprocessing.Manager()
-#global gDict
-#gDict = manager.dict()
-
-import atexit
-import signal
+import store
 
 sigterm = False
 
-class ThreadWithReturnValue(threading.Thread):
-    def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs={}, Verbose=None):
-        threading.Thread.__init__(self, group, target, name, args, kwargs)
-        self._return = None
-    def run(self):
-        if self._target is not None:
-            self._return = self._target(*self._args,
-                                                **self._kwargs)
-    def join(self, *args):
-        threading.Thread.join(self, *args)
-        return self._return
+#import smtplib
+#import ssl
+#import certifi
 
-class Handler(BaseHTTPRequestHandler):
+#from sklearn.feature_extraction.text import CountVectorizer
+#from sklearn.naive_bayes import MultinomialNB
+
+class HTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == _metric_path:
             self.send_response(200)
@@ -83,7 +55,6 @@ class Handler(BaseHTTPRequestHandler):
                 with open(_prom, 'r') as _file:
                     lines = _file.readlines()
                     for line in lines:
-                        #self.wfile.write(bytes(str(line) + str('\n'), 'utf-8'))
                         self.wfile.write(bytes(str(line), 'utf-8'))
             except Exception as e:
                 logging.info('Sentry Exception ' + str(e))
@@ -96,6 +67,17 @@ class Handler(BaseHTTPRequestHandler):
         self.send_error(405) #405 Method Not Allowed
         return
 
+class ThreadWithReturnValue(threading.Thread):
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs={}, Verbose=None):
+        threading.Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args, **self._kwargs)
+    def join(self, *args):
+        threading.Thread.join(self, *args)
+        return self._return
 
 class PingIp:
     def __init__(self):
@@ -263,8 +245,8 @@ def tail(_file):
 def logstream(_format='json'):
 
     if sys.platform == 'darwin':
-        #cmd = ['log', 'stream', '--style', _format] #macos
-        cmd = ['log', 'stream', '--style', 'ndjson'] #macos
+        _format = 'ndjson'
+        cmd = ['log', 'stream', '--style', _format] #macos
     elif sys.platform == 'linux' or sys.platform == 'linux2':
         cmd = ['journalctl', '-f', '-o', _format] #linux
     else:
@@ -275,18 +257,13 @@ def logstream(_format='json'):
         f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
         while (f.returncode == None):
 
-        #print('pid ', str(f.pid))
-        #while (sigterm == False):
-
             line = f.stdout.readline()
             if not line:
-                #break
-                time.sleep(1)
+                time.sleep(1) #break
             else:
                 yield line
             sys.stdout.flush()
 
-    #except Exception as e:
     except (KeyboardInterrupt, SystemExit, Exception) as e:
         #os.kill(f.pid, signal.SIGKILL)
         #f.terminate() #SIGTERM
@@ -402,14 +379,27 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
         #print(jrules)
 
 
-        _data   = jrules.get('data', None)
-        data = jline.get(_data)
+        _data = jrules.get('data', None)
+
+        #print('_data data data', str(_data))
+
+        if not _data:
+            logging.error('no data expertLogStreamRulesEngineGeneral')
+            return False
+
+        data = concatJsnData(_data, json.dumps(jline))
+
+        #data = concatJsnData(scope, _jsn)
+        #data = jline.get(_data)
+
+        #print(data)
+
         if data:
             b = b2checksum(data)
         else:
-            #b = b2checksum(str(jline))
-            keysDct = getKeysDict(keys, jline)
-            b = b2checksum(str(keysDct))
+            b = b2checksum(str(jline))
+            #keysDct = getKeysDict(keys, jline)
+            #b = b2checksum(str(keysDct))
 
         #if b in s.keys():
         #    seen = True
@@ -426,6 +416,7 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
         _match  = jrules.get('match', None)
         _not    = jrules.get('not', None)
         _pass   = jrules.get('pass', None)
+        _ignorecase = jrules.get('ignorecase', None)
 
 
         if _match: 
@@ -447,17 +438,34 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
         if _search and data:
             #print(_search)
             #print(data) #data is None #TypeError: expected string or bytes-like object
-            if re.search(_search, data, re.IGNORECASE):
+
+            if _ignorecase == 'False':
+                #ignorecase='0'
+                ignorecase=None
+                re_search = re.compile(_search)
+            else:
+                #print('ignorecase')
+                ignorecase='re.IGNORECASE'
+                re_search = re.compile(_search, re.IGNORECASE)
+
+            #re.IGNORECASE
+            #if re.search(_search, data, flags=ignorecase):
+            if re_search.search(data):
                 #h[_k] = [_r,b,seen,s[b],data]
                 h[_k] = [_r,b,data]
 
                 if _not:
                     for no in _not:
                         #if no in data:
-                        if no.lower() in data.lower(): #ignorecase
-                            h.pop(_k, None)
-                            #if h.pop(_k, None):
-                            #    print('   _not this one...', _k, ' ', data)
+
+                        if ignorecase:
+                            if no.lower() in data.lower(): #ignorecase
+                                h.pop(_k, None)
+                                #if h.pop(_k, None):
+                                #    print('   _not this one...', _k, ' ', data)
+                        else:
+                            if no in data:
+                                h.pop(_k, None)
         #else:
         #    print('no.search.no.data ',_r, ' ', str(_search), ' ' , str(data))
 
@@ -468,29 +476,23 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
                 #if h.pop(__k, None):
                 #    print('   _pass this one...', __k, ' ', data)
 
-    ######################################################################
-    
+    #####################################################################
 #    for k,v in h.items():
 #        #print(k,v)
-#        #_prom = 'prog="syslog_watch",match="' + str(s) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",json="' + str(line) + '"'
-#        #gDict[_k] = [ 'sentinel_syslog_watch_rule_engine{' + _prom + '} ' + str(kDict[b]) ]
-#
-#        _rule  = v[0]
-#        _b2sum = v[1]
-#        _seen  = v[2]
-#        _count = v[3]
-#        _tdata = v[4]
-#
-#        _prom = 'prog="syslog_watch",engine="rules",rule="'+str(_rule)+'",b2sum="'+str(_b2sum)+'",seen="'+str(_seen)+'",data="' + str(_tdata) + '"'
-#        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(_count)]
-
-    #return True
     return h
 
+#watch-syslog-rule-1-70c88393681c7c6e028b867b6b32eae1ef16d6cf ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="watch-syslog-rule-1",b2sum="70c88393681c7c6e028b867b6b32eae1ef16d6cf",seen="False",data=""<private> Error MapsSync ""} 1']
+#watch-syslog-rule-2-70c88393681c7c6e028b867b6b32eae1ef16d6cf ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="watch-syslog-rule-2",b2sum="70c88393681c7c6e028b867b6b32eae1ef16d6cf",seen="True",data=""<private> Error MapsSync ""} 2']
 
+#('watch-syslog', '2021-02-04 23:15:33', '{"logfile":"stream","rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]}')
+#
+#('watch-syslog-rule-1', '2021-02-04 23:59:52', '{"config":"watch-syslog","search":"error","data":["eventMessage","messageType","category"],"not":["NoError"]}')
+#('watch-syslog-rule-2', '2021-02-04 23:59:59', '{"config":"watch-syslog","search":"Error","ignorecase":"False","data":["eventMessage","messageType","category"],"not":["NoError"],"pass":["952ac1cce6fe8b80d9f75f3718bc1943ddb63241","7282d72d7518628bcc9cc643fd663bd20ec0a112"]}')
 
 def getExpertRules(config, db_store):
-    # ('watch-syslog-1', '2021-01-14 22:46:06', '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError"]}')
+    # ('watch-syslog-rule-1', '2021-01-14 22:46:06', '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError"]}')
+    # 
+    #
     rulesDict = {}
     rules = store.selectAll('rules', db_store)
     for rule in rules:
@@ -3725,7 +3727,7 @@ def procHTTPServer(port, metric_path, db_file):
     #print('group.nobody ' + str(gid))
     #os.setgid(gid)
 
-    httpd = HTTPServer(('', port), Handler)
+    httpd = HTTPServer(('', port), HTTPHandler)
     httpd.serve_forever()
 
 
