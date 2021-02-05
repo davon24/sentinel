@@ -97,7 +97,7 @@ The b2sum 866d144919148df7e27de9e6a0b68f59a994577d is the cryptographic BLAKE2 h
 https://en.wikipedia.org/wiki/BLAKE_(hash_function)    
 
 The b2sum is used to verify if a piece of data has been seen or not, making it the "fingerprint" of the data.   
-Note-Warning: that including continuously-changing data such as "timestamp":"2021-02-05 11:43:22.859569-0800" will prevent the b2sum "finger print" from ever repeating.    
+Note-Warning: that including continuously-changing data such as "timestamp":"2021-02-05 11:43:22.859569-0800" will prevent the b2sum "fingerprint" from ever repeating.    
 The b2sum is appended to the rule to form key 'watch-syslog-rule-1-866d144919148df7e27de9e6a0b68f59a994577d'   
 https://en.wikipedia.org/wiki/Fingerprint_(computing)    
 
