@@ -1,0 +1,4 @@
+
+system_profiler  -detailLevel full -json
+
+
