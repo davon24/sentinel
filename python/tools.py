@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1_feb_07-2'
+__version__ = '1.6.14-1_feb_07-3'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -1064,11 +1064,20 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
     #    else:
     #        print('missing from List2', item)
 
+    D3={}
+
     for key in N1:
         if key in N2.keys():
 
-            if N1[key] != N2[key]:
-                print(str(key) + ' differ')
+            if N1[key] == N2[key]:
+                #print(str(key) + ' differ')
+                #print('differ ' +str(key))
+                #print(' x ' +str(key))
+                #D3[key]=' x'
+                D3[key]='='
+            else:
+                D3[key]='x'
+                #D3[key]=' !'
 
             #print('both have')
             #js1 = 'jsn1' + str(item)
@@ -1099,10 +1108,34 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
             #continue
         else:
             #print('Not in List2', item)
-            print('Not in List2', key)
+            #print('Not in List2', key)
+            #print('<-',key)
+            #D3[key]='<x'
+            D3[key]='<'
 
+    for key in N2:
+        if key not in N1.keys():
+            #D3[key]='->'
+            #D3[key]=' x>'
+            D3[key]='>'
+
+
+    for k,v in D3.items():
+        print(v, k)
 
     #WORK
+
+
+    #q1 = jsn1['SPAirPortDataType'][0]['spairport_airport_interfaces'][0]['spairport_airport_local_wireless_networks'][27]['_name']
+    #q2 = jsn2['SPAirPortDataType'][0]['spairport_airport_interfaces'][0]['spairport_airport_local_wireless_networks'][27]['_name']
+    #print(q2)
+
+    #q = jsn1['SPAirPortDataType'][0]['spairport_airport_interfaces'][0]['spairport_airport_local_wireless_networks'][26]['_name']
+    #print(q)
+
+    #q = jsn1['SPAirPortDataType'][0]['spairport_airport_interfaces'][0]['spairport_airport_local_wireless_networks'][18]['spairport_network_country_code']
+    #print(q)
+
     return True
 
 #----
