@@ -122,6 +122,11 @@ def createDB(db_file):
     cur.execute(create_occurrence)
     cur.execute(create_occurrencei)
 
+    create_system_profile  = "CREATE TABLE IF NOT EXISTS system_profile (name TEXT PRIMARY KEY NOT NULL, timestamp TEXT, data JSON);"
+    create_system_profilei = "CREATE UNIQUE INDEX IF NOT EXISTS idx_system_profile ON system_profile (name);"
+    cur.execute(create_system_profile)
+    cur.execute(create_system_profilei)
+
     con.commit()
 
     return con
@@ -134,8 +139,6 @@ def createDB(db_file):
 #    return True
 # Within one process it is possible to share an in-memory database if you use the file::memory:?cache=shared
 # but this is still not accessible from other another process.
-
-
 
 ###############################################################################################################################################
 
@@ -452,7 +455,6 @@ def deleteIPs(ip, db_file):
     con.commit()
     return True
 
-
 def getNmaps(db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
@@ -656,6 +658,7 @@ def replaceINTOproms(name, data, db_file):
         return False
     return True
 
+#def replaceINTO2(tbl, name, data, db_file):
 def replaceINTOduce(tbl, name, data, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
@@ -664,6 +667,16 @@ def replaceINTOduce(tbl, name, data, db_file):
     if cur.rowcount == 0:
         return False
     return True
+
+def replaceINTOducedate(tbl, name, data, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("REPLACE INTO " + str(tbl) + " VALUES(?,DATETIME('now'),?)", (name, data))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
 
 def replaceINTOtrio(tbl, name, tag, data, db_file):
     con = sqlConnection(db_file)
@@ -826,8 +839,6 @@ def getByOp(tbl, op, num, db_file):
 
     elif '-gt' in op:
         cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag > ? ;', (num,))
-        #cur.execute('SELECT tag > ? FROM '+str(tbl)+' ;', (num,))
-        #cur.execute('SELECT tag < ? FROM '+str(tbl)+' ;', (num,))
 
     elif '-lt' in op:
         cur.execute('SELECT * FROM '+str(tbl)+' WHERE tag < ? ;', (num,))

@@ -150,7 +150,15 @@ def usage():
         mark-training tag
         mark-training-on name
 
-        #train-logstream count
+        list-system-profile
+        list-system-profile-full
+        gen-system-profile
+        get-system-profile-name name
+        get-system-profile-rowid rowid
+        del-system-profile-name name
+        del-system-profile-rowid rowid
+        clear-system-profile
+        diff-system-profile-rowid rowid rowid
 
         tail file
         logstream
@@ -201,6 +209,7 @@ def run():
         return True
 
 if __name__ == '__main__':
+
     #sys.path.insert(0,'db')
     #print(os.path.dirname(__file__))
     #sys.path.insert(0, os.path.dirname(__file__))
@@ -277,7 +286,6 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'listening-details':
             port = sys.argv[2]
-            #p = tools.printListenPortsDetails(port)
             p = tools.printLsOfPort(port)
             sys.exit(0)
 
@@ -363,7 +371,6 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-ips':
-            #run = store.printIPs(db_store)
             rows = store.selectAll('ips', db_store)
             for row in rows:
                 print(row)
@@ -389,8 +396,6 @@ if __name__ == '__main__':
             except json.decoder.JSONDecodeError:
                 print('invalid json')
                 sys.exit(1)
-
-            #update = store.updateIPs(ip, data, db_store)
             replace = store.replaceINTO('ips', ip, data, db_store)
             print(replace)
             sys.exit(0)
@@ -427,22 +432,13 @@ if __name__ == '__main__':
                 ipnet = tools.getIfconfigIPv4()
             else:
                 i = ipnet.split('.')
-                
-                #print('i ' + str(i) + ' ' + str(len(i)))
-
                 if len(i) == 1:
-                    #level = ''.join(i)
                     level = sys.argv[2]
                     ipnet = tools.getIfconfigIPv4()
-                #if len(_i)  
-
             if level is None:
                 level = 1
 
-            #print(ipnet, level, db_store)
             run_discovery = tools.runDiscoverNet(ipnet, level, db_store)
-            #run_discovery = tools.runDiscoverNetMultiProcess(ipnet, level, db_store)
-            #run_discovery = tools.runDiscoverNetAll(ipnet, level, db_store)
             print(run_discovery)
             sys.exit(0)
 
@@ -464,12 +460,8 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-vulns':
-            #scans = store.getNmapVulns(db_store)
-            #for row in scans:
-            #    print(row)
             try: vid = sys.argv[2]
             except IndexError: vid = None
-            #print('vid: ' + str(vid))
             run = tools.printVulnScan(db_store, vid)
             sys.exit(0)
 
@@ -517,7 +509,6 @@ if __name__ == '__main__':
                 ip = sys.argv[2]
                 port = sys.argv[3]
             except IndexError: pass
-            #print(ip, port)
             run = tools.nmapUDPscan(ip, port)
             print(run)
             sys.exit(0)
@@ -567,10 +558,8 @@ if __name__ == '__main__':
                 ipnet = tools.nmapNet(ipn)
             else:
                 i = ipnet.split('.')
-                #print('i ' + str(i) + ' ' + str(len(i)))
 
                 if len(i) == 1:
-                    #level = ''.join(i)
                     level = sys.argv[2]
                     myip = tools.getIfconfigIPv4()
                     ipn = tools.getIpNet(myip)
@@ -583,17 +572,9 @@ if __name__ == '__main__':
             
             if type(ipnet) == str:
                 ipnet = ipnet.split()
-            #print(str(ipnet))
-            #print(str(level))
             scan = tools.runNmapScanMultiProcess(ipnet, level, db_store)
             print(scan)
             sys.exit(0)
-
-        #if sys.argv[1] == 'vuln-scan':
-        #    ip = sys.argv[2]
-        #    scan = tools.nmapVulnScanStore(ip, db_store)
-        #    print(scan)
-        #    sys.exit(0)
 
         if sys.argv[1] == 'vuln-scan':
             try: ipnet = sys.argv[2]
@@ -612,7 +593,6 @@ if __name__ == '__main__':
             if type(ipnet) == str:
                 ipnet = ipnet.split()
 
-            #print(str(ipnet))
             scan = tools.runNmapVulnMultiProcess(ipnet, db_store)
             print(scan)
             sys.exit(0)
@@ -681,7 +661,6 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-jobs':
-            #run = tools.printJobs(db_store)
             rows = store.selectAll('jobs', db_store)
             for row in rows:
                 print(row)
@@ -700,7 +679,6 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'delete-job':
             name = sys.argv[2]
-            #run = store.deleteFrom('jobs', rowid, db_store)
             run = store.deleteJob(name, db_store)
             print(run)
             sys.exit(0)
@@ -737,10 +715,8 @@ if __name__ == '__main__':
             try: name = sys.argv[2]
             except IndexError: name = None
             if name is None:
-                #fims = store.getAll('fims', db_store)
                 fims = store.selectAll('fims', db_store)
                 for i in fims:
-                    #name = i[1]
                     name = i[0]
                     run = tools.b2sumFim(name, db_store)
                     print(str(name) + ' ' + str(run))
@@ -799,7 +775,6 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if sys.argv[1] == 'list-reports':
-            #reports = store.getAll('reports', db_store)
             reports = store.selectAll('reports', db_store)
             for row in reports:
                 print(row)
@@ -888,11 +863,7 @@ if __name__ == '__main__':
             print(clear)
             sys.exit(0)
 
-
         if sys.argv[1] == 'list-proms':
-            #proms = store.selectAll('proms', db_store)
-            #for row in proms:
-            #    print(row)
             _prom = str(db_store) + '.prom'
             with open(_prom, 'r') as _file:
                 lines = _file.readlines()
@@ -925,14 +896,12 @@ if __name__ == '__main__':
             print(file_type)
             sys.exit(0)
 
-        #if sys.argv[1] == 'fim-store':
         if sys.argv[1] == 'add-file':
             _file = sys.argv[2]
             store_file = store.storeFile(_file, db_store)
             print(store_file)
             sys.exit(0)
 
-        #if sys.argv[1] == 'fim-unstore':
         if sys.argv[1] == 'del-file':
             _file = sys.argv[2]
             unstore_file = store.unstoreFile(_file, db_store)
@@ -942,7 +911,6 @@ if __name__ == '__main__':
         if sys.argv[1] == 'list-files':
             list_files = store.selectAll('files', db_store)
             for row in list_files:
-                #print(row)
                 print(row[0], row[1])
             sys.exit(0)
 
@@ -1000,7 +968,6 @@ if __name__ == '__main__':
 
         if sys.argv[1] == 'logstream-keys':
             for line in tools.logstream():
-                #print(line.decode('utf-8'))
                 jline = json.loads(line.decode('utf-8'))
                 n = len(jline.keys())
                 print(n, ' ' , jline.keys())
@@ -1038,15 +1005,12 @@ if __name__ == '__main__':
             except IndexError: _id = None
 
             if _id:
-                #print(_id)
 
                 if _id  == 'tags':
-                    #print('tags...')
                     _tag = sys.argv[3]
                     rows = store.getAllTrainingTags(_tag, db_store)
                     for row in rows:
                         print(row)
-
                 else:
                     row = store.getByID('training', _id, db_store)
                     print(row)
@@ -1064,7 +1028,6 @@ if __name__ == '__main__':
             except json.decoder.JSONDecodeError:
                 print('invalid json')
                 sys.exit(1)
-            #run = store.replaceINTO('training', tag, data, db_store)
             run = store.updateTraining(tag, data, db_store)
             print(run)
             sys.exit(0)
@@ -1107,12 +1070,10 @@ if __name__ == '__main__':
             except IndexError: val=None
 
             if val:
-                #print('print all gt,lt,eq...')
                 rows = store.getByOp('occurrence', opn, val, db_store)
                 for row in rows:
                     print(row)
             elif opn:
-                #print('do this one name...')
                 row = store.getByName('occurrence', opn, db_store)
                 print(row)
             else:
@@ -1138,7 +1099,60 @@ if __name__ == '__main__':
             print(_copy)
             sys.exit(0)
 
+        if sys.argv[1] == 'list-system-profile-full':
+            rows = store.getAll('system_profile', db_store)
+            for row in rows:
+                print(row)
+            sys.exit(0)
 
+        if sys.argv[1] == 'list-system-profile':
+            #name = sys.argv[2]
+            #rows = store.selectAll('system_profile', db_store)
+            rows = store.getAll('system_profile', db_store)
+            for row in rows:
+                print(row[0],row[1],row[2])
+            sys.exit(0)
+
+        if sys.argv[1] == 'gen-system-profile':
+            run = tools.genSystemProfile(db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'del-system-profile-name':
+            name = sys.argv[2]
+            delete = store.deleteFrom('system_profile', name, db_store)
+            print(delete)
+            sys.exit(0)
+
+        if sys.argv[1] == 'del-system-profile-rowid':
+            rowid = sys.argv[2]
+            delete = store.deleteFromRowid('system_profile', rowid, db_store)
+            print(delete)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-system-profile':
+            clear = store.clearAll('system_profile', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'get-system-profile-name':
+            name = sys.argv[2]
+            get = store.getByName('system_profile', name, db_store)
+            print(get)
+            sys.exit(0)
+
+        if sys.argv[1] == 'get-system-profile-rowid':
+            rowid = sys.argv[2]
+            get = store.getByID('system_profile', rowid, db_store)
+            print(get)
+            sys.exit(0)
+
+        if sys.argv[1] == 'diff-system-profile-rowid':
+            rowid1 = sys.argv[2]
+            rowid2 = sys.argv[3]
+            diff = tools.diffSystemProfileIDs(rowid1, rowid2, db_store)
+            print(diff)
+            sys.exit(0)
 
 
         else:
@@ -1148,10 +1162,4 @@ if __name__ == '__main__':
         sys.exit(run())
 
 
-        #fix this later...
-        #detect-scan-net [ip/net]
-        #detect-scan ip
-        #list-detects [id]
-        #del-detect id
-        #clear-detects
 

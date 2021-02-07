@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1_feb_05-2'
+__version__ = '1.6.14-1_feb_06-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -11,7 +11,6 @@ import time
 import datetime
 import collections
 import socket
-import copy
 import json
 
 import sqlite3
@@ -372,46 +371,19 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
     ######################################################################
     # process each rule one at a time
     for _r,v in rulesDict.items():
-        #extract each rule and apply it to jline (jline is multi k,v)
-        #print('rule ',_r,v)
 
         jrules = json.loads(v)
-        #print(jrules)
-
-
         _data = jrules.get('data', None)
-
-        #print('_data data data', str(_data))
-
-        #if not _data:
-        #    logging.error('no data expertLogStreamRulesEngineGeneral')
-        #    return False
 
         if _data:
             data = concatJsnData(_data, json.dumps(jline))
         else:
             data = None
 
-        #data = concatJsnData(scope, _jsn)
-        #data = jline.get(_data)
-
-        #print(data)
-
         if data:
             b = b2checksum(data)
         else:
             b = b2checksum(str(jline))
-            #keysDct = getKeysDict(keys, jline)
-            #b = b2checksum(str(keysDct))
-
-        #if b in s.keys():
-        #    seen = True
-        #    v=s[b]
-        #    v+=1
-        #    s[b]=v
-        #else:
-        #    seen = False
-        #    s[b]=1
 
         _k = str(_r) +'-'+ str(b)
 
@@ -434,13 +406,9 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
                         d3[key] = d1[key]
 
             if d1 == d3: #print('match ', d3)
-                #h[_k] = [_r,b,seen,s[b],jline]
                 h[_k] = [_r,b,jline]
 
-
         if _search and data:
-            #print(_search)
-            #print(data) #data is None #TypeError: expected string or bytes-like object
 
             if _ignorecase == 'False':
                 #ignorecase='0'
@@ -484,18 +452,7 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
 #        #print(k,v)
     return h
 
-#watch-syslog-rule-1-70c88393681c7c6e028b867b6b32eae1ef16d6cf ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="watch-syslog-rule-1",b2sum="70c88393681c7c6e028b867b6b32eae1ef16d6cf",seen="False",data=""<private> Error MapsSync ""} 1']
-#watch-syslog-rule-2-70c88393681c7c6e028b867b6b32eae1ef16d6cf ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="watch-syslog-rule-2",b2sum="70c88393681c7c6e028b867b6b32eae1ef16d6cf",seen="True",data=""<private> Error MapsSync ""} 2']
-
-#('watch-syslog', '2021-02-04 23:15:33', '{"logfile":"stream","rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]}')
-#
-#('watch-syslog-rule-1', '2021-02-04 23:59:52', '{"config":"watch-syslog","search":"error","data":["eventMessage","messageType","category"],"not":["NoError"]}')
-#('watch-syslog-rule-2', '2021-02-04 23:59:59', '{"config":"watch-syslog","search":"Error","ignorecase":"False","data":["eventMessage","messageType","category"],"not":["NoError"],"pass":["952ac1cce6fe8b80d9f75f3718bc1943ddb63241","7282d72d7518628bcc9cc643fd663bd20ec0a112"]}')
-
 def getExpertRules(config, db_store):
-    # ('watch-syslog-rule-1', '2021-01-14 22:46:06', '{"config":"watch-syslog","search":[{"eventMessage":"error"}],"not":["NoError"]}')
-    # 
-    #
     rulesDict = {}
     rules = store.selectAll('rules', db_store)
     for rule in rules:
@@ -506,21 +463,12 @@ def getExpertRules(config, db_store):
         jconfig = jdata.get('config', None)
 
         if config == jconfig:
-            #print(name, jconf)
             rulesDict[name] = jconf
     return rulesDict
 
 
 def concatJsnData(scope, _jsn):
-    #print(len(scope), scope)
-    #print(str(type(_jsn)))
-
     jsn = json.loads(_jsn)
-
-    #if len(scope) == 1:
-    #    dta = str(jsn.get(item, None))
-    #else:
-
     dta=''
 
     if len(scope) == 1:
@@ -529,7 +477,6 @@ def concatJsnData(scope, _jsn):
     else:
         for item in scope:
             dta += str(jsn.get(item, None)) + str(' ')
-
     return dta
 
 
@@ -550,14 +497,6 @@ def sklearnNaiveBayesMultinomialNB(scope, db_store):
         logging.error('Zero training data. Can not perform naive_bayes.MultinomialNB')
         return (False, False)
 
-    #conf = store.getConfig('watch-syslog', db_store)
-    #config  = json.loads(conf[0])
-    #sklearn = config.get('sklearn', None)
-    #print(sklearn)
-    #print('scope ' , scope)
-    #scope  ['eventMessage']
-
-
     c=0
     t=0
     for row in rows:
@@ -570,16 +509,10 @@ def sklearnNaiveBayesMultinomialNB(scope, db_store):
 
         data = concatJsnData(scope, _jsn)
 
-        #jsn = json.loads(_jsn)
-        #dta=''
-        #for item in jsn:
-        #    dta += str(jsn.get(item, None)) + str(' ')
-
         if int(_tag) != 0:
             t+=1
 
         y.append(_tag)
-        #X.append(_jsn)
         X.append(data)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y)
@@ -589,7 +522,6 @@ def sklearnNaiveBayesMultinomialNB(scope, db_store):
     targets = y_train
     classifier.fit(counts, targets)
 
-    #print('training records ',str(c), ' tagged ', str(t))
     logging.info('naive_bayes.MultinomialNB training records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope))
 
     return (vectorizer, classifier)
@@ -625,7 +557,6 @@ def sklearnNaiveBayesBernoulliNB(scope, db_store):
             t+=1
 
         y.append(_tag)
-        #X.append(_jsn)
         data = concatJsnData(scope, _jsn)
         X.append(data)
 
@@ -636,7 +567,6 @@ def sklearnNaiveBayesBernoulliNB(scope, db_store):
     targets = y_train
     classifier.fit(counts, targets)
 
-    #print('training records ',str(c), ' tagged ', str(t))
     logging.info('naive_bayes.BernoulliNB training records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope))
 
     return (vectorizer, classifier)
@@ -697,14 +627,11 @@ def updategDictR(gDict, rule_hit, r, line, db_store,  verbose=False):
             seen = False
             r[b]=1
 
-        #gDict
         _k = str(_r)+'-'+str(b)
         _prom = 'config="watch-syslog",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(json.dumps(d)) + '"'
         gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(r[b]) ]
 
         store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(r[b]), line, db_store)
-        #print(store_occurrence)
-
         if verbose: print(_k, gDict[_k])
 
     return True
@@ -713,9 +640,6 @@ def updategDictR(gDict, rule_hit, r, line, db_store,  verbose=False):
 def updategDictS(gDict, sklearn_hit, s, line, db_store, verbose=False):
 
     for k,v in sklearn_hit.items():
-        #print('updategDictS ', k, v)
-        #updategDictS  naive_bayes.MultinomialNB ['1']
-        #updategDictS  naive_bayes.BernoulliNB ['1']
 
         _sample  = v[0]
         _predict = v[1]
@@ -732,13 +656,10 @@ def updategDictS(gDict, sklearn_hit, s, line, db_store, verbose=False):
 
         if '1' in _predict:
             _k = str(k)+'-'+str(b)
-            #_prom = 'config="watch-syslog",algo="naive_bayes.MultinomialNB",predict="1",seen="'+str(seen)+'",scope="'+str(algoDct['naive_bayes.MultinomialNB'])+'",sample="' + str(_sample) + '"'
-            #gDict[_k] = [ 'sentinel_watch_syslog_naive_bayes_multinomialnb{' + _prom + '} ' +str(s[b])]
             _prom = 'config="watch-syslog",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(_sample) + '"'
             gDict[_k] = [ 'sentinel_watch_syslog_sklearn{' + _prom + '} ' +str(s[b])]
 
             store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(s[b]), line, db_store)
-
             if verbose: print(_k, gDict[_k])
 
     return True
@@ -764,7 +685,6 @@ def sentryLogStream(db_store, gDict, verbose=False):
     conf = store.getData('configs','watch-syslog', db_store)
     if conf:
         config = json.loads(conf[0])
-        #print('config.logfile ',config.get('logfile', None))
         logfile = config.get('logfile', None)
         rules   = config.get('rules', None)
         sklearn = config.get('sklearn', None)
@@ -794,7 +714,6 @@ def sentryLogStream(db_store, gDict, verbose=False):
             if sklearn_hit: updategDictS(gDict, sklearn_hit, s, line, db_store, verbose)
 
     ##########################################################################
-
     return True
 
 def sampleLogStream(count, db_store):
@@ -820,16 +739,8 @@ def sampleLogStream(count, db_store):
 
 def markTrainingRe(_search, db_store):
 
-    #scope = []
-    #_sample = concatJsnData(algoDct['naive_bayes.MultinomialNB'], line)
-
-
     rows = store.getAll('training', db_store)
     for rowid,tag,data in rows:
-        #print(data)
-        #jdata = json.loads(data)
-        #print(jdata.get('eventMessage', None))
-
 
         if re.search(_search, data, re.IGNORECASE):
             print('mark ', rowid, ' ', data)
@@ -839,7 +750,7 @@ def markTrainingRe(_search, db_store):
     return True
 
 
-def markTrainingRe_v1(_search, db_store):
+def markTrainingRe__v1__(_search, db_store):
 
     rows = store.getAll('training', db_store)
     for rowid,tag,data in rows:
@@ -859,6 +770,476 @@ def sentryTailFile(db_store, gDict, _file):
         print(line)
     return True
 
+#----------------------------------------------------------------------------------------
+
+def genSystemProfile(db_store):
+
+    if str(sys.platform).startswith('linux'):
+        return genSystemProfileLinux(db_store)
+
+    elif sys.platform == 'darwin':
+        return genSystemProfileMac(db_store)
+
+    else:
+        logging.critical('no can do genSystemProfile')
+        return None
+
+
+def genSystemProfileLinux(db_store):
+    print('TODO genSystemProfile Linux')
+    return False
+
+
+def genSystemProfileMac(db_store):
+    print('genSystemProfile Mac')
+
+    cmd = 'system_profiler -detailLevel full -json'
+    #proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    #stderr=STDOUT
+    #proc = Popen(cmd.split(), stdout=PIPE, stderr=STDOUT)
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    #out = proc.stdout.readlines()
+    out = proc.stdout.read()
+    err = proc.stderr.readlines()
+
+    #print('--------------------------------')
+    
+    #print(str(out))
+
+    #for line in out:
+    #    #line = line.decode('utf-8')
+    #    #line = line.decode('utf-8').strip('\n')
+    #    line = line.decode('utf-8').rstrip()
+    #    print(line)
+
+    #for line in err:
+    #    print('err ' + str(line))
+        
+
+    #name = str(b2checksum(json.dumps(out[0].decode('utf-8'))))
+    #print(' name ' + str(name))
+    #update = store.replaceINTOducedate('system_profile', name, json.dumps(out[0].decode('utf-8')), db_store)
+    #print(update)
+
+    name = str(b2checksum(out.decode('utf-8')))
+    #print(' name ' + str(name))
+    #update = store.replaceINTOducedate('system_profile', name, json.dumps(out[0].decode('utf-8')), db_store)
+    update = store.replaceINTOducedate('system_profile', name, out.decode('utf-8'), db_store)
+    #print(update)
+    #return True
+    return update
+
+
+def ordered(obj):
+    if isinstance(obj, dict):
+        return sorted((k, ordered(v)) for k, v in obj.items())
+    if isinstance(obj, list):
+        return sorted(ordered(x) for x in obj)
+    else:
+        return obj
+
+
+def diffSystemProfileIDs(rowid1, rowid2, db_store):
+    print('dict.differ.time')
+
+    row1 = store.getByID('system_profile', rowid1, db_store)
+    dta1 = row1[3]
+    jsn1 = json.loads(dta1)
+
+    row2 = store.getByID('system_profile', rowid2, db_store)
+    dta2 = row2[3]
+    jsn2 = json.loads(dta2)
+
+
+    print('compare ', compare_object(jsn1, jsn2))
+
+    print('compareJson ', compareParsedJson(jsn1, jsn2))
+
+    print(contained(jsn1, jsn2))
+
+    #print(checkDifference(jsn1,jsn2))
+
+    #print(jsn2)
+    #print(str(type(jsn1)))
+    #print(jsn1.keys()) 
+
+    #print(len(dta1.keys()))
+    #print(len(dta2.keys()))
+    #diffd = set(dta2) - set(dta1)
+    #print(diffd)
+
+    #print(len(jsn1.keys()))
+    #print(len(jsn2.keys())) 
+    #diff = set(jsn2) - set(jsn1)
+    #print(diff)
+
+    #common_pairs = dict()
+    #for key in jsn1:
+    #    if (key in jsn2 and jsn1[key] == jsn2[key]):
+    #        common_pairs[key]=jsn1[key]
+    #print(common_pairs)
+
+    #if a == b:
+    #    print('no diff')
+
+    #diff = set(b) - set(a)
+    #print(diff)
+
+    #a, b = json.dumps(jsn1, sort_keys=True), json.dumps(jsn2, sort_keys=True)
+    #same1 = (a == b)
+    #print('same1', same1)
+    #same2 = (ordered(jsn1) == ordered(jsn2))
+    #print('same2', same2)
+
+    #d3={}
+    #for key in jsn1:
+    #    if key in jsn2:
+    #        if jsn1[key] != jsn2[key]:
+    #            d3[key]=jsn1[key]
+
+    #print(str(d3))
+    #print(str(d3.keys()))
+
+    #_name = recursively_parse_json(jsn1, '_name')
+    #print(str(_name))
+
+    #for k,v in d3.items():
+    #    #print(k, v)
+    #    print(k)
+    #    #print(str(type(v)))    #<class 'list'>
+    #    #print(str(type(v[0]))) #<class 'dict'>
+    #    #print(str(type(v[1]))) #IndexError: list index out of range
+    #    #print(str(len(v)) +' '+ str(type(v)))
+    #    #for item in v:
+    #        #print(item)
+    #    d = getDct(v)
+    #    print(d.keys())
+    #    for k,v in d.items():
+    #        #print(k + ' ' + str(type(v)))
+    #        if k == '_name':
+    #            continue
+    #            #print('_name.name.name.name')
+    #            #print(k + ' ' + str(type(v)))
+
+    #        #print(k + ' ' + str(type(v)) + ' ' + str(v))
+    #        if type(v) == list:
+    #            print('List type: ' + str(k) + ' ' + str('v'))
+    #        else:
+    #            print('Not_ type: ' + str(k) + ' ' + str(type(v)))
+    #
+
+
+
+    #d3={}
+    #for key in jsn1:
+    #    if key in jsn2:
+    #        if jsn1[key] != jsn2[key]:
+    #            d3[key]=jsn1[key]
+    print(len(jsn1.keys()))
+    #print(len(d3.keys()))
+
+    d1 = dDct(jsn1, jsn2)
+    print(len(d1))
+    #print(d1.keys())
+
+    #n1={}
+    #for k in d1:
+    #    n1[k]=jsn2[k]
+
+    #print(d1.keys())
+    #print(n1.keys())
+
+    #d2 = dDct(d1, n1)
+    #print(d2.items())
+
+    #n1={}
+    #n2={}
+    #for key in d1:
+    #    n1[key]=d1[key]
+    #    n2[key]=jsn2[key]
+#
+#    d2 = dDct(n1, n2)
+#    print(d2.keys())
+
+    #for key in d1:
+    #    if key in jsn2.keys():
+    #        print(key)
+
+    #for k,v in n1.items():
+    #    if v is str:
+    #        return 'val'
+
+    #for k,v in n1.items():
+    #   if v is not str:
+
+    #print(n1)
+            
+    #print(rObj(n1))        
+    #print('recusion ', recursion(jsn2))
+
+    #print(item_generator(jsn1, '_name'))
+        
+    #for _ in id_generator(jsn2):
+    #    print('id ', _)
+
+    #for k,v in d1.items():
+
+    data = d1
+    for element in data:
+        if (isinstance(data[element], dict)):
+            checkDict(data[element], element)
+        elif (isinstance(data[element], list)):
+            checkList(data[element], element)
+
+    #    elif (isinstance(data[element], str)):
+    #        printField(data[element], element)
+    #    elif (isinstance(data[element], int)):
+    #        printField(data[element], element)
+
+    #SPAirPortDataType[0].spairport_airport_interfaces[0]._name : str
+
+    s = data['SPAirPortDataType'][0]['spairport_airport_interfaces'][0]['_name']
+    print('s is ' , s)
+
+    #WORK
+    return True
+
+#----
+
+
+def checkList(ele, prefix):
+    for i in range(len(ele)):
+        if (isinstance(ele[i], list)):
+            checkList(ele[i], prefix+"["+str(i)+"]")
+        elif (isinstance(ele[i], str)):
+            printField(ele[i], prefix+"["+str(i)+"]")
+        elif (isinstance(ele[i], int)):
+            printField(ele[i], prefix+"["+str(i)+"]")
+        else:
+            checkDict(ele[i], prefix+"["+str(i)+"]")
+
+def checkDict(jsonObject, prefix):
+    for ele in jsonObject:
+        if (isinstance(jsonObject[ele], dict)):
+            checkDict(jsonObject[ele], prefix+"."+ele)
+
+        elif (isinstance(jsonObject[ele], list)):
+            checkList(jsonObject[ele], prefix+"."+ele)
+
+        elif (isinstance(jsonObject[ele], str)):
+            printField(jsonObject[ele],  prefix+"."+ele)
+
+        elif (isinstance(jsonObject[ele], int)):
+            printField(jsonObject[ele],  prefix+"."+str(ele))
+
+def printField(ele, prefix):
+    #print(prefix, ":" , ele)
+
+    if (isinstance(ele, str)):
+        print(prefix, ":" , 'str')
+    elif (isinstance(ele, int)):
+        print(prefix, ":" , 'int')
+    #else:
+    #    print(prefix, ":" , ele)
+
+    #print(prefix, ":" , ele)
+    #print(prefix, ":" , str(ele))
+
+
+
+def id_generator(d):
+    for k, v in d.items():
+        if k == "_name":
+            yield v
+        elif isinstance(v, dict):
+            for id_val in id_generator(v):
+                yield id_val
+
+
+def recursion(dict):
+    for key, value in dict.items():
+        if type(value) == type(dict):
+            for key, value in value.items():
+                if isinstance (value,list):
+                    print(key)
+                        # place where I need to enter list comprehension?
+                if type(value) == type(dict):
+                    if key == "id":
+                        print(" id found " + value)
+                    if key != "id":
+                        print(key + " 1st level")
+                if key == "id":
+                    print(key)
+        else:
+            if key == "id":
+                print("id found " + value)
+
+
+
+def rObj(dct):
+
+    for k,v in dct.items():
+
+        if v == type(str):
+            return 'value_str'
+        if v == type(int):
+            return 'value_int'
+        if v == type(list):
+            return obj
+        if v == (dict):
+            return obj
+
+
+def dDct(dct1, dct2):
+    d={}
+    for key in dct1:
+        if key in dct2:
+            if dct1[key] != dct2[key]:
+                d[key]=dct1[key]
+    return d
+
+
+def checkDifference(orig,new):
+	diff = {}
+	if type(orig) != type(new):
+		#print "Type difference"
+		return True
+	else:
+		if type(orig) is dict and type(new) is dict:
+			#print "Types are both dicts"
+			##	Check each of these dicts from the key level
+			diffTest = False
+			for key in orig:
+				result = checkDifference(orig[key],new[key])
+				if result != False:	## Means a difference was found and returned
+					diffTest = True
+					#print "key/Values different: " + str(key)
+					diff[key] = result
+			##	And check for keys in second dataset that aren't in first
+			for key in new:
+				if key not in orig:
+					diff[key] = ("KeyNotFound", new[key])
+					diffTest = True
+
+			if diffTest:
+				return diff
+			else:
+				return False
+		else:
+			#print "Types were not dicts, likely strings"
+			if str(orig) == str(new):
+				return False
+			else:
+				return (str(orig),str(new))
+	return diff
+
+
+def contained(a, b):
+    #""" checks if dictionary a is fully contained in b """
+    if not isinstance(a, dict):
+        return a == b
+    else:
+        return all(contained(v, b.get(k)) for k, v in a.items())
+
+#print(contained(d1, d2))
+
+
+def compareJson(example_json_s, target_json_s):
+ example_json = json.loads(example_json_s)
+ target_json = json.loads(target_json_s)
+ return compareParsedJson(example_json, target_json)
+
+def compareParsedJson(example_json, target_json):
+ for x in example_json:
+   if type(example_json[x]) is not dict:
+     if not x in target_json or not example_json[x] == target_json[x]:
+       return False
+   else:
+     if x not in target_json or not compareParsedJson(example_json[x], target_json[x]):
+      return False
+
+ return True
+
+
+def compare_object(a,b):
+    if type(a) != type(b):
+        return False
+    elif type(a) is dict:
+        return compare_dict(a,b)
+    elif type(a) is list:
+        return compare_list(a,b)
+    else:
+        return a == b
+
+def compare_dict(a,b):
+    if len(a) != len(b):
+        return False
+    else:
+        for k,v in a.items():
+            if not k in b:
+                return False
+            else:
+                if not compare_object(v, b[k]):
+                    return False
+    return True
+
+def compare_list(a,b):
+	if len(a) != len(b):
+		return False
+	else:
+		for i in range(len(a)):
+			if not compare_object(a[i], b[i]):
+				return False
+	return True
+
+#print(compare_object(json_a, json_b)) 
+
+def recursively_parse_json(input_json, target_key):
+    #'target_key' must be unique key in the json tree
+    if type(input_json) is dict and input_json:
+        if key == target_key:
+            print(input_json[key])
+        for key in input_json:
+            recursively_parse_json(input_json[key], target_key)
+
+    elif type(input_json) is list and input_json:
+        for entity in input_json:
+            recursively_parse_json(entity, target_key)
+
+
+def item_generator(json_input, lookup_key):
+    if isinstance(json_input, dict):
+        for k, v in json_input.items():
+            if k == lookup_key:
+                yield v
+            else:
+                yield from item_generator(v, lookup_key)
+    elif isinstance(json_input, list):
+        for item in json_input:
+            yield from item_generator(item, lookup_key)
+
+
+
+
+
+#def getRDct(Lst):
+#    Dct={}
+#    for item in Lst:
+#        if item == list:
+#            for i in 
+
+#def getDct(Lst):
+#    Dct={}
+#    for item in Lst:
+#        for k,v in item.items():
+#            Dct[k]=v
+#    return Dct
+
+#----------------------------------------------------------------------------------------
+
+
+
+
 def sentryTailResinLog(db_store, gDict, _file):
 
     logging.info('Sentry resin.match ' + str(_file))
@@ -866,18 +1247,12 @@ def sentryTailResinLog(db_store, gDict, _file):
     re_match1 = re.compile(r'Watchdog starting Resin',re.I)
     c=0
     for line in tail(_file):
-        #print('resin ' + line)
-        #line = line.decode('utf-8')
         line = line.decode('utf-8').strip('\n')
-        #print(line)
         if re_match1.search(line):
-            #print('Sentry Tail resin match ' + str(line))
             c+=1
             _key = 'sentry-resin-tail-match-' + str(c)
             prom = 'prog="resin",logfile="' + str(_file) + '",match="' + str(line) + '"'
             gDict[_key] = [ 'sentinel_resin_watch{' + prom + '} ' + str(c) ]
-
-
     return True
 
 def sentryTailMariaDBAuditLog(db_store, gDict, _file):
@@ -986,7 +1361,8 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
         else:
             #print('new ' + b)
             kDict[b] = 1
-            update_sql = store.replaceINTO2('b2sum', b, bline, db_store)
+            #update_sql = store.replaceINTO2('b2sum', b, bline, db_store)
+            update_sql = store.replaceINTOduce('b2sum', b, bline, db_store)
 
     ###############################
 
@@ -1159,7 +1535,8 @@ def recordblock(ip,tm, _file, gDict, db_store):
   #sqlite
   jdata = { "logfile": str(_file), "time": str(tmstr), "count": _c }
   _json = json.dumps(jdata)
-  replace_sql = store.replaceINTO2('sshwatch', ip, _json, db_store)
+  #replace_sql = store.replaceINTO2('sshwatch', ip, _json, db_store)
+  replace_sql = store.replaceINTOduce('sshwatch', ip, _json, db_store)
 
 def compare():
   count = 0
@@ -1407,39 +1784,22 @@ def nmapScan(ip, level):
 
     up = 0
     c = 0
-    #openDct = {}
     openLst = []
-
     nmapDct = getNmapScanDct(ip, level)
 
     for k,v in nmapDct.items():
-        #print(v)
         line = v.split()
 
         if v.startswith('Host is up'):
-            #print(v.split())
             up = 1
 
         try:
-            #if (line[1] == 'open') or (str(line[1]).startswith('open')):
             if line[1] == 'open': #https://nmap.org/book/port-scanning.html #open, open|filtered
-                #print('line.open ' + str(v))
-                #c += 1
-                #openDct[c] = line
-                #openDct[c] = v
-                #openDct[c] = str(v)
                 port = line[0]
                 openLst.append(port)
         except IndexError:
             c += 1
             
-        #if v.startswith('Nmap done:'):
-        #    #print('yes')
-        #    up = v.split()[5].strip('(')
-        #    #print(up)
-
-    #rtnStr = str(up) + ' ' + str(openDct)
-    #rtnStr = str(up) + ' ' + str(openLst)
     rtnStr = str(up) + ' ' + ','.join(openLst)
     return rtnStr
 
@@ -1468,12 +1828,9 @@ def getNmapScanDct(ip, level):
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     out = proc.stdout.readlines()
     for line in out:
-        #line =  line.decode('utf-8').strip('\n').split()
         line =  line.decode('utf-8').strip('\n')
-        #print(line)
         c += 1
         rtnDct[c] = line
-
     return rtnDct
 
 def nmapUDP(ip, port):
@@ -1501,9 +1858,6 @@ def nmapUDP(ip, port):
     return rtnStr
 
 def nmapUDPscan(ip, ports=None):
-
-    #if port is None:
-    #    port = 
 
     ports =  '1-65535'
     for port in range(1,600):
@@ -2527,8 +2881,6 @@ def processVulnData(data):
     vulnerable = 0
     Dct = {}
 
-    #print(str(type(data)))
-
     #if isinstance(data, tuple):
     if type(data) == tuple:
         data = data[0].split('\n') #<class 'tuple'>
@@ -2538,42 +2890,19 @@ def processVulnData(data):
     else:
         data = data.split('\n')
 
-    #if str(type(data)) == 'tuple':
-    #    data = data[0].split('\n')
-    #else:
-    #    data = data.split('\n') 
-
-    #print('type.data ' + str(type(data)))
-    #data = store.getVulnData(vid, db_store)
-    #data = data[0].split('\n') #<class 'tuple'>
-    #<class 'str'>
-
     for line in data:
-        #print('START ' + str(line))
         _line = line.split()
-        #print(line)
-        #print(_line)
-        #if str(_line[1]).startswith('VULNERABLE:'):
-        #print(line)
-        #if 'VULNERABLE' in line:
-        #    print(line)
-
-        #port = ''
-
         try:
             if _line[1] == 'open':
-                #print(line)
                 port = _line[0]
         except IndexError: pass
 
         if 'VULNERABLE' in line:
-            #print(line)
             vulnerable += 1
             Dct[port] = vulnerable
 
     Lst = []
     for k,v in Dct.items():
-        #print(k,v)
         Lst.append(k)
 
     return ','.join(Lst)
@@ -2742,17 +3071,17 @@ def isNet(ips):
     return net
 
 def isIPv6(ips):
+    print('TODO')
     pass
 
+def detectScan(ips, db_store):
+    print('TODO')
+    pass
 
 def discoverHostLst(ips):
     hostLst = []
-    #print('ips is... ' + str(type(ips)) + ' ' + str(ips))
     if type(ips) == str:
         ips = ips.split()
-
-    #if type(ips) == list:
-    #elif type(ips) == str:
 
     ipnet_ = []
     for ip in ips:
@@ -2777,12 +3106,8 @@ def discoverHostLst(ips):
         ipn = getIpNet(ipnet)
         hostLst = nmapNet(ipn)
 
-    #print('hostLst is... ' + str(hostLst))
     print('discovered: ' + str(hostLst))
     return hostLst
-
-def detectScan(ips, db_store):
-    pass
 
 
 def b2sumFim(name, db_store):
@@ -2797,26 +3122,18 @@ def b2sumFim(name, db_store):
     except json.decoder.JSONDecodeError:
         return 'invalid json ' + str(fim)
 
-    #print('run.fim.run ' + str(fim))
     print(str(jdata)) 
-
     for k,v in jdata.items():
         b = b2sum(k)
         print(k + ' ' + b)
         jdata[k] = b
 
-    #replace = store.replaceFim( name, json.dumps(jdata), db_store)
     replace = store.replaceINTO('fims', name, json.dumps(jdata), db_store)
-    #print(replace)
-    #return True
     return replace
 
 def checkFim(name, db_store):
-    #print('checkFim .now ' + str(name))
     fimDct = getFimDct(name, db_store)
     for k,v in fimDct.items():
-        #print(k,v)
-        #print(k, ' CHANGED')
         if len(v) == 0:
             print(k, 'ADDED')
         else:
@@ -2831,21 +3148,16 @@ def fimCheck(name, db_store, gDict, _name):
     a = 0
     c = 0
     for k,v in fimDct.items():
-        #print(k,v)
-        #print(k, ' CHANGED')
         if len(v) == 0:
             a += 1
-            #print(k, 'ADDED')
             Dct[k] = 'ADDED' + str(a)
         else:
             c += 1
-            #print(k, 'CHANGED')
             Dct[k] = 'CHANGED' + str(c)
 
     _key = 'fimcheck-' + str(name)
 
     if bool(Dct):
-        #val = 1
         val = len(Dct)
     else:
         val = 0
@@ -2854,21 +3166,6 @@ def fimCheck(name, db_store, gDict, _name):
     #Dct['config'] = name
     Dct[name] = 'config'
     Dct[_name] = 'job'
-
-    #promHELP = '# HELP sentinel_job_output The output of the sentinel job.'
-    #promTYPE = '# TYPE sentinel_job_output gauge'
-    #gDict[_key] = [ promHELP, promTYPE, 'sentinel_job_output' + json.dumps(Dct) + ' ' + str(val) ]
-    #gDict[_key] = [ 'sentinel_job_output' + json.dumps(Dct) + ' ' + str(val) ]
-
-    #prom = ''
-    #c = len(Dct)
-    #for k,v in Dct.items():
-    #    c -= 1
-    #    if c == 0:
-    #        prom += str(k) + '="' + str(v) + '"'
-    #    else:
-    #        prom += str(k) + '="' + str(v) + '",'
-    #gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
     prom = ''
     c = len(Dct)
@@ -2881,19 +3178,12 @@ def fimCheck(name, db_store, gDict, _name):
 
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     prom += ',done="' + str(now) + '"'
-
-    #if val != 0:
-    #    val = len(Dct)
-
     gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-    #gDict[name] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-    #print('Sentry fim-check ' + str(name))
 
     return True
 
 
 def getFimDct(name, db_store):
-    #print('getFimDct')
     Dct = {}
     fim = store.getFim(name, db_store)
     if fim is None:
@@ -2909,11 +3199,8 @@ def getFimDct(name, db_store):
     for k,v in jdata.items():
         b = b2sum(k)
         if b != v:
-            #print(k + ' CHANGED')
             #Dct[k] = 'CHANGED'
             Dct[k] = v
-
-    #return True
     return Dct
 
 def addFimFile(name, _file, db_store):
@@ -2927,8 +3214,6 @@ def addFimFile(name, _file, db_store):
         jdata = json.loads(fim)
     except json.decoder.JSONDecodeError:
         return 'invalid json ' + str(fim)
-
-    #jdata[_file] = ""
 
     bsum = b2sum(_file)
 
@@ -2954,10 +3239,8 @@ def delFimFile(name, _file, db_store):
     except json.decoder.JSONDecodeError:
         return 'invalid json ' + str(fim)
 
-    #jdata[_file] = ""
     try:
         del jdata[_file]
-    #except KeyError: pass
     except KeyError:
         return 'not found ' + str(_file)
 
@@ -2972,27 +3255,14 @@ def delFimFile(name, _file, db_store):
 
 
 def psCheck(name, db_store, gDict, _name):
-    #print(str(_data)) #None
     import modules.ps.ps
     psDct = modules.ps.ps.get_ps()
-    #for k,v in psDct.items():
-    #    print(k,v)
-    #dump into reports...
-    #check = checkPsAndReport(name, psDct, db_store)
-    #return check
 
     _key = 'pscheck-' + str(name)
 
-    #psDct['name'] = name
     psDct['sentinel_job'] = name
     val = 1
 
-    #promHELP = '# HELP sentinel_job_output The output of the sentinel job.'
-    #promTYPE = '# TYPE sentinel_job_output gauge'
-    #gDict[_key] = [ promHELP, promTYPE, 'sentinel_job_output' + json.dumps(psDct) + ' ' + str(val) ]
-    #gDict[_key] = [ 'sentinel_job_output' + json.dumps(psDct) + ' ' + str(val) ]
-
-    #prom = 'job="' + str(_name) + '",'
     prom = ''
     c = len(psDct)
     for k,v in psDct.items():
@@ -3002,11 +3272,7 @@ def psCheck(name, db_store, gDict, _name):
         else:
             prom += str(k) + '="' + str(v) + '",'
 
-    #gDict[name] = [ 'sentinel_job_pscheck_output{' + prom + '} ' + str(val) ]
-    #gDict[_key] = [ 'sentinel_job_pscheck_output{' + prom + '} ' + str(val) ]
     gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-    #print('Sentry ps-check ' + str(name) + ' prom ' + str(prom))
-
     return True
 
 def establishedCheck(name, db_store, gDict, _name):
@@ -3030,12 +3296,10 @@ def establishedCheck(name, db_store, gDict, _name):
         now = time.strftime("%Y-%m-%d %H:%M:%S")
         _key = 'est-established-check-' + str(_name) + '-' + str(c)
 
-
         protoport = str(proto) + ':' + str(lport)
         ppDict = lsofProtoPort(protoport)
 
         pdata = ''
-        #_c = len(ppDict.keys()) 
         _c = 0
         for _k,_v in ppDict.items():
             #_c -= 1
@@ -3043,8 +3307,6 @@ def establishedCheck(name, db_store, gDict, _name):
             vLL = _v.split()
             prog = vLL[2]
             user = vLL[3]
-
-            #pdata += ',prog'+str(_c)+'="'+str(prog)+'",user'+str(_c)+'="'+str(user)+'"'
 
             if _c > 1:
                 pdata += ',prog'+str(_c)+'="'+str(prog)+'",user'+str(_c)+'="'+str(user)+'"'
@@ -3055,25 +3317,20 @@ def establishedCheck(name, db_store, gDict, _name):
         data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"' + pdata
         prom = 'name="' + str(_name) + '",sentinel_job="established-check",' + data + ',done="' + str(now) + '"'
 
-        #Dict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
         gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
     return True
 
 
-def establishedCheck__1__(name, db_store, gDict, _name):
-    #print('establishedCheck')
-    #getEstablishedAlertsDct should really get moved to tools
+def establishedCheck__v1__(name, db_store, gDict, _name):
     eaDct = getEstablishedAlertsDct(db_store)
 
     for key in gDict.keys():
         if key.startswith('est-established-check-'):
             del gDict[key]
 
-    #Dict = {}
     c = 0
     for k,v in eaDct.items():
-        #print(k,v)
         val = 1
         c += 1
         proto = v[0]
@@ -3087,12 +3344,7 @@ def establishedCheck__1__(name, db_store, gDict, _name):
 
         data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"'
         prom = 'name="' + str(_name) + '",sentinel_job="established-check",' + data + ',done="' + str(now) + '"'
-        #Dict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
         gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-
-    #compare local Dict w/ gDict, but gDict has more keys...
-    #first_dict  = gDict
-    #second_dict = Dict
 
     return True
 
@@ -3280,10 +3532,9 @@ def avScan(filedir, db_store):
 
     print(stdout.decode('utf-8'))
 
-
     #save av-scan
 
-
+    #TODO
 
     return True
     
@@ -3303,17 +3554,13 @@ options = {
 
 def runJob(name, db_store, gDict):
 
-    #print('runJob')
     #-start
     val = 0
     start = time.strftime("%Y-%m-%d %H:%M:%S")
 
     job = store.getJob(name, db_store)
     if not job:
-        #print('no job')
         return None
-    #print(str(type(job)))
-    #print(job)
 
     if type(job) == tuple:
         job = job[0]
@@ -3321,11 +3568,8 @@ def runJob(name, db_store, gDict):
     try:
         jdata = json.loads(job)
     except json.decoder.JSONDecodeError:
-        #print('invalid json')
+        logging.error('invalid json')
         return None
-
-    #don't need to do this now either...
-    #new_json = copy.copy(jdata)
 
     #new_json['start'] = start
     jdata['start'] = start
@@ -3341,13 +3585,7 @@ def runJob(name, db_store, gDict):
         del jdata['success']
     except KeyError: pass
 
-    #promHELP = '# HELP sentinel_job The sentinel job service.'
-    #promTYPE = '# TYPE sentinel_job gauge'
-    #gDict[name] = [ promHELP, promTYPE, str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
-
-    #print(jdata)
     prom = ''
-    #print(len(jdata))
     c = len(jdata)
     for k,v in jdata.items():
         c -= 1
@@ -3356,30 +3594,12 @@ def runJob(name, db_store, gDict):
         else:
             prom += str(k) + '="' + str(v) + '",'
 
-    #print(prom)
-        
-    #gDict[name] = [ str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
     gDict[name] = [ 'sentinel_job{' + prom + '} ' + str(val) ]
     replace = store.replaceINTO('jobs', name, json.dumps(jdata), db_store)
-    #print('PERF replaceINTO occured on jobs')
-
-    #replace = replaceJobsJson(name, json.dumps(new_json), db_store)
-    #don't need to do this now...
-    #replace = store.replaceINTO('jobs', name, json.dumps(new_json), db_store)
-    #print('PERF replaceINTO occured on jobs')
-    #print('replace was ' + str(replace))
-
-    #_time = jdata.get('time', None) 
-    #_repeat = jdata.get('repeat', None) 
 
     _job = jdata.get('job', None) 
     _ips = jdata.get('ips', None) 
     _config = jdata.get('config', None) 
-
-    #if type(_ips) == list:
-    #if type(_ips) == str:
-        
-    #run = options[_job](_ips, db_store)
 
     if _ips:
         _data = _ips
@@ -3394,28 +3614,16 @@ def runJob(name, db_store, gDict):
         run = options[_job](_data, db_store, gDict, name)
     except KeyError:
         # unknown "job":"????"
-        #return 'unknown job ' + str(_job)
         run = 'unknown job ' + str(_job)
 
     #-done
     done = time.strftime("%Y-%m-%d %H:%M:%S")
-    #new_json['done'] = done
-    #new_json['success'] = run
     jdata['done'] = done
     jdata['success'] = run
     #update = updateJobsJson(name, json.dumps(new_json), db_store)
 
-    #don't need to do this now...
-    #update = store.updateData('jobs', name, json.dumps(new_json), db_store)
-    #print('PERF updateData occured on jobs')
-
     if run is True:
         val = 1
-
-    #promHELP = '# HELP sentinel_job The sentinel job service.'
-    #promTYPE = '# TYPE sentinel_job gauge'
-    #gDict[name] = [ promHELP, promTYPE, str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
-    #gDict[name] = [ str('sentinel_job') + json.dumps(jdata) + ' ' + str(val) ]
 
     prom = ''
     c = len(jdata)
@@ -3428,7 +3636,6 @@ def runJob(name, db_store, gDict):
 
     gDict[name] = [ 'sentinel_job{' + prom + '} ' + str(val) ]
     update = store.updateData('jobs', name, json.dumps(jdata), db_store)
-    #print('PERF updateData occured on jobs')
 
     logging.info('Sentry Job run ' + str(name))
 
@@ -3437,7 +3644,7 @@ def runJob(name, db_store, gDict):
 def getDuration(_repeat):
     #amt, scale = getDuration(_repeat)
     #5min, 1hour, 3day
-    import re
+    #import re
 
     num = None
     scale = None
@@ -3469,32 +3676,20 @@ def getDuration(_repeat):
 def sentryProcessor(db_store, gDict):
 
     while (sigterm == False):
-    #while True:
-        #print('process Reports')
 
         _prom = str(db_store) + '.prom'
-        #try:
-        #    with open(_prom, 'w+') as _file:
-        #        for k,v in gDict.items():
-        #            for item in v:
-        #                #print(k, v)
-        #                _file.write(item + '\n')
-        #except EOFError as e:
-        #    print('EOFError ' + str(e))
 
         with open(_prom, 'w+') as _file:
             for k,v in gDict.items():
                 for item in v:
                     _file.write(item + '\n')
 
-        #print('sentryProcessor')
         time.sleep(10)
 
     return True
 
 
 def sentryProcessJobs(db_store, gDict):
-    #print('process Schedule')
     run = None
 
     rLst = []
@@ -3507,14 +3702,9 @@ def sentryProcessJobs(db_store, gDict):
     now_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
 
     for job in jobs:
-        #name = job[1]
-        #jdata = job[3]
         name = job[0]
         jdata = job[2]
-        #print(job)
-        #print(name)
         try:
-            #jdata = json.loads(job[3])
             jdata = json.loads(job[2])
         except json.decoder.JSONDecodeError:
             print('invalid json')
@@ -3537,72 +3727,42 @@ def sentryProcessJobs(db_store, gDict):
             #run at time
             run_time = datetime.datetime.strptime(_time, "%Y-%m-%d %H:%M:%S")
 
-            #if now_time > run_time and _start is None and _done is None:
             if now_time > run_time and _start is None:
-                #print('Over time and _start is None.  run_time')
                 run = runJob(name, db_store, gDict)
-                #print(run)
 
         if _repeat:
             scale, amt = getDuration(_repeat)
-            #print(scale + ' amt ' + str(amt))
 
             if _start is None:
                 run = runJob(name, db_store, gDict)
 
             else:
                 start_time = datetime.datetime.strptime(_start, "%Y-%m-%d %H:%M:%S")
-                #start_minute = int(str(start_time).split()[1].split(':')[1])
-                #print('start ' + str(start_time) + ' m: ' + str(start_minute))
                 if _done:
                     done_time = datetime.datetime.strptime(_done, "%Y-%m-%d %H:%M:%S")
-                    #print('done       ' + str(done_time))
 
-                    #td_time = done_time + datetime.timedelta(minutes=5)
-                    #delta_time = done_time + datetime.timedelta(amt) #TypeError: unsupported type for timedelta days component: str
-                    #delta_time = done_time + datetime.timedelta(minutes = 5)
-                    #delta_time = done_time + datetime.timedelta(scale = amt) #TypeError: 'scale' is an invalid keyword argument for __new__()
-                    
                     arg_dict = {scale:amt}
                     delta_time = done_time + datetime.timedelta(**arg_dict)
-                    #print('delta_time ' + str(delta_time))
 
                     if now_time > delta_time:
-                        #print('Over time.  repeat_time')
                         run = runJob(name, db_store, gDict)
-                        #print(run)
-    
-    #return True
     return run
 
 def processD(List):
 
-    #try:
     sentinel_up = 1
-    #start = time.time()
 
-    #promHELP = '# HELP sentinel_up Whether the sentinel service is up.'
-    #promTYPE = '# TYPE sentinel_up gauge'
     promDATA = 'sentinel_up ' + str(sentinel_up)
-    #gDict['sentinel_up'] = [promHELP, promTYPE, promDATA]
     gDict['sentinel_up'] = [ promDATA ]
 
     c = 0
     for item in List:
-        #print(item)
         c += 1
         k = 'sentinel_up_' + str(c)
         gDict[k] = [ item ]
 
     promDATA = 'sentinel_app_info{version="' + __version__ + '"} 1.0'
     gDict['sentinel_app_info'] = [ promDATA ]
-
-    #print(sys.version)
-    #print(sys.version_info)
-    #print(sys.implementation)a
-
-    #print(sys.implementation)
-    #namespace(_multiarch='darwin', cache_tag='cpython-38', hexversion=50857712, name='cpython', version=sys.version_info(major=3, minor=8, micro=6, releaselevel='final', serial=0))
 
     _arch = sys.implementation._multiarch
     _implementation = sys.implementation.name
@@ -3612,8 +3772,6 @@ def processD(List):
     _releaselevel = sys.version_info.releaselevel
     _serial = sys.version_info.serial
     _version = _major + '.' + _minor + '.' + _micro
-
-    #python_info{implementation="CPython",major="3",minor="8",patchlevel="1",version="3.8.1"} 1.0
 
     promDATA = 'sentinel_python_info{arch="' + _arch + '",implementation="' + _implementation + '",major="' + _major + '",minor="' + _minor
     promDATA += '",micro="' + _micro + '",version="' + _version + '"} 1.0'
@@ -3625,77 +3783,32 @@ def processD(List):
     promDATA = 'sentinel_python_sqlite_info{sqlite3="' + sqlite3_version + '",library="' + sqlite3_sqlite_version + '"} 1.0'
     gDict['sentinel_python_sqlite_info'] = [ promDATA ]
 
-    #except BrokenPipeError:
-    #    sigterm = True
-    #    sys.exit(1)
-
     return True
 
 
 def sentryScheduler(db_store, gDict):
     while (sigterm == False):
-    #while True:
 
         List = []
         job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
-        #job.setDaemon(True)
         job.start()
 
-        ##run = sentryProcessAlerts(db_store)
-        #alert = threading.Thread(target=sentryProcessAlerts, args=(db_store,), name="SentryAlertRunner")
-        #alert.setDaemon(True)
-        #alert.start()
-
-
         tcount = 0
-        #threads = []
         for thread in threading.enumerate():
-            #print(str(thread.name))
-            #if thread.name == 'MainThread':
-            #    continue
-            #if thread.name == 'Scheduler':
-            #    continue
-            #print(str(thread.name))
             tcount += 1
-            #threads.append(thread)
 
         pcount = 0
-        #process = []
         for proc in multiprocessing.active_children():
-            #print(str(proc.name))
             pcount += 1
-            #process.append(proc)
 
-
-        #promHELP = '# HELP sentinel_threads Number of sentinel threads.'
-        #List.append(promHELP)
-        #promTYPE = '# TYPE sentinel_threads gauge'
-        #List.append(promTYPE)
         List.append('sentinel_threads ' + str(tcount))
-
-        #promHELP = '# HELP sentinel_process Number of sentinel process.'
-        #List.append(promHELP)
-        #promTYPE = '# TYPE sentinel_process gauge'
-        #List.append(promTYPE)
         List.append('sentinel_process ' + str(pcount))
-
-        #for t in threads:
-        #    t.join()
-
-        #for p in process:
-        #    p.join()
-
-        #try:
-        #    processD(List)
-        #except Exception as e:
-        #    print(str(e))
 
         processD(List)
 
         time.sleep(3)
 
     return True
-    #return run
 
 
 def sentryCleanup(db_store):
@@ -3706,7 +3819,6 @@ def sentryCleanup(db_store):
     return True
 
 
-#def procHTTPServer(port, metric_path, db_file, Dict):
 def procHTTPServer(port, metric_path, db_file):
     global _metric_path
     _metric_path = metric_path
@@ -3714,25 +3826,14 @@ def procHTTPServer(port, metric_path, db_file):
     global db_store
     db_store = db_file
 
-    #global gDict
-    #gDict = Dict
-
-    #print(os.getuid())
     if os.getuid() == 0:
         run_as_user = "nobody"
         uid = pwd.getpwnam(run_as_user)[2]
-        #print('user.nobody ' + str(uid))
         logging.info('Sentry HTTPServer Drop Privileges to uid ' + str(uid))
         os.setuid(uid)
 
-    #run_as_group = "nobody"
-    #gid = grp.getgrnam(run_as_group)[2]
-    #print('group.nobody ' + str(gid))
-    #os.setgid(gid)
-
     httpd = HTTPServer(('', port), HTTPHandler)
-    httpd.serve_forever()
-
+    return httpd.serve_forever()
 
 
 def sentryMode(db_file, verbose=False):
@@ -3744,15 +3845,11 @@ def sentryMode(db_file, verbose=False):
     global gDict
     gDict = manager.dict()
 
-    #import atexit
-    #import signal
-
     atexit.register(sentryCleanup, db_store)
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry Startup")
 
-    #runlist=[]
 
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
     #scheduler.setDaemon(True)
@@ -3760,18 +3857,7 @@ def sentryMode(db_file, verbose=False):
     #runlist.append(scheduler)
 
     processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
-    #processor.setDaemon(True)
     processor.start()
-    #runlist.append(processor)
-
-    #if not conf:
-    #    update = store.replaceINTO('configs', 'prometheus', json.dumps({'port': 9111, 'path': '/metrics'}), db_store)
-    #    conf = store.getData('configs', 'prometheus', db_store)
-    #conf = json.loads(conf[0])
-
-    #tailer = threading.Thread(target=sentryTailFile, args=(db_store, gDict, '/tmp/log.txt'), name="TailFile")
-    #tailer.setDaemon(True)
-    #tailer.start()
 
     #confs = store.selectAll('configs', db_store)
     #for conf in confs:
@@ -3857,34 +3943,12 @@ def sentryMode(db_file, verbose=False):
     except (KeyboardInterrupt, SystemExit, Exception):
         sigterm = True
         sentryCleanup(db_store)
-        #for run in runlist: run.join()
-
-        #scheduler.join()
-        #processor.join()
-        #if resin_watch: resin_tailer.join()
-        #if mariadb_watch: mariadb_tailer.join()
-        #if ssh_watch: ssh_tailer.join()
-        #httpd.server_close()
-        #clear_iptables = cleanup()
-
-        #for proc in multiprocessing.active_children():
-        #    print('proc name ', proc)
-
-        #for thread in threading.enumerate():
-
-        #for run in runlist: run.join()
 
         for proc in multiprocessing.active_children():
             print('proc name ', proc, ' ', proc.pid)
-            #print('proc pid ', proc.pid)
             os.kill(proc.pid, 9)
 
-        #for run in runlist: run.join()
-
         for thread in threading.enumerate():
-            #print('thread name', thread, ' ', thread.name)
-            #print('thread name.Name', thread.name)
-            #thread.join()
             if thread.name == 'MainThread':
                 continue
             else:
