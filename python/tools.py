@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1_feb_06-1'
+__version__ = '1.6.14-1_feb_07-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -935,11 +935,11 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
     #    if key in jsn2:
     #        if jsn1[key] != jsn2[key]:
     #            d3[key]=jsn1[key]
-    print(len(jsn1.keys()))
+    #print(len(jsn1.keys()))
     #print(len(d3.keys()))
 
-    d1 = dDct(jsn1, jsn2)
-    print(len(d1))
+    #d1 = dDct(jsn1, jsn2)
+    #print(len(d1))
     #print(d1.keys())
 
     #n1={}
@@ -984,12 +984,16 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
 
     #for k,v in d1.items():
 
-    data = d1
-    for element in data:
-        if (isinstance(data[element], dict)):
-            checkDict(data[element], element)
-        elif (isinstance(data[element], list)):
-            checkList(data[element], element)
+    #data = jsn1
+#    data = d1
+#    for element in data:
+#        if (isinstance(data[element], dict)):
+#            checkDict(data[element], element)
+#            #checkDict(data[element], 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+str(element))
+#        elif (isinstance(data[element], list)):
+#            #checkList(data[element], element)
+#            #checkList(data[element], 'LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL'+str(element))
+#            checkList(data[element], "['"+str(element)+"']")
 
     #    elif (isinstance(data[element], str)):
     #        printField(data[element], element)
@@ -998,53 +1002,159 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
 
     #SPAirPortDataType[0].spairport_airport_interfaces[0]._name : str
 
-    s = data['SPAirPortDataType'][0]['spairport_airport_interfaces'][0]['_name']
-    print('s is ' , s)
+#    s = data['SPAirPortDataType'][0]['spairport_airport_interfaces'][0]['_name']
+#    print('s is ' , s)
+#
+#    #x = data['SPPowerDataType'][1]['Battery Power']['Current Power Source']
+#    i = data['SPPowerDataType'][1]['Battery Power']['Display Sleep Timer']
+#    print('i  is ' , str(i))
+#
+#    ii = jsn2['SPPowerDataType'][1]['Battery Power']['Display Sleep Timer']
+#    print('ii is ' , str(ii))
+#
+#    #jj = jsn2['SPPowerDataType'][4]['_items'][0]['_items'][1]['appPID'] #IndexError: list index out of range
+#    #print('jj is ' , str(jj))
+#
+#    #jx = jsn2['SPPowerDataType'][4]['_items'][0]['_items'][1].get('appPID', None)
+#    jx = jsn1.get('SPPowerDataType', None)[4]['_items'][0]['_items'][1].get('appPID', None) #IndexError
+#    print('jx is ' , str(jx))
+
+
+    #SPAirPortDataType[0]['spairport_airport_interfaces'][0]['_name']
+
+    #for item in parse(
+    print(len(jsn1))
+    print(len(jsn2))
+    #d1 = dDct(jsn1, jsn2)
+#    print(len(d1))
+
+
+    ###############################
+
+    L1 = jpaths(jsn1)
+    L2 = jpaths(jsn2)
+    #L3 = jpaths(d1)
+
+    print(len(L1))
+    print(len(L2))
+    #print(len(L3))
+
+    #res = [x for x in L1 + L2 if x not in L1 or x not in L2]
+    #print(len(res))
+
+    d1 = dDct(jsn1, jsn2)
+    n1={}
+    n2={}
+    for key in d1:
+        n1[key]=d1[key]
+        n2[key]=jsn2[key]
+
+    N1 = jpaths(n1)
+    N2 = jpaths(n2)
+    print(len(N1))
+    print(len(N2))
+
+
+    #for item in L1:
+    #    if item in L2:
+    #        print('both have')
+    #    else:
+    #        print('missing from List2', item)
+
+    for item in N1:
+        if item in N2:
+            #print('both have')
+            #js1 = 'jsn1' + str(item)
+            #js2 = 'jsn2' + str(item)
+            #print(js1)
+
+            #print(type(item))
+            print(item)
+            print(item[0])
+           
+            #j = jsn1[item]
+
+
+            #j = jsn1[item]
+            #print('j ', j)
+
+            #x = jsn1['SPSyncServicesDataType'][0]['_name']
+            #print(x)
+
+#    ii = jsn2['SPPowerDataType'][1]['Battery Power']['Display Sleep Timer']
+#    print('ii is ' , str(ii))
+
+
+            #continue
+        else:
+            print('Not in List2', item)
+
 
     #WORK
     return True
 
 #----
 
+def jpaths(data):
 
-def checkList(ele, prefix):
+    L=[]
+
+    for element in data:
+        if (isinstance(data[element], dict)):
+            checkDict(data[element], element, L)
+            #checkDict(data[element], 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+str(element))
+        elif (isinstance(data[element], list)):
+            #checkList(data[element], element, L)
+            #checkList(data[element], 'LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL'+str(element))
+            #checkList(data[element], "['"+str(element)+"']", L)
+            checkList(data[element], str(element)+" ", L)
+
+    return L
+
+
+def checkList(ele, prefix, L):
     for i in range(len(ele)):
         if (isinstance(ele[i], list)):
-            checkList(ele[i], prefix+"["+str(i)+"]")
+            checkList(ele[i], prefix+"["+str(i)+"]", L)
         elif (isinstance(ele[i], str)):
-            printField(ele[i], prefix+"["+str(i)+"]")
+            printField(ele[i], prefix+"["+str(i)+"]", L)
         elif (isinstance(ele[i], int)):
-            printField(ele[i], prefix+"["+str(i)+"]")
+            printField(ele[i], prefix+"["+str(i)+"]", L)
         else:
-            checkDict(ele[i], prefix+"["+str(i)+"]")
+            checkDict(ele[i], prefix+"["+str(i)+"]", L)
 
-def checkDict(jsonObject, prefix):
+def checkDict(jsonObject, prefix, L):
     for ele in jsonObject:
         if (isinstance(jsonObject[ele], dict)):
-            checkDict(jsonObject[ele], prefix+"."+ele)
+            checkDict(jsonObject[ele], prefix+"['"+ele+"']", L)
 
         elif (isinstance(jsonObject[ele], list)):
-            checkList(jsonObject[ele], prefix+"."+ele)
+            checkList(jsonObject[ele], prefix+"['"+ele+"']", L)
 
         elif (isinstance(jsonObject[ele], str)):
-            printField(jsonObject[ele],  prefix+"."+ele)
+            printField(jsonObject[ele],  prefix+"['"+ele+"']", L)
 
         elif (isinstance(jsonObject[ele], int)):
-            printField(jsonObject[ele],  prefix+"."+str(ele))
+            printField(jsonObject[ele],  prefix+"['"+str(ele)+"']", L)
 
-def printField(ele, prefix):
+def printField(ele, prefix, L):
     #print(prefix, ":" , ele)
 
     if (isinstance(ele, str)):
-        print(prefix, ":" , 'str')
+        #print(prefix, ":" , 'str')
+        L.append(prefix)
     elif (isinstance(ele, int)):
-        print(prefix, ":" , 'int')
+        #print(prefix, ":" , 'int')
+        L.append(prefix)
+
+    return L
     #else:
     #    print(prefix, ":" , ele)
 
     #print(prefix, ":" , ele)
     #print(prefix, ":" , str(ele))
 
+#https://www.codementor.io/@simransinghal/working-with-json-data-in-python-165crbkiyk
 
 
 def id_generator(d):

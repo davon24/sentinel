@@ -1,0 +1,12 @@
+
+
+        #fix this later...
+        #detect-scan-net [ip/net]
+        #detect-scan ip
+        #list-detects [id]
+        #del-detect id
+        #clear-detects
+
+
+
+
