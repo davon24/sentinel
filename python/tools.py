@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1_feb_07-1'
+__version__ = '1.6.14-1_feb_07-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -1031,12 +1031,15 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
 
     ###############################
 
-    L1 = jpaths(jsn1)
-    L2 = jpaths(jsn2)
+    #L1 = jpaths(jsn1)
+    #L2 = jpaths(jsn2)
     #L3 = jpaths(d1)
 
-    print(len(L1))
-    print(len(L2))
+    D1 = jpaths(jsn1)
+    D2 = jpaths(jsn2)
+
+    print(len(D1))
+    print(len(D2))
     #print(len(L3))
 
     #res = [x for x in L1 + L2 if x not in L1 or x not in L2]
@@ -1061,20 +1064,28 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
     #    else:
     #        print('missing from List2', item)
 
-    for item in N1:
-        if item in N2:
+    for key in N1:
+        if key in N2.keys():
+
+            if N1[key] != N2[key]:
+                print(str(key) + ' differ')
+
             #print('both have')
             #js1 = 'jsn1' + str(item)
             #js2 = 'jsn2' + str(item)
             #print(js1)
 
             #print(type(item))
-            print(item)
-            print(item[0])
-           
+            #print(key)
+
+            #v1=N1[key]
+            #v2=N2[key]
+            #if v1 == v2:
+            #    print('same')
+            #else:
+            #    print('diff')
+
             #j = jsn1[item]
-
-
             #j = jsn1[item]
             #print('j ', j)
 
@@ -1087,7 +1098,8 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
 
             #continue
         else:
-            print('Not in List2', item)
+            #print('Not in List2', item)
+            print('Not in List2', key)
 
 
     #WORK
@@ -1097,57 +1109,59 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
 
 def jpaths(data):
 
-    L=[]
+    D={}
 
     for element in data:
         if (isinstance(data[element], dict)):
-            checkDict(data[element], element, L)
+            checkDict(data[element], element, D)
             #checkDict(data[element], 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+str(element))
         elif (isinstance(data[element], list)):
             #checkList(data[element], element, L)
             #checkList(data[element], 'LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL'+str(element))
-            #checkList(data[element], "['"+str(element)+"']", L)
-            checkList(data[element], str(element)+" ", L)
+            #checkList(data[element], str(element)+" ", D)
+            checkList(data[element], "['"+str(element)+"']", D)
 
-    return L
+    return D
 
 
-def checkList(ele, prefix, L):
+def checkList(ele, prefix, D):
     for i in range(len(ele)):
         if (isinstance(ele[i], list)):
-            checkList(ele[i], prefix+"["+str(i)+"]", L)
+            checkList(ele[i], prefix+"["+str(i)+"]", D)
         elif (isinstance(ele[i], str)):
-            printField(ele[i], prefix+"["+str(i)+"]", L)
+            printField(ele[i], prefix+"["+str(i)+"]", D)
         elif (isinstance(ele[i], int)):
-            printField(ele[i], prefix+"["+str(i)+"]", L)
+            printField(ele[i], prefix+"["+str(i)+"]", D)
         else:
-            checkDict(ele[i], prefix+"["+str(i)+"]", L)
+            checkDict(ele[i], prefix+"["+str(i)+"]", D)
 
-def checkDict(jsonObject, prefix, L):
+def checkDict(jsonObject, prefix, D):
     for ele in jsonObject:
         if (isinstance(jsonObject[ele], dict)):
-            checkDict(jsonObject[ele], prefix+"['"+ele+"']", L)
+            checkDict(jsonObject[ele], prefix+"['"+ele+"']", D)
 
         elif (isinstance(jsonObject[ele], list)):
-            checkList(jsonObject[ele], prefix+"['"+ele+"']", L)
+            checkList(jsonObject[ele], prefix+"['"+ele+"']", D)
 
         elif (isinstance(jsonObject[ele], str)):
-            printField(jsonObject[ele],  prefix+"['"+ele+"']", L)
+            printField(jsonObject[ele],  prefix+"['"+ele+"']", D)
 
         elif (isinstance(jsonObject[ele], int)):
-            printField(jsonObject[ele],  prefix+"['"+str(ele)+"']", L)
+            printField(jsonObject[ele],  prefix+"['"+str(ele)+"']", D)
 
-def printField(ele, prefix, L):
+def printField(ele, prefix, D):
     #print(prefix, ":" , ele)
 
     if (isinstance(ele, str)):
         #print(prefix, ":" , 'str')
-        L.append(prefix)
+        #L.append(prefix)
+        D[prefix]=ele
     elif (isinstance(ele, int)):
         #print(prefix, ":" , 'int')
-        L.append(prefix)
+        #L.append(prefix)
+        D[prefix]=ele
 
-    return L
+    return D
     #else:
     #    print(prefix, ":" , ele)
 
