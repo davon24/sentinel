@@ -158,7 +158,11 @@ def usage():
         del-system-profile-name name
         del-system-profile-rowid rowid
         clear-system-profile
+
         diff-system-profile-rowid rowid rowid
+        get-system-profile-data rowid data
+
+        #sentinel get-system-profile-data 1 "['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']"  
 
         tail file
         logstream
@@ -1152,6 +1156,13 @@ if __name__ == '__main__':
             rowid2 = sys.argv[3]
             diff = tools.diffSystemProfileIDs(rowid1, rowid2, db_store)
             print(diff)
+            sys.exit(0)
+
+        if sys.argv[1] == 'get-system-profile-data':
+            rowid = sys.argv[2]
+            data = sys.argv[3]
+            get = tools.getSystemProfileData(rowid, data, db_store)
+            print(get)
             sys.exit(0)
 
 

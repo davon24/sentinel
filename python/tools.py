@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1_feb_07-3'
+__version__ = '1.6.14-1_feb_07-4'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -830,17 +830,17 @@ def genSystemProfileMac(db_store):
     return update
 
 
-def ordered(obj):
-    if isinstance(obj, dict):
-        return sorted((k, ordered(v)) for k, v in obj.items())
-    if isinstance(obj, list):
-        return sorted(ordered(x) for x in obj)
-    else:
-        return obj
+#def ordered(obj):
+#    if isinstance(obj, dict):
+#        return sorted((k, ordered(v)) for k, v in obj.items())
+#    if isinstance(obj, list):
+#        return sorted(ordered(x) for x in obj)
+#    else:
+#        return obj
 
 
 def diffSystemProfileIDs(rowid1, rowid2, db_store):
-    print('dict.differ.time')
+    #print('dict.differ.time')
 
     row1 = store.getByID('system_profile', rowid1, db_store)
     dta1 = row1[3]
@@ -850,12 +850,9 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
     dta2 = row2[3]
     jsn2 = json.loads(dta2)
 
-
-    print('compare ', compare_object(jsn1, jsn2))
-
-    print('compareJson ', compareParsedJson(jsn1, jsn2))
-
-    print(contained(jsn1, jsn2))
+    #print('compare ', compare_object(jsn1, jsn2))
+    #print('compareJson ', compareParsedJson(jsn1, jsn2))
+    #print(contained(jsn1, jsn2))
 
     #print(checkDifference(jsn1,jsn2))
 
@@ -1023,8 +1020,8 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
     #SPAirPortDataType[0]['spairport_airport_interfaces'][0]['_name']
 
     #for item in parse(
-    print(len(jsn1))
-    print(len(jsn2))
+    #print(len(jsn1))
+    #print(len(jsn2))
     #d1 = dDct(jsn1, jsn2)
 #    print(len(d1))
 
@@ -1038,8 +1035,8 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
     D1 = jpaths(jsn1)
     D2 = jpaths(jsn2)
 
-    print(len(D1))
-    print(len(D2))
+    #print(len(D1))
+    #print(len(D2))
     #print(len(L3))
 
     #res = [x for x in L1 + L2 if x not in L1 or x not in L2]
@@ -1054,8 +1051,8 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
 
     N1 = jpaths(n1)
     N2 = jpaths(n2)
-    print(len(N1))
-    print(len(N2))
+    #print(len(N1))
+    #print(len(N2))
 
 
     #for item in L1:
@@ -1067,60 +1064,25 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
     D3={}
 
     for key in N1:
-        if key in N2.keys():
-
+        if key not in N2.keys():
+            D3[key]='<'
+        else:
             if N1[key] == N2[key]:
-                #print(str(key) + ' differ')
-                #print('differ ' +str(key))
-                #print(' x ' +str(key))
-                #D3[key]=' x'
                 D3[key]='='
             else:
                 D3[key]='x'
-                #D3[key]=' !'
 
-            #print('both have')
-            #js1 = 'jsn1' + str(item)
-            #js2 = 'jsn2' + str(item)
-            #print(js1)
-
-            #print(type(item))
-            #print(key)
-
-            #v1=N1[key]
-            #v2=N2[key]
-            #if v1 == v2:
-            #    print('same')
-            #else:
-            #    print('diff')
-
-            #j = jsn1[item]
-            #j = jsn1[item]
-            #print('j ', j)
-
-            #x = jsn1['SPSyncServicesDataType'][0]['_name']
-            #print(x)
-
-#    ii = jsn2['SPPowerDataType'][1]['Battery Power']['Display Sleep Timer']
-#    print('ii is ' , str(ii))
-
-
-            #continue
-        else:
-            #print('Not in List2', item)
-            #print('Not in List2', key)
-            #print('<-',key)
-            #D3[key]='<x'
-            D3[key]='<'
 
     for key in N2:
         if key not in N1.keys():
-            #D3[key]='->'
-            #D3[key]=' x>'
             D3[key]='>'
 
 
     for k,v in D3.items():
+        #if '=' in v:
+        #    continue
+            #print(k)
+
         print(v, k)
 
     #WORK
@@ -1204,47 +1166,47 @@ def printField(ele, prefix, D):
 #https://www.codementor.io/@simransinghal/working-with-json-data-in-python-165crbkiyk
 
 
-def id_generator(d):
-    for k, v in d.items():
-        if k == "_name":
-            yield v
-        elif isinstance(v, dict):
-            for id_val in id_generator(v):
-                yield id_val
-
-
-def recursion(dict):
-    for key, value in dict.items():
-        if type(value) == type(dict):
-            for key, value in value.items():
-                if isinstance (value,list):
-                    print(key)
-                        # place where I need to enter list comprehension?
-                if type(value) == type(dict):
-                    if key == "id":
-                        print(" id found " + value)
-                    if key != "id":
-                        print(key + " 1st level")
-                if key == "id":
-                    print(key)
-        else:
-            if key == "id":
-                print("id found " + value)
-
-
-
-def rObj(dct):
-
-    for k,v in dct.items():
-
-        if v == type(str):
-            return 'value_str'
-        if v == type(int):
-            return 'value_int'
-        if v == type(list):
-            return obj
-        if v == (dict):
-            return obj
+#def id_generator(d):
+#    for k, v in d.items():
+#        if k == "_name":
+#            yield v
+#        elif isinstance(v, dict):
+#            for id_val in id_generator(v):
+#                yield id_val
+#
+#
+#def recursion(dict):
+#    for key, value in dict.items():
+#        if type(value) == type(dict):
+#            for key, value in value.items():
+#                if isinstance (value,list):
+#                    print(key)
+#                        # place where I need to enter list comprehension?
+#                if type(value) == type(dict):
+#                    if key == "id":
+#                        print(" id found " + value)
+#                    if key != "id":
+#                        print(key + " 1st level")
+#                if key == "id":
+#                    print(key)
+#        else:
+#            if key == "id":
+#                print("id found " + value)
+#
+#
+#
+#def rObj(dct):
+#
+#    for k,v in dct.items():
+#
+#        if v == type(str):
+#            return 'value_str'
+#        if v == type(int):
+#            return 'value_int'
+#        if v == type(list):
+#            return obj
+#        if v == (dict):
+#            return obj
 
 
 def dDct(dct1, dct2):
@@ -1256,125 +1218,125 @@ def dDct(dct1, dct2):
     return d
 
 
-def checkDifference(orig,new):
-	diff = {}
-	if type(orig) != type(new):
-		#print "Type difference"
-		return True
-	else:
-		if type(orig) is dict and type(new) is dict:
-			#print "Types are both dicts"
-			##	Check each of these dicts from the key level
-			diffTest = False
-			for key in orig:
-				result = checkDifference(orig[key],new[key])
-				if result != False:	## Means a difference was found and returned
-					diffTest = True
-					#print "key/Values different: " + str(key)
-					diff[key] = result
-			##	And check for keys in second dataset that aren't in first
-			for key in new:
-				if key not in orig:
-					diff[key] = ("KeyNotFound", new[key])
-					diffTest = True
+#def checkDifference(orig,new):
+#	diff = {}
+#	if type(orig) != type(new):
+#		#print "Type difference"
+#		return True
+#	else:
+#		if type(orig) is dict and type(new) is dict:
+#			#print "Types are both dicts"
+#			##	Check each of these dicts from the key level
+#			diffTest = False
+#			for key in orig:
+#				result = checkDifference(orig[key],new[key])
+#				if result != False:	## Means a difference was found and returned
+#					diffTest = True
+#					#print "key/Values different: " + str(key)
+#					diff[key] = result
+#			##	And check for keys in second dataset that aren't in first
+#			for key in new:
+#				if key not in orig:
+#					diff[key] = ("KeyNotFound", new[key])
+#					diffTest = True
+#
+#			if diffTest:
+#				return diff
+#			else:
+#				return False
+#		else:
+#			#print "Types were not dicts, likely strings"
+#			if str(orig) == str(new):
+#				return False
+#			else:
+#				return (str(orig),str(new))
+#	return diff
 
-			if diffTest:
-				return diff
-			else:
-				return False
-		else:
-			#print "Types were not dicts, likely strings"
-			if str(orig) == str(new):
-				return False
-			else:
-				return (str(orig),str(new))
-	return diff
 
-
-def contained(a, b):
-    #""" checks if dictionary a is fully contained in b """
-    if not isinstance(a, dict):
-        return a == b
-    else:
-        return all(contained(v, b.get(k)) for k, v in a.items())
-
+#def contained(a, b):
+#    #""" checks if dictionary a is fully contained in b """
+#    if not isinstance(a, dict):
+#        return a == b
+#    else:
+#        return all(contained(v, b.get(k)) for k, v in a.items())
+#
 #print(contained(d1, d2))
 
 
-def compareJson(example_json_s, target_json_s):
- example_json = json.loads(example_json_s)
- target_json = json.loads(target_json_s)
- return compareParsedJson(example_json, target_json)
-
-def compareParsedJson(example_json, target_json):
- for x in example_json:
-   if type(example_json[x]) is not dict:
-     if not x in target_json or not example_json[x] == target_json[x]:
-       return False
-   else:
-     if x not in target_json or not compareParsedJson(example_json[x], target_json[x]):
-      return False
-
- return True
-
-
-def compare_object(a,b):
-    if type(a) != type(b):
-        return False
-    elif type(a) is dict:
-        return compare_dict(a,b)
-    elif type(a) is list:
-        return compare_list(a,b)
-    else:
-        return a == b
-
-def compare_dict(a,b):
-    if len(a) != len(b):
-        return False
-    else:
-        for k,v in a.items():
-            if not k in b:
-                return False
-            else:
-                if not compare_object(v, b[k]):
-                    return False
-    return True
-
-def compare_list(a,b):
-	if len(a) != len(b):
-		return False
-	else:
-		for i in range(len(a)):
-			if not compare_object(a[i], b[i]):
-				return False
-	return True
-
+#def compareJson(example_json_s, target_json_s):
+# example_json = json.loads(example_json_s)
+# target_json = json.loads(target_json_s)
+# return compareParsedJson(example_json, target_json)
+#
+#def compareParsedJson(example_json, target_json):
+# for x in example_json:
+#   if type(example_json[x]) is not dict:
+#     if not x in target_json or not example_json[x] == target_json[x]:
+#       return False
+#   else:
+#     if x not in target_json or not compareParsedJson(example_json[x], target_json[x]):
+#      return False
+#
+# return True
+#
+#
+#def compare_object(a,b):
+#    if type(a) != type(b):
+#        return False
+#    elif type(a) is dict:
+#        return compare_dict(a,b)
+#    elif type(a) is list:
+#        return compare_list(a,b)
+#    else:
+#        return a == b
+#
+#def compare_dict(a,b):
+#    if len(a) != len(b):
+#        return False
+#    else:
+#        for k,v in a.items():
+#            if not k in b:
+#                return False
+#            else:
+#                if not compare_object(v, b[k]):
+#                    return False
+#    return True
+#
+#def compare_list(a,b):
+#	if len(a) != len(b):
+#		return False
+#	else:
+#		for i in range(len(a)):
+#			if not compare_object(a[i], b[i]):
+#				return False
+#	return True
+#
 #print(compare_object(json_a, json_b)) 
 
-def recursively_parse_json(input_json, target_key):
-    #'target_key' must be unique key in the json tree
-    if type(input_json) is dict and input_json:
-        if key == target_key:
-            print(input_json[key])
-        for key in input_json:
-            recursively_parse_json(input_json[key], target_key)
-
-    elif type(input_json) is list and input_json:
-        for entity in input_json:
-            recursively_parse_json(entity, target_key)
-
-
-def item_generator(json_input, lookup_key):
-    if isinstance(json_input, dict):
-        for k, v in json_input.items():
-            if k == lookup_key:
-                yield v
-            else:
-                yield from item_generator(v, lookup_key)
-    elif isinstance(json_input, list):
-        for item in json_input:
-            yield from item_generator(item, lookup_key)
-
+#def recursively_parse_json(input_json, target_key):
+#    #'target_key' must be unique key in the json tree
+#    if type(input_json) is dict and input_json:
+#        if key == target_key:
+#            print(input_json[key])
+#        for key in input_json:
+#            recursively_parse_json(input_json[key], target_key)
+#
+#    elif type(input_json) is list and input_json:
+#        for entity in input_json:
+#            recursively_parse_json(entity, target_key)
+#
+#
+#def item_generator(json_input, lookup_key):
+#    if isinstance(json_input, dict):
+#        for k, v in json_input.items():
+#            if k == lookup_key:
+#                yield v
+#            else:
+#                yield from item_generator(v, lookup_key)
+#    elif isinstance(json_input, list):
+#        for item in json_input:
+#            yield from item_generator(item, lookup_key)
+#
 
 
 
@@ -1391,6 +1353,45 @@ def item_generator(json_input, lookup_key):
 #        for k,v in item.items():
 #            Dct[k]=v
 #    return Dct
+
+#----------------------------------------------------------------------------------------
+
+
+def getSystemProfileData(rowid, data, db_store):
+    
+     row = store.getByID('system_profile', rowid, db_store)
+
+     #print(row[0])
+     #print(row[1])
+     #print(row[2])
+     #print(row[3])
+
+     #"['SPSyncServicesDataType'][1]['_name']"
+
+     jsn = json.loads(row[3])
+     print(data)
+
+     v1 = 'SPStorageDataType'
+     v2 = 1
+     v3 = 'size_in_bytes'
+
+     L = [ v1, v2, v3 ]
+
+
+     #j = jsn[v1][v2][v3]
+     #j = jsn.get(v1, None).get(v2, None).get(v3, None)
+
+     #j = jsn['SPStorageDataType'][1]['size_in_bytes']
+
+
+     #j = jsn['SPSyncServicesDataType'][1]['_name']
+     #j = jsn['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']
+     print(j)
+
+
+
+
+
 
 #----------------------------------------------------------------------------------------
 
