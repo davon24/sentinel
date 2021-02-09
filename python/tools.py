@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1_feb_08-1'
+__version__ = '1.6.14-1_feb_09-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -1370,17 +1370,17 @@ def getSystemProfileData(rowid, data, db_store):
     #"['SPSyncServicesDataType'][1]['_name']"
 
     jsn = json.loads(row[3])
-    print(data)
+    #print(data)
 
-    v1 = 'SPSoftwareDataType'
-    v2 = 0
-    v3 = 'os_version'
+    #v1 = 'SPSoftwareDataType'
+    #v2 = 0
+    #v3 = 'os_version'
 
-    j = jsn[v1][v2][v3]
-    print(j)
+    #j = jsn[v1][v2][v3]
+    #print(j)
 
     #print('jsn type ' + str(type(jsn)))
-    print('--------------------------------------------')
+    #print('--------------------------------------------')
 
 
     #j = jsn.get(v1, None).get(v2, None).get(v3, None)
@@ -1398,10 +1398,9 @@ def getSystemProfileData(rowid, data, db_store):
     #v = getNestedDictVal(jsn, _path)
 
     v = getNestedDictVal(jsn, data)
-
-    print('v ' + str(v))
-
-    return True
+    #print('v ' + str(v))
+    #return True
+    return v
 
 
 
@@ -1411,9 +1410,9 @@ def getNestedDictVal(_json, _path):
     #print('_json type ' + str(type(_json)))
     #_path = "['SPSyncServicesDataType'][1]['_name']"
 
-    print(_path)
+    #print(_path)
 
-    print(len(_path), ' ', type(_path))
+    #print(len(_path), ' ', type(_path))
 
     #_path = _path.lstrip('[')
     #_path = _path.rstrip(']')
@@ -1422,8 +1421,8 @@ def getNestedDictVal(_json, _path):
 
     L = unPath(_path)
 
-    print(str(L))
-    print(len(L))
+    #print(str(L))
+    #print(len(L))
 
     #print(L[0])
 
