@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1_feb_07-4'
+__version__ = '1.6.14-1_feb_08-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -1359,39 +1359,152 @@ def dDct(dct1, dct2):
 
 def getSystemProfileData(rowid, data, db_store):
     
-     row = store.getByID('system_profile', rowid, db_store)
+    row = store.getByID('system_profile', rowid, db_store)
 
-     #print(row[0])
-     #print(row[1])
-     #print(row[2])
-     #print(row[3])
+    #print(row[0])
+    #print(row[1])
+    #print(row[2])
+    #print(row[3])
 
-     #"['SPSyncServicesDataType'][1]['_name']"
+    #L = [ v1, v2, v3 ]
+    #"['SPSyncServicesDataType'][1]['_name']"
 
-     jsn = json.loads(row[3])
-     print(data)
+    jsn = json.loads(row[3])
+    print(data)
 
-     v1 = 'SPStorageDataType'
-     v2 = 1
-     v3 = 'size_in_bytes'
+    v1 = 'SPSoftwareDataType'
+    v2 = 0
+    v3 = 'os_version'
 
-     L = [ v1, v2, v3 ]
+    j = jsn[v1][v2][v3]
+    print(j)
 
-
-     #j = jsn[v1][v2][v3]
-     #j = jsn.get(v1, None).get(v2, None).get(v3, None)
-
-     #j = jsn['SPStorageDataType'][1]['size_in_bytes']
-
-
-     #j = jsn['SPSyncServicesDataType'][1]['_name']
-     #j = jsn['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']
-     print(j)
+    #print('jsn type ' + str(type(jsn)))
+    print('--------------------------------------------')
 
 
+    #j = jsn.get(v1, None).get(v2, None).get(v3, None)
+
+    #j = jsn['SPStorageDataType'][1]['size_in_bytes']
+
+
+    #j = jsn['SPSyncServicesDataType'][1]['_name']
+    #j = jsn['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']
+
+    #return row
+    #return j
+
+    #_path = "['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']"
+    #v = getNestedDictVal(jsn, _path)
+
+    v = getNestedDictVal(jsn, data)
+
+    print('v ' + str(v))
+
+    return True
 
 
 
+def getNestedDictVal(_json, _path):
+    val = None
+
+    #print('_json type ' + str(type(_json)))
+    #_path = "['SPSyncServicesDataType'][1]['_name']"
+
+    print(_path)
+
+    print(len(_path), ' ', type(_path))
+
+    #_path = _path.lstrip('[')
+    #_path = _path.rstrip(']')
+    #L = _path.split('][')
+    #print('L _path ][ ' + str(type(L)) +' '+ str(L))
+
+    L = unPath(_path)
+
+    print(str(L))
+    print(len(L))
+
+    #print(L[0])
+
+    #val = _json[str(L[0])][int(L[1])][L[2]][L[3]]
+    #val = _json[L[0]][L[1]][L[2]][L[3]]
+
+    #try:
+    #    #val = _json[L[0]][L[1]][L[2]][L[3]]
+    #    val = _json[L[0]][L[1]][L[2]]
+    #except IndexError:
+    #    val = None
+
+    #val = _json[L[0]][L[1]][L[2]]
+    #val = _json[str(L)]
+
+    #for variable in L:
+    #    _json[variable] = eval(variable)
+
+    #val = _json[eval(_path)] #TypeError: string indices must be integers
+
+    #for i in range(len(L)):
+    #    print(' . ')
+
+    #_len = len(L)
+
+    #opt={
+    #        1: _json[L[0]],
+    #        2: _json[L[0]][L[1]],
+    #        3: _json[L[0]][L[1]][L[2]],
+    #        4: _json[L[0]][L[1]][L[2]][L[3]],
+    #}
+    #val = opt[len(L)]
+    # 3
+    # 4: _json[L[0]][L[1]][L[2]][L[3]] 
+    # IndexError: list index out of range
+
+
+    _len = len(L)
+
+    if _len == 1:
+        val = _json[L[0]]
+    elif _len == 2:
+        val = _json[L[0]][L[1]]
+    elif _len == 3:
+        val = _json[L[0]][L[1]][L[2]]
+    elif _len == 4:
+        val = _json[L[0]][L[1]][L[2]][L[3]]
+    else:
+        val = 'Error'
+
+
+
+    #v1 = 'SPSoftwareDataType'
+    #v2 = 0
+    #v3 = 'os_version'
+    #val = _json[v1][v2][v3]
+
+    return val
+
+def unPath(_path):
+    #['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']
+    _path = _path.lstrip("[")
+    _path = _path.rstrip("]")
+    L1 = _path.split("][")
+    L=[]
+    for item in L1:
+        #print('item', str(type(item)), ' ',  item)
+
+        if not item.startswith("'"):
+            #print(' oh an int, ...' + str(item))
+            L.append(int(item))
+        else:
+            #item.lstrip("'")
+            #item.rstrip("'")
+            #item = item.replace("'", "")
+            #print('item', str(type(item)), ' ',  item)
+
+            item = item.strip("'")
+            L.append(item)
+
+    return L
 
 #----------------------------------------------------------------------------------------
 
