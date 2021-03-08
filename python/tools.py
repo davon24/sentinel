@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.15-1.dev-20210307.1'
+__version__ = '1.6.15-1.dev-20210308.1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -610,7 +610,7 @@ def sklearnPredict(line, algoDct, skInitDct):
 
     return pDct
 
-def updategDictR(gDict, rule_hit, r, line, db_store,  verbose=False):
+def updategDictR(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
 
     for key in rule_hit:
 
@@ -628,7 +628,7 @@ def updategDictR(gDict, rule_hit, r, line, db_store,  verbose=False):
             r[b]=1
 
         _k = str(_r)+'-'+str(b)
-        _prom = 'config="watch-syslog",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(json.dumps(d)) + '"'
+        _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(json.dumps(d)) + '"'
         gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(r[b]) ]
 
         store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(r[b]), line, db_store)
@@ -637,7 +637,7 @@ def updategDictR(gDict, rule_hit, r, line, db_store,  verbose=False):
     return True
 
 
-def updategDictS(gDict, sklearn_hit, s, line, db_store, verbose=False):
+def updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose=False):
 
     for k,v in sklearn_hit.items():
 
@@ -656,7 +656,7 @@ def updategDictS(gDict, sklearn_hit, s, line, db_store, verbose=False):
 
         if '1' in _predict:
             _k = str(k)+'-'+str(b)
-            _prom = 'config="watch-syslog",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(_sample) + '"'
+            _prom = 'config="'+str(_key)+'",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(_sample) + '"'
             gDict[_k] = [ 'sentinel_watch_syslog_sklearn{' + _prom + '} ' +str(s[b])]
 
             store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(s[b]), line, db_store)
@@ -679,10 +679,10 @@ def sklearnInitAlgoDict(algoDct, db_store):
 
 
 
-def sentryLogStream(db_store, gDict, verbose=False):
-    logging.info('Sentry watch-syslog logstream ')
+def sentryLogStream(db_store, _key, gDict, verbose=False):
+    #logging.info('Sentry watch-syslog logstream ')
 
-    conf = store.getData('configs','watch-syslog', db_store)
+    conf = store.getData('configs', _key, db_store)
     if conf:
         config = json.loads(conf[0])
         logfile = config.get('logfile', None)
@@ -690,8 +690,9 @@ def sentryLogStream(db_store, gDict, verbose=False):
         sklearn = config.get('sklearn', None)
 
     if rules:
-        logging.info('Sentry watch-syslog expert_rules scope '+ str(rules))
-        rulesDct = getExpertRules('watch-syslog', db_store)
+        logging.info('Sentry '+str(_key)+' expert_rules scope '+ str(rules))
+        #rulesDct = getExpertRules('watch-syslog', db_store)
+        rulesDct = getExpertRules(_key, db_store)
 
     if sklearn:
         algoDct = getAlgoDict(sklearn)
@@ -707,11 +708,11 @@ def sentryLogStream(db_store, gDict, verbose=False):
 
         if rules:
             rule_hit = expertLogStreamRulesEngineGeneral(jline, rules, rulesDct)
-            if rule_hit: updategDictR(gDict, rule_hit, r, line, db_store, verbose)
+            if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, db_store, verbose)
 
         if sklearn:
             sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
-            if sklearn_hit: updategDictS(gDict, sklearn_hit, s, line, db_store, verbose)
+            if sklearn_hit: updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose)
 
     ##########################################################################
     return True
@@ -4090,6 +4091,7 @@ def sentryCleanup(db_store):
 
 
 def procHTTPServer(port, metric_path, db_file):
+    logging.info('Sentry start HTTPServer port: '+str(port)+' path: '+str(metric_path))
     global _metric_path
     _metric_path = metric_path
 
@@ -4105,6 +4107,12 @@ def procHTTPServer(port, metric_path, db_file):
     httpd = HTTPServer(('', port), HTTPHandler)
     return httpd.serve_forever()
 
+# function to return key for any value
+def get_key(_dct, val):
+    for key, value in _dct.items():
+         if val == value:
+             return key
+    return None #"key doesn't exist"
 
 def sentryMode(db_file, verbose=False):
 
@@ -4120,18 +4128,98 @@ def sentryMode(db_file, verbose=False):
 
     logging.info("Sentry Startup")
 
-
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
     scheduler.start()
 
     processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
     processor.start()
 
-    http_server = None
+    http_server = False
 
+    cDct={}
     configs = store.selectAll('configs', db_store)
     for config in configs:
-        print(config[0], config[1], config[2])
+        #print(config[0], config[1], config[2])
+        #jconfig = json.loads(config[2])
+        #config_ = jconfig.get('config', None)
+        config_ = json.loads(config[2])
+        cDct[config[0]] = config_.get('config', None)
+
+    for key,conf in cDct.items():
+
+        if conf == 'http_server':
+            http_server = True
+            _config = json.loads(store.getData('configs', key, db_store)[0])
+            _port = _config['port']
+            _metric_path = _config['path']
+
+        if conf == 'logstream':
+            tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, key, gDict, verbose))
+            tailer.start()
+
+            
+
+
+
+
+    #if 'http_server' in cDct.values():
+    #    print('http_server')
+
+    #cDct={}
+    #cLst=[]
+    #configs = store.selectAll('configs', db_store)
+    #for config in configs:
+        #print(config[0], config[1], config[2])
+        #confDct[config[0]] = json.loads(config[2])
+        #confDct[config[0]] = config[2]
+    #    jconfig = json.loads(config[2])
+    #    _config = jconfig.get('config', None)
+
+        #confDct[config[0]] = [ _config, config[2] ]
+        #confDct[config[0]] = config[2]
+        #confLst.append(_config)
+        
+        #cDct[config[0]] = _config
+    #    cDct[config[0]] = _config
+
+
+    #print(cDct)
+
+    #if 'http_server' in cDct.items():
+    #if 'http_server' in cDct.values():
+    #if 'http_server' in cDct:
+    #    print('http_server')
+        #print(get_key(cDct, 'http_server'))
+        #c = store.select('configs', db_store)
+
+
+
+
+
+    #for k,v in confDct.items():
+    #    print(k,v)
+
+    #if 'http_server' in confDct.items():
+    #    print('http_server Dct')
+
+#    configs = store.selectAll('configs', db_store)
+#    for config in configs:
+#        #print(config[0], config[1], config[2])
+#        #print(config[2].get('config', None))
+#        #print(config[2])
+#        jconf = json.loads(config[2])
+#        _config = jconf.get('config', None)
+#        #print(config)
+#
+#        if _config == 'http_server':
+#            http_server = True
+#            logging.info('config: http_server')
+#
+#            _port = jconf['port']
+#            global _metric_path
+#            _metric_path = jconf['path']
+#
+#            #print(str(_port), str(_metric_path))
 
 
     #    resin_watch = store.getData('configs', 'watch-resin-log', db_store)
@@ -4203,10 +4291,11 @@ def sentryMode(db_file, verbose=False):
             p.start()
             p.join()
         else:
+            signal.pause()
+
             #time.sleep(60)
             #time.sleep(-1)
             #ValueError: sleep length must be non-negative
-            signal.pause()
 
             #import asyncio
             #loop = asyncio.get_event_loop()

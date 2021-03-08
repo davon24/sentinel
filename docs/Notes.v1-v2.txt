@@ -1,0 +1,10 @@
+
+🍀 karl.rink@Karl-MacBook-Pro sentinel % sentinel list-configs
+('watch-syslog', '2021-02-05 19:37:13', '{"logfile":"stream","rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]}')
+True
+🍀 karl.rink@Karl-MacBook-Pro sentinel % sentinel list-rules  
+('watch-syslog-rule-1', '2021-02-05 20:11:38', '{"config":"watch-syslog","search":"Error","ignorecase":"False","data":["eventMessage","messageType","category"],"not":["NoError"]}')
+('watch-syslog-rule-2', '2021-02-05 19:37:35', '{"config":"watch-syslog","match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}')
+🍀 karl.rink@Karl-MacBook-Pro sentinel %
+
+

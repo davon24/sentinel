@@ -53,7 +53,7 @@ https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliN
 
 Configure the program to use these algorithms and "watch" the incoming syslog data.    
 ```
-sentinel update-config watch-syslog '{"logfile":"stream","sklearn":[{"naive_bayes.MultinomialNB":["eventMessage","messageType","category"]},{"naive_bayes.BernoulliNB":["eventMessage","messageType","category"]}]}'
+sentinel update-config watch-syslog-sklearn-1 '{"config":"logstream","logfile":"stream","sklearn":[{"naive_bayes.MultinomialNB":["eventMessage","messageType","category"]},{"naive_bayes.BernoulliNB":["eventMessage","messageType","category"]}]}'
 ```
 
 The data is in json format.  key/value pairs.     

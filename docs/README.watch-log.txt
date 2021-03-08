@@ -8,7 +8,12 @@ sentinel update-config watch-log-1 '{"config":"tail","type":"apache","format":"c
 
 sentinel update-config watch-log-2 '{"config":"tail","type":"mysql","format":"custom","logfile":"/tmp/mysql.log"}'
 
-sentinel update-config watch-log-3 '{"config":"logstream","type":"syslog","format":"json","logfile":"stream","scope":["eventMessage"}'
+sentinel update-config watch-log-3 '{"config":"logstream","logfile":"stream","rules":["eventMessage"]}'
+
+sentinel update-config watch-log-4 '{"config":"logstream","logfile":"stream","rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]}'
+
+sentinel update-config watch-log-5 '{"config":"logstream","logfile":"stream","sklearn":[{"naive_bayes.MultinomialNB":["eventMessage","messageType","category"]},{"naive_bayes.BernoulliNB":["eventMessage","messageType","category"]}]}'
+
 ```
 
 ```

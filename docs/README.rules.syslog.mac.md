@@ -13,7 +13,7 @@ https://en.wikipedia.org/wiki/Rule-based_system
 
 We'll start by setting the watch-syslog rules configuration    
 ```
-sentinel update-config watch-syslog '{"logfile":"stream","rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]}'
+sentinel update-config watch-syslog-rules-config-1 '{"config":"logstream","logfile":"stream","rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]}'
 ```
 
 The scope of the data is ["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]    
