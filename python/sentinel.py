@@ -162,7 +162,6 @@ def usage():
         diff-system-profile-rowid rowid rowid
         get-system-profile-data rowid data
 
-        #sentinel get-system-profile-data 1 "['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']"  
 
         tail file
         logstream
@@ -189,6 +188,7 @@ def usage():
 Version: {} '''.format(__version__))
 
 
+#sentinel get-system-profile-data 1 "['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']"  
 
 
 

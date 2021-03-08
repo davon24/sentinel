@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.14-1'
+__version__ = '1.6.15-1.dev-20210307.1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -44,7 +44,7 @@ sigterm = False
 
 class HTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == _metric_path:
+        if self.path == _metric_path: #/metrics
             self.send_response(200)
             self.send_header("Content-type", "text/plain; charset=utf-8")
             self.end_headers()
@@ -4122,76 +4122,83 @@ def sentryMode(db_file, verbose=False):
 
 
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
-    #scheduler.setDaemon(True)
     scheduler.start()
-    #runlist.append(scheduler)
 
     processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
     processor.start()
 
-    #confs = store.selectAll('configs', db_store)
-    #for conf in confs:
-    #    print(conf[0], conf[1], conf[2])
+    http_server = None
+
+    configs = store.selectAll('configs', db_store)
+    for config in configs:
+        print(config[0], config[1], config[2])
+
+
     #    resin_watch = store.getData('configs', 'watch-resin-log', db_store)
     #    watch = store.getData('configs', conf[0], db_store)
     #    jconf = json.loads(conf[0])
 
 
-    resin_watch = store.getData('configs', 'watch-resin-log', db_store)
-    if resin_watch:
-        resin_watch_config = json.loads(resin_watch[0])
-        _logfile = resin_watch_config['logfile']
-        _match   = resin_watch_config['match']
-        #resin_tailer = threading.Thread(target=sentryTailResinLog, args=(db_store, gDict, _logfile), name="ResinLogWatch")
-        #resin_tailer.setDaemon(True)
-        #resin_tailer.start()
-        resin_tailer = multiprocessing.Process(target=sentryTailResinLog, args=(db_store, gDict, _logfile))
-        resin_tailer.start()
-        #resin_tailer.join()
-        #runlist.append(resin_tailer)
+#
+#
+#    resin_watch = store.getData('configs', 'watch-resin-log', db_store)
+#    if resin_watch:
+#        resin_watch_config = json.loads(resin_watch[0])
+#        _logfile = resin_watch_config['logfile']
+#        _match   = resin_watch_config['match']
+#        #resin_tailer = threading.Thread(target=sentryTailResinLog, args=(db_store, gDict, _logfile), name="ResinLogWatch")
+#        #resin_tailer.setDaemon(True)
+#        #resin_tailer.start()
+#        resin_tailer = multiprocessing.Process(target=sentryTailResinLog, args=(db_store, gDict, _logfile))
+#        resin_tailer.start()
+#        #resin_tailer.join()
+#        #runlist.append(resin_tailer)
+#
+#    mariadb_watch = store.getData('configs', 'watch-mariadb-audit-log', db_store)
+#    if mariadb_watch:
+#        mariadb_watch_config = json.loads(mariadb_watch[0])
+#        _logfile = mariadb_watch_config['logfile']
+#        mariadb_tailer = multiprocessing.Process(target=sentryTailMariaDBAuditLog, args=(db_store, gDict, _logfile))
+#        mariadb_tailer.start()
+#        #mariadb_tailer.join()
+#        #runlist.append(mariadb_tailer)
+#
+#    ssh_watch = store.getData('configs', 'watch-ssh-linux-log', db_store)
+#    if ssh_watch:
+#        ssh_watch_config = json.loads(ssh_watch[0])
+#        _logfile  = ssh_watch_config['logfile']
+#        _thresh   = ssh_watch_config['thresh']
+#        _attempts = ssh_watch_config['attempts']
+#        _clear    = ssh_watch_config['clear']
+#        ssh_tailer = multiprocessing.Process(target=sentryIPSLinuxSSH, args=(db_store, gDict, _logfile))
+#        ssh_tailer.start()
+#        #ssh_tailer.join()
+#        #runlist.append(ssh_tailer)
+#
+#    syslog_watch = store.getData('configs', 'watch-syslog', db_store)
+#    if syslog_watch:
+#        #syslog_watch_config = json.loads(syslog_watch[0])
+#        #_search   = syslog_watch_config['search'] #KeyError:
+#        #_search   = syslog_watch_config.get('search', None)
+#
+#        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict, verbose))
+#        syslog_tailer.start()
+#        #syslog_tailer.join()
+#        #runlist.append(syslog_tailer)
+#
+#    prometheus_config = store.getData('configs', 'prometheus', db_store)
+#    #print(str(type(prometheus_config)) + ' prometheus_config ' + str(prometheus_config))
+#    if prometheus_config:
+#        prometheus_config = json.loads(prometheus_config[0])
+#        _port = prometheus_config['port']
+#        global _metric_path
+#        _metric_path = prometheus_config['path']
+#
 
-    mariadb_watch = store.getData('configs', 'watch-mariadb-audit-log', db_store)
-    if mariadb_watch:
-        mariadb_watch_config = json.loads(mariadb_watch[0])
-        _logfile = mariadb_watch_config['logfile']
-        mariadb_tailer = multiprocessing.Process(target=sentryTailMariaDBAuditLog, args=(db_store, gDict, _logfile))
-        mariadb_tailer.start()
-        #mariadb_tailer.join()
-        #runlist.append(mariadb_tailer)
-
-    ssh_watch = store.getData('configs', 'watch-ssh-linux-log', db_store)
-    if ssh_watch:
-        ssh_watch_config = json.loads(ssh_watch[0])
-        _logfile  = ssh_watch_config['logfile']
-        _thresh   = ssh_watch_config['thresh']
-        _attempts = ssh_watch_config['attempts']
-        _clear    = ssh_watch_config['clear']
-        ssh_tailer = multiprocessing.Process(target=sentryIPSLinuxSSH, args=(db_store, gDict, _logfile))
-        ssh_tailer.start()
-        #ssh_tailer.join()
-        #runlist.append(ssh_tailer)
-
-    syslog_watch = store.getData('configs', 'watch-syslog', db_store)
-    if syslog_watch:
-        #syslog_watch_config = json.loads(syslog_watch[0])
-        #_search   = syslog_watch_config['search'] #KeyError:
-        #_search   = syslog_watch_config.get('search', None)
-
-        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict, verbose))
-        syslog_tailer.start()
-        #syslog_tailer.join()
-        #runlist.append(syslog_tailer)
-
-    prometheus_config = store.getData('configs', 'prometheus', db_store)
-    #print(str(type(prometheus_config)) + ' prometheus_config ' + str(prometheus_config))
-    if prometheus_config:
-        prometheus_config = json.loads(prometheus_config[0])
-        _port = prometheus_config['port']
-        global _metric_path
-        _metric_path = prometheus_config['path']
 
     try:
-        if prometheus_config:
+        #if prometheus_config:
+        if http_server:
             p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
             p.start()
             p.join()
