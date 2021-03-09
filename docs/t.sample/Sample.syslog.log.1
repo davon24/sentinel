@@ -1,0 +1,116 @@
+
+Mar  6 01:21:01 prod-billing CRON[3365]: (nic-jira-bot) CMD (cd /opt/ninfo/scripts/reports; ./jira-link-epics)
+Mar  6 01:21:01 prod-billing CRON[3366]: (ninfo) CMD (/opt/ninfo/scripts/internal_partner.bash > /tmp/internal_partner.log 2>&1)
+Mar  6 01:22:02 prod-billing CRON[3384]: (ninfo) CMD (/opt/ninfo/scripts/hireology_scrape/run_hireology_scrape.bash > /opt/ninfo/scripts/hireology_scrape/run_hireology_scrape.log 2>&1)
+Mar  6 01:22:02 prod-billing CRON[3385]: (nic-jira-bot) CMD (cd /opt/ninfo/scripts/reports; ./jira-link-epics)
+Mar  6 01:22:06 prod-billing kernel: [3321214.341409] VM Thread invoked oom-killer: gfp_mask=0x14280ca(GFP_HIGHUSER_MOVABLE|__GFP_ZERO), nodemask=(null), order=0, oom_score_adj=0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341410] VM Thread cpuset=/ mems_allowed=0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341423] CPU: 3 PID: 25076 Comm: VM Thread Not tainted 4.15.0-118-generic #119-Ubuntu
+Mar  6 01:22:06 prod-billing kernel: [3321214.341424] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.10.2-1ubuntu1 04/01/2014
+Mar  6 01:22:06 prod-billing kernel: [3321214.341425] Call Trace:
+Mar  6 01:22:06 prod-billing kernel: [3321214.341476]  dump_stack+0x6d/0x8e
+Mar  6 01:22:06 prod-billing kernel: [3321214.341495]  dump_header+0x71/0x285
+Mar  6 01:22:06 prod-billing kernel: [3321214.341509]  ? security_capable+0x51/0x70
+Mar  6 01:22:06 prod-billing kernel: [3321214.341511]  oom_kill_process+0x21f/0x420
+Mar  6 01:22:06 prod-billing kernel: [3321214.341513]  out_of_memory+0x116/0x4e0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341520]  __alloc_pages_slowpath+0xa53/0xe00
+Mar  6 01:22:06 prod-billing kernel: [3321214.341523]  __alloc_pages_nodemask+0x29a/0x2c0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341528]  alloc_pages_vma+0x88/0x1f0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341535]  __handle_mm_fault+0x8b7/0x1290
+Mar  6 01:22:06 prod-billing kernel: [3321214.341537]  handle_mm_fault+0xb1/0x210
+Mar  6 01:22:06 prod-billing kernel: [3321214.341550]  __do_page_fault+0x281/0x4b0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341555]  ? __schedule+0x256/0x880
+Mar  6 01:22:06 prod-billing kernel: [3321214.341557]  do_page_fault+0x2e/0xe0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341563]  ? async_page_fault+0x2f/0x50
+Mar  6 01:22:06 prod-billing kernel: [3321214.341571]  do_async_page_fault+0x51/0x80
+Mar  6 01:22:06 prod-billing kernel: [3321214.341572]  async_page_fault+0x45/0x50
+Mar  6 01:22:06 prod-billing kernel: [3321214.341578] RIP: 0033:0x7feef9e439d3
+Mar  6 01:22:06 prod-billing kernel: [3321214.341579] RSP: 002b:00007feed65e4998 EFLAGS: 00010202
+Mar  6 01:22:06 prod-billing kernel: [3321214.341581] RAX: 00007fe9727ff010 RBX: 000000000000000a RCX: 00007fe995fde000
+Mar  6 01:22:06 prod-billing kernel: [3321214.341582] RDX: 00007fe997fff080 RSI: 0000000000000000 RDI: 00007fe9727ff010
+Mar  6 01:22:06 prod-billing kernel: [3321214.341582] RBP: 00007feed65e4a20 R08: 0000000000000000 R09: 0000000000000000
+Mar  6 01:22:06 prod-billing kernel: [3321214.341583] R10: 0000000000000022 R11: 0000000000000246 R12: 00007fee1c05dcb0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341584] R13: 0000000004b00013 R14: 0000000000000001 R15: 00007fe9727ff010
+Mar  6 01:22:06 prod-billing kernel: [3321214.341585] Mem-Info:
+Mar  6 01:22:06 prod-billing kernel: [3321214.341589] active_anon:5586525 inactive_anon:435979 isolated_anon:32
+Mar  6 01:22:06 prod-billing kernel: [3321214.341589]  active_file:149 inactive_file:84 isolated_file:0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341589]  unevictable:1 dirty:0 writeback:81 unstable:0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341589]  slab_reclaimable:19065 slab_unreclaimable:33166
+Mar  6 01:22:06 prod-billing kernel: [3321214.341589]  mapped:166 shmem:8 pagetables:19874 bounce:0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341589]  free:41929 free_pcp:0 free_cma:0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341592] Node 0 active_anon:22346100kB inactive_anon:1743916kB active_file:596kB inactive_file:336kB unevictable:4kB isolated(anon):128kB isolated(file):0kB mapped:664kB dirty:0kB writeback:324kB shmem:32kB shmem_thp: 0kB shmem_pmdmapped: 0kB anon_thp: 2048kB writeback_tmp:0kB unstable:0kB all_unreclaimable? no
+Mar  6 01:22:06 prod-billing kernel: [3321214.341592] Node 0 DMA free:15908kB min:40kB low:52kB high:64kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB writepending:0kB present:15992kB managed:15908kB mlocked:0kB kernel_stack:0kB pagetables:0kB bounce:0kB free_pcp:0kB local_pcp:0kB free_cma:0kB
+Mar  6 01:22:06 prod-billing kernel: [3321214.341604] lowmem_reserve[]: 0 2991 24087 24087 24087
+Mar  6 01:22:06 prod-billing kernel: [3321214.341606] Node 0 DMA32 free:92596kB min:8252kB low:11256kB high:14260kB active_anon:2767148kB inactive_anon:170352kB active_file:444kB inactive_file:84kB unevictable:0kB writepending:0kB present:3129200kB managed:3063632kB mlocked:0kB kernel_stack:800kB pagetables:6536kB bounce:0kB free_pcp:0kB local_pcp:0kB free_cma:0kB
+Mar  6 01:22:06 prod-billing kernel: [3321214.341609] lowmem_reserve[]: 0 0 21095 21095 21095
+Mar  6 01:22:06 prod-billing kernel: [3321214.341610] Node 0 Normal free:59212kB min:59284kB low:80876kB high:102468kB active_anon:19578632kB inactive_anon:1573496kB active_file:812kB inactive_file:848kB unevictable:4kB writepending:176kB present:22020096kB managed:21602284kB mlocked:4kB kernel_stack:23648kB pagetables:72960kB bounce:0kB free_pcp:0kB local_pcp:0kB free_cma:0kB
+Mar  6 01:22:06 prod-billing kernel: [3321214.341613] lowmem_reserve[]: 0 0 0 0 0
+Mar  6 01:22:06 prod-billing kernel: [3321214.341615] Node 0 DMA: 1*4kB (U) 0*8kB 0*16kB 1*32kB (U) 2*64kB (U) 1*128kB (U) 1*256kB (U) 0*512kB 1*1024kB (U) 1*2048kB (M) 3*4096kB (M) = 15908kB
+Mar  6 01:22:06 prod-billing kernel: [3321214.341621] Node 0 DMA32: 348*4kB (UME) 307*8kB (UME) 357*16kB (UME) 332*32kB (UME) 187*64kB (UME) 122*128kB (UE) 95*256kB (UME) 25*512kB (UME) 6*1024kB (UM) 1*2048kB (H) 0*4096kB = 93080kB
+Mar  6 01:22:06 prod-billing kernel: [3321214.341627] Node 0 Normal: 346*4kB (UME) 250*8kB (UME) 138*16kB (UME) 159*32kB (UME) 96*64kB (UME) 52*128kB (UME) 10*256kB (UME) 22*512kB (ME) 22*1024kB (UM) 0*2048kB 0*4096kB = 59832kB
+Mar  6 01:22:06 prod-billing kernel: [3321214.341641] Node 0 hugepages_total=0 hugepages_free=0 hugepages_surp=0 hugepages_size=2048kB
+Mar  6 01:22:06 prod-billing kernel: [3321214.341642] 10472 total pagecache pages
+Mar  6 01:22:06 prod-billing kernel: [3321214.341646] 10143 pages in swap cache
+Mar  6 01:22:06 prod-billing kernel: [3321214.341648] Swap cache stats: add 287574853, delete 287533369, find 133408236/211321948
+Mar  6 01:22:06 prod-billing kernel: [3321214.341648] Free swap  = 0kB
+Mar  6 01:22:06 prod-billing kernel: [3321214.341649] Total swap = 10485756kB
+Mar  6 01:22:06 prod-billing kernel: [3321214.341649] 6291322 pages RAM
+Mar  6 01:22:06 prod-billing kernel: [3321214.341650] 0 pages HighMem/MovableOnly
+Mar  6 01:22:06 prod-billing kernel: [3321214.341650] 120866 pages reserved
+Mar  6 01:22:06 prod-billing kernel: [3321214.341650] 0 pages cma reserved
+Mar  6 01:22:06 prod-billing kernel: [3321214.341651] 0 pages hwpoisoned
+Mar  6 01:22:06 prod-billing kernel: [3321214.341652] [ pid ]   uid  tgid total_vm      rss pgtables_bytes swapents oom_score_adj name
+Mar  6 01:22:06 prod-billing kernel: [3321214.341656] [  435]     0   435    61383     1117   471040     1919             0 systemd-journal
+Mar  6 01:22:06 prod-billing kernel: [3321214.341657] [  455]     0   455    24427        0   102400       45             0 lvmetad
+Mar  6 01:22:06 prod-billing kernel: [3321214.341659] [  464]     0   464    11460       17   118784      369         -1000 systemd-udevd
+Mar  6 01:22:06 prod-billing kernel: [3321214.341660] [  729]   100   729    17968       25   180224      151             0 systemd-network
+Mar  6 01:22:06 prod-billing kernel: [3321214.341661] [  745]   101   745    17664       17   176128      138             0 systemd-resolve
+Mar  6 01:22:06 prod-billing kernel: [3321214.341663] [  827]     0   827    42275        9   233472     1937             0 networkd-dispat
+Mar  6 01:22:06 prod-billing kernel: [3321214.341664] [  844]     0   844    95670        0   118784      217             0 lxcfs
+Mar  6 01:22:06 prod-billing kernel: [3321214.341665] [  848]     0   848    71649       10   196608      333             0 accounts-daemon
+Mar  6 01:22:06 prod-billing kernel: [3321214.341666] [  855]     0   855     7540       26   102400       65             0 cron
+Mar  6 01:22:06 prod-billing kernel: [3321214.341667] [  881]     0   881    17765       27   176128      287             0 systemd-logind
+Mar  6 01:22:06 prod-billing kernel: [3321214.341669] [  888]   102   888    65760       41   159744      394             0 rsyslogd
+Mar  6 01:22:06 prod-billing kernel: [3321214.341670] [  891]    86   891    28888       38   135168     1646             0 python2
+Mar  6 01:22:06 prod-billing kernel: [3321214.341671] [  904]     0   904    27624       33   118784       67             0 irqbalance
+Mar  6 01:22:06 prod-billing kernel: [3321214.341672] [  927]   113   927     6905       25    98304       62             0 chronyd
+Mar  6 01:22:06 prod-billing kernel: [3321214.341675] [  930]     0   930     7083        0   102400       55             0 atd
+Mar  6 01:22:06 prod-billing kernel: [3321214.341677] [  936]   103   936    12516        0   143360      183          -900 dbus-daemon
+Mar  6 01:22:06 prod-billing kernel: [3321214.341679] [ 1027]    86  1027     1553        0    53248       29             0 tail
+Mar  6 01:22:06 prod-billing kernel: [3321214.341684] [ 1036]     0  1036    23023       17   233472     1674             0 apache2
+Mar  6 01:22:06 prod-billing kernel: [3321214.341686] [ 1157]     0  1157    72221        0   204800      282             0 polkitd
+Mar  6 01:22:06 prod-billing kernel: [3321214.341687] [ 1178]     0  1178     1132        0    53248       19             0 rinetd
+Mar  6 01:22:06 prod-billing kernel: [3321214.341688] [ 1193]     0  1193     3722        4    69632       29             0 agetty
+Mar  6 01:22:06 prod-billing kernel: [3321214.341689] [ 1238]     0  1238    12519      831   139264     1206             0 python2
+Mar  6 01:22:06 prod-billing kernel: [3321214.341691] [ 1269]    87  1269  3037605    47613  3006464    92695             0 java
+Mar  6 01:22:06 prod-billing kernel: [3321214.341692] [ 1426]     0  1426    16845       31   118784       93             0 master
+Mar  6 01:22:06 prod-billing kernel: [3321214.341693] [ 1431]   112  1431    18614      107   139264      179             0 qmgr
+Mar  6 01:22:06 prod-billing kernel: [3321214.341694] [ 1666]   112  1666    21931        0   163840      225             0 tlsmgr
+Mar  6 01:22:06 prod-billing kernel: [3321214.341696] [ 4148]  2000  4148    23006        0    86016       94             0 gpg-agent
+Mar  6 01:22:06 prod-billing kernel: [3321214.341697] [ 2151]     0  2151   402866     1190   335872      993             0 jumpcloud-agent
+Mar  6 01:22:06 prod-billing kernel: [3321214.341701] [ 2217]     0  2217    18076       15   176128      178         -1000 sshd
+Mar  6 01:22:06 prod-billing kernel: [3321214.341702] [ 5275]     0  5275   436757      976   360448     2254          -900 snapd
+Mar  6 01:22:06 prod-billing kernel: [3321214.341704] [10236]     0 10236  1245251      103   770048    19801             0 java
+Mar  6 01:22:06 prod-billing kernel: [3321214.341705] [25066]    86 25066 10528294  5927741 70787072  2477888             0 java
+Mar  6 01:22:06 prod-billing kernel: [3321214.341707] [25651]     0 25651     3282        0    73728       35             0 rotatelogs
+Mar  6 01:22:06 prod-billing kernel: [3321214.341708] [25652]     0 25652     3282        0    69632       35             0 rotatelogs
+Mar  6 01:22:06 prod-billing kernel: [3321214.341709] [25653]     0 25653     5782        0    86016       49             0 logger_long
+Mar  6 01:22:06 prod-billing kernel: [3321214.341710] [25654]     0 25654     4224        0    77824       84             0 perl
+Mar  6 01:22:06 prod-billing kernel: [3321214.341711] [25655]     0 25655     4224        0    77824       87             0 perl
+Mar  6 01:22:06 prod-billing kernel: [3321214.341712] [25656]    33 25656   522515        8   471040     1865             0 apache2
+Mar  6 01:22:06 prod-billing kernel: [3321214.341714] [25657]    33 25657   506131        8   471040     1862             0 apache2
+Mar  6 01:22:06 prod-billing kernel: [3321214.341715] [ 6820]   112  6820    18453        2   135168      128             0 pickup
+Mar  6 01:22:06 prod-billing kernel: [3321214.341716] [15872]     0 15872    14383        0   159744      134             0 cron
+Mar  6 01:22:06 prod-billing kernel: [3321214.341717] [15874]  2000 15874     1157        0    53248       23             0 sh
+Mar  6 01:22:06 prod-billing kernel: [3321214.341719] [15876]  2000 15876     2898        4    65536       65             0 onesignal_fetch
+Mar  6 01:22:06 prod-billing kernel: [3321214.341720] [ 2990]  2000  2990     1544        0    53248       21             0 sleep
+Mar  6 01:22:06 prod-billing kernel: [3321214.341721] [ 3361]   112  3361    18452      122   131072        0             0 scache
+Mar  6 01:22:06 prod-billing kernel: [3321214.341722] [ 3383]     0  3383    14383       91   159744       41             0 cron
+Mar  6 01:22:06 prod-billing kernel: [3321214.341723] [ 3384]  2000  3384     1157       17    57344        0             0 sh
+Mar  6 01:22:06 prod-billing kernel: [3321214.341725] [ 3387]  2000  3387     2898       58    69632        0             0 run_hireology_s
+Mar  6 01:22:06 prod-billing kernel: [3321214.341726] [ 3389]  2000  3389    19278     4891   196608        0             0 perl
+Mar  6 01:22:06 prod-billing kernel: [3321214.341727] Out of memory: Kill process 25066 (java) score 958 or sacrifice child
+Mar  6 01:22:06 prod-billing kernel: [3321214.342937] Killed process 25066 (java) total-vm:42113176kB, anon-rss:23710964kB, file-rss:0kB, shmem-rss:0kB
+Mar  6 01:22:07 prod-billing kernel: [3321215.852609] oom_reaper: reaped process 25066 (java), now anon-rss:0kB, file-rss:0kB, shmem-rss:0kB
+Mar  6 01:22:08 prod-billing watchdog-notifier.py[891]: Mar 06 01:22:08 prod-billing watchdog-notifier.py INFO: [2021/03/06 01:22:07.897] {watchdog-app-0} Watchdog starting Resin[app-0]
+

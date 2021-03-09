@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.15-1.dev-20210308.2'
+__version__ = '1.6.15-1.dev-20210308.3'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -454,7 +454,7 @@ def expertLogStreamRulesEngineGeneralJson(jline, keys, rulesDict):
 
 def expertLogStreamRulesEngineGeneralStr(line, _format, rulesDict):
 
-    print(str(_format))
+    #print(str(_format))
 
     h={}
     ######################################################################
@@ -476,11 +476,46 @@ def expertLogStreamRulesEngineGeneralStr(line, _format, rulesDict):
         #    b = b2checksum(str(jline))
 
         #print('_rules ..... ' +str(_rules))
-        print('_format ..... ' +str(_format))
+        #print('_format ..... ' +str(_format))
+
+        #print('_format is... ' + str(_format))
+        if _format == 'clf':
+            line = line.split('verbose-access:')
+
+            #print(line[0])
+            #print(line[1])
+
+            line = line[1].split('"-"')[1]
+
+            #print('line '+ str(line[1]))
+            #print('line '+ str(line))
+            #print(line)
+
+            vl = line.split(' ')
+
+            http_method      = vl[3].lstrip('"')
+            req_resource     = vl[4]
+            http_version     = vl[5].rstrip('"')
+            http_status_code = vl[6]
+            bytes_sent       = vl[7]
+
+            x = vl[8:]
+
+
+            print(http_method, req_resource, http_version, http_status_code, bytes_sent)
+            print('      ', x)
+
+            vline = http_method +' '+req_resource+' '+ http_version+' '+ http_status_code+' '+ bytes_sent
+
+
+
+
+
 
         #WORKING.MARK.HERE
 
-        data = line
+        #data = line[1]
+        data = vline
         b = b2checksum(data)
 
         _k = str(_r) +'-'+ str(b)
@@ -490,6 +525,8 @@ def expertLogStreamRulesEngineGeneralStr(line, _format, rulesDict):
         _not    = jrules.get('not', None)
         _pass   = jrules.get('pass', None)
         _ignorecase = jrules.get('ignorecase', None)
+        _format = jrules.get('format', None)
+
 
 
         if _match:
@@ -793,7 +830,6 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
 
     if rules:
         logging.info('Sentry '+str(_key)+' expert_rules scope '+ str(rules))
-        #rulesDct = getExpertRules('watch-syslog', db_store)
         rulesDct = getExpertRules(_key, db_store)
 
     if sklearn:
