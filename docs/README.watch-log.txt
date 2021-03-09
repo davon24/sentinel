@@ -4,9 +4,9 @@ MacOS eventMessage
 
 
 ```  
-sentinel update-config watch-log-1 '{"config":"tail","type":"apache","format":"clf","logfile":"/tmp/apache2.log"}'
+sentinel update-config watch-log-1 '{"config":"tail","type":"apache","format":"clf","logfile":"/tmp/apache2.log","rules":["line"]}'
 
-sentinel update-config watch-log-2 '{"config":"tail","type":"mysql","format":"custom","logfile":"/tmp/mysql.log"}'
+sentinel update-config watch-log-2 '{"config":"tail","type":"mysql","format":"custom","logfile":"/tmp/mysql.log","rules":["line"]}'
 
 sentinel update-config watch-log-3 '{"config":"logstream","logfile":"stream","rules":["eventMessage"]}'
 
@@ -17,9 +17,9 @@ sentinel update-config watch-log-5 '{"config":"logstream","logfile":"stream","sk
 ```
 
 ```
-sentinel update-rule watch-log-apache-rule-1 '{"config":"watch-log-1","search":"error","data":[]}'
+sentinel update-rule watch-log-apache-rule-1 '{"config":"watch-log-1","search":"error"}'
 
-sentinel update-rule watch-log-mysql-rule-1 '{"config":"watch-log-2","search":"error","data":[]}'
+sentinel update-rule watch-log-mysql-rule-1 '{"config":"watch-log-2","search":"error"}'
 
 sentinel update-rule watch-log-logstream-rule-1 '{"config":"watch-log-3","search":"error","data":["eventMessage"]}'
 ```

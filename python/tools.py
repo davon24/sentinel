@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.15-1.dev-20210308.1'
+__version__ = '1.6.15-1.dev-20210308.2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -365,7 +365,7 @@ def getKeysDict(keys, jline):
             keysDct[key] = jline[key]
     return keysDct
 
-def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
+def expertLogStreamRulesEngineGeneralJson(jline, keys, rulesDict):
 
     h={}
     ######################################################################
@@ -451,6 +451,108 @@ def expertLogStreamRulesEngineGeneral(jline, keys, rulesDict):
 #    for k,v in h.items():
 #        #print(k,v)
     return h
+
+def expertLogStreamRulesEngineGeneralStr(line, _format, rulesDict):
+
+    print(str(_format))
+
+    h={}
+    ######################################################################
+    # process each rule one at a time
+    for _r,v in rulesDict.items():
+
+        jrules = json.loads(v)
+
+        #_data = jrules.get('data', None)
+        #if _data:
+        #    data = concatJsnData(_data, json.dumps(jline))
+        #else:
+        #    data = None
+
+        #data = line
+        #if data:
+        #    b = b2checksum(data)
+        #else:
+        #    b = b2checksum(str(jline))
+
+        #print('_rules ..... ' +str(_rules))
+        print('_format ..... ' +str(_format))
+
+        #WORKING.MARK.HERE
+
+        data = line
+        b = b2checksum(data)
+
+        _k = str(_r) +'-'+ str(b)
+
+        _search = jrules.get('search', None)
+        _match  = jrules.get('match', None)
+        _not    = jrules.get('not', None)
+        _pass   = jrules.get('pass', None)
+        _ignorecase = jrules.get('ignorecase', None)
+
+
+        if _match:
+
+            d1 = extractLstDct(_match)
+            d2 = jline
+            d3 = {}
+
+            for key in d1:
+                if key in d2:
+                    if d1[key] == d2[key]:
+                        d3[key] = d1[key]
+
+            if d1 == d3: #print('match ', d3)
+                h[_k] = [_r,b,line]
+
+        if _search and data:
+
+            if _ignorecase == 'False':
+                #ignorecase='0'
+                ignorecase=None
+                re_search = re.compile(_search)
+            else:
+                #print('ignorecase')
+                ignorecase='re.IGNORECASE'
+                re_search = re.compile(_search, re.IGNORECASE)
+
+           #re.IGNORECASE
+            #if re.search(_search, data, flags=ignorecase):
+            if re_search.search(data):
+                #h[_k] = [_r,b,seen,s[b],data]
+                h[_k] = [_r,b,data]
+
+                if _not:
+                    for no in _not:
+                        #if no in data:
+
+                        if ignorecase:
+                            if no.lower() in data.lower(): #ignorecase
+                                h.pop(_k, None)
+                                #if h.pop(_k, None):
+                                #    print('   _not this one...', _k, ' ', data)
+                        else:
+                            if no in data:
+                                h.pop(_k, None)
+        #else:
+        #    print('no.search.no.data ',_r, ' ', str(_search), ' ' , str(data))
+
+        if _pass:
+            for p in _pass:
+                __k = str(_r) +'-'+ str(p)
+                h.pop(__k, None)
+                #if h.pop(__k, None):
+                #    print('   _pass this one...', __k, ' ', data)
+
+    #####################################################################
+#    for k,v in h.items():
+#        #print(k,v)
+    return h
+
+
+
+
 
 def getExpertRules(config, db_store):
     rulesDict = {}
@@ -707,7 +809,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
         jline = json.loads(line)
 
         if rules:
-            rule_hit = expertLogStreamRulesEngineGeneral(jline, rules, rulesDct)
+            rule_hit = expertLogStreamRulesEngineGeneralJson(jline, rules, rulesDct)
             if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, db_store, verbose)
 
         if sklearn:
@@ -1507,9 +1609,49 @@ def unPath(_path):
     return L
 
 #----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 
 
+def sentryLogTail(db_store, key, gDict, verbose=False):
 
+    _config  = json.loads(store.getData('configs', key, db_store)[0]).get('config', None)
+    _logfile = json.loads(store.getData('configs', key, db_store)[0]).get('logfile', None)
+    _type    = json.loads(store.getData('configs', key, db_store)[0]).get('type', None)
+    _format  = json.loads(store.getData('configs', key, db_store)[0]).get('format', None)
+
+    _rules   = json.loads(store.getData('configs', key, db_store)[0]).get('rules', None)
+    _sklearn = json.loads(store.getData('configs', key, db_store)[0]).get('sklearn', None)
+
+
+    #logging.info('Sentry TailLog ' + str(_logfile))
+
+    if _rules:
+        logging.info('Sentry '+str(key)+' expert_rules scope '+ str(_rules))
+        rulesDct = getExpertRules(key, db_store)
+
+    if _sklearn:
+        algoDct = getAlgoDict(_sklearn)
+        skInitDct = sklearnInitAlgoDict(algoDct, db_store)
+
+    r={}
+    s={}
+
+    for line in tail(_logfile):
+        #line = line.decode('utf-8').strip('\n')
+        line = line.decode('utf-8')
+        #print(line)
+
+        if _rules: 
+            #rule_hit = expertLogStreamRulesEngineGeneralStr(line, _rules, rulesDct)
+            rule_hit = expertLogStreamRulesEngineGeneralStr(line, _format, rulesDct)
+            if rule_hit: updategDictR(key, gDict, rule_hit, r, line, db_store, verbose)
+
+        if _sklearn:
+            sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
+            if sklearn_hit: updategDictS(key, gDict, sklearn_hit, s, line, db_store, verbose)
+
+
+    return True
 
 def sentryTailResinLog(db_store, gDict, _file):
 
@@ -4140,8 +4282,6 @@ def sentryMode(db_file, verbose=False):
     configs = store.selectAll('configs', db_store)
     for config in configs:
         #print(config[0], config[1], config[2])
-        #jconfig = json.loads(config[2])
-        #config_ = jconfig.get('config', None)
         config_ = json.loads(config[2])
         cDct[config[0]] = config_.get('config', None)
 
@@ -4155,6 +4295,10 @@ def sentryMode(db_file, verbose=False):
 
         if conf == 'logstream':
             tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, key, gDict, verbose))
+            tailer.start()
+
+        if conf == 'tail':
+            tailer = multiprocessing.Process(target=sentryLogTail, args=(db_store, key, gDict, verbose))
             tailer.start()
 
             
