@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.15-1.dev-20210308.3'
+__version__ = '1.6.15-1.dev-20210309.1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -464,12 +464,12 @@ def expertLogStreamRulesEngineGeneralStr(line, _format, rulesDict):
         jrules = json.loads(v)
 
         #_data = jrules.get('data', None)
+        #
         #if _data:
         #    data = concatJsnData(_data, json.dumps(jline))
         #else:
         #    data = None
-
-        #data = line
+        #
         #if data:
         #    b = b2checksum(data)
         #else:
@@ -478,44 +478,80 @@ def expertLogStreamRulesEngineGeneralStr(line, _format, rulesDict):
         #print('_rules ..... ' +str(_rules))
         #print('_format ..... ' +str(_format))
 
-        #print('_format is... ' + str(_format))
-        if _format == 'clf':
-            line = line.split('verbose-access:')
+        if _format == 'verbose-access':
 
-            #print(line[0])
-            #print(line[1])
+            #regex = '([(\d\.)]+) - - \[(.*?)\] "(.*?)" (\d+) - "(.*?)" "(.*?)"'
+            #_tuple = re.match(regex, line).group()
+            #_tuple = re.match(regex, line)
+            #print(str(_tuple))
 
-            line = line[1].split('"-"')[1]
+            _line = line.split('verbose-access:')
+            try:
+                line0 = _line[0]
+                line1 = _line[1]
+            except IndexError:
+                logging.error('log format error')
+                continue
 
-            #print('line '+ str(line[1]))
-            #print('line '+ str(line))
-            #print(line)
+            #print(line0)
+            timestamp = line0.split(' ')[0]
+            rhost     = line0.split(' ')[1]
 
-            vl = line.split(' ')
+            #print(line1)
+            #regex = ' \[(.*?)\] \'(.*?)\' (.*?) (.*?) ([(\d\.)]+) "-" - - "(.*?)" (\d+) (\d+) "(.*?)" "(.*?)" "(.*?)" "(.*?)" "(.*?)"'
 
-            http_method      = vl[3].lstrip('"')
-            req_resource     = vl[4]
-            http_version     = vl[5].rstrip('"')
-            http_status_code = vl[6]
-            bytes_sent       = vl[7]
+            regex = ' \[(.*?)\] \'(.*?)\' (.*?) (.*?) ([(\d\.)]+) "-" - - "(.*?)" (\d+) (.*?) "(.*?)" "(.*?)" "(.*?)" "(.*?)" "(.*?)"'
 
-            x = vl[8:]
+            try:
+                _tuple = re.match(regex, line1).group()
+            except AttributeError as e: #'NoneType' object has no attribute 'group'
+                logging.error('log format AttributeError ' + str(e))
+                continue
+
+            print(len(_tuple))
+            #(s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16) = _tuple
+            #print(s1)
+
+            #print('tuple... ', _tuple)
+            #print(str(_line[0]))
+            #print(str(_line[1]))
+
+            #if not _line[0]:
+            #    print('Not .  ' + str(_line[0]))
+
+            #regex = '\[(.*?)\]'
+            #_tuple = re.match(regex, _line[1]).group()
+            #print(str(_tuple))
+
+            #__line = _line[1].split('"-"')[1]
+
+            #vl = __line.split(' ')
+
+            #http_method      = vl[3].lstrip('"')
+            #req_resource     = vl[4]
+            #http_version     = vl[5].rstrip('"')
+            #http_status_code = vl[6]
+            #bytes_sent       = vl[7]
+            #x = vl[8:]
 
 
-            print(http_method, req_resource, http_version, http_status_code, bytes_sent)
-            print('      ', x)
+            #data = http_method +' '+req_resource+' '+ http_version+' '+ http_status_code+' '+ bytes_sent
+            #print(http_method, req_resource, http_version, http_status_code, bytes_sent)
 
-            vline = http_method +' '+req_resource+' '+ http_version+' '+ http_status_code+' '+ bytes_sent
+            #print(data)
+            #print('      ', x)
 
-
-
+            data = line
+        else:
+            data = line
 
 
 
         #WORKING.MARK.HERE
 
         #data = line[1]
-        data = vline
+        #data = vline
+
         b = b2checksum(data)
 
         _k = str(_r) +'-'+ str(b)
