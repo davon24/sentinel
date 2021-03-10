@@ -6,7 +6,7 @@
 
 Summary: Sentinel Python Application
 Name: sentinel
-Version: 1.6.14
+Version: 1.6.15
 Release: 1%{?dist}
 License: GPL
 URL: https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz
@@ -196,6 +196,9 @@ rm -rf $RPM_BUILD_ROOT
 %exclude /usr/libexec/sentinel/modules/ps/*.pyo
 
 %changelog
+* Wed Mar 10 2021 Karl Rink <karl@rink.us> v1.6.15-1
+- 1.6.15-1 release 🍀
+
 * Wed Feb 10 2021 Karl Rink <karl@rink.us> v1.6.14-1
 - 1.6.14-1 release
 
