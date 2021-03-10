@@ -1,13 +1,10 @@
 
 
-sentinel update-config watch-log-1 '{"config":"tail","type":"apache","format":"clf","logfile":"/tmp/apache2.log","rules":["line"]}'
+sentinel update-config watch-log-1 '{"config":"tail","type":"apache2","format":"verbose-access","logfile":"/tmp/apache2.log","rules":["line"]}'
 
 sentinel update-rule watch-log-apache-rule-1 '{"config":"watch-log-1","search":"error","pass":["abcdefg"]}'
 
-
-
 ---  
-
 
 Linux MESSAGE  
 MacOS eventMessage  

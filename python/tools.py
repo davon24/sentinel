@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.15-1.dev-20210309.1'
+__version__ = '1.6.15-1.dev-20210309.2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -503,81 +503,60 @@ def expertLogStreamRulesEngineGeneralStr(line, _format, rulesDict):
             regex = ' \[(.*?)\] \'(.*?)\' (.*?) (.*?) ([(\d\.)]+) "-" - - "(.*?)" (\d+) (.*?) "(.*?)" "(.*?)" "(.*?)" "(.*?)" "(.*?)"'
 
             try:
-                _tuple = re.match(regex, line1).group()
+                #_tuple_s = re.match(regex, line1).group()
+                _tuple = re.match(regex, line1).groups()
             except AttributeError as e: #'NoneType' object has no attribute 'group'
                 logging.error('log format AttributeError ' + str(e))
                 continue
 
-            print(len(_tuple))
-            #(s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16) = _tuple
-            #print(s1)
+            #print(len(_tuple), '  ', str(type(_tuple)))
+            (s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13) = _tuple
 
-            #print('tuple... ', _tuple)
-            #print(str(_line[0]))
-            #print(str(_line[1]))
+            #print('s1 ', s1)   #date/time  #04/Mar/2021:03:59:58 -0800
+            #print('s2 ', s2)   #id_num     #1426054
+            #print('s3 ', s3)   #url_1      #www.Domain.com
+            #print('s4 ', s4)   #url_2      #www.domain.com
+            #print('s5 ', s5)   #ip_addr    #192.168.100.254
+            #print('s6 ', s6)   #http_method+resource+version #GET /welcome.html?q=1 HTTP/1.1
+            #print('s7 ', s7)   #http_code  #200|302|404
+            #print('s8 ', s8)   #bytes_sent #138254
+            #print('s9 ', s9)   #token_1    #aaabktlpO2QwnfCw1zWFx
+            #print('s10 ', s10) #ref_url    #https://www.domain.org/Membersite/rcss/member.min.css
+            #print('s11 ', s11) #dash_1     #-
+            #print('s12 ', s12) #browser user agent #Mozilla/5.0 
+            #print('s13 ', s13) #data_1     #-|adid=YRTO238500V20200527; JLUVr=e34c205e
 
-            #if not _line[0]:
-            #    print('Not .  ' + str(_line[0]))
-
-            #regex = '\[(.*?)\]'
-            #_tuple = re.match(regex, _line[1]).group()
-            #print(str(_tuple))
-
-            #__line = _line[1].split('"-"')[1]
-
-            #vl = __line.split(' ')
-
-            #http_method      = vl[3].lstrip('"')
-            #req_resource     = vl[4]
-            #http_version     = vl[5].rstrip('"')
-            #http_status_code = vl[6]
-            #bytes_sent       = vl[7]
-            #x = vl[8:]
-
-
-            #data = http_method +' '+req_resource+' '+ http_version+' '+ http_status_code+' '+ bytes_sent
-            #print(http_method, req_resource, http_version, http_status_code, bytes_sent)
+            data = rhost +' '+ s3 +' '+ s4 +' '+ s6 +' '+ s7 +' '+ s10 +' '+ s12 +' '+ s13
 
             #print(data)
-            #print('      ', x)
 
-            data = line
         else:
             data = line
-
-
-
-        #WORKING.MARK.HERE
-
-        #data = line[1]
-        #data = vline
 
         b = b2checksum(data)
 
         _k = str(_r) +'-'+ str(b)
 
         _search = jrules.get('search', None)
-        _match  = jrules.get('match', None)
+        #_match  = jrules.get('match', None)
         _not    = jrules.get('not', None)
         _pass   = jrules.get('pass', None)
         _ignorecase = jrules.get('ignorecase', None)
         _format = jrules.get('format', None)
 
+        #if _match:
 
+        #    d1 = extractLstDct(_match)
+        #    d2 = jline
+        #    d3 = {}
 
-        if _match:
+        #    for key in d1:
+        #        if key in d2:
+        #            if d1[key] == d2[key]:
+        #                d3[key] = d1[key]
 
-            d1 = extractLstDct(_match)
-            d2 = jline
-            d3 = {}
-
-            for key in d1:
-                if key in d2:
-                    if d1[key] == d2[key]:
-                        d3[key] = d1[key]
-
-            if d1 == d3: #print('match ', d3)
-                h[_k] = [_r,b,line]
+        #    if d1 == d3: #print('match ', d3)
+        #        h[_k] = [_r,b,line]
 
         if _search and data:
 
@@ -622,8 +601,6 @@ def expertLogStreamRulesEngineGeneralStr(line, _format, rulesDict):
 #    for k,v in h.items():
 #        #print(k,v)
     return h
-
-
 
 
 
