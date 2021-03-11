@@ -26,4 +26,30 @@ groups:
         summary: Instance {{ $labels.instance }} - Defunct_Processes
         description: "{{ $labels.instance }} of job {{ $labels.job }} Defunct_Processes \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
 
+    # root ssh
+    - alert: Detect_Root_SSH
+      expr: sentinel_job_output{prog="ssh",user="root",sentinel_job="established-check"}
+      for: 0m
+      labels:
+        severity: info
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - Detect_Root_SSH
+        description: "{{ $labels.instance }} of job {{ $labels.job }} Detect_Root_SSH \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+    # detect file change
+    - alert: Detect_FIM_Changed
+      expr: sentinel_job_output{changed1=~".+"}
+      for: 0m
+      labels:
+        severity: info
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - Detect_FIM_Changed
+        description: "{{ $labels.instance }} of job {{ $labels.job }} Detect_FIM_Changed \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+
+
+
+
 
