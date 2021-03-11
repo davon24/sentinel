@@ -13,6 +13,8 @@ sentinel update-rule rule-2 '{"config":"watch-syslog","search":"Out of memory","
 sentinel update-rule rule-3 '{"config":"watch-syslog","search":"Killed process","ignorecase":"False","data":["MESSAGE"]}'
 sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["MESSAGE"]}'
 
+sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["MESSAGE"],"not":["xfs collector failed"]}'
+
 #
 sentinel update-fim fim-1 '{}'
 sentinel add-fim fim-1 /etc/hosts   

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.16-1.dev-20210311-1'
+__version__ = '1.6.16-1.dev-20210311-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -780,10 +780,14 @@ def updategDictR(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
             r[b]=1
 
         _k = str(_r)+'-'+str(b)
-        _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(json.dumps(d)) + '"'
+
+        #_prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(json.dumps(d)) + '"'
+
+        _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d).replace('"','\\"') + '"'
+
         gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(r[b]) ]
 
-        store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(r[b]), line, db_store)
+        #store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(r[b]), line, db_store)
         if verbose: print(_k, gDict[_k])
 
     return True

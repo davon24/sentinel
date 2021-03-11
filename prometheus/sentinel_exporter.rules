@@ -48,8 +48,15 @@ groups:
         summary: Instance {{ $labels.instance }} - Detect_FIM_Changed
         description: "{{ $labels.instance }} of job {{ $labels.job }} Detect_FIM_Changed \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
 
-
-
-
+    # sentinel_watch_syslog_rule_engine
+    - alert: sentinel_watch_syslog_rule_engine
+      expr: sentinel_watch_syslog_rule_engine{}
+      for: 0m
+      labels:
+        severity: info
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - sentinel_watch_syslog_rule_engine
+        description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_watch_syslog_rule_engine \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
 
 
