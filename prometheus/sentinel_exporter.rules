@@ -1,0 +1,29 @@
+
+groups:
+
+  - name: sentinel.rules
+    rules:
+
+    # sentinel down
+    - alert: Sentinel_is_Down
+      expr: sentinel_up{} == 0
+      for: 1m
+      labels:
+        severity: critical
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - Sentinel is Down
+        description: "{{ $labels.instance }} of job {{ $labels.job }} Sentinel is Down\n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+    # defunct processes
+    - alert: Detect_Defunct_Processes
+      expr: sentinel_job_output{defunct!="0",sentinel_job="proc-monitor"}
+      for: 1m
+      labels:
+        severity: warning
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - Defunct_Processes
+        description: "{{ $labels.instance }} of job {{ $labels.job }} Defunct_Processes \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+

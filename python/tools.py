@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.15-1'
+__version__ = '1.6.16-1.dev-20210310-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
