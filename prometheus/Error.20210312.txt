@@ -1,0 +1,7 @@
+
+Mar 12 12:36:01 prod-billing prometheus-node-exporter[9897]: level=error ts=2021-03-12T20:36:01.965Z caller=textfile.go:209 collector=textfile msg="failed to collect textfile data" file=sentinel.db.prom err="failed to parse textfile data from \"/var/lib/prometheus/node-exporter/sentinel.db.prom\": text format parsing error in line 10: unexpected end of label value \"level=error ts=2021-03-12T20:20:31.984Z caller=textfile.go:209 collector=textfile msg=\\\"failed to collect textfile data\\\" file=sentinel.db.prom err=\\\"failed to parse textfile data from \\\\\""
+
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="e8926737863fd92e33376c5cf3493530a3f542a2",seen="False",data="level=error ts=2021-03-12T20:37:34.281Z caller=textfile.go:209 collector=textfile msg=\"failed to collect textfile data\" file=sentinel.db.prom err=\"failed to parse textfile data from \\"/var/lib/prometheus/node-exporter/sentinel.db.prom\\": text format parsing error in line 10: unexpected end of label value \\"level=error ts=2021-03-12T20:20:31.984Z caller=textfile.go:209 collector=textfile msg=\\\\"failed to collect textfile data\\\\" file=sentinel.db.prom err=\\\\"failed to parse textfile data from \\\\\\"\""} 1
+
+
+

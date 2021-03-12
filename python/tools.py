@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.17-1.dev-202103011-0'
+__version__ = '1.6.17-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -783,7 +783,9 @@ def updategDictR(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
 
         #_prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(json.dumps(d)) + '"'
 
-        _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d).replace('"','\\"') + '"'
+        #_prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d).replace('"','\\"') + '"'
+
+        _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d).replace('"',' ') + '"'
 
         gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(r[b]) ]
 
