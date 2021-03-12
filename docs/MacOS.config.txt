@@ -1,0 +1,35 @@
+
+#
+sentinel update-job established-monitor '{"repeat": "5min", "job": "established-check"}'
+
+#
+sentinel update-job proc-monitor '{"repeat": "5min", "job": "ps-check"}' 
+
+#
+sentinel update-config watch-syslog '{"config":"logstream","logfile":"stream","rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]}'
+
+sentinel update-rule rule-1 '{"config":"watch-syslog","search":"Call Trace","ignorecase":"False","data":["eventMessage"]}'
+sentinel update-rule rule-2 '{"config":"watch-syslog","search":"Out of memory","ignorecase":"False","data":["eventMessage"]}'
+sentinel update-rule rule-3 '{"config":"watch-syslog","search":"Killed process","ignorecase":"False","data":["eventMessage"]}'
+sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["eventMessage"]}'
+
+#sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["eventMessage"],"not":[],"pass":[]}'
+
+sentinel update-rule rule-5 '{"config":"watch-syslog","match":[{"processImagePath":"/usr/bin/sudo"},{"messageType":"Default"},{"eventType":"logEvent"},{"category":""},{"subsystem":""}]}'
+
+sentinel update-rule rule-6 '{"config":"watch-syslog","match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}'
+
+#
+sentinel update-fim fim-1 '{}'
+sentinel add-fim fim-1 /etc/hosts   
+sentinel add-fim fim-1 /etc/passwd   
+sentinel add-fim fim-1 /etc/shadow
+sentinel add-fim fim-1 /etc/sudoers
+sentinel add-fim fim-1 /etc/group
+
+sentinel b2sum-fim fim-1
+
+sentinel update-job fim-job-1 '{"repeat":"12hour", "job":"fim-check", "config":"fim-1"}'
+
+#
+

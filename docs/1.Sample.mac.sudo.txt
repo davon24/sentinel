@@ -1,0 +1,9 @@
+
+b'{"traceID":1911024240427012,"eventMessage":"   krink : TTY=ttys004 ; PWD=\\/Users\\/krink ; USER=root ; COMMAND=\\/bin\\/echo hello","eventType":"logEvent","source":null,"formatString":"%8s : %s","activityIdentifier":0,"subsystem":"","category":"","threadID":520108,"senderImageUUID":"5184171C-F4A4-3E3C-BBE6-B55827AA7E90","backtrace":{"frames":[{"imageOffset":265491,"imageUUID":"5184171C-F4A4-3E3C-BBE6-B55827AA7E90"}]},"bootUUID":"","processImagePath":"\\/usr\\/bin\\/sudo","timestamp":"2021-03-11 21:07:27.279229-0800","senderImagePath":"\\/usr\\/bin\\/sudo","machTimestamp":216112364964485,"messageType":"Default","processImageUUID":"5184171C-F4A4-3E3C-BBE6-B55827AA7E90","processID":17184,"senderProgramCounter":265491,"parentActivityIdentifier":0,"timezoneName":""}\n'
+#
+
+rule-5-126346ce6a8eb2c10d3da5a21b1799308ed52c5f ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-5",b2sum="126346ce6a8eb2c10d3da5a21b1799308ed52c5f",seen="False",data="{\'traceID\': 1911024240427012, \'eventMessage\': \'   krink : TTY=ttys004 ; PWD=/Users/krink/sentinel/docs ; USER=root ; COMMAND=/bin/echo hello\', \'eventType\': \'logEvent\', \'source\': None, \'formatString\': \'%8s : %s\', \'activityIdentifier\': 0, \'subsystem\': \'\', \'category\': \'\', \'threadID\': 530737, \'senderImageUUID\': \'5184171C-F4A4-3E3C-BBE6-B55827AA7E90\', \'backtrace\': {\'frames\': [{\'imageOffset\': 265491, \'imageUUID\': \'5184171C-F4A4-3E3C-BBE6-B55827AA7E90\'}]}, \'bootUUID\': \'\', \'processImagePath\': \'/usr/bin/sudo\', \'timestamp\': \'2021-03-11 21:26:29.144543-0800\', \'senderImagePath\': \'/usr/bin/sudo\', \'machTimestamp\': 217254206825326, \'messageType\': \'Default\', \'processImageUUID\': \'5184171C-F4A4-3E3C-BBE6-B55827AA7E90\', \'processID\': 17391, \'senderProgramCounter\': 265491, \'parentActivityIdentifier\': 0, \'timezoneName\': \'\'}"} 1']
+
+
+
+

@@ -6,14 +6,16 @@ sentinel update-job established-monitor '{"repeat": "5min", "job": "established-
 sentinel update-job proc-monitor '{"repeat": "5min", "job": "ps-check"}' 
 
 #
-sentinel update-config watch-syslog '{"config":"logstream","logfile":"stream","rules":["MESSAGE"]}'
+sentinel update-config watch-syslog '{"config":"logstream","logfile":"stream","rules":["MESSAGE","SYSLOG_IDENTIFIER","PRIORITY","_CMDLINE","_EXE"]}'
 
 sentinel update-rule rule-1 '{"config":"watch-syslog","search":"Call Trace","ignorecase":"False","data":["MESSAGE"]}'
 sentinel update-rule rule-2 '{"config":"watch-syslog","search":"Out of memory","ignorecase":"False","data":["MESSAGE"]}'
 sentinel update-rule rule-3 '{"config":"watch-syslog","search":"Killed process","ignorecase":"False","data":["MESSAGE"]}'
 sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["MESSAGE"]}'
+sentinel update-rule rule-5 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"sudo"},{"PRIORITY":"5"}]}'
+sentinel update-rule rule-6 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"su"},{"PRIORITY":"5"}]}'
 
-sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["MESSAGE"],"not":["xfs collector failed"]}'
+#sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["MESSAGE"],"not":["xfs collector failed"]}'
 
 #
 sentinel update-fim fim-1 '{}'
