@@ -1,9 +1,0 @@
-
-method names established-check and ps-check internal methods are still hard coded
-
-must re-visit sklearn and occurrence
-  - rules no longer store.occurrence
-
-i've already forgot and bit me again prometheus data structure and quotes
-
-
