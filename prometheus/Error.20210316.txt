@@ -1,0 +1,19 @@
+
+Mar 16 14:56:49 appserv-kimber prometheus-node-exporter[953]: * collected metric sentinel_job_output label:<name:\"done\" value:\"2021-03-16 14:53:37\" > label:<name:\"faddr\" value:\"192.168.2.244\" > label:<name:\"fport\" value:\"51064\" > label:<name:\"laddr\" value:\"192.168.2.46\" > label:<name:\"lport\" value:\"9102\" > label:<name:\"name\" value:\"established-monitor\" > label:<name:\"prog\" value:\"java\" > label:<name:\"proto\" value:\"tcp6\" > label:<name:\"sentinel_job\" value:\"established-check\" > label:<name:\"user\" value:\"jms\" > untyped:<value:1 >  has label dimensions inconsistent with previously collected metrics in the same metric family
+
+# dpkg --list |grep prometheus
+ii  prometheus                              2.1.0+ds-1                                      amd64        Monitoring system and time series database
+ii  prometheus-apache-exporter              0.5.0+ds-1                                      amd64        Prometheus exporter for Apache server metrics
+ii  prometheus-node-exporter                0.15.2+ds-1                                     amd64        Prometheus exporter for machine metrics
+
+
+
+current node exporter version is 1.1.2 https://github.com/prometheus/node_exporter/releases/download/v1.1.2/node_exporter-1.1.2.linux-amd64.tar.gz 
+/usr/bin/prometheus-node-exporter
+
+
+Mar 16 15:15:06 appserv-kimber prometheus-node-exporter[20159]: level=error ts=2021-03-16T22:15:06.759Z caller=textfile.go:209 collector=textfile msg="failed to collect textfile data" file=sentinel.db.prom err="failed to parse textfile data from \"/var/lib/prometheus/node-exporter/sentinel.db.prom\": text format parsing error in line 10: invalid escape sequence '\\ '"
+
+
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="a3eac8581ca11de7cdce9d935f6331f82e8d76e4",seen="False",data="level=error ts=2021-03-16T22:11:04.935Z caller=textfile.go:209 collector=textfile msg= failed to collect textfile data  file=sentinel.db.prom err= failed to parse textfile data from \ /var/lib/prometheus/node-exporter/sentinel.db.prom\ : text format parsing error in line 24: unexpected end of input stream "} 1
+

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.18-1'
+__version__ = '1.6.19-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -789,6 +789,7 @@ def updategDictR(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
 
         _data = str(d).replace('"',' ')
         _data = _data.replace("'",' ')
+        _data = _data.replace("\\",' ')
 
         _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(_data) + '"'
 

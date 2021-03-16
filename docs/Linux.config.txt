@@ -1,11 +1,10 @@
 
-#
 sentinel update-job established-monitor '{"repeat": "5min", "job": "established-check"}'
+sentinel established-rule ALLOW tcp 127.0.0.1 '*' 127.0.0.1 '*'
+sentinel established-rule ALLOW tcp6 127.0.0.1 '*' 127.0.0.1 '*'
 
-#
 sentinel update-job proc-monitor '{"repeat": "5min", "job": "ps-check"}' 
 
-#
 sentinel update-config watch-syslog '{"config":"logstream","logfile":"stream","rules":["MESSAGE","SYSLOG_IDENTIFIER","PRIORITY","_CMDLINE","_EXE"]}'
 
 sentinel update-rule rule-1 '{"config":"watch-syslog","search":"Call Trace","ignorecase":"False","data":["MESSAGE"]}'
@@ -17,7 +16,6 @@ sentinel update-rule rule-6 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFI
 
 #sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["MESSAGE"],"not":["xfs collector failed"]}'
 
-#
 sentinel update-fim fim-1 '{}'
 sentinel add-fim fim-1 /etc/hosts   
 sentinel add-fim fim-1 /etc/passwd   
@@ -29,5 +27,4 @@ sentinel b2sum-fim fim-1
 
 sentinel update-job fim-job-1 '{"repeat":"12hour", "job":"fim-check", "config":"fim-1"}'
 
-#
 
