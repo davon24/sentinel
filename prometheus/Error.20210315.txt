@@ -1,0 +1,9 @@
+
+
+
+Mar 15 08:31:31 prod-billing prometheus-node-exporter[9897]: level=error ts=2021-03-15T15:31:31.967Z caller=textfile.go:209 collector=textfile msg="failed to collect textfile data" file=sentinel.db.prom err="failed to parse textfile data from \"/var/lib/prometheus/node-exporter/sentinel.db.prom\": text format parsing error in line 13: invalid escape sequence '\\ '"
+
+
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="63fad0899bf03dd74d86a8b715068efbfe2bfc9b",seen="False",data="level=error ts=2021-03-15T15:32:04.399Z caller=textfile.go:209 collector=textfile msg= failed to collect textfile data  file=sentinel.db.prom err= failed to parse textfile data from \ /var/lib/prometheus/node-exporter/sentinel.db.prom\ : text format parsing error in line 13: invalid escape sequence '\\ ' "} 1
+
+
