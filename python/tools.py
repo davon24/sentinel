@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210316-1'
+__version__ = '1.6.20-1.dev-20210317-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4224,20 +4224,30 @@ def sentryProcessJobs(db_store, gDict):
                         run = runJob(name, db_store, gDict)
     return run
 
-def processD(List):
+#def processD(List):
+def processD():
 
     sentinel_up = 1
 
     promDATA = 'sentinel_up ' + str(sentinel_up)
     gDict['sentinel_up'] = [ promDATA ]
 
-    c = 0
-    for item in List:
-        c += 1
-        k = 'sentinel_up_' + str(c)
-        gDict[k] = [ item ]
+    #c = 0
+    #for item in List:
+    #    c += 1
+    #    k = 'sentinel_up_' + str(c)
+    #    gDict[k] = [ item ]
 
-    promDATA = 'sentinel_app_info{version="' + __version__ + '"} 1.0'
+    tcount = 0
+    for thread in threading.enumerate():
+        tcount += 1
+
+    pcount = 0
+    for proc in multiprocessing.active_children():
+        pcount += 1
+
+
+    promDATA = 'sentinel_app_info{version="' + __version__ + '",threads="'+str(tcount)+'",procs="'+str(pcount)+'"} 1.0'
     gDict['sentinel_app_info'] = [ promDATA ]
 
     _arch = sys.implementation._multiarch
@@ -4265,22 +4275,23 @@ def processD(List):
 def sentryScheduler(db_store, gDict):
     while (sigterm == False):
 
-        List = []
         job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
         job.start()
 
-        tcount = 0
-        for thread in threading.enumerate():
-            tcount += 1
+        #List = []
+        #tcount = 0
+        #for thread in threading.enumerate():
+        #    tcount += 1
 
-        pcount = 0
-        for proc in multiprocessing.active_children():
-            pcount += 1
+        #pcount = 0
+        #for proc in multiprocessing.active_children():
+        #    pcount += 1
 
-        List.append('sentinel_threads ' + str(tcount))
-        List.append('sentinel_process ' + str(pcount))
+        #List.append('sentinel_threads ' + str(tcount))
+        #List.append('sentinel_process ' + str(pcount))
+        #processD(List)
 
-        processD(List)
+        processD()
 
         time.sleep(3)
 
@@ -4313,11 +4324,11 @@ def procHTTPServer(port, metric_path, db_file):
     return httpd.serve_forever()
 
 # function to return key for any value
-def get_key(_dct, val):
-    for key, value in _dct.items():
-         if val == value:
-             return key
-    return None #"key doesn't exist"
+#def get_key(_dct, val):
+#    for key, value in _dct.items():
+#         if val == value:
+#             return key
+#    return None #"key doesn't exist"
 
 def sentryMode(db_file, verbose=False):
 
