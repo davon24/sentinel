@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210317-1'
+__version__ = '1.6.20-1.dev-20210317-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -271,6 +271,42 @@ def logstream(_format='json'):
         return False
 
     return True
+
+def logstream_v2(_format='json'):
+    logging.info('logstream_v2')
+    if sys.platform == 'darwin':
+        _format = 'ndjson'
+        cmd = ['log', 'stream', '--style', _format] #macos
+    elif sys.platform == 'linux' or sys.platform == 'linux2':
+        cmd = ['journalctl', '-f', '-o', _format] #linux
+    else:
+        logging.critical('Fail: No log stream.  No such file or directory')
+        return False
+
+    try:
+        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+        #while (f.returncode == None):
+        while (f.returncode == None):
+
+            line = f.stdout.readline()
+            if not line:
+                time.sleep(1) #break
+            else:
+                yield line
+            sys.stdout.flush()
+
+    except (KeyboardInterrupt, SystemExit, Exception) as e:
+        #os.kill(f.pid, signal.SIGKILL)
+        #f.terminate() #SIGTERM
+        #f.kill() #SIGKILL
+
+        os.kill(f.pid, signal.SIGSTOP)
+        logging.critical('Exception in logstream ' + str(e))
+        return False
+
+    return True
+
+
 
 
 def extractLstDct(_list):
@@ -867,7 +903,8 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     s={}
 
     ##########################################################################
-    for line in logstream():
+    #for line in logstream():
+    for line in logstream_v2():
         line = line.decode('utf-8')
         jline = json.loads(line)
 
