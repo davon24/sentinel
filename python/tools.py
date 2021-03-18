@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210317-2'
+__version__ = '1.6.20-1.dev-20210317-3'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -300,11 +300,15 @@ def logstream_v2(_format='json'):
         #f.terminate() #SIGTERM
         #f.kill() #SIGKILL
 
-        os.kill(f.pid, signal.SIGSTOP)
+        #os.kill(f.pid, signal.SIGSTOP)
+        #f.kill() #SIGKILL
+
+        f.terminate() #SIGTERM
         logging.critical('Exception in logstream ' + str(e))
         return False
 
-    return True
+    #return True
+    return 'logstream_v2.return'
 
 
 
@@ -902,9 +906,20 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     r={}
     s={}
 
+    c=0
+
     ##########################################################################
     #for line in logstream():
     for line in logstream_v2():
+
+        #c+=1
+        #if c > 50:
+        #    print(c)
+        #    logging.error('logstream.break')
+        #    return 'logstream.break'
+        #    #break
+        #    #return True
+
         line = line.decode('utf-8')
         jline = json.loads(line)
 
@@ -917,7 +932,8 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
             if sklearn_hit: updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose)
 
     ##########################################################################
-    return True
+    #return True
+    return 'logstream.done'
 
 def sampleLogStream(count, db_store):
 
@@ -4188,6 +4204,8 @@ def getDuration(_repeat):
 
 def sentryProcessor(db_store, gDict):
 
+    #try:
+
     while (sigterm == False):
 
         _prom = str(db_store) + '.prom'
@@ -4198,6 +4216,10 @@ def sentryProcessor(db_store, gDict):
                     _file.write(item + '\n')
 
         time.sleep(10)
+
+    #except BrokenPipeError as e:
+    #    logging.error('sentryProcessor ' + str(e))
+    #    return False
 
     return True
 
@@ -4264,6 +4286,8 @@ def sentryProcessJobs(db_store, gDict):
 #def processD(List):
 def processD():
 
+    #try:
+
     sentinel_up = 1
 
     promDATA = 'sentinel_up ' + str(sentinel_up)
@@ -4306,6 +4330,10 @@ def processD():
     promDATA = 'sentinel_python_sqlite_info{sqlite3="' + sqlite3_version + '",library="' + sqlite3_sqlite_version + '"} 1.0'
     gDict['sentinel_python_sqlite_info'] = [ promDATA ]
 
+    #except BrokenPipeError as e:
+    #    logging.error('processD ' + str(e))
+    #    return False
+
     return True
 
 
@@ -4328,7 +4356,11 @@ def sentryScheduler(db_store, gDict):
         #List.append('sentinel_process ' + str(pcount))
         #processD(List)
 
-        processD()
+        try:
+            processD()
+        except BrokenPipeError as e:
+            logging.error('processD ' + str(e))
+            break
 
         time.sleep(3)
 
@@ -4389,6 +4421,8 @@ def sentryMode(db_file, verbose=False):
 
     http_server = False
 
+    running=[]
+
     cDct={}
     configs = store.selectAll('configs', db_store)
     for config in configs:
@@ -4407,12 +4441,15 @@ def sentryMode(db_file, verbose=False):
         if conf == 'logstream':
             tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, key, gDict, verbose))
             tailer.start()
+            running.append(tailer)
 
         if conf == 'tail':
             tailer = multiprocessing.Process(target=sentryLogTail, args=(db_store, key, gDict, verbose))
             tailer.start()
+            running.append(tailer)
 
             
+    #########################
 
 
 
@@ -4544,22 +4581,30 @@ def sentryMode(db_file, verbose=False):
         if http_server:
             p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
             p.start()
-            p.join()
+            #p.join()
+            running.append(p)
         else:
-            signal.pause()
+            #signal.pause()
+
+            #try:
+            #    signal.pause()
+            #except Exception as e:
+            #    print('Exception ' + str(e))
 
             #time.sleep(60)
             #time.sleep(-1)
             #ValueError: sleep length must be non-negative
 
-            #import asyncio
-            #loop = asyncio.get_event_loop()
-            #try:
-            #    loop.run_forever()
-            #finally:
-            #    loop.close()
+            import asyncio
+            loop = asyncio.get_event_loop()
+            try:
+                loop.run_forever()
+            finally:
+                sigterm = True
+                loop.close()
 
         print('pid ' + str(os.getpid()))
+        #sys.exit(99)
 
     except (KeyboardInterrupt, SystemExit, Exception):
         sigterm = True
@@ -4567,7 +4612,8 @@ def sentryMode(db_file, verbose=False):
 
         for proc in multiprocessing.active_children():
             print('proc name ', proc, ' ', proc.pid)
-            os.kill(proc.pid, 9)
+            #os.kill(proc.pid, 9)
+            proc.terminate()
 
         for thread in threading.enumerate():
             if thread.name == 'MainThread':
@@ -4577,9 +4623,10 @@ def sentryMode(db_file, verbose=False):
                 thread.join()
 
         logging.info("Sentry Shutdown: " + str(sigterm))
-        sys.exit(1)
+        #sys.exit(1)
 
-    return True
+    #return True
+    return 'sentry.loop'
 
 
 if __name__ == '__main__':
