@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210320-1'
+__version__ = '1.6.20-1.dev-20210320-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -272,43 +272,43 @@ def logstream(_format='json'):
 
     return True
 
-def logstream_v2(_format='json'):
-    logging.info('logstream_v2')
-    if sys.platform == 'darwin':
-        _format = 'ndjson'
-        cmd = ['log', 'stream', '--style', _format] #macos
-    elif sys.platform == 'linux' or sys.platform == 'linux2':
-        cmd = ['journalctl', '-f', '-o', _format] #linux
-    else:
-        logging.critical('Fail: No log stream.  No such file or directory')
-        return False
-
-    try:
-        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-        #while (f.returncode == None):
-        while (f.returncode == None):
-
-            line = f.stdout.readline()
-            if not line:
-                time.sleep(1) #break
-            else:
-                yield line
-            sys.stdout.flush()
-
-    except (KeyboardInterrupt, SystemExit, Exception) as e:
-        #os.kill(f.pid, signal.SIGKILL)
-        #f.terminate() #SIGTERM
-        #f.kill() #SIGKILL
-
-        #os.kill(f.pid, signal.SIGSTOP)
-        #f.kill() #SIGKILL
-
-        f.terminate() #SIGTERM
-        logging.critical('Exception in logstream ' + str(e))
-        return False
-
-    #return True
-    return 'logstream_v2.return'
+#def logstream_v2(_format='json'):
+#    logging.info('logstream_v2')
+#    if sys.platform == 'darwin':
+#        _format = 'ndjson'
+#        cmd = ['log', 'stream', '--style', _format] #macos
+#    elif sys.platform == 'linux' or sys.platform == 'linux2':
+#        cmd = ['journalctl', '-f', '-o', _format] #linux
+#    else:
+#        logging.critical('Fail: No log stream.  No such file or directory')
+#        return False
+#
+#    try:
+#        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+#        #while (f.returncode == None):
+#        while (f.returncode == None):
+#
+#            line = f.stdout.readline()
+#            if not line:
+#                time.sleep(1) #break
+#            else:
+#                yield line
+#            sys.stdout.flush()
+#
+#    except (KeyboardInterrupt, SystemExit, Exception) as e:
+#        #os.kill(f.pid, signal.SIGKILL)
+#        #f.terminate() #SIGTERM
+#        #f.kill() #SIGKILL
+#
+#        #os.kill(f.pid, signal.SIGSTOP)
+#        #f.kill() #SIGKILL
+#
+#        f.terminate() #SIGTERM
+#        logging.critical('Exception in logstream ' + str(e))
+#        return False
+#
+#    #return True
+#    return 'logstream_v2.return'
 
 
 
@@ -907,33 +907,28 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     r={}
     s={}
 
-    reloadrules=0
+    elapsed_interval = 30 #1h is 60*60 (3600 seconds)
+    end_time = time.time() + elapsed_interval
 
     ##########################################################################
-    #for line in logstream():
-    for line in logstream_v2():
+    #for line in logstream_v2():
+    for line in logstream():
 
         line = line.decode('utf-8')
         jline = json.loads(line)
 
-        #c+=1
-        #if c > 50:
-        #    print(c)
-        #    logging.error('logstream.break')
-        #    return 'logstream.break'
-        #    #break
-        #    #return True
-
-        #print(len(rulesDct))
-
-
         if rules:
-            print(len(rulesDct))
+            #print(len(rulesDct))
 
-            #check/reload rules
-            if reloadrules == 1:
-                print('reload rules')
-                rulesDct = getExpertRules(_key, db_store)
+            if time.time() > end_time:
+                #print('time up!')
+                #check reload
+                new_rulesDct = getExpertRules(_key, db_store)
+                #compare dicts
+                if rulesDct != new_rulesDct:
+                    #print('diff, reload rules')
+                    rulesDct = getExpertRules(_key, db_store)
+                end_time = time.time() + elapsed_interval
 
             rule_hit = expertLogStreamRulesEngineGeneralJson(jline, rules, rulesDct)
             if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, db_store, verbose)
@@ -944,7 +939,8 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
 
     ##########################################################################
     #return True
-    return 'logstream.done'
+    return 'logstream.done' 
+    #KR
 
 def sentryLogStream_v1(db_store, _key, gDict, verbose=False):
     #logging.info('Sentry watch-syslog logstream ')
@@ -4472,7 +4468,7 @@ def sentryMode(db_file, verbose=False):
 
     http_server = False
 
-    running=[]
+    #running=[]
 
     cDct={}
     configs = store.selectAll('configs', db_store)
@@ -4492,12 +4488,12 @@ def sentryMode(db_file, verbose=False):
         if conf == 'logstream':
             tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, key, gDict, verbose))
             tailer.start()
-            running.append(tailer)
+            #running.append(tailer)
 
         if conf == 'tail':
             tailer = multiprocessing.Process(target=sentryLogTail, args=(db_store, key, gDict, verbose))
             tailer.start()
-            running.append(tailer)
+            #running.append(tailer)
 
             
     #########################
@@ -4630,12 +4626,21 @@ def sentryMode(db_file, verbose=False):
     try:
         #if prometheus_config:
         if http_server:
+            #try:
+            #    p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
+            #    p.start()
+            #p.join()
+            #running.append(p)
+            #p.join()
+            #finally:
+            #    p.kill()
+
             p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
             p.start()
-            #p.join()
-            running.append(p)
+            signal.pause()
+            
         else:
-            #signal.pause()
+            signal.pause()
 
             #try:
             #    signal.pause()
@@ -4646,13 +4651,13 @@ def sentryMode(db_file, verbose=False):
             #time.sleep(-1)
             #ValueError: sleep length must be non-negative
 
-            import asyncio
-            loop = asyncio.get_event_loop()
-            try:
-                loop.run_forever()
-            finally:
-                sigterm = True
-                loop.close()
+            #import asyncio
+            #loop = asyncio.get_event_loop()
+            #try:
+            #    loop.run_forever()
+            #finally:
+            #    sigterm = True
+            #    loop.close()
 
         print('pid ' + str(os.getpid()))
         #sys.exit(99)
