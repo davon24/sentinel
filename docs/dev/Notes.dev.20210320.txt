@@ -1,0 +1,27 @@
+
+
+reload rules (re-read?) on the fly
+
+the idea is to be able to feed, change, add rules to the rule engine,
+that i can later have another process do (sklearn)
+
+automatically, smoothly...
+
+first approach was to stop/terminate the loop, but that entails stopping/terminating the subprocess attached to syslog
+
+review 'import this'
+
+instead of terminate process...
+  X (don't do) 1. could load rules each line (hit performance)
+  Y (yes)      2. check after time, load if diff
+
+i don't want any performance hit.  thats why the rules are loaded into memory first and then compared to each passing line, as opposed to loading rules each time a line passes.
+
+how to check if diff, len(dictObj).  but the len could remain the same if rule 3 of len() 4 changes...  fingerprint the data?
+
+i want it to first check diff based on time.  
+  ...so, every 10 seconds check if reload needed
+
+
+
+

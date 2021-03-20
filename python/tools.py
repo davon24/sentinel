@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210317-3'
+__version__ = '1.6.20-1.dev-20210320-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -895,6 +895,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
         rules   = config.get('rules', None)
         sklearn = config.get('sklearn', None)
 
+    #load rules (getExpertRules)
     if rules:
         logging.info('Sentry '+str(_key)+' expert_rules scope '+ str(rules))
         rulesDct = getExpertRules(_key, db_store)
@@ -906,11 +907,14 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     r={}
     s={}
 
-    c=0
+    reloadrules=0
 
     ##########################################################################
     #for line in logstream():
     for line in logstream_v2():
+
+        line = line.decode('utf-8')
+        jline = json.loads(line)
 
         #c+=1
         #if c > 50:
@@ -919,6 +923,54 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
         #    return 'logstream.break'
         #    #break
         #    #return True
+
+        #print(len(rulesDct))
+
+
+        if rules:
+            print(len(rulesDct))
+
+            #check/reload rules
+            if reloadrules == 1:
+                print('reload rules')
+                rulesDct = getExpertRules(_key, db_store)
+
+            rule_hit = expertLogStreamRulesEngineGeneralJson(jline, rules, rulesDct)
+            if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, db_store, verbose)
+
+        if sklearn:
+            sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
+            if sklearn_hit: updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose)
+
+    ##########################################################################
+    #return True
+    return 'logstream.done'
+
+def sentryLogStream_v1(db_store, _key, gDict, verbose=False):
+    #logging.info('Sentry watch-syslog logstream ')
+
+    conf = store.getData('configs', _key, db_store)
+    if conf:
+        config = json.loads(conf[0])
+        logfile = config.get('logfile', None)
+        rules   = config.get('rules', None)
+        sklearn = config.get('sklearn', None)
+
+    #load rules (getExpertRules)
+    if rules:
+        logging.info('Sentry '+str(_key)+' expert_rules scope '+ str(rules))
+        rulesDct = getExpertRules(_key, db_store)
+
+    if sklearn:
+        algoDct = getAlgoDict(sklearn)
+        skInitDct = sklearnInitAlgoDict(algoDct, db_store)
+
+    r={}
+    s={}
+
+    ##########################################################################
+    #for line in logstream():
+    for line in logstream_v2():
 
         line = line.decode('utf-8')
         jline = json.loads(line)
@@ -932,8 +984,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
             if sklearn_hit: updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose)
 
     ##########################################################################
-    #return True
-    return 'logstream.done'
+    return True
 
 def sampleLogStream(count, db_store):
 
