@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210320-2'
+__version__ = '1.6.20-1.dev-20210320-3'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -33,7 +33,7 @@ logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
 import store
 
-sigterm = False
+#sigterm = False
 
 #import smtplib
 #import ssl
@@ -241,7 +241,7 @@ def tail(_file):
 
     return True
 
-def logstream(_format='json'):
+def logstream_v2(_format='json'):
 
     if sys.platform == 'darwin':
         _format = 'ndjson'
@@ -255,7 +255,6 @@ def logstream(_format='json'):
     try:
         f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
         while (f.returncode == None):
-
             line = f.stdout.readline()
             if not line:
                 time.sleep(1) #break
@@ -272,45 +271,35 @@ def logstream(_format='json'):
 
     return True
 
-#def logstream_v2(_format='json'):
-#    logging.info('logstream_v2')
-#    if sys.platform == 'darwin':
-#        _format = 'ndjson'
-#        cmd = ['log', 'stream', '--style', _format] #macos
-#    elif sys.platform == 'linux' or sys.platform == 'linux2':
-#        cmd = ['journalctl', '-f', '-o', _format] #linux
-#    else:
-#        logging.critical('Fail: No log stream.  No such file or directory')
-#        return False
-#
-#    try:
-#        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-#        #while (f.returncode == None):
-#        while (f.returncode == None):
-#
-#            line = f.stdout.readline()
-#            if not line:
-#                time.sleep(1) #break
-#            else:
-#                yield line
-#            sys.stdout.flush()
-#
-#    except (KeyboardInterrupt, SystemExit, Exception) as e:
-#        #os.kill(f.pid, signal.SIGKILL)
-#        #f.terminate() #SIGTERM
-#        #f.kill() #SIGKILL
-#
-#        #os.kill(f.pid, signal.SIGSTOP)
-#        #f.kill() #SIGKILL
-#
-#        f.terminate() #SIGTERM
-#        logging.critical('Exception in logstream ' + str(e))
-#        return False
-#
-#    #return True
-#    return 'logstream_v2.return'
+def logstream_v1(_format='json'):
 
+    if sys.platform == 'darwin':
+        _format = 'ndjson'
+        cmd = ['log', 'stream', '--style', _format] #macos
+    elif sys.platform == 'linux' or sys.platform == 'linux2':
+        cmd = ['journalctl', '-f', '-o', _format] #linux
+    else:
+        logging.critical('Fail: No log stream.  No such file or directory')
+        return False
 
+    try:
+        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+        while (f.returncode == None):
+            line = f.stdout.readline()
+            if not line:
+                time.sleep(1) #break
+            else:
+                yield line
+            sys.stdout.flush()
+
+    except (KeyboardInterrupt, SystemExit, Exception) as e:
+        #os.kill(f.pid, signal.SIGKILL)
+        #f.terminate() #SIGTERM
+        f.kill() #SIGKILL
+        logging.critical('Exception in logstream ' + str(e))
+        return False
+
+    return True
 
 
 def extractLstDct(_list):
@@ -827,11 +816,7 @@ def updategDictR(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
 
         #_prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d).replace('"',' ') + '"'
 
-        _data = str(d)
-        _data = _data.replace('"',' ')  #quote
-        _data = _data.replace("'",' ')  #single quote
-        _data = _data.replace("\\",' ') #backslash
-        _data = _data.replace('`',' ')  #backtick
+        _data = promDataSanitizer(str(d))
 
         _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(_data) + '"'
 
@@ -841,6 +826,13 @@ def updategDictR(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
         if verbose: print(_k, gDict[_k])
 
     return True
+
+def promDataSanitizer(_str):
+    _str = _str.replace('"',' ')  #quote
+    _str = _str.replace("'",' ')  #single quote
+    _str = _str.replace("\\",' ') #backslash
+    _str = _str.replace('`',' ')  #backtick
+    return _str
 
 
 def updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose=False):
@@ -888,6 +880,8 @@ def sklearnInitAlgoDict(algoDct, db_store):
 def sentryLogStream(db_store, _key, gDict, verbose=False):
     #logging.info('Sentry watch-syslog logstream ')
 
+    _k = 'sentinel_watch_syslog_rule_engine_info'
+
     conf = store.getData('configs', _key, db_store)
     if conf:
         config = json.loads(conf[0])
@@ -897,8 +891,11 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
 
     #load rules (getExpertRules)
     if rules:
-        logging.info('Sentry '+str(_key)+' expert_rules scope '+ str(rules))
         rulesDct = getExpertRules(_key, db_store)
+        _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'"'
+        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine_info{' + _prom + '} 1.0' ]
+        logging.info('Sentry '+str(_key)+' Expert_Rules Scope '+ str(rules))
+        logging.info('Sentry Expert_Rules Loaded ' + str(len(rulesDct)) + ' ' + b2checksum(str(rulesDct)) )
 
     if sklearn:
         algoDct = getAlgoDict(sklearn)
@@ -911,8 +908,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     end_time = time.time() + elapsed_interval
 
     ##########################################################################
-    #for line in logstream_v2():
-    for line in logstream():
+    for line in logstream_v2():
 
         line = line.decode('utf-8')
         jline = json.loads(line)
@@ -921,13 +917,12 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
             #print(len(rulesDct))
 
             if time.time() > end_time:
-                #print('time up!')
-                #check reload
                 new_rulesDct = getExpertRules(_key, db_store)
-                #compare dicts
                 if rulesDct != new_rulesDct:
-                    #print('diff, reload rules')
                     rulesDct = getExpertRules(_key, db_store)
+                    _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'"'
+                    gDict[_k] = [ 'sentinel_watch_syslog_rule_engine_info{' + _prom + '} 1.0' ]
+                    logging.info('Sentry Expert_Rules Reloaded ' + str(len(rulesDct)) + ' ' + b2checksum(str(rulesDct)) )
                 end_time = time.time() + elapsed_interval
 
             rule_hit = expertLogStreamRulesEngineGeneralJson(jline, rules, rulesDct)
@@ -939,48 +934,48 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
 
     ##########################################################################
     #return True
-    return 'logstream.done' 
-    #KR
+    return 'logstream.done'  
 
-def sentryLogStream_v1(db_store, _key, gDict, verbose=False):
-    #logging.info('Sentry watch-syslog logstream ')
 
-    conf = store.getData('configs', _key, db_store)
-    if conf:
-        config = json.loads(conf[0])
-        logfile = config.get('logfile', None)
-        rules   = config.get('rules', None)
-        sklearn = config.get('sklearn', None)
-
-    #load rules (getExpertRules)
-    if rules:
-        logging.info('Sentry '+str(_key)+' expert_rules scope '+ str(rules))
-        rulesDct = getExpertRules(_key, db_store)
-
-    if sklearn:
-        algoDct = getAlgoDict(sklearn)
-        skInitDct = sklearnInitAlgoDict(algoDct, db_store)
-
-    r={}
-    s={}
-
-    ##########################################################################
-    #for line in logstream():
-    for line in logstream_v2():
-
-        line = line.decode('utf-8')
-        jline = json.loads(line)
-
-        if rules:
-            rule_hit = expertLogStreamRulesEngineGeneralJson(jline, rules, rulesDct)
-            if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, db_store, verbose)
-
-        if sklearn:
-            sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
-            if sklearn_hit: updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose)
-
-    ##########################################################################
-    return True
+#def sentryLogStream_v1(db_store, _key, gDict, verbose=False):
+#    #logging.info('Sentry watch-syslog logstream ')
+#
+#    conf = store.getData('configs', _key, db_store)
+#    if conf:
+#        config = json.loads(conf[0])
+#        logfile = config.get('logfile', None)
+#        rules   = config.get('rules', None)
+#        sklearn = config.get('sklearn', None)
+#
+#    #load rules (getExpertRules)
+#    if rules:
+#        logging.info('Sentry '+str(_key)+' expert_rules scope '+ str(rules))
+#        rulesDct = getExpertRules(_key, db_store)
+#
+#    if sklearn:
+#        algoDct = getAlgoDict(sklearn)
+#        skInitDct = sklearnInitAlgoDict(algoDct, db_store)
+#
+#    r={}
+#    s={}
+#
+#    ##########################################################################
+#    #for line in logstream():
+#    for line in logstream_v2():
+#
+#        line = line.decode('utf-8')
+#        jline = json.loads(line)
+#
+#        if rules:
+#            rule_hit = expertLogStreamRulesEngineGeneralJson(jline, rules, rulesDct)
+#            if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, db_store, verbose)
+#
+#        if sklearn:
+#            sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
+#            if sklearn_hit: updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose)
+#
+#    ##########################################################################
+#    return True
 
 def sampleLogStream(count, db_store):
 
@@ -4250,23 +4245,24 @@ def getDuration(_repeat):
     return scale, amt
 
 def sentryProcessor(db_store, gDict):
+    local_sigterm = False
+    try:
 
-    #try:
+        while (local_sigterm == False):
 
-    while (sigterm == False):
+            _prom = str(db_store) + '.prom'
 
-        _prom = str(db_store) + '.prom'
+            with open(_prom, 'w+') as _file:
+                for k,v in gDict.items():
+                    for item in v:
+                        _file.write(item + '\n')
 
-        with open(_prom, 'w+') as _file:
-            for k,v in gDict.items():
-                for item in v:
-                    _file.write(item + '\n')
+            time.sleep(10)
 
-        time.sleep(10)
-
-    #except BrokenPipeError as e:
-    #    logging.error('sentryProcessor ' + str(e))
-    #    return False
+    except BrokenPipeError as e:
+        local_sigterm = True
+        logging.error('sentryProcessor sigterm True ' + str(e))
+        return False
 
     return True
 
@@ -4385,10 +4381,21 @@ def processD():
 
 
 def sentryScheduler(db_store, gDict):
-    while (sigterm == False):
 
-        job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
-        job.start()
+    #run this every X
+
+    local_sigterm = False
+
+    while (local_sigterm == False):
+
+        try:
+            job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
+            job.start()
+        except Exception as e:
+            local_sigterm = True
+            job.join()
+            logging.error('SentryJobRunner (threading) sigterm True ' + str(e))
+            return False
 
         #List = []
         #tcount = 0
@@ -4403,11 +4410,21 @@ def sentryScheduler(db_store, gDict):
         #List.append('sentinel_process ' + str(pcount))
         #processD(List)
 
+        #try:
+        #    processD()
+        #except BrokenPipeError as e:
+        #    logging.error('processD ' + str(e))
+        #    break
+
+        #p = processD()
+        #print('processD ' + str(p))
+
         try:
-            processD()
+            p = processD()
         except BrokenPipeError as e:
-            logging.error('processD ' + str(e))
-            break
+            local_sigterm = True
+            logging.error('processD sigterm True ' + str(e))
+            return False
 
         time.sleep(3)
 
@@ -4447,6 +4464,8 @@ def procHTTPServer(port, metric_path, db_file):
 #    return None #"key doesn't exist"
 
 def sentryMode(db_file, verbose=False):
+
+    sigterm = False
 
     global db_store
     db_store = db_file
@@ -4637,10 +4656,11 @@ def sentryMode(db_file, verbose=False):
 
             p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
             p.start()
-            signal.pause()
+            p.join()
+            #signal.pause()
             
         else:
-            signal.pause()
+            #signal.pause()
 
             #try:
             #    signal.pause()
@@ -4651,13 +4671,13 @@ def sentryMode(db_file, verbose=False):
             #time.sleep(-1)
             #ValueError: sleep length must be non-negative
 
-            #import asyncio
-            #loop = asyncio.get_event_loop()
-            #try:
-            #    loop.run_forever()
-            #finally:
-            #    sigterm = True
-            #    loop.close()
+            import asyncio
+            loop = asyncio.get_event_loop()
+            try:
+                loop.run_forever()
+            finally:
+                sigterm = True
+                loop.close()
 
         print('pid ' + str(os.getpid()))
         #sys.exit(99)
