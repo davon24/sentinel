@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210321-3'
+__version__ = '1.6.20-1.dev-20210321-3b'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -23,7 +23,7 @@ import os, pwd, grp
 import select
 import re
 #import atexit
-#import signal
+import signal
 
 import logging
 loglevel = logging.INFO
@@ -4257,7 +4257,8 @@ def sentryProcessor(db_store, gDict, interval):
         
     _prom = str(db_store) + '.prom'
 
-    while (sigterm == False):
+    #while (sigterm == False):
+    while not exit.is_set():
         try:
             with open(_prom, 'w+') as _file:
                 for k,v in gDict.items():
@@ -4265,8 +4266,10 @@ def sentryProcessor(db_store, gDict, interval):
                         _file.write(item + '\n')
 
         #except BrokenPipeError as e:
-        except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+        #except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+        except Exception as e:
             logging.critical('sentryProcessor sigterm True ' + str(e))
+            exit.set()
             sigterm = True
             break
 
@@ -4395,14 +4398,17 @@ def sentryScheduler(db_store, gDict, interval):
 
     sigterm = False
 
-    while (sigterm == False):
+    #while (sigterm == False):
+    while not exit.is_set():
 
         try:
             job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
             job.start()
         #except BrokenPipeError as e:
-        except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+        #except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+        except Exception as e:
             logging.critical('sentryProcessJobs thread sigterm True ' + str(e))
+            exit.set()
             sigterm = True
             job.join()
             break
@@ -4410,8 +4416,10 @@ def sentryScheduler(db_store, gDict, interval):
         try:
             p = processD()
         #except BrokenPipeError as e:
-        except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+        #except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+        except Exception as e:
             logging.critical('processD sigterm True ' + str(e))
+            exit.set()
             sigterm = True
             break
 
@@ -4423,6 +4431,8 @@ def sentryScheduler(db_store, gDict, interval):
 
 def sentryCleanup(db_store):
 
+    exit.set()
+
     _prom = str(db_store) + '.prom'
 
     with open(_prom, "r") as _f:
@@ -4433,6 +4443,7 @@ def sentryCleanup(db_store):
 
     with open(_prom, "w") as _cf:
         _cf.write('')
+
 
     for proc in multiprocessing.active_children():
         print('proc name ', proc, ' ', proc.pid)
@@ -4477,6 +4488,10 @@ def procHTTPServer(port, metric_path, db_file):
 #    print("\nprogram exiting gracefully")
 #    sys.exit(0)
 
+exit = threading.Event()
+#def quit(signo, _frame):
+#    print("Interrupted by %d, shutting down" % signo)
+#    exit.set()
 
 def sentryMode(db_file, verbose=False):
 
@@ -4494,6 +4509,11 @@ def sentryMode(db_file, verbose=False):
 
     #signal.signal(signal.SIGINT, signal_handler)
     #signal.signal(signal.SIGTERM, signal_handler)
+
+    #for sig in ('TERM', 'HUP', 'INT'):
+        #signal.signal(getattr(signal, 'SIG'+sig), quit)
+        #signal.signal(getattr(signal, 'SIG'+sig), sentryCleanup(db_store))
+    #    print(sig)
 
 
     logging.info("Sentry Startup")
@@ -4583,6 +4603,7 @@ def sentryMode(db_file, verbose=False):
         #sys.exit(99)
 
     except (KeyboardInterrupt, SystemExit, Exception):
+        exit.set()
         sigterm = True
 
         sentryCleanup(db_store)
