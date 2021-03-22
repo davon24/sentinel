@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210321-1'
+__version__ = '1.6.20-1.dev-20210321-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -33,7 +33,7 @@ logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
 import store
 
-sigterm = False
+#sigterm = False
 
 #import smtplib
 #import ssl
@@ -4247,24 +4247,26 @@ def getDuration(_repeat):
     return scale, amt
 
 def sentryProcessor(db_store, gDict):
-    #sigterm = False
-    #try:
+
+    sigterm = False
         
     _prom = str(db_store) + '.prom'
 
-    while (sigterm == False):
+    try:
 
-        with open(_prom, 'w+') as _file:
-            for k,v in gDict.items():
-                for item in v:
-                    _file.write(item + '\n')
+        while (sigterm == False):
 
-        time.sleep(10)
+            with open(_prom, 'w+') as _file:
+                for k,v in gDict.items():
+                    for item in v:
+                        _file.write(item + '\n')
 
-    #except BrokenPipeError as e:
-    #    local_sigterm = True
-    #    logging.error('sentryProcessor sigterm True ' + str(e))
-    #    return False
+            time.sleep(10)
+
+    except BrokenPipeError as e:
+        sigterm = True
+        logging.critical('sentryProcessor sigterm True ' + str(e))
+        return False
 
     return True
 
@@ -4388,13 +4390,22 @@ def sentryScheduler(db_store, gDict):
 
     #local_sigterm = False
 
+    sigterm = False
+
     while (sigterm == False):
 
-        job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
-        job.start()
-        #job.join()
+        try:
 
-        p = processD()
+            job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
+            job.start()
+
+            p = processD()
+
+        except BrokenPipeError as e:
+            logging.critical('sentryScheduler sigterm True ' + str(e))
+            sigterm = True
+            job.join()
+            break
 
         #try:
         #    job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
@@ -4494,7 +4505,7 @@ def procHTTPServer(port, metric_path, db_file):
 
 def sentryMode(db_file, verbose=False):
 
-    #sigterm = False
+    sigterm = False
 
     global db_store
     db_store = db_file
