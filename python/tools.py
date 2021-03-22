@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210320-3'
+__version__ = '1.6.20-1.dev-20210321-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -264,9 +264,9 @@ def logstream_v2(_format='json'):
 
     except (KeyboardInterrupt, SystemExit, Exception) as e:
         #os.kill(f.pid, signal.SIGKILL)
-        #f.terminate() #SIGTERM
-        f.kill() #SIGKILL
-        logging.critical('Exception in logstream ' + str(e))
+        #f.kill() #SIGKILL
+        f.terminate() #SIGTERM
+        logging.critical('Exception in logstream_v2 ' + str(e))
         return False
 
     return True
@@ -892,7 +892,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     #load rules (getExpertRules)
     if rules:
         rulesDct = getExpertRules(_key, db_store)
-        _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'"'
+        _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
         gDict[_k] = [ 'sentinel_watch_syslog_rule_engine_info{' + _prom + '} 1.0' ]
         logging.info('Sentry '+str(_key)+' Expert_Rules Scope '+ str(rules))
         logging.info('Sentry Expert_Rules Loaded ' + str(len(rulesDct)) + ' ' + b2checksum(str(rulesDct)) )
@@ -920,7 +920,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
                 new_rulesDct = getExpertRules(_key, db_store)
                 if rulesDct != new_rulesDct:
                     rulesDct = getExpertRules(_key, db_store)
-                    _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'"'
+                    _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
                     gDict[_k] = [ 'sentinel_watch_syslog_rule_engine_info{' + _prom + '} 1.0' ]
                     logging.info('Sentry Expert_Rules Reloaded ' + str(len(rulesDct)) + ' ' + b2checksum(str(rulesDct)) )
                 end_time = time.time() + elapsed_interval
@@ -4244,25 +4244,25 @@ def getDuration(_repeat):
         
     return scale, amt
 
-def sentryProcessor(db_store, gDict):
-    local_sigterm = False
-    try:
+def sentryProcessor(db_store, gDict, sigterm):
+    #sigterm = False
+    #try:
+        
+    _prom = str(db_store) + '.prom'
 
-        while (local_sigterm == False):
+    while (sigterm == False):
 
-            _prom = str(db_store) + '.prom'
+        with open(_prom, 'w+') as _file:
+            for k,v in gDict.items():
+                for item in v:
+                    _file.write(item + '\n')
 
-            with open(_prom, 'w+') as _file:
-                for k,v in gDict.items():
-                    for item in v:
-                        _file.write(item + '\n')
+        time.sleep(10)
 
-            time.sleep(10)
-
-    except BrokenPipeError as e:
-        local_sigterm = True
-        logging.error('sentryProcessor sigterm True ' + str(e))
-        return False
+    #except BrokenPipeError as e:
+    #    local_sigterm = True
+    #    logging.error('sentryProcessor sigterm True ' + str(e))
+    #    return False
 
     return True
 
@@ -4380,19 +4380,19 @@ def processD():
     return True
 
 
-def sentryScheduler(db_store, gDict):
+def sentryScheduler(db_store, gDict, sigterm):
 
     #run this every X
 
-    local_sigterm = False
+    #local_sigterm = False
 
-    while (local_sigterm == False):
+    while (sigterm == False):
 
         try:
             job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
             job.start()
         except Exception as e:
-            local_sigterm = True
+            sigterm = True
             job.join()
             logging.error('SentryJobRunner (threading) sigterm True ' + str(e))
             return False
@@ -4422,7 +4422,7 @@ def sentryScheduler(db_store, gDict):
         try:
             p = processD()
         except BrokenPipeError as e:
-            local_sigterm = True
+            sigterm = True
             logging.error('processD sigterm True ' + str(e))
             return False
 
@@ -4431,13 +4431,37 @@ def sentryScheduler(db_store, gDict):
     return True
 
 
-def sentryCleanup(db_store):
+def sentryCleanup(db_store, gDict):
+    #print('Type ' + str(type(gDict)) + ' ' + str(gDict))
+
+    #import copy
+    #dDict = copy.deepcopy(gDict)
+
+    _prom = str(db_store) + '.prom.save'
+    with open(_prom, 'w+') as _file:
+        for k,v in gDict.items():
+            for item in v:
+                _file.write(item + '\n')
+
+
+
     _prom = str(db_store) + '.prom'
     with open(_prom, "w") as _file:
         _file.write('')
+
+    #f = open(str(db_store) + '.prom.save',"w")
+    #f.write( json.dumps(_Dict._getvalue()) )
+    #f.write( json.dumps(_Dict._getvalue()) )
+    #f.write( json.dumps(gDict.copy()) )
+    #f.close()
+
+    #_prom_save = str(db_store) + '.prom.save'
+    #with open(_prom_save, "w") as _save_file:
+    #    #_file.write(json.dumps(gDict.copy()))
+    #    _save_file.write(json.dumps(gDict._getvalue()))
+
     logging.info("Sentry Cleanup: True")
     return True
-
 
 def procHTTPServer(port, metric_path, db_file):
     logging.info('Sentry start HTTPServer port: '+str(port)+' path: '+str(metric_path))
@@ -4463,6 +4487,7 @@ def procHTTPServer(port, metric_path, db_file):
 #             return key
 #    return None #"key doesn't exist"
 
+
 def sentryMode(db_file, verbose=False):
 
     sigterm = False
@@ -4474,20 +4499,18 @@ def sentryMode(db_file, verbose=False):
     global gDict
     gDict = manager.dict()
 
-    atexit.register(sentryCleanup, db_store)
+    atexit.register(sentryCleanup, db_store, gDict)
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry Startup")
 
-    scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
+    scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict, sigterm), name="Scheduler")
     scheduler.start()
 
-    processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
+    processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict, sigterm), name="Processor")
     processor.start()
 
     http_server = False
-
-    #running=[]
 
     cDct={}
     configs = store.selectAll('configs', db_store)
@@ -4516,175 +4539,60 @@ def sentryMode(db_file, verbose=False):
 
             
     #########################
-
-
-
-
-    #if 'http_server' in cDct.values():
-    #    print('http_server')
-
-    #cDct={}
-    #cLst=[]
-    #configs = store.selectAll('configs', db_store)
-    #for config in configs:
-        #print(config[0], config[1], config[2])
-        #confDct[config[0]] = json.loads(config[2])
-        #confDct[config[0]] = config[2]
-    #    jconfig = json.loads(config[2])
-    #    _config = jconfig.get('config', None)
-
-        #confDct[config[0]] = [ _config, config[2] ]
-        #confDct[config[0]] = config[2]
-        #confLst.append(_config)
-        
-        #cDct[config[0]] = _config
-    #    cDct[config[0]] = _config
-
-
-    #print(cDct)
-
-    #if 'http_server' in cDct.items():
-    #if 'http_server' in cDct.values():
-    #if 'http_server' in cDct:
-    #    print('http_server')
-        #print(get_key(cDct, 'http_server'))
-        #c = store.select('configs', db_store)
-
-
-
-
-
-    #for k,v in confDct.items():
-    #    print(k,v)
-
-    #if 'http_server' in confDct.items():
-    #    print('http_server Dct')
-
-#    configs = store.selectAll('configs', db_store)
-#    for config in configs:
-#        #print(config[0], config[1], config[2])
-#        #print(config[2].get('config', None))
-#        #print(config[2])
-#        jconf = json.loads(config[2])
-#        _config = jconf.get('config', None)
-#        #print(config)
-#
-#        if _config == 'http_server':
-#            http_server = True
-#            logging.info('config: http_server')
-#
-#            _port = jconf['port']
-#            global _metric_path
-#            _metric_path = jconf['path']
-#
-#            #print(str(_port), str(_metric_path))
-
-
-    #    resin_watch = store.getData('configs', 'watch-resin-log', db_store)
-    #    watch = store.getData('configs', conf[0], db_store)
-    #    jconf = json.loads(conf[0])
-
-
-#
-#
 #    resin_watch = store.getData('configs', 'watch-resin-log', db_store)
-#    if resin_watch:
 #        resin_watch_config = json.loads(resin_watch[0])
 #        _logfile = resin_watch_config['logfile']
 #        _match   = resin_watch_config['match']
 #        #resin_tailer = threading.Thread(target=sentryTailResinLog, args=(db_store, gDict, _logfile), name="ResinLogWatch")
 #        #resin_tailer.setDaemon(True)
-#        #resin_tailer.start()
 #        resin_tailer = multiprocessing.Process(target=sentryTailResinLog, args=(db_store, gDict, _logfile))
-#        resin_tailer.start()
 #        #resin_tailer.join()
-#        #runlist.append(resin_tailer)
 #
 #    mariadb_watch = store.getData('configs', 'watch-mariadb-audit-log', db_store)
-#    if mariadb_watch:
-#        mariadb_watch_config = json.loads(mariadb_watch[0])
-#        _logfile = mariadb_watch_config['logfile']
 #        mariadb_tailer = multiprocessing.Process(target=sentryTailMariaDBAuditLog, args=(db_store, gDict, _logfile))
-#        mariadb_tailer.start()
-#        #mariadb_tailer.join()
-#        #runlist.append(mariadb_tailer)
 #
 #    ssh_watch = store.getData('configs', 'watch-ssh-linux-log', db_store)
-#    if ssh_watch:
 #        ssh_watch_config = json.loads(ssh_watch[0])
 #        _logfile  = ssh_watch_config['logfile']
 #        _thresh   = ssh_watch_config['thresh']
 #        _attempts = ssh_watch_config['attempts']
 #        _clear    = ssh_watch_config['clear']
 #        ssh_tailer = multiprocessing.Process(target=sentryIPSLinuxSSH, args=(db_store, gDict, _logfile))
-#        ssh_tailer.start()
-#        #ssh_tailer.join()
-#        #runlist.append(ssh_tailer)
 #
 #    syslog_watch = store.getData('configs', 'watch-syslog', db_store)
-#    if syslog_watch:
-#        #syslog_watch_config = json.loads(syslog_watch[0])
-#        #_search   = syslog_watch_config['search'] #KeyError:
-#        #_search   = syslog_watch_config.get('search', None)
-#
-#        syslog_tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, gDict, verbose))
-#        syslog_tailer.start()
-#        #syslog_tailer.join()
-#        #runlist.append(syslog_tailer)
-#
 #    prometheus_config = store.getData('configs', 'prometheus', db_store)
-#    #print(str(type(prometheus_config)) + ' prometheus_config ' + str(prometheus_config))
-#    if prometheus_config:
-#        prometheus_config = json.loads(prometheus_config[0])
-#        _port = prometheus_config['port']
-#        global _metric_path
-#        _metric_path = prometheus_config['path']
-#
+
 
 
     try:
         #if prometheus_config:
         if http_server:
-            #try:
-            #    p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
-            #    p.start()
-            #p.join()
-            #running.append(p)
-            #p.join()
-            #finally:
-            #    p.kill()
-
-            p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
-            p.start()
-            p.join()
-            #signal.pause()
+            try:
+                p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
+                p.start()
+            finally:
+                #sigterm = True
+                p.join()
             
         else:
-            #signal.pause()
-
-            #try:
-            #    signal.pause()
-            #except Exception as e:
-            #    print('Exception ' + str(e))
-
-            #time.sleep(60)
-            #time.sleep(-1)
-            #ValueError: sleep length must be non-negative
+            #signal.pause() #time.sleep(60) #time.sleep(-1) #ValueError: sleep length must be non-negative
 
             import asyncio
             loop = asyncio.get_event_loop()
             try:
                 loop.run_forever()
             finally:
-                sigterm = True
+                #sigterm = True
                 loop.close()
 
         print('pid ' + str(os.getpid()))
         #sys.exit(99)
 
     except (KeyboardInterrupt, SystemExit, Exception):
-        sigterm = True
-        sentryCleanup(db_store)
+        import copy
+        dDict = copy.deepcopy(gDict)
+
+        sentryCleanup(db_store, dDict)
 
         for proc in multiprocessing.active_children():
             print('proc name ', proc, ' ', proc.pid)
@@ -4697,6 +4605,8 @@ def sentryMode(db_file, verbose=False):
             else:
                 print('thread name', thread, ' ', thread.name)
                 thread.join()
+
+        sigterm = True
 
         logging.info("Sentry Shutdown: " + str(sigterm))
         #sys.exit(1)

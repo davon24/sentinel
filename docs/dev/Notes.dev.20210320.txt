@@ -23,5 +23,9 @@ i want it to first check diff based on time.
   ...so, every 10 seconds check if reload needed
 
 
+---
+
+done.  - time-based (30s) check if dict is diff, if so reload.
+
 
 

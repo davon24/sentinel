@@ -1,0 +1,21 @@
+
+- expire sentinel_watch_syslog_rule_engine objects.  
+these will accumulate on a long running system...
+only this data structure is this way...
+other obj are self mainanged via dict keys...
+
+  - just set a time-stamp on objs in json,
+    and run another process/thread that checks+removes
+
+---
+
+
+still want to add/use print(sys.getsizeof(mylist))
+
+---
+
+save existing gData, pickup history gData on startup
+
+
+
+
