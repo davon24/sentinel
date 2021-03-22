@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210321-3b'
+__version__ = '1.6.20-1.dev-20210322-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -32,8 +32,6 @@ datefmt = "%b %d %H:%M:%S"
 logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
 import store
-
-#sigterm = False
 
 #import smtplib
 #import ssl
@@ -255,7 +253,8 @@ def logstream_v2(_format='json'):
     #try:
 
     f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-    while (f.returncode == None):
+    #while (f.returncode == None):
+    while not exit.is_set():
         line = f.stdout.readline()
         if not line:
             time.sleep(1) #break
@@ -885,7 +884,6 @@ def sklearnInitAlgoDict(algoDct, db_store):
 def sentryLogStream(db_store, _key, gDict, verbose=False):
     #logging.info('Sentry watch-syslog logstream ')
 
-    _k = 'sentinel_watch_syslog_rule_engine_info'
 
     conf = store.getData('configs', _key, db_store)
     if conf:
@@ -897,6 +895,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     #load rules (getExpertRules)
     if rules:
         rulesDct = getExpertRules(_key, db_store)
+        _k = 'sentinel_watch_syslog_rule_engine_info'
         _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
         gDict[_k] = [ 'sentinel_watch_syslog_rule_engine_info{' + _prom + '} 1.0' ]
         logging.info('Sentry '+str(_key)+' Expert_Rules Scope '+ str(rules))
@@ -912,14 +911,18 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     elapsed_interval = 30 #1h is 60*60 (3600 seconds)
     end_time = time.time() + elapsed_interval
 
+
     ##########################################################################
     for line in logstream_v2():
+
+        if exit.is_set():
+            print('logstream_v2 exit is set')
+            break
 
         line = line.decode('utf-8')
         jline = json.loads(line)
 
         if rules:
-            #print(len(rulesDct))
 
             if time.time() > end_time:
                 new_rulesDct = getExpertRules(_key, db_store)
@@ -938,6 +941,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
             if sklearn_hit: updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose)
 
     ##########################################################################
+
     #return True
     return 'logstream.done'  
 
@@ -1116,155 +1120,6 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
     dta2 = row2[3]
     jsn2 = json.loads(dta2)
 
-    #print('compare ', compare_object(jsn1, jsn2))
-    #print('compareJson ', compareParsedJson(jsn1, jsn2))
-    #print(contained(jsn1, jsn2))
-
-    #print(checkDifference(jsn1,jsn2))
-
-    #print(jsn2)
-    #print(str(type(jsn1)))
-    #print(jsn1.keys()) 
-
-    #print(len(dta1.keys()))
-    #print(len(dta2.keys()))
-    #diffd = set(dta2) - set(dta1)
-    #print(diffd)
-
-    #print(len(jsn1.keys()))
-    #print(len(jsn2.keys())) 
-    #diff = set(jsn2) - set(jsn1)
-    #print(diff)
-
-    #common_pairs = dict()
-    #for key in jsn1:
-    #    if (key in jsn2 and jsn1[key] == jsn2[key]):
-    #        common_pairs[key]=jsn1[key]
-    #print(common_pairs)
-
-    #if a == b:
-    #    print('no diff')
-
-    #diff = set(b) - set(a)
-    #print(diff)
-
-    #a, b = json.dumps(jsn1, sort_keys=True), json.dumps(jsn2, sort_keys=True)
-    #same1 = (a == b)
-    #print('same1', same1)
-    #same2 = (ordered(jsn1) == ordered(jsn2))
-    #print('same2', same2)
-
-    #d3={}
-    #for key in jsn1:
-    #    if key in jsn2:
-    #        if jsn1[key] != jsn2[key]:
-    #            d3[key]=jsn1[key]
-
-    #print(str(d3))
-    #print(str(d3.keys()))
-
-    #_name = recursively_parse_json(jsn1, '_name')
-    #print(str(_name))
-
-    #for k,v in d3.items():
-    #    #print(k, v)
-    #    print(k)
-    #    #print(str(type(v)))    #<class 'list'>
-    #    #print(str(type(v[0]))) #<class 'dict'>
-    #    #print(str(type(v[1]))) #IndexError: list index out of range
-    #    #print(str(len(v)) +' '+ str(type(v)))
-    #    #for item in v:
-    #        #print(item)
-    #    d = getDct(v)
-    #    print(d.keys())
-    #    for k,v in d.items():
-    #        #print(k + ' ' + str(type(v)))
-    #        if k == '_name':
-    #            continue
-    #            #print('_name.name.name.name')
-    #            #print(k + ' ' + str(type(v)))
-
-    #        #print(k + ' ' + str(type(v)) + ' ' + str(v))
-    #        if type(v) == list:
-    #            print('List type: ' + str(k) + ' ' + str('v'))
-    #        else:
-    #            print('Not_ type: ' + str(k) + ' ' + str(type(v)))
-    #
-
-
-
-    #d3={}
-    #for key in jsn1:
-    #    if key in jsn2:
-    #        if jsn1[key] != jsn2[key]:
-    #            d3[key]=jsn1[key]
-    #print(len(jsn1.keys()))
-    #print(len(d3.keys()))
-
-    #d1 = dDct(jsn1, jsn2)
-    #print(len(d1))
-    #print(d1.keys())
-
-    #n1={}
-    #for k in d1:
-    #    n1[k]=jsn2[k]
-
-    #print(d1.keys())
-    #print(n1.keys())
-
-    #d2 = dDct(d1, n1)
-    #print(d2.items())
-
-    #n1={}
-    #n2={}
-    #for key in d1:
-    #    n1[key]=d1[key]
-    #    n2[key]=jsn2[key]
-#
-#    d2 = dDct(n1, n2)
-#    print(d2.keys())
-
-    #for key in d1:
-    #    if key in jsn2.keys():
-    #        print(key)
-
-    #for k,v in n1.items():
-    #    if v is str:
-    #        return 'val'
-
-    #for k,v in n1.items():
-    #   if v is not str:
-
-    #print(n1)
-            
-    #print(rObj(n1))        
-    #print('recusion ', recursion(jsn2))
-
-    #print(item_generator(jsn1, '_name'))
-        
-    #for _ in id_generator(jsn2):
-    #    print('id ', _)
-
-    #for k,v in d1.items():
-
-    #data = jsn1
-#    data = d1
-#    for element in data:
-#        if (isinstance(data[element], dict)):
-#            checkDict(data[element], element)
-#            #checkDict(data[element], 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'+str(element))
-#        elif (isinstance(data[element], list)):
-#            #checkList(data[element], element)
-#            #checkList(data[element], 'LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL'+str(element))
-#            checkList(data[element], "['"+str(element)+"']")
-
-    #    elif (isinstance(data[element], str)):
-    #        printField(data[element], element)
-    #    elif (isinstance(data[element], int)):
-    #        printField(data[element], element)
-
-    #SPAirPortDataType[0].spairport_airport_interfaces[0]._name : str
-
 #    s = data['SPAirPortDataType'][0]['spairport_airport_interfaces'][0]['_name']
 #    print('s is ' , s)
 #
@@ -1283,20 +1138,7 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
 #    print('jx is ' , str(jx))
 
 
-    #SPAirPortDataType[0]['spairport_airport_interfaces'][0]['_name']
-
-    #for item in parse(
-    #print(len(jsn1))
-    #print(len(jsn2))
-    #d1 = dDct(jsn1, jsn2)
-#    print(len(d1))
-
-
     ###############################
-
-    #L1 = jpaths(jsn1)
-    #L2 = jpaths(jsn2)
-    #L3 = jpaths(d1)
 
     D1 = jpaths(jsn1)
     D2 = jpaths(jsn2)
@@ -1425,11 +1267,7 @@ def printField(ele, prefix, D):
     return D
     #else:
     #    print(prefix, ":" , ele)
-
-    #print(prefix, ":" , ele)
-    #print(prefix, ":" , str(ele))
-
-#https://www.codementor.io/@simransinghal/working-with-json-data-in-python-165crbkiyk
+    #https://www.codementor.io/@simransinghal/working-with-json-data-in-python-165crbkiyk
 
 
 #def id_generator(d):
@@ -4253,11 +4091,10 @@ def sentryProcessor(db_store, gDict, interval):
 
     # run this every X
 
-    sigterm = False
-        
     _prom = str(db_store) + '.prom'
 
     #while (sigterm == False):
+    c=0
     while not exit.is_set():
         try:
             with open(_prom, 'w+') as _file:
@@ -4270,11 +4107,21 @@ def sentryProcessor(db_store, gDict, interval):
         except Exception as e:
             logging.critical('sentryProcessor sigterm True ' + str(e))
             exit.set()
-            sigterm = True
             break
 
         #time.sleep(10)
-        time.sleep(interval)
+        #time.sleep(interval)
+        for i in range(interval):
+            try:
+                time.sleep(1)
+            except Exception as e:
+                logging.critical('break.sentryProcessor ' + str(e))
+                exit.set()
+                break
+        c+=1
+        if c > 5:
+            c=0
+        #print(str(c))
 
     return True
 
@@ -4339,7 +4186,7 @@ def sentryProcessJobs(db_store, gDict):
     return run
 
 #def processD(List):
-def processD():
+def processD(gDict):
 
     #try:
 
@@ -4391,12 +4238,21 @@ def processD():
 
     return True
 
+def processE(gDict):
+    print('process E in the house')
+
+    for k,v in gDict.items():
+        if k.startswith('sentinel_watch_syslog_rule_engine'):
+            print(str(k))
+
+    return True
+
 
 def sentryScheduler(db_store, gDict, interval):
 
     #run this every X
 
-    sigterm = False
+    c=0
 
     #while (sigterm == False):
     while not exit.is_set():
@@ -4407,24 +4263,36 @@ def sentryScheduler(db_store, gDict, interval):
         #except BrokenPipeError as e:
         #except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
         except Exception as e:
-            logging.critical('sentryProcessJobs thread sigterm True ' + str(e))
+            logging.critical('sentryProcessJobs thread ' + str(e))
             exit.set()
-            sigterm = True
             job.join()
             break
 
         try:
-            p = processD()
+            pd = processD(gDict)
         #except BrokenPipeError as e:
         #except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
         except Exception as e:
-            logging.critical('processD sigterm True ' + str(e))
+            logging.critical('processD ' + str(e))
             exit.set()
-            sigterm = True
             break
 
+        pe = processE(gDict)
+
         #time.sleep(3)
-        time.sleep(interval)
+        #time.sleep(interval)
+        for i in range(interval):
+            try:
+                time.sleep(1)
+            except Exception as e:
+                logging.critical('break.sentryScheduler ' + str(e))
+                exit.set()
+                break
+
+        c+=1
+        if c > 5:
+            c=0
+        #print('c is ...' + str(c))
 
     return True
 
@@ -4488,14 +4356,25 @@ def procHTTPServer(port, metric_path, db_file):
 #    print("\nprogram exiting gracefully")
 #    sys.exit(0)
 
-exit = threading.Event()
 #def quit(signo, _frame):
 #    print("Interrupted by %d, shutting down" % signo)
 #    exit.set()
 
+def sentrySIGHUP(signum, stack):
+    logging.error('Sentry SIGHUP ' + str(signum))
+    return True
+
+#def sentrySIGINT(signum, stack):
+#    logging.error('sentrySIGINT')
+#    exit.set()
+#    return True
+
+
+exit = threading.Event()
+
 def sentryMode(db_file, verbose=False):
 
-    sigterm = False
+    #sigterm = False
 
     global db_store
     db_store = db_file
@@ -4515,6 +4394,18 @@ def sentryMode(db_file, verbose=False):
         #signal.signal(getattr(signal, 'SIG'+sig), sentryCleanup(db_store))
     #    print(sig)
 
+    signal.signal(signal.SIGHUP, sentrySIGHUP)
+
+    #signal.signal(signal.SIGINT, sentrySIGINT)
+
+    #signal.signal(signal.SIGINT, lambda signum, stack_frame: exit.set())
+
+    #signal.signal(signal.SIGINT, sentrySIGINT)
+
+    #signal.signal(signal.SIGINT, getattr(signal, 'SIGINT'), sentryCleanup(db_store))
+    #signal.signal(signal.SIGTERM, getattr(signal, 'SIGTERM'), sentryCleanup(db_store))
+
+    #signal.signal(signal.SIGHUP, sentrySIGHUP)
 
     logging.info("Sentry Startup")
 
@@ -4585,7 +4476,7 @@ def sentryMode(db_file, verbose=False):
                 p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
                 p.start()
             finally:
-                #sigterm = True
+                exit.set()
                 p.join()
             
         else:
@@ -4596,7 +4487,7 @@ def sentryMode(db_file, verbose=False):
             try:
                 loop.run_forever()
             finally:
-                #sigterm = True
+                exit.set()
                 loop.close()
 
         print('pid ' + str(os.getpid()))
@@ -4604,23 +4495,12 @@ def sentryMode(db_file, verbose=False):
 
     except (KeyboardInterrupt, SystemExit, Exception):
         exit.set()
-        sigterm = True
+        #sigterm = True
 
         sentryCleanup(db_store)
 
-        #for proc in multiprocessing.active_children():
-        #    print('proc name ', proc, ' ', proc.pid)
-        #    #os.kill(proc.pid, 9)
-        #    proc.terminate()
-
-        #for thread in threading.enumerate():
-        #    if thread.name == 'MainThread':
-        #        continue
-        #    else:
-        #        print('thread name', thread, ' ', thread.name)
-        #        thread.join()
-
-        logging.info("Sentry Shutdown: " + str(sigterm))
+        #logging.info("Sentry Shutdown: " + str(sigterm))
+        logging.info("Sentry Shutdown: " + str(exit.is_set()))
         #sys.exit(1)
 
     #return True
