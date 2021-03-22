@@ -25,6 +25,13 @@ atexit register running 2witce causing empty save file...  it fills first whack,
 
 smother... shutdown now.
 
+---
+
+new data structure
+
+sentinel_watch_syslog_rule_engine_info{rules_loaded="5",rules_b2sum="acb57e3328afa5b6a1d12966a66eecff4db84e51",load_time="2021-03-21 21:40:37"} 1.0
+
+
 
 
 

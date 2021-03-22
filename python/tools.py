@@ -4249,27 +4249,29 @@ def getDuration(_repeat):
         
     return scale, amt
 
-def sentryProcessor(db_store, gDict):
+def sentryProcessor(db_store, gDict, interval):
+
+    # run this every X
 
     sigterm = False
         
     _prom = str(db_store) + '.prom'
 
-    try:
-
-        while (sigterm == False):
-
+    while (sigterm == False):
+        try:
             with open(_prom, 'w+') as _file:
                 for k,v in gDict.items():
                     for item in v:
                         _file.write(item + '\n')
 
-            time.sleep(10)
+        #except BrokenPipeError as e:
+        except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+            logging.critical('sentryProcessor sigterm True ' + str(e))
+            sigterm = True
+            break
 
-    except BrokenPipeError as e:
-        sigterm = True
-        logging.critical('sentryProcessor sigterm True ' + str(e))
-        return False
+        #time.sleep(10)
+        time.sleep(interval)
 
     return True
 
@@ -4387,68 +4389,34 @@ def processD():
     return True
 
 
-def sentryScheduler(db_store, gDict):
+def sentryScheduler(db_store, gDict, interval):
 
     #run this every X
-
-    #local_sigterm = False
 
     sigterm = False
 
     while (sigterm == False):
 
         try:
-
             job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
             job.start()
-
-            p = processD()
-
-        except BrokenPipeError as e:
-            logging.critical('sentryScheduler sigterm True ' + str(e))
+        #except BrokenPipeError as e:
+        except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+            logging.critical('sentryProcessJobs thread sigterm True ' + str(e))
             sigterm = True
             job.join()
             break
 
-        #try:
-        #    job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
-        #    job.start()
-        #except Exception as e:
-        #    sigterm = True
-        #    job.join()
-        #    logging.error('SentryJobRunner (threading) sigterm True ' + str(e))
-        #    return False
-
-        #List = []
-        #tcount = 0
-        #for thread in threading.enumerate():
-        #    tcount += 1
-
-        #pcount = 0
-        #for proc in multiprocessing.active_children():
-        #    pcount += 1
-
-        #List.append('sentinel_threads ' + str(tcount))
-        #List.append('sentinel_process ' + str(pcount))
-        #processD(List)
-
-        #try:
-        #    processD()
+        try:
+            p = processD()
         #except BrokenPipeError as e:
-        #    logging.error('processD ' + str(e))
-        #    break
+        except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+            logging.critical('processD sigterm True ' + str(e))
+            sigterm = True
+            break
 
-        #p = processD()
-        #print('processD ' + str(p))
-
-        #try:
-        #    p = processD()
-        #except BrokenPipeError as e:
-        #    sigterm = True
-        #    logging.error('processD sigterm True ' + str(e))
-        #    return False
-
-        time.sleep(3)
+        #time.sleep(3)
+        time.sleep(interval)
 
     return True
 
@@ -4505,6 +4473,10 @@ def procHTTPServer(port, metric_path, db_file):
 #             return key
 #    return None #"key doesn't exist"
 
+#def signal_handler(signal, frame):
+#    print("\nprogram exiting gracefully")
+#    sys.exit(0)
+
 
 def sentryMode(db_file, verbose=False):
 
@@ -4520,12 +4492,16 @@ def sentryMode(db_file, verbose=False):
     #atexit.register(sentryCleanup, db_store)
     #signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
+    #signal.signal(signal.SIGINT, signal_handler)
+    #signal.signal(signal.SIGTERM, signal_handler)
+
+
     logging.info("Sentry Startup")
 
-    scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
+    scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict, 5), name="Scheduler")
     scheduler.start()
 
-    processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
+    processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict, 10), name="Processor")
     processor.start()
 
     http_server = False
