@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210322-1'
+__version__ = '1.6.20-1.dev-20210322-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4238,12 +4238,32 @@ def processD(gDict):
 
     return True
 
-def processE(gDict):
-    print('process E in the house')
+def processE(gDict, eDict): # i exist to expire
+    #print('process E in the house')
+
+    # as of python 3.7, "Dict keeps insertion order"
+    # https://mail.python.org/pipermail/python-dev/2017-December/151283.html
+    #first_item = gDict.get(next(iter(gDict)))
+    #print(str(first_item)) # ['sentinel_up 1']
+
+    _first_key = None
 
     for k,v in gDict.items():
-        if k.startswith('sentinel_watch_syslog_rule_engine'):
-            print(str(k))
+        if k.startswith('sentinel_watch_syslog_rule_engine-'):
+            #print('item: ' + str(k))
+            _first_key = k
+            break
+
+    #if _first_key:
+    #    print('_first_key ' + str(_first_key))
+
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    if _first_key not in eDict:
+        eDict[_first_key]=now
+    #else:
+    #    if eDict[_first_key] > now
+
+    #KR
 
     return True
 
@@ -4253,6 +4273,8 @@ def sentryScheduler(db_store, gDict, interval):
     #run this every X
 
     c=0
+
+    eDict={}
 
     #while (sigterm == False):
     while not exit.is_set():
@@ -4277,7 +4299,7 @@ def sentryScheduler(db_store, gDict, interval):
             exit.set()
             break
 
-        pe = processE(gDict)
+        pe = processE(gDict, eDict)
 
         #time.sleep(3)
         #time.sleep(interval)
