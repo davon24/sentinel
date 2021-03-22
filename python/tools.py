@@ -22,8 +22,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import os, pwd, grp
 import select
 import re
-import atexit
-import signal
+#import atexit
+#import signal
 
 import logging
 loglevel = logging.INFO
@@ -33,7 +33,7 @@ logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
 import store
 
-#sigterm = False
+sigterm = False
 
 #import smtplib
 #import ssl
@@ -252,22 +252,24 @@ def logstream_v2(_format='json'):
         logging.critical('Fail: No log stream.  No such file or directory')
         return False
 
-    try:
-        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-        while (f.returncode == None):
-            line = f.stdout.readline()
-            if not line:
-                time.sleep(1) #break
-            else:
-                yield line
-            sys.stdout.flush()
+    #try:
 
-    except (KeyboardInterrupt, SystemExit, Exception) as e:
-        #os.kill(f.pid, signal.SIGKILL)
-        #f.kill() #SIGKILL
-        f.terminate() #SIGTERM
-        logging.critical('Exception in logstream_v2 ' + str(e))
-        return False
+    f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+    while (f.returncode == None):
+        line = f.stdout.readline()
+        if not line:
+            time.sleep(1) #break
+        else:
+            yield line
+        sys.stdout.flush()
+
+    #except (KeyboardInterrupt, SystemExit, Exception) as e:
+    #    #os.kill(f.pid, signal.SIGKILL)
+    #    #f.kill() #SIGKILL
+    #    f.terminate() #SIGTERM
+    #    logging.critical('Exception in logstream_v2 ' + str(e))
+    #    #return False
+    #    sys.exit(1)
 
     return True
 
@@ -4244,7 +4246,7 @@ def getDuration(_repeat):
         
     return scale, amt
 
-def sentryProcessor(db_store, gDict, sigterm):
+def sentryProcessor(db_store, gDict):
     #sigterm = False
     #try:
         
@@ -4380,7 +4382,7 @@ def processD():
     return True
 
 
-def sentryScheduler(db_store, gDict, sigterm):
+def sentryScheduler(db_store, gDict):
 
     #run this every X
 
@@ -4388,14 +4390,20 @@ def sentryScheduler(db_store, gDict, sigterm):
 
     while (sigterm == False):
 
-        try:
-            job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
-            job.start()
-        except Exception as e:
-            sigterm = True
-            job.join()
-            logging.error('SentryJobRunner (threading) sigterm True ' + str(e))
-            return False
+        job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
+        job.start()
+        #job.join()
+
+        p = processD()
+
+        #try:
+        #    job = threading.Thread(target=sentryProcessJobs, args=(db_store, gDict), name="SentryJobRunner")
+        #    job.start()
+        #except Exception as e:
+        #    sigterm = True
+        #    job.join()
+        #    logging.error('SentryJobRunner (threading) sigterm True ' + str(e))
+        #    return False
 
         #List = []
         #tcount = 0
@@ -4419,46 +4427,42 @@ def sentryScheduler(db_store, gDict, sigterm):
         #p = processD()
         #print('processD ' + str(p))
 
-        try:
-            p = processD()
-        except BrokenPipeError as e:
-            sigterm = True
-            logging.error('processD sigterm True ' + str(e))
-            return False
+        #try:
+        #    p = processD()
+        #except BrokenPipeError as e:
+        #    sigterm = True
+        #    logging.error('processD sigterm True ' + str(e))
+        #    return False
 
         time.sleep(3)
 
     return True
 
 
-def sentryCleanup(db_store, gDict):
-    #print('Type ' + str(type(gDict)) + ' ' + str(gDict))
-
-    #import copy
-    #dDict = copy.deepcopy(gDict)
-
-    _prom = str(db_store) + '.prom.save'
-    with open(_prom, 'w+') as _file:
-        for k,v in gDict.items():
-            for item in v:
-                _file.write(item + '\n')
-
-
+def sentryCleanup(db_store):
 
     _prom = str(db_store) + '.prom'
-    with open(_prom, "w") as _file:
-        _file.write('')
 
-    #f = open(str(db_store) + '.prom.save',"w")
-    #f.write( json.dumps(_Dict._getvalue()) )
-    #f.write( json.dumps(_Dict._getvalue()) )
-    #f.write( json.dumps(gDict.copy()) )
-    #f.close()
+    with open(_prom, "r") as _f:
+        content = _f.read()
 
-    #_prom_save = str(db_store) + '.prom.save'
-    #with open(_prom_save, "w") as _save_file:
-    #    #_file.write(json.dumps(gDict.copy()))
-    #    _save_file.write(json.dumps(gDict._getvalue()))
+    with open(_prom + '.save', "w+") as _sf:
+        _sf.write(content)
+
+    with open(_prom, "w") as _cf:
+        _cf.write('')
+
+    for proc in multiprocessing.active_children():
+        print('proc name ', proc, ' ', proc.pid)
+        #os.kill(proc.pid, 9)
+        proc.terminate()
+
+    for thread in threading.enumerate():
+        if thread.name == 'MainThread':
+            continue
+        else:
+            print('thread name', thread, ' ', thread.name)
+            thread.join()
 
     logging.info("Sentry Cleanup: True")
     return True
@@ -4490,7 +4494,7 @@ def procHTTPServer(port, metric_path, db_file):
 
 def sentryMode(db_file, verbose=False):
 
-    sigterm = False
+    #sigterm = False
 
     global db_store
     db_store = db_file
@@ -4499,15 +4503,15 @@ def sentryMode(db_file, verbose=False):
     global gDict
     gDict = manager.dict()
 
-    atexit.register(sentryCleanup, db_store, gDict)
-    signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
+    #atexit.register(sentryCleanup, db_store)
+    #signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
 
     logging.info("Sentry Startup")
 
-    scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict, sigterm), name="Scheduler")
+    scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict), name="Scheduler")
     scheduler.start()
 
-    processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict, sigterm), name="Processor")
+    processor = threading.Thread(target=sentryProcessor, args=(db_store, gDict), name="Processor")
     processor.start()
 
     http_server = False
@@ -4589,24 +4593,21 @@ def sentryMode(db_file, verbose=False):
         #sys.exit(99)
 
     except (KeyboardInterrupt, SystemExit, Exception):
-        import copy
-        dDict = copy.deepcopy(gDict)
-
-        sentryCleanup(db_store, dDict)
-
-        for proc in multiprocessing.active_children():
-            print('proc name ', proc, ' ', proc.pid)
-            #os.kill(proc.pid, 9)
-            proc.terminate()
-
-        for thread in threading.enumerate():
-            if thread.name == 'MainThread':
-                continue
-            else:
-                print('thread name', thread, ' ', thread.name)
-                thread.join()
-
         sigterm = True
+
+        sentryCleanup(db_store)
+
+        #for proc in multiprocessing.active_children():
+        #    print('proc name ', proc, ' ', proc.pid)
+        #    #os.kill(proc.pid, 9)
+        #    proc.terminate()
+
+        #for thread in threading.enumerate():
+        #    if thread.name == 'MainThread':
+        #        continue
+        #    else:
+        #        print('thread name', thread, ' ', thread.name)
+        #        thread.join()
 
         logging.info("Sentry Shutdown: " + str(sigterm))
         #sys.exit(1)

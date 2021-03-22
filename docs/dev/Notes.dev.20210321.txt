@@ -16,6 +16,9 @@ still want to add/use print(sys.getsizeof(mylist))
 
 save existing gData, pickup history gData on startup
 
+---
 
+
+atexit register running 2witce causing empty save file...  it fills first whack, then zeros on second...
 
 
