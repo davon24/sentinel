@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210322-2'
+__version__ = '1.6.20-1.dev-20210322-3'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4239,7 +4239,7 @@ def processD(gDict):
     return True
 
 def processE(gDict, eDict): # i exist to expire
-    #print('process E in the house')
+    print('process E in the house')
 
     # as of python 3.7, "Dict keeps insertion order"
     # https://mail.python.org/pipermail/python-dev/2017-December/151283.html
@@ -4254,14 +4254,18 @@ def processE(gDict, eDict): # i exist to expire
             _first_key = k
             break
 
-    #if _first_key:
-    #    print('_first_key ' + str(_first_key))
+    if _first_key:
+        print('_first_key ' + str(_first_key))
+        #now = time.strftime("%Y-%m-%d %H:%M:%S")
+        now = time.time()
+        if _first_key not in eDict:
+            end_time = now + 30
+            eDict[_first_key] = int(end_time)
+        else:
+            #if int(eDict[_first_key]) > int(now):
+            if int(now) > int(eDict[_first_key]):
+                print('ExpireThis ' + str(_first_key) + ' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
 
-    now = time.strftime("%Y-%m-%d %H:%M:%S")
-    if _first_key not in eDict:
-        eDict[_first_key]=now
-    #else:
-    #    if eDict[_first_key] > now
 
     #KR
 
