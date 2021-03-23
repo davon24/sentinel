@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210322-5'
+__version__ = '1.6.20-1.dev-20210323-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -792,13 +792,25 @@ def sklearnPredict(line, algoDct, skInitDct):
 
     return pDct
 
-def updategDictR(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
+def updategDictR(_key, gDict, rule_hit, r, line, rulesDct, db_store,  verbose=False):
+
+    #print('_key ' + str(_key))
+    #print('gDict ' + str(gDict))
+    #print('rule_hit ' + str(rule_hit))
+    #print('r ' + str(r))
+    #print('rulesDct ' + str(rulesDct))
 
     for key in rule_hit:
 
         _r = rule_hit[key][0]
         b = rule_hit[key][1]
         d = rule_hit[key][2]
+
+        #print('Expire in json ... ' + str(rulesDct[_r]))
+        rdata = json.loads(rulesDct[_r])
+        #print('rdata ' + str(rdata))
+        expire = rdata.get("expire", None)
+        #print('expire ' + str(expire))
 
         if b in r.keys():
             seen = True
@@ -811,17 +823,14 @@ def updategDictR(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
 
         _k = 'sentinel_watch_syslog_rule_engine-'+str(_r)+'-'+str(b)
 
-        #_prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(json.dumps(d)) + '"'
-
-        #_prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d).replace('"','\\"') + '"'
-
-        #_prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(d).replace('"',' ') + '"'
-
         _data = promDataSanitizer(str(d))
 
         now = time.strftime("%Y-%m-%d %H:%M:%S")
 
-        _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(_data) + '",date="'+str(now)+'"'
+        if expire:
+            _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(_data) + '",expire="'+ str(expire) +'",date="'+str(now)+'"'
+        else:
+            _prom = 'config="'+str(_key)+'",rule="'+str(_r)+'",b2sum="'+str(b)+'",seen="'+str(seen)+'",data="'+str(_data)+'",date="'+str(now)+'"'
 
         gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(r[b]) ]
 
@@ -830,6 +839,41 @@ def updategDictR(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
         if verbose: print(_k, gDict[_k])
 
     return True
+
+
+
+#def updategDictR_V1(_key, gDict, rule_hit, r, line, db_store,  verbose=False):
+#
+#    for key in rule_hit:
+#
+#        _r = rule_hit[key][0]
+#        b = rule_hit[key][1]
+#        d = rule_hit[key][2]
+#
+#        if b in r.keys():
+#            seen = True
+#            v=r[b]
+#            v+=1
+#            r[b]=v
+#        else:
+#            seen = False
+#            r[b]=1
+#
+#        _k = 'sentinel_watch_syslog_rule_engine-'+str(_r)+'-'+str(b)
+#
+#        _data = promDataSanitizer(str(d))
+#
+#        now = time.strftime("%Y-%m-%d %H:%M:%S")
+#
+#        _prom = 'config="'+str(_key)+'",rule="' + str(_r) + '",b2sum="' + str(b) + '",seen="' + str(seen) + '",data="' + str(_data) + '",date="'+str(now)+'"'
+#
+#        gDict[_k] = [ 'sentinel_watch_syslog_rule_engine{' + _prom + '} ' + str(r[b]) ]
+#
+#        #store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(r[b]), line, db_store)
+#
+#        if verbose: print(_k, gDict[_k])
+#
+#    return True
 
 def promDataSanitizer(_str):
     _str = _str.replace('"',' ')  #quote
@@ -895,7 +939,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     #load rules (getExpertRules)
     if rules:
         rulesDct = getExpertRules(_key, db_store)
-        _k = 'sentinel_watch_syslog_rule_engine_info'
+        _k = 'sentinel_watch_syslog_rule_engine_info-1'
         _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
         gDict[_k] = [ 'sentinel_watch_syslog_rule_engine_info{' + _prom + '} 1.0' ]
         logging.info('Sentry '+str(_key)+' Expert_Rules Scope '+ str(rules))
@@ -934,7 +978,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
                 end_time = time.time() + elapsed_interval
 
             rule_hit = expertLogStreamRulesEngineGeneralJson(jline, rules, rulesDct)
-            if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, db_store, verbose)
+            if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, rulesDct, db_store, verbose)
 
         if sklearn:
             sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
@@ -1645,7 +1689,7 @@ def sentryLogTail(db_store, key, gDict, verbose=False):
         if _rules: 
             #rule_hit = expertLogStreamRulesEngineGeneralStr(line, _rules, rulesDct)
             rule_hit = expertLogStreamRulesEngineGeneralStr(line, _format, rulesDct)
-            if rule_hit: updategDictR(key, gDict, rule_hit, r, line, db_store, verbose)
+            if rule_hit: updategDictR(key, gDict, rule_hit, r, line, rulesDct, db_store, verbose)
 
         if _sklearn:
             sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
@@ -4248,6 +4292,8 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
     #first_item = gDict.get(next(iter(gDict)))
     #print(str(first_item)) # ['sentinel_up 1']
 
+    verbose = True
+
     _first_key = None
 
     for k,v in gDict.items():
@@ -4261,21 +4307,58 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
         now = time.time()
         if _first_key not in eDict:
 
+            #KR
+            #no rulesDict, pull/extract expire from json here
             #json has "expire":"3600"?
-            print('gDict jdata ' + str(gDict[_first_key]))
+            #eh, its not json, its prometheus data
+            #print('gDict prom data ' + str(gDict[_first_key])) #prometheus data structure
+            #gDict prom data ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-X",b2sum="d3ca1737adc3396cf64e052dc462efb5ec13e623",seen="True",data="LQM-WiFi: (5G) txRTSFrm=16 txRTSFail=0 rxCTSUcast=14 rxRTSUcast=14 txCTSFrm=14 txAMPDU=14 rxBACK=14 txPhyError=0 txAllFrm=75 txMPDU=2 txUcast=19 rxACKUcast=5",expire="3600",date="2021-03-23 10:11:49"} 2']
 
+            _expire = promDataParser('expire', gDict[_first_key])
+            print('_expire from gDict ' + str(_expire))
 
             end_time = now + expire
             eDict[_first_key] = int(end_time)
         else:
             if int(now) > int(eDict[_first_key]):
-                #print('ExpireThis ' + str(_first_key) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
+                if verbose: print('ExpireThis ' + str(_first_key) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
                 gDict.pop(_first_key)
 
-    #KR
-    #rather than pass rulesDict, pull/extract expire from json here
 
     return True
+
+def promDataParser(promKey, promData):
+    rtn = None
+
+    #print('promData ' + str(type(promData))) #<class 'list'>
+    if isinstance(promData, list):
+        #print("its a list")
+        promData = promData[0]
+    #print('promData ' + str(type(promData))) #<class 'str'>
+    #print('promData: ' + promData)
+    #sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-X",b2sum="2ed2fc412bfa54650d00fc5092b06ea320abf563",seen="True",data="LQM-WiFi: (5G) txRTSFrm=24 {txUcast=16} { } rxACKUcast=7",expire="3600",date="2021-03-23 10:28:07"} 2
+
+    data = promData
+
+    data = data[data.find('{'):]
+    data = data.lstrip('{')
+    data = data[:data.rfind('}')] #right find!
+    data = data.split(',')
+
+    #data is a list now...
+    for item in data:
+        #key = item.split('=')[0]
+        #val = item.split('=')[1] #if the val has '=' in it!
+        i = item.split('=', 1) #max split 1
+        key = i[0]
+        val = i[1]
+
+        #print(key, val)
+        if key == promKey:
+            #print(key, val)
+            rtn = val
+
+    return rtn
 
 
 def sentryScheduler(db_store, gDict, interval):
@@ -4316,6 +4399,7 @@ def sentryScheduler(db_store, gDict, interval):
         #3d  259200
         #1d  86400
         #1h  3600
+        #30s 30
 
         #time.sleep(3)
         #time.sleep(interval)
