@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210322-4'
+__version__ = '1.6.20-1.dev-20210322-5'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4260,6 +4260,11 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
         #print('_first_key ' + str(_first_key))
         now = time.time()
         if _first_key not in eDict:
+
+            #json has "expire":"3600"?
+            print('gDict jdata ' + str(gDict[_first_key]))
+
+
             end_time = now + expire
             eDict[_first_key] = int(end_time)
         else:
@@ -4268,6 +4273,7 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
                 gDict.pop(_first_key)
 
     #KR
+    #rather than pass rulesDict, pull/extract expire from json here
 
     return True
 
@@ -4303,7 +4309,8 @@ def sentryScheduler(db_store, gDict, interval):
             exit.set()
             break
 
-        pe = processE(gDict, eDict, expire=432000)
+        pe = processE(gDict, eDict, expire=30)
+        #pe = processE(gDict, eDict, expire=432000)
         #10d 864000
         #5d  432000
         #3d  259200
