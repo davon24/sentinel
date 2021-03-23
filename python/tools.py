@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210323-2'
+__version__ = '1.6.20-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4309,12 +4309,8 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
 
             end_time = now + expire
 
-            #KR
-            #no rulesDict, pull/extract expire from json here
-            #json has "expire":"3600"?
-            #eh, its not json, its prometheus data
             #print('gDict prom data ' + str(gDict[_first_key])) #prometheus data structure
-            #gDict prom data ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-X",b2sum="d3ca1737adc3396cf64e052dc462efb5ec13e623",seen="True",data="LQM-WiFi: (5G) txRTSFrm=16 txRTSFail=0 rxCTSUcast=14 rxRTSUcast=14 txCTSFrm=14 txAMPDU=14 rxBACK=14 txPhyError=0 txAllFrm=75 txMPDU=2 txUcast=19 rxACKUcast=5",expire="3600",date="2021-03-23 10:11:49"} 2']
+            #gDict prom data ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-X",b2sum="d3ca1737adc3396cf64e052dc462efb5ec13e623",seen="True",data="LQM-WiFi: (5G) txRTSFrm=16 txRTSFail=0 {txUcast=19} { } rxACKUcast=5",expire="3600",date="2021-03-23 10:11:49"} 2']
 
             _expire = promDataParser('expire', gDict[_first_key])
             #print('_expire from gDict ' + str(_expire))
@@ -4332,7 +4328,6 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
                 if verbose: print('ExpireThis ' + str(_first_key) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
                 gDict.pop(_first_key)
 
-    #hmm.  if a rule is already set expire, update rule expire="new" will not work. in this methode, time is set at eDict entry...  have to figure out how to do this...
 
     return True
 
@@ -4431,7 +4426,7 @@ def sentryScheduler(db_store, gDict, interval):
         c+=1
         if c > 5:
             #only run this every 5th...
-            pe = processE(gDict, eDict, expire=30)
+            pe = processE(gDict, eDict, expire=864000)
             c=0
         #print('c is ...' + str(c))
 
