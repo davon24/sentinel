@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1.dev-20210322-3'
+__version__ = '1.6.20-1.dev-20210322-4'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4238,8 +4238,10 @@ def processD(gDict):
 
     return True
 
-def processE(gDict, eDict): # i exist to expire
-    print('process E in the house')
+def processE(gDict, eDict, expire=864000): # i exist to expire
+    #print('process E in the house')
+    #1h  is 60*60 (3600 seconds)
+    #10d is 864000
 
     # as of python 3.7, "Dict keeps insertion order"
     # https://mail.python.org/pipermail/python-dev/2017-December/151283.html
@@ -4255,17 +4257,15 @@ def processE(gDict, eDict): # i exist to expire
             break
 
     if _first_key:
-        print('_first_key ' + str(_first_key))
-        #now = time.strftime("%Y-%m-%d %H:%M:%S")
+        #print('_first_key ' + str(_first_key))
         now = time.time()
         if _first_key not in eDict:
-            end_time = now + 30
+            end_time = now + expire
             eDict[_first_key] = int(end_time)
         else:
-            #if int(eDict[_first_key]) > int(now):
             if int(now) > int(eDict[_first_key]):
-                print('ExpireThis ' + str(_first_key) + ' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
-
+                #print('ExpireThis ' + str(_first_key) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
+                gDict.pop(_first_key)
 
     #KR
 
@@ -4303,7 +4303,12 @@ def sentryScheduler(db_store, gDict, interval):
             exit.set()
             break
 
-        pe = processE(gDict, eDict)
+        pe = processE(gDict, eDict, expire=432000)
+        #10d 864000
+        #5d  432000
+        #3d  259200
+        #1d  86400
+        #1h  3600
 
         #time.sleep(3)
         #time.sleep(interval)
