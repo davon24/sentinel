@@ -21,3 +21,6 @@ pass rulesDict to processE? no
 parse gDict (prometheus data structure) for expire...
 
 
+#hmm.  if a rule is already set expire, update rule expire="new" will not work. in this methode, time is set at eDict entry...  have to figure out how to do this...
+
+
