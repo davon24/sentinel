@@ -16,5 +16,15 @@ used a Dict (eDict) to keep time stamps.  this keeps all mgmt in memory. is fast
 next, TODO, make expire=864000 configureable via configs
 
 
+---
+
+best entry point for "expire":"3600" is...
+configs require process HUP,
+rules are already auto reloading, and will allow per-rule is nice fine grain control
+
+PROTOTYPE
+```
+sentinel update-rule rule-X '{"config":"watch-syslog","search":"Error","ignorecase":"False","data":["eventMessage"],"expire":"3600"}'
+```
 
 
