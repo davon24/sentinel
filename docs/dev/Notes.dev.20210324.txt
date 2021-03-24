@@ -1,0 +1,6 @@
+
+Mar 24 14:29:27 ubuntu254 kernel: IPv6: eth0: IPv6 duplicate address 2603:8000:2602:2500:ba27:ebff:fe2c:191e used by 00:a0:c6:00:00:01 detected!
+
+sentinel update-rule rule-7 '{"config":"watch-syslog","search":"duplicate address","data":["MESSAGE"]}'
+
+

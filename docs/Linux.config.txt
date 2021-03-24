@@ -13,6 +13,7 @@ sentinel update-rule rule-3 '{"config":"watch-syslog","search":"Killed process",
 sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["MESSAGE"]}'
 sentinel update-rule rule-5 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"sudo"},{"PRIORITY":"5"}]}'
 sentinel update-rule rule-6 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"su"},{"PRIORITY":"5"}]}'
+sentinel update-rule rule-7 '{"config":"watch-syslog","search":"duplicate address","data":["MESSAGE"],"expire":"86400"}'
 
 #sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["MESSAGE"],"not":["xfs collector failed"]}'
 
