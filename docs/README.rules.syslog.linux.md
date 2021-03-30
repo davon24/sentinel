@@ -31,4 +31,14 @@ sentinel update-config watch-syslog-stream '{"config":"logstream","logfile":"str
 sentinel update-rule expert-rule-1 '{"config":"watch-syslog-stream","match":[{"SYSLOG_IDENTIFIER":"systemd-logind"},{"_COMM":"systemd-logind"},{"_EXE":"/lib/systemd/systemd-logind"},{"_CMDLINE":"/lib/systemd/systemd-logind"}]}'
 ```
 
+---
+
+new data structure  "expire":"3600", will set expire.  864000 is default expire
+
+```
+sentinel update-rule rule-X '{"config":"watch-syslog","search":"Error","ignorecase":"False","data":["eventMessage"],"expire":"3600"}'
+```
+
+
+
 

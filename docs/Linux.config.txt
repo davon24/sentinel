@@ -6,6 +6,7 @@ sentinel established-rule ALLOW tcp6 127.0.0.1 '*' 127.0.0.1 '*'
 sentinel update-job proc-monitor '{"repeat": "5min", "job": "ps-check"}' 
 
 sentinel update-config watch-syslog '{"config":"logstream","logfile":"stream","rules":["MESSAGE","SYSLOG_IDENTIFIER","PRIORITY","_CMDLINE","_EXE"]}'
+#sentinel update-config watch-syslog '{"config":"tail","logfile":"/var/log/messages","rules":["MESSAGE","SYSLOG_IDENTIFIER","PRIORITY","_CMDLINE","_EXE"]}'
 
 sentinel update-rule rule-1 '{"config":"watch-syslog","search":"Call Trace","ignorecase":"False","data":["MESSAGE"]}'
 sentinel update-rule rule-2 '{"config":"watch-syslog","search":"Out of memory","ignorecase":"False","data":["MESSAGE"]}'

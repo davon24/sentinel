@@ -1,10 +1,28 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.20-1'
+__version__ = '1.6.21-1.dev-20210330-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
 import multiprocessing
+
+#https://docs.python.org/3.8/library/multiprocessing.shared_memory.html
+#    manager = multiprocessing.Manager()
+#    global gDict
+#    gDict = manager.dict()
+
+#from multiprocessing.managers import SharedMemoryManager
+#smm = SharedMemoryManager()
+#smm.start()
+#sl = smm.ShareableList(range(4))
+
+#with SharedMemoryManager() as smm:
+#    sl = smm.ShareableList(range(2000))
+
+#shm.name  # We did not specify a name so one was chosen for us
+#'psm_21467_46075'
+
+#class multiprocessing.shared_memory.SharedMemory(name=None, create=False, size=0)
 
 import sys
 import time

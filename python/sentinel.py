@@ -183,7 +183,6 @@ def usage():
 
                 watch-resin-log
                 watch-mariadb-audit-log
-                watch-ssh
 
 Version: {} '''.format(__version__))
 
