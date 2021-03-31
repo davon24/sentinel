@@ -1,0 +1,23 @@
+
+
+🍀 karl.rink@Karl-MacBook-Pro python % sentinel get-mem
+ShareableList([0, 1, 2, 3, 4], name='token_name')
+🍀 karl.rink@Karl-MacBook-Pro python % /Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/resource_tracker.py:216: UserWarning: resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+
+🍀 karl.rink@Karl-MacBook-Pro python % sentinel get-mem
+Traceback (most recent call last):
+  File "/opt/sentinel/sentinel.py", line 1198, in <module>
+    sml = shared_memory.ShareableList(name='token_name')
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/shared_memory.py", line 314, in __init__
+    self.shm = SharedMemory(name)
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/shared_memory.py", line 100, in __init__
+    self._fd = _posixshmem.shm_open(
+FileNotFoundError: [Errno 2] No such file or directory: '/token_name'
+🍀 karl.rink@Karl-MacBook-Pro python %
+
+https://stackoverflow.com/questions/56877636/understanding-shared-memory-in-python-3-8
+
+hmmm, share data between two different unshared processes via mmap instead...
+
+

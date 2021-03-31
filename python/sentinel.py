@@ -184,6 +184,8 @@ def usage():
                 watch-resin-log
                 watch-mariadb-audit-log
 
+        get-mem
+
 Version: {} '''.format(__version__))
 
 
@@ -1163,6 +1165,43 @@ if __name__ == '__main__':
             get = tools.getSystemProfileData(rowid, data, db_store)
             print(get)
             sys.exit(0)
+
+        #if sys.argv[1] == 'get-mem':
+        #    get = tools.getSharedMemory('sentinel')
+        #    print(str(get))
+        #    sys.exit(0)
+
+        #if sys.argv[1] == 'get-mem':
+        #    from multiprocessing import shared_memory
+        #    shm = shared_memory.SharedMemory('sentinel', create=False)
+        #    print(str(shm))
+        #    #shm.close()
+        #    #shm.unlink()
+        #    sys.exit(0)
+
+        #if sys.argv[1] == 'get-mem':
+        #    from multiprocessing import shared_memory
+        #    sml = shared_memory.ShareableList(name='sentinel')
+        #    print(str(sml))
+        #    sml.close()
+        #    sml.unlink()
+        #    sys.exit(0)
+
+        #if sys.argv[1] == 'get-smd':
+        #    from shared_memory_dict import SharedMemoryDict
+        #    smd = SharedMemoryDict(name='sentinel', size=1024)
+        #    print(str(smd))
+        #    sys.exit(0)
+
+        if sys.argv[1] == 'get-mem':
+            from multiprocessing import shared_memory
+            sml = shared_memory.ShareableList(name='token_name')
+            print(str(sml))
+            #sml.close()
+            #sml.unlink()
+            sys.exit(0)
+
+
 
 
         else:

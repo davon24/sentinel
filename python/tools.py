@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.21-1.dev-20210331-1'
+__version__ = '1.6.21-1.dev-20210331-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4543,7 +4543,9 @@ def sentrySIGHUP(signum, stack):
 #    shared_memory = multiprocessing.shared_memory.SharedMemory(name=name)
 #    shared_memory.unlink()
 
-
+#def getSharedMemory(_name) -> None:
+#    from multiprocessing import shared_memory
+#    return shared_memory.SharedMemory(name=_name)
 
 exit = threading.Event()
 
@@ -4574,13 +4576,39 @@ def sentryMode(db_store, verbose=False):
     #sml = multiprocessing.shared_memory.ShareableList(sequence=[],  name="SentinelSharedList")
     #notably differs from the built-in list type in that these lists can not change their overall length (i.e. no append, insert, etc.) and do not support the dynamic creation of new ShareableList instances via slicing
 
-    shm = multiprocessing.shared_memory.SharedMemory(name="sentinel", create=True, size=1024)
-    print(str(shm.name))
+    #shm = multiprocessing.shared_memory.SharedMemory(name="sentinel", create=True, size=1024)
+    #print(str(shm.name))
     #print(str(shm.create)) #AttributeError: 'SharedMemory' object has no attribute 'create'
-    print(str(shm.size))
+    #print(str(shm.size))
 
     #shm = create_shared_memory(name='sentinel', size=1024)
     #print(str(shm.name))
+
+
+    #_buffer = shm.buf
+    #_buffer[:4] = bytearray([22, 72, 4, 55]) 
+    #_buffer[4] = b'sentinel'
+    #_buffer[4] = 100
+
+    #shm.buf[:5] = b'howdy'
+    #_buffer[:8] = b'sentinel'
+
+    #sml = shared_memory.ShareableList(range(5))
+
+    #sml = multiprocessing.shared_memory.ShareableList(range(5), name="sentinel")
+
+    #from multiprocessing.managers import SharedMemoryManager
+    #smm = SharedMemoryManager(name='sentinel')
+    #smm.start()
+    #sl = smm.ShareableList(range(4))
+
+    #https://pypi.org/project/shared-memory-dict/
+    #from shared_memory_dict import SharedMemoryDict
+    #smd = SharedMemoryDict(name='sentinel', size=1024)
+    #smd['sentinel-key'] = 'sentinel-value-of-any-type'
+
+    from multiprocessing import shared_memory
+    l = shared_memory.ShareableList(range(5), name='token_name')
 
     #atexit.register(sentryCleanup, db_store)
     #signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
@@ -4687,8 +4715,8 @@ def sentryMode(db_store, verbose=False):
 
         sentryCleanup(db_store)
 
-        shm.close()
-        shm.unlink()
+        #shm.close()
+        #shm.unlink()
 
         #logging.info("Sentry Shutdown: " + str(sigterm))
         logging.info("Sentry Shutdown: " + str(exit.is_set()))
