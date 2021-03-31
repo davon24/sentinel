@@ -20,4 +20,16 @@ https://stackoverflow.com/questions/56877636/understanding-shared-memory-in-pyth
 
 hmmm, share data between two different unshared processes via mmap instead...
 
+---
 
+ok, checked out native python3.8/multiprocessing/shared_memory
+ok, checked out the shared memory manager too...
+ok, checked out https://pypi.org/project/shared-memory-dict
+ok, checked out mmap file w/ multi process
+
+---
+
+i'm gonna write/use my own method.  i already have gDict (multi thread and proc safe) with prometheus data structures  
+       that writes out to prom file sentinel.db.prom
+
+ 
