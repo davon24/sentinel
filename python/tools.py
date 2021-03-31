@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.21-1.dev-20210330-2'
+__version__ = '1.6.21-1.dev-20210331-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4525,6 +4525,26 @@ def sentrySIGHUP(signum, stack):
 #    return True
 
 
+#############################################################################################################################
+
+#from multiprocessing.shared_memory import SharedMemory
+#MEMORY_NAME = "sentinel"
+#def create_shared_memory(name: str, size: int) -> None:
+#    SharedMemory(MEMORY_NAME.format(name=name), create=True, size=size)
+#
+#def free_shared_memory(name: str) -> None:
+#    shared_memory = SharedMemory(MEMORY_NAME.format(name=name))
+#    shared_memory.unlink()
+
+#def create_shared_memory(name: str, size: int) -> None:
+#    multiprocessing.shared_memory.SharedMemory(name=name, create=True, size=size)
+
+#def free_shared_memory(name: str) -> None:
+#    shared_memory = multiprocessing.shared_memory.SharedMemory(name=name)
+#    shared_memory.unlink()
+
+
+
 exit = threading.Event()
 
 #def sentryMode(db_file, verbose=False):
@@ -4556,6 +4576,11 @@ def sentryMode(db_store, verbose=False):
 
     shm = multiprocessing.shared_memory.SharedMemory(name="sentinel", create=True, size=1024)
     print(str(shm.name))
+    #print(str(shm.create)) #AttributeError: 'SharedMemory' object has no attribute 'create'
+    print(str(shm.size))
+
+    #shm = create_shared_memory(name='sentinel', size=1024)
+    #print(str(shm.name))
 
     #atexit.register(sentryCleanup, db_store)
     #signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
@@ -4661,6 +4686,9 @@ def sentryMode(db_store, verbose=False):
         #sigterm = True
 
         sentryCleanup(db_store)
+
+        shm.close()
+        shm.unlink()
 
         #logging.info("Sentry Shutdown: " + str(sigterm))
         logging.info("Sentry Shutdown: " + str(exit.is_set()))
