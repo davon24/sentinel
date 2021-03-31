@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.21-1.dev-20210330-1'
+__version__ = '1.6.21-1.dev-20210330-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
 import multiprocessing
+#from multiprocessing import shared_memory
 
 #https://docs.python.org/3.8/library/multiprocessing.shared_memory.html
 #    manager = multiprocessing.Manager()
@@ -4526,16 +4527,35 @@ def sentrySIGHUP(signum, stack):
 
 exit = threading.Event()
 
-def sentryMode(db_file, verbose=False):
+#def sentryMode(db_file, verbose=False):
+def sentryMode(db_store, verbose=False):
 
     #sigterm = False
 
-    global db_store
-    db_store = db_file
+    #global db_store
+    #db_store = db_file
 
     manager = multiprocessing.Manager()
-    global gDict
+    #global gDict
     gDict = manager.dict()
+
+    #from multiprocessing.managers import SharedMemoryManager
+    #smm = SharedMemoryManager()
+    #smm.start()
+    #sl = smm.ShareableList(range(4))
+
+    #shm = shared_memory.SharedMemory(name="sentinel", create=True, size=1024)
+    #print(str(shm.name))
+
+    #smm = multiprocessing.managers.SharedMemoryManager()
+    #smm.start()
+    #sl = smm.ShareableList([])
+
+    #sml = multiprocessing.shared_memory.ShareableList(sequence=[],  name="SentinelSharedList")
+    #notably differs from the built-in list type in that these lists can not change their overall length (i.e. no append, insert, etc.) and do not support the dynamic creation of new ShareableList instances via slicing
+
+    shm = multiprocessing.shared_memory.SharedMemory(name="sentinel", create=True, size=1024)
+    print(str(shm.name))
 
     #atexit.register(sentryCleanup, db_store)
     #signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
@@ -4549,17 +4569,6 @@ def sentryMode(db_file, verbose=False):
     #    print(sig)
 
     signal.signal(signal.SIGHUP, sentrySIGHUP)
-
-    #signal.signal(signal.SIGINT, sentrySIGINT)
-
-    #signal.signal(signal.SIGINT, lambda signum, stack_frame: exit.set())
-
-    #signal.signal(signal.SIGINT, sentrySIGINT)
-
-    #signal.signal(signal.SIGINT, getattr(signal, 'SIGINT'), sentryCleanup(db_store))
-    #signal.signal(signal.SIGTERM, getattr(signal, 'SIGTERM'), sentryCleanup(db_store))
-
-    #signal.signal(signal.SIGHUP, sentrySIGHUP)
 
     logging.info("Sentry Startup")
 
