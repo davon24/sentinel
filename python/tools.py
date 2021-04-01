@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.21-1.dev-20210401-2'
+__version__ = '1.6.21-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4282,7 +4282,8 @@ def processD(gDict):
 
     return True
 
-def processE(db_store, gDict, eDict, expire=864000): # i exist to expire
+def processE(gDict, eDict, eList, expire=864000): # i exist to expire
+    verbose = False
     #print('process E in the house')
     #1h  is 60*60 (3600 seconds)
     #10d is 864000
@@ -4296,6 +4297,37 @@ def processE(db_store, gDict, eDict, expire=864000): # i exist to expire
     #for __k,__v in gDict.items():
     #    print(__k)
     #print('KEYS ------------------------------------------------')
+
+    #write keys to shared memory
+
+    KeyList = []
+    for __k in gDict:
+        KeyList.append(__k)
+
+    klstsize = len(KeyList)
+    smklsize = eList[0]
+
+    try: 
+        smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+        smklsize = len(smkl)
+        eList.insert(0, smklsize) 
+    except FileExistsError as e:
+        if verbose: print('FileExistsError ' + str(e))
+        pass
+
+    if klstsize != smklsize:
+        #print('not equal')
+        #read
+        smklr = shared_memory.ShareableList(name='sentinel-keys')
+        smklr.shm.close()
+        smklr.shm.unlink()
+        #write
+        smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+        smklsize = len(smkl)
+        eList.insert(0, smklsize) 
+
+    #print('klstsize '+str(klstsize))
+    #print('smklsize '+str(smklsize))
 
     #pickup expire file?
     #expire_file = db_store + '.expire'
@@ -4311,22 +4343,21 @@ def processE(db_store, gDict, eDict, expire=864000): # i exist to expire
     #        #print('expire this ' + line)
     #        if line in gDict.keys():
     #            gDict.pop(line, None)
-
     #    os.remove(expire_file)
-
 
     #pickup sml
     try:
         sml = shared_memory.ShareableList(name='sentinel')
         print('sml internal ' + str(sml))
+        for item in sml:
+            print('item ' + str(item))
+            gDict.pop(item, None)
+
     except FileNotFoundError as e:
-        print('sml FileNotFoundError '+ str(e))
-
-
-    #verbose = True
+        if verbose: print('sml FileNotFoundError '+ str(e))
+        pass
 
     _first_key = None
-
     for k,v in gDict.items():
         if k.startswith('sentinel_watch_syslog_rule_engine-'):
             #print('item: ' + str(k))
@@ -4411,6 +4442,7 @@ def sentryScheduler(db_store, gDict, interval):
     c=0
 
     eDict={}
+    eList=[0]
 
     #while (sigterm == False):
     while not exit.is_set():
@@ -4435,7 +4467,8 @@ def sentryScheduler(db_store, gDict, interval):
             exit.set()
             break
 
-        pe = processE(db_store, gDict, eDict, expire=864000)
+        #pe = processE(db_store, gDict, eDict, expire=864000)
+        pe = processE(gDict, eDict, eList, expire=864000)
         #10d 864000
         #5d  432000
         #3d  259200

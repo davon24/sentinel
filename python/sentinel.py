@@ -184,6 +184,9 @@ def usage():
                 watch-resin-log
                 watch-mariadb-audit-log
 
+        get-keys
+        expire-key key
+
 Version: {} '''.format(__version__))
 
 
@@ -1173,12 +1176,17 @@ if __name__ == '__main__':
         if sys.argv[1] == 'expire-key':
             _key = sys.argv[2]
             from multiprocessing import shared_memory
-            l = shared_memory.ShareableList(range(5), name='sentinel')
-            #l.shm.close()
-            #l.shm.unlink
-            #print(l)
+            l = shared_memory.ShareableList([_key], name='sentinel')
             import time
             time.sleep(5)
+            l.shm.close()
+            l.shm.unlink()
+            sys.exit(0)
+
+        if sys.argv[1] == 'get-keys':
+            from multiprocessing import shared_memory
+            l = shared_memory.ShareableList(name='sentinel-keys')
+            print(l)
             l.shm.close()
             l.shm.unlink()
             sys.exit(0)
