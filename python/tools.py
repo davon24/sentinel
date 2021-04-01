@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.21-1'
+__version__ = '1.6.22-1.dev.20210401-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4347,8 +4347,8 @@ def processE(gDict, eDict, eList, expire=864000): # i exist to expire
 
     #pickup sml
     try:
-        sml = shared_memory.ShareableList(name='sentinel')
-        print('sml internal ' + str(sml))
+        sml = shared_memory.ShareableList(name='sentinel-update')
+        if verbose: print('sml internal update ' + str(sml))
         for item in sml:
             print('item ' + str(item))
             gDict.pop(item, None)

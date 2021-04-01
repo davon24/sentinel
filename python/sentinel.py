@@ -185,7 +185,8 @@ def usage():
                 watch-mariadb-audit-log
 
         get-keys
-        expire-key key
+        list-keys
+        expire-keys key1 key2 key3...
 
 Version: {} '''.format(__version__))
 
@@ -1173,10 +1174,23 @@ if __name__ == '__main__':
         #    print(expire)
         #    sys.exit(0)
 
-        if sys.argv[1] == 'expire-key':
-            _key = sys.argv[2]
+        #if sys.argv[1] == 'expire-key':
+        #    _key = sys.argv[2:]
+        #    from multiprocessing import shared_memory
+        #    l = shared_memory.ShareableList([_key], name='sentinel')
+        #    import time
+        #    time.sleep(5)
+        #    l.shm.close()
+        #    l.shm.unlink()
+        #    sys.exit(0)
+
+        if sys.argv[1] == 'expire-keys':
+            Keys = sys.argv[2:]
+            #for _key in Keys:
+            #    print(_key)
+
             from multiprocessing import shared_memory
-            l = shared_memory.ShareableList([_key], name='sentinel')
+            l = shared_memory.ShareableList(Keys, name='sentinel-update')
             import time
             time.sleep(5)
             l.shm.close()
@@ -1191,6 +1205,15 @@ if __name__ == '__main__':
             l.shm.unlink()
             sys.exit(0)
 
+        if sys.argv[1] == 'list-keys':
+            from multiprocessing import shared_memory
+            l = shared_memory.ShareableList(name='sentinel-keys')
+            #print(l)
+            for item in l:
+                print(item)
+            l.shm.close()
+            l.shm.unlink()
+            sys.exit(0)
 
 
         else:
