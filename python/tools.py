@@ -1,29 +1,10 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.21-1.dev-20210331-2'
+__version__ = '1.6.21-1.dev-20210401-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
 import multiprocessing
-#from multiprocessing import shared_memory
-
-#https://docs.python.org/3.8/library/multiprocessing.shared_memory.html
-#    manager = multiprocessing.Manager()
-#    global gDict
-#    gDict = manager.dict()
-
-#from multiprocessing.managers import SharedMemoryManager
-#smm = SharedMemoryManager()
-#smm.start()
-#sl = smm.ShareableList(range(4))
-
-#with SharedMemoryManager() as smm:
-#    sl = smm.ShareableList(range(2000))
-
-#shm.name  # We did not specify a name so one was chosen for us
-#'psm_21467_46075'
-
-#class multiprocessing.shared_memory.SharedMemory(name=None, create=False, size=0)
 
 import sys
 import time
@@ -41,7 +22,6 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 import os, pwd, grp
 import select
 import re
-#import atexit
 import signal
 
 import logging
@@ -4301,7 +4281,7 @@ def processD(gDict):
 
     return True
 
-def processE(gDict, eDict, expire=864000): # i exist to expire
+def processE(db_store, gDict, eDict, expire=864000): # i exist to expire
     #print('process E in the house')
     #1h  is 60*60 (3600 seconds)
     #10d is 864000
@@ -4310,6 +4290,28 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
     # https://mail.python.org/pipermail/python-dev/2017-December/151283.html
     #first_item = gDict.get(next(iter(gDict)))
     #print(str(first_item)) # ['sentinel_up 1']
+
+    print('KEYS ------------------------------------------------')
+    for __k,__v in gDict.items():
+        print(__k)
+    print('KEYS ------------------------------------------------')
+
+    #pickup expire file?
+    expire_file = db_store + '.expire'
+    Expires = None
+
+    if os.path.isfile(expire_file):
+        with open(expire_file, "r", encoding='utf-8') as _ef:
+            Expires = _ef.readlines()
+
+    if Expires:
+        for line in Expires:
+            line = line.rstrip('\n')
+            #print('expire this ' + line)
+            if line in gDict.keys():
+                gDict.pop(line, None)
+
+        os.remove(expire_file)
 
     #verbose = True
 
@@ -4423,8 +4425,7 @@ def sentryScheduler(db_store, gDict, interval):
             exit.set()
             break
 
-        #pe = processE(gDict, eDict, expire=30)
-        #pe = processE(gDict, eDict, expire=432000)
+        pe = processE(db_store, gDict, eDict, expire=864000)
         #10d 864000
         #5d  432000
         #3d  259200
@@ -4445,7 +4446,7 @@ def sentryScheduler(db_store, gDict, interval):
         c+=1
         if c > 5:
             #only run this every 5th...
-            pe = processE(gDict, eDict, expire=864000)
+            #pe = processE(gDict, eDict, expire=864000)
             c=0
         #print('c is ...' + str(c))
 
@@ -4536,90 +4537,21 @@ def sentrySIGHUP(signum, stack):
 #    shared_memory = SharedMemory(MEMORY_NAME.format(name=name))
 #    shared_memory.unlink()
 
-#def create_shared_memory(name: str, size: int) -> None:
-#    multiprocessing.shared_memory.SharedMemory(name=name, create=True, size=size)
+def setExpiregDictKeyFile(_key, db_store):
 
-#def free_shared_memory(name: str) -> None:
-#    shared_memory = multiprocessing.shared_memory.SharedMemory(name=name)
-#    shared_memory.unlink()
+    expire_file = db_store + '.expire'
+    with open(expire_file, 'a+') as _file:
+        _file.write(_key + '\n')
 
-#def getSharedMemory(_name) -> None:
-#    from multiprocessing import shared_memory
-#    return shared_memory.SharedMemory(name=_name)
+    return True
+
 
 exit = threading.Event()
 
-#def sentryMode(db_file, verbose=False):
 def sentryMode(db_store, verbose=False):
 
-    #sigterm = False
-
-    #global db_store
-    #db_store = db_file
-
     manager = multiprocessing.Manager()
-    #global gDict
     gDict = manager.dict()
-
-    #from multiprocessing.managers import SharedMemoryManager
-    #smm = SharedMemoryManager()
-    #smm.start()
-    #sl = smm.ShareableList(range(4))
-
-    #shm = shared_memory.SharedMemory(name="sentinel", create=True, size=1024)
-    #print(str(shm.name))
-
-    #smm = multiprocessing.managers.SharedMemoryManager()
-    #smm.start()
-    #sl = smm.ShareableList([])
-
-    #sml = multiprocessing.shared_memory.ShareableList(sequence=[],  name="SentinelSharedList")
-    #notably differs from the built-in list type in that these lists can not change their overall length (i.e. no append, insert, etc.) and do not support the dynamic creation of new ShareableList instances via slicing
-
-    #shm = multiprocessing.shared_memory.SharedMemory(name="sentinel", create=True, size=1024)
-    #print(str(shm.name))
-    #print(str(shm.create)) #AttributeError: 'SharedMemory' object has no attribute 'create'
-    #print(str(shm.size))
-
-    #shm = create_shared_memory(name='sentinel', size=1024)
-    #print(str(shm.name))
-
-
-    #_buffer = shm.buf
-    #_buffer[:4] = bytearray([22, 72, 4, 55]) 
-    #_buffer[4] = b'sentinel'
-    #_buffer[4] = 100
-
-    #shm.buf[:5] = b'howdy'
-    #_buffer[:8] = b'sentinel'
-
-    #sml = shared_memory.ShareableList(range(5))
-
-    #sml = multiprocessing.shared_memory.ShareableList(range(5), name="sentinel")
-
-    #from multiprocessing.managers import SharedMemoryManager
-    #smm = SharedMemoryManager(name='sentinel')
-    #smm.start()
-    #sl = smm.ShareableList(range(4))
-
-    #https://pypi.org/project/shared-memory-dict/
-    #from shared_memory_dict import SharedMemoryDict
-    #smd = SharedMemoryDict(name='sentinel', size=1024)
-    #smd['sentinel-key'] = 'sentinel-value-of-any-type'
-
-    from multiprocessing import shared_memory
-    l = shared_memory.ShareableList(range(5), name='token_name')
-
-    #atexit.register(sentryCleanup, db_store)
-    #signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
-
-    #signal.signal(signal.SIGINT, signal_handler)
-    #signal.signal(signal.SIGTERM, signal_handler)
-
-    #for sig in ('TERM', 'HUP', 'INT'):
-        #signal.signal(getattr(signal, 'SIG'+sig), quit)
-        #signal.signal(getattr(signal, 'SIG'+sig), sentryCleanup(db_store))
-    #    print(sig)
 
     signal.signal(signal.SIGHUP, sentrySIGHUP)
 
@@ -4686,7 +4618,7 @@ def sentryMode(db_store, verbose=False):
 
 
     try:
-        #if prometheus_config:
+
         if http_server:
             try:
                 p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
@@ -4715,10 +4647,6 @@ def sentryMode(db_store, verbose=False):
 
         sentryCleanup(db_store)
 
-        #shm.close()
-        #shm.unlink()
-
-        #logging.info("Sentry Shutdown: " + str(sigterm))
         logging.info("Sentry Shutdown: " + str(exit.is_set()))
         #sys.exit(1)
 
