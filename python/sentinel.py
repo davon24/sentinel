@@ -1164,11 +1164,25 @@ if __name__ == '__main__':
             print(get)
             sys.exit(0)
 
+        #if sys.argv[1] == 'expire-key':
+        #    _key = sys.argv[2]
+        #    expire = tools.setExpiregDictKeyFile(_key, db_store)
+        #    print(expire)
+        #    sys.exit(0)
+
         if sys.argv[1] == 'expire-key':
             _key = sys.argv[2]
-            expire = tools.setExpiregDictKeyFile(_key, db_store)
-            print(expire)
+            from multiprocessing import shared_memory
+            l = shared_memory.ShareableList(range(5), name='sentinel')
+            #l.shm.close()
+            #l.shm.unlink
+            #print(l)
+            import time
+            time.sleep(5)
+            l.shm.close()
+            l.shm.unlink()
             sys.exit(0)
+
 
 
         else:

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.21-1.dev-20210401-1'
+__version__ = '1.6.21-1.dev-20210401-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
 import multiprocessing
+from multiprocessing import shared_memory
 
 import sys
 import time
@@ -4291,27 +4292,36 @@ def processE(db_store, gDict, eDict, expire=864000): # i exist to expire
     #first_item = gDict.get(next(iter(gDict)))
     #print(str(first_item)) # ['sentinel_up 1']
 
-    print('KEYS ------------------------------------------------')
-    for __k,__v in gDict.items():
-        print(__k)
-    print('KEYS ------------------------------------------------')
+    #print('KEYS ------------------------------------------------')
+    #for __k,__v in gDict.items():
+    #    print(__k)
+    #print('KEYS ------------------------------------------------')
 
     #pickup expire file?
-    expire_file = db_store + '.expire'
-    Expires = None
+    #expire_file = db_store + '.expire'
+    #Expires = None
 
-    if os.path.isfile(expire_file):
-        with open(expire_file, "r", encoding='utf-8') as _ef:
-            Expires = _ef.readlines()
+    #if os.path.isfile(expire_file):
+    #    with open(expire_file, "r", encoding='utf-8') as _ef:
+    #        Expires = _ef.readlines()
 
-    if Expires:
-        for line in Expires:
-            line = line.rstrip('\n')
-            #print('expire this ' + line)
-            if line in gDict.keys():
-                gDict.pop(line, None)
+    #if Expires:
+    #    for line in Expires:
+    #        line = line.rstrip('\n')
+    #        #print('expire this ' + line)
+    #        if line in gDict.keys():
+    #            gDict.pop(line, None)
 
-        os.remove(expire_file)
+    #    os.remove(expire_file)
+
+
+    #pickup sml
+    try:
+        sml = shared_memory.ShareableList(name='sentinel')
+        print('sml internal ' + str(sml))
+    except FileNotFoundError as e:
+        print('sml FileNotFoundError '+ str(e))
+
 
     #verbose = True
 
@@ -4555,6 +4565,13 @@ def sentryMode(db_store, verbose=False):
 
     signal.signal(signal.SIGHUP, sentrySIGHUP)
 
+
+    #from multiprocessing import shared_memory
+    #sml = shared_memory.ShareableList([], name='sentinel')
+
+
+
+
     logging.info("Sentry Startup")
 
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict, 5), name="Scheduler")
@@ -4614,6 +4631,7 @@ def sentryMode(db_store, verbose=False):
 #
 #    syslog_watch = store.getData('configs', 'watch-syslog', db_store)
 #    prometheus_config = store.getData('configs', 'prometheus', db_store)
+
 
 
 
