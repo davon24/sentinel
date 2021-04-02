@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.22-1.dev.20210402-1.t2'
+__version__ = '1.6.22-1.dev.20210402-1.t3'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4356,26 +4356,7 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
 
     return True
 
-from multiprocessing.managers import BaseManager
-
-class SharesClass:
-    def get(self, List):
-        return shared_memory.ShareableList(List, name='sentinel-keys')
-
-class sentrySMM(BaseManager):
-    pass
-
-sentrySMM.register('Shares', SharesClass)
-
 def sentrySharedMemoryManager(gDict, eList, interval):
-
-    print('init sentrySharedMemoryManager')
-
-    #from multiprocessing.managers import SharedMemoryManager
-
-
-    #smm = sentrySMM()
-    #smm.start()
 
     verbose = False
     debug = True
@@ -4394,15 +4375,174 @@ def sentrySharedMemoryManager(gDict, eList, interval):
         klstsize = len(KeyList)
         smklsize = eList[0]
 
-        #shares = smm.get(KeyList)
-        #shares = smm.get(KeyList)
+        try:
+            smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+            smklsize = len(smkl)
+            eList.insert(0, smklsize)
+        except FileExistsError as e:
+            if verbose: print('FileExistsError ' + str(e))
+
+            if klstsize != smklsize:
+                if debug: print('debug. not equal ShareableList ' +str(klstsize)+' '+str(smklsize))
+                #read
+                smklr = shared_memory.ShareableList(name='sentinel-keys')
+                smklr.shm.close()
+                smklr.shm.unlink()
+                #write
+                smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+                smklsize = len(smkl)
+                eList.insert(0, smklsize)
+
+        #print('klstsize '+str(klstsize))
+        #print('smklsize '+str(smklsize))
+
+        if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
+
+        time.sleep(interval)
+
+    smkl = shared_memory.ShareableList(name='sentinel-keys')
+    smkl.shm.close()
+    smkl.shm.unlink()
+
+    return True
+
+##################################################################################
+from multiprocessing.managers import BaseManager
+class SharesClass:
+    def set(self, List):
+        return shared_memory.ShareableList(List, name='sentinel-keys')
+
+class sentrySMM(BaseManager):
+    pass
+
+sentrySMM.register('Shares', SharesClass)
+
+def getKeyList(gDict):
+    KeyList = []
+    for __k in gDict:
+        KeyList.append(__k)
+    return KeyList
+##################################################################################
+from multiprocessing.shared_memory import SharedMemory
+def free_shared_memory(name):
+    try:
+        shared_memory = SharedMemory(name=name)
+        shared_memory.unlink()
+    except FileNotFoundError as e:
+        return None
+    return None
+        
+
+def sentrySharedMemoryManager_TEST(gDict, eList, interval):
+    print('init sentrySharedMemoryManager')
+
+    debug = True
+
+    smm = sentrySMM()
+    smm.start()
+    shares = smm.Shares()
+
+    KeyList = []
+
+    while not exit.is_set():
 
         try:
-            with sentrySMM() as smm:
-                shares = smm.Shares()
-                shares.get(KeyList)
-        except FileExistsError as e:
-            print('FileExistsError ' + str(e))
+            KeyList = getKeyList(gDict)
+        except RuntimeError as e:
+            if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
+        except AttributeError as e:
+            if debug: logging.debug('debug. AttributeError sentrySharedMemoryManager ' + str(e))
+
+        klstsize = len(KeyList)
+        smklsize = eList[0]
+
+        if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
+
+        if klstsize != smklsize:
+            #smklr = shared_memory.ShareableList(name='sentinel-keys')
+            free = free_shared_memory(name='sentinel-keys')
+            try:
+                shares.set(KeyList)
+                eList.insert(0, smklsize)
+            except FileExistsError as e:
+                if debug: print('debug. FileExistsError ' + str(e))
+
+        time.sleep(interval)
+
+    smm.shutdown()
+    return True
+
+
+
+#def free_shared_memory(name) -> None:
+#    shared_memory = SharedMemory(name=name)
+#    shared_memory.unlink()
+
+#def sentrySharedMemoryManager(gDict, eList, interval):
+#    print('init sentrySharedMemoryManager')
+#
+#    debug = True
+#
+#    smm = sentrySMM()
+#    smm.start()
+#    shares = smm.Shares()
+#
+#    while not exit.is_set():
+#
+#        try:
+#            KeyList = getKeyList(gDict)
+#        except RuntimeError as e:
+#            if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
+#        except AttributeError as e:
+#            if debug: logging.debug('debug. AttributeError sentrySharedMemoryManager ' + str(e))
+#
+#        try:
+#            shares.set(KeyList)
+#        except FileExistsError as e:
+#            if debug: print('debug. FileExistsError ' + str(e))
+#
+#        time.sleep(interval)
+#
+#    smm.shutdown()
+
+
+
+#def sentrySharedMemoryManager(gDict, eList, interval):
+#
+#    print('init sentrySharedMemoryManager')
+#
+#    #from multiprocessing.managers import SharedMemoryManager
+#
+#
+#    #smm = sentrySMM()
+#    #smm.start()
+#
+#    verbose = False
+#    debug = True
+#
+#    while not exit.is_set():
+#
+#        KeyList = []
+#        try:
+#            for __k in gDict:
+#                KeyList.append(__k)
+#        except RuntimeError as e:
+#            if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
+#        except AttributeError as e:
+#            if debug: logging.debug('debug. AttributeError sentrySharedMemoryManager ' + str(e))
+#
+#        klstsize = len(KeyList)
+#        smklsize = eList[0]
+#
+#        #shares = smm.get(KeyList)
+#        #shares = smm.get(KeyList)
+#
+#        try:
+#            with sentrySMM() as smm:
+#                shares = smm.Shares()
+#                shares.get(KeyList)
+#        except FileExistsError as e:
+#            print('FileExistsError ' + str(e))
 
 #        try:
 #            smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
@@ -4425,21 +4565,21 @@ def sentrySharedMemoryManager(gDict, eList, interval):
 #        #print('klstsize '+str(klstsize))
 #        #print('smklsize '+str(smklsize))
 
-        if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
-
-        for i in range(interval):
-            try:
-                time.sleep(1)
-            except Exception as e:
-                logging.critical('break.sentrySharedMemoryManager ' + str(e))
-                exit.set()
-                break
+#        if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
+#
+#        for i in range(interval):
+#            try:
+#                time.sleep(1)
+#            except Exception as e:
+#                logging.critical('break.sentrySharedMemoryManager ' + str(e))
+#                exit.set()
+#                break
 
 #    smkl = shared_memory.ShareableList(name='sentinel-keys')
 #    smkl.shm.close()
 #    smkl.shm.unlink()
-
-    return True
+#
+#    return True
 
 
 def sentrySharedMemoryManager_V1(gDict, eList, interval):
@@ -4696,13 +4836,11 @@ def sentrySIGHUP(signum, stack):
 #    shared_memory.unlink()
 
 
-def setExpiregDictKeyFile(_key, db_store):
-
-    expire_file = db_store + '.expire'
-    with open(expire_file, 'a+') as _file:
-        _file.write(_key + '\n')
-
-    return True
+#def setExpiregDictKeyFile(_key, db_store):
+#    expire_file = db_store + '.expire'
+#    with open(expire_file, 'a+') as _file:
+#        _file.write(_key + '\n')
+#    return True
 
 
 exit = threading.Event()
@@ -4721,7 +4859,7 @@ def sentryMode(db_store, verbose=False):
     logging.info("Sentry Startup")
 
     eList=[0]
-    sharedmmgr = threading.Thread(target=sentrySharedMemoryManager, args=(gDict, eList, 5), name="SharedMemoryManager")
+    sharedmmgr = threading.Thread(target=sentrySharedMemoryManager, args=(gDict, eList, 0.5), name="SharedMemoryManager")
     #sharedmmgr = multiprocessing.Process(target=sentrySharedMemoryManager, args=(gDict, eList, 5), name="SharedMemoryManager")
     sharedmmgr.start()
 
