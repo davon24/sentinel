@@ -4363,7 +4363,7 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
     _first_key = None
     for k,v in gDict.items():
         if k.startswith('sentinel_watch_syslog_rule_engine-'):
-            #print('item: ' + str(k))
+            print(' startswith item: ' + str(k))
             _first_key = k
             break
 
@@ -4390,7 +4390,7 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
             eDict[_first_key] = int(end_time)
         else:
             if int(now) > int(eDict[_first_key]):
-                if verbose: print('ExpireThis ' + str(_first_key) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
+                if debug: print('ExpireThis ' + str(_first_key) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
                 gDict.pop(_first_key, None)
 
 
@@ -4408,9 +4408,9 @@ def sentrySharedMemoryManager(gDict, eList, interval):
             for __k in gDict:
                 KeyList.append(__k)
         except RuntimeError as e:
-            if debug: logging.error('RuntimeError sentrySharedMemoryManager ' + str(e))
+            if debug: logging.debug('RuntimeError sentrySharedMemoryManager ' + str(e))
         except AttributeError as e:
-            if debug: logging.error('AttributeError sentrySharedMemoryManager ' + str(e))
+            if debug: logging.debug('AttributeError sentrySharedMemoryManager ' + str(e))
 
         klstsize = len(KeyList)
         smklsize = eList[0]
