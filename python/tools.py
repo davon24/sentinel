@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.22-1.dev.20210402-1.t1'
+__version__ = '1.6.22-1.dev.20210402-1.t2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4283,10 +4283,11 @@ def processD(gDict):
 
     return True
 
-#def processE(gDict, eDict, eList, expire=864000): # i exist to expire
 def processE(gDict, eDict, expire=864000): # i exist to expire
+
     debug = True
     verbose = False
+
     #print('process E in the house')
     #1h  is 60*60 (3600 seconds)
     #10d is 864000
@@ -4296,65 +4297,12 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
     #first_item = gDict.get(next(iter(gDict)))
     #print(str(first_item)) # ['sentinel_up 1']
 
-    #print('KEYS ------------------------------------------------')
-    #for __k,__v in gDict.items():
-    #    print(__k)
-    #print('KEYS ------------------------------------------------')
-
-    #write keys to shared memory
-
-#    KeyList = []
-#    for __k in gDict:
-#        KeyList.append(__k)
-#
-#    klstsize = len(KeyList)
-#    smklsize = eList[0]
-#
-#    try: 
-#        smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
-#        smklsize = len(smkl)
-#        eList.insert(0, smklsize) 
-#    except FileExistsError as e:
-#        if verbose: print('FileExistsError ' + str(e))
-#
-#        if klstsize != smklsize:
-#            if debug: print('not equal ' +str(klstsize)+' '+str(klstsize))
-#            #read
-#            smklr = shared_memory.ShareableList(name='sentinel-keys')
-#            smklr.shm.close()
-#            smklr.shm.unlink()
-#            #write
-#            smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
-#            smklsize = len(smkl)
-#            eList.insert(0, smklsize) 
-#
-#    #print('klstsize '+str(klstsize))
-#    #print('smklsize '+str(smklsize))
-#
-#    if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
-
-    #pickup expire file?
-    #expire_file = db_store + '.expire'
-    #Expires = None
-
-    #if os.path.isfile(expire_file):
-    #    with open(expire_file, "r", encoding='utf-8') as _ef:
-    #        Expires = _ef.readlines()
-
-    #if Expires:
-    #    for line in Expires:
-    #        line = line.rstrip('\n')
-    #        #print('expire this ' + line)
-    #        if line in gDict.keys():
-    #            gDict.pop(line, None)
-    #    os.remove(expire_file)
-
     #pickup sml
     try:
         sml = shared_memory.ShareableList(name='sentinel-update')
         #print('sml internal update ' + str(sml))
         for item in sml:
-            if debug: print('expiring ' + str(item))
+            if debug: print('debug. expiring ' + str(item))
             gDict.pop(item, None)
 
     except FileNotFoundError as e:
@@ -4362,44 +4310,19 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
         #pass
 
     ################################################################
-#
-#    _first_key = None
-#    for k,v in gDict.items():
-#        if k.startswith('sentinel_watch_syslog_rule_engine-'):
-#            if debug: print('ExpireQ item: ' + str(k))
-#            _first_key = k
-#            break
-#
-#    if _first_key:
-#        #print('_first_key ' + str(_first_key))
-#        now = time.time()
-#        if _first_key not in eDict:
-#
-#            end_time = now + expire
-#
-#            _expire = promDataParser('expire', gDict[_first_key])
-#            if debug: print('_expire from gDict ' + str(_expire))
-#
-#            if _expire:
-#                try:
-#                    end_time = now + int(_expire)
-#                    if verbose: print('SET EXPIRE ' + str(_expire))
-#                except Exception as e:
-#                    logger.error('processE promDataParser end_time ' + str(e))
-#                    end_time = now + expire
-#
-#            eDict[_first_key] = int(end_time)
-#        else:
-#            if int(now) > int(eDict[_first_key]):
-#                if debug: print('ExpireThis ' + str(_first_key) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
-#                gDict.pop(_first_key, None)
-    ################################################################
 
     eL=[]
     for k,v in gDict.items():
         if k.startswith('sentinel_watch_syslog_rule_engine-'):
             #if verbose: print('Expire item: ' + str(k))
             eL.append(k)
+
+        #put other custom here...
+        #if k.startswith('sentinel_watch_syslog_rule_engine-'):
+        #    eL.append(k)
+
+
+    ################################################################
 
     #print('eL sz ' + str(len(eL)))
     if len(eL) > 0:
@@ -4412,7 +4335,7 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
                 #compare
                 if int(now) > int(eDict[_e]):
                     #if debug: print('ExpireThis ' + str(_e) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_e])))
-                    if debug: print('ExpireThis ' + str(_e) + ' now '+str(int(now))+ ' eDict ' + str(int(eDict[_e])))
+                    if debug: print('debug. ExpireThis ' + str(_e) + ' now '+str(int(now))+ ' eDict ' + str(int(eDict[_e])))
                     gDict.pop(_e, None)
             else:
                 #add
@@ -4424,7 +4347,7 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
                     if verbose: print('_expire via gDict ' + str(_expire))
                     end_time = now + int(_expire)
                 else:
-                    if debug: print('DEFAULT expire via default ' + str(_expire) + ' ' + str(_e))
+                    if debug: print('debug. DEFAULT expire via default ' + str(_expire) + ' '+str(expire) +' ' + str(_e))
                     end_time = now + expire
 
                 #if debug: print('expire ' + str(_expire) + ' set ' +str(end_time))
@@ -4433,7 +4356,26 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
 
     return True
 
+from multiprocessing.managers import BaseManager
+
+class SharesClass:
+    def get(self, List):
+        return shared_memory.ShareableList(List, name='sentinel-keys')
+
+class sentrySMM(BaseManager):
+    pass
+
+sentrySMM.register('Shares', SharesClass)
+
 def sentrySharedMemoryManager(gDict, eList, interval):
+
+    print('init sentrySharedMemoryManager')
+
+    #from multiprocessing.managers import SharedMemoryManager
+
+
+    #smm = sentrySMM()
+    #smm.start()
 
     verbose = False
     debug = True
@@ -4445,9 +4387,76 @@ def sentrySharedMemoryManager(gDict, eList, interval):
             for __k in gDict:
                 KeyList.append(__k)
         except RuntimeError as e:
-            if debug: logging.debug('RuntimeError sentrySharedMemoryManager ' + str(e))
+            if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
         except AttributeError as e:
-            if debug: logging.debug('AttributeError sentrySharedMemoryManager ' + str(e))
+            if debug: logging.debug('debug. AttributeError sentrySharedMemoryManager ' + str(e))
+
+        klstsize = len(KeyList)
+        smklsize = eList[0]
+
+        #shares = smm.get(KeyList)
+        #shares = smm.get(KeyList)
+
+        try:
+            with sentrySMM() as smm:
+                shares = smm.Shares()
+                shares.get(KeyList)
+        except FileExistsError as e:
+            print('FileExistsError ' + str(e))
+
+#        try:
+#            smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+#            smklsize = len(smkl)
+#            eList.insert(0, smklsize)
+#        except FileExistsError as e:
+#            if verbose: print('FileExistsError ' + str(e))
+#
+#            if klstsize != smklsize:
+#                if debug: print('debug. not equal ShareableList ' +str(klstsize)+' '+str(smklsize))
+#                #read
+#                smklr = shared_memory.ShareableList(name='sentinel-keys')
+#                smklr.shm.close()
+#                smklr.shm.unlink()
+#                #write
+#                smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+#                smklsize = len(smkl)
+#                eList.insert(0, smklsize)
+#
+#        #print('klstsize '+str(klstsize))
+#        #print('smklsize '+str(smklsize))
+
+        if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
+
+        for i in range(interval):
+            try:
+                time.sleep(1)
+            except Exception as e:
+                logging.critical('break.sentrySharedMemoryManager ' + str(e))
+                exit.set()
+                break
+
+#    smkl = shared_memory.ShareableList(name='sentinel-keys')
+#    smkl.shm.close()
+#    smkl.shm.unlink()
+
+    return True
+
+
+def sentrySharedMemoryManager_V1(gDict, eList, interval):
+
+    verbose = False
+    debug = True
+
+    while not exit.is_set():
+
+        KeyList = []
+        try:
+            for __k in gDict:
+                KeyList.append(__k)
+        except RuntimeError as e:
+            if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
+        except AttributeError as e:
+            if debug: logging.debug('debug. AttributeError sentrySharedMemoryManager ' + str(e))
 
         klstsize = len(KeyList)
         smklsize = eList[0]
@@ -4460,7 +4469,7 @@ def sentrySharedMemoryManager(gDict, eList, interval):
             if verbose: print('FileExistsError ' + str(e))
 
             if klstsize != smklsize:
-                if debug: print('not equal ' +str(klstsize)+' '+str(smklsize))
+                if debug: print('debug. not equal ShareableList ' +str(klstsize)+' '+str(smklsize))
                 #read
                 smklr = shared_memory.ShareableList(name='sentinel-keys')
                 smklr.shm.close()

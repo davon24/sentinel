@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+
+from multiprocessing.managers import SharedMemoryManager
+
+smm = SharedMemoryManager()
+smm.start()
+sl = smm.ShareableList(range(4))
+
+# can not set name=
+
