@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.22-1.dev.20210401-3'
+__version__ = '1.6.22-1.dev.20210402-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4360,39 +4360,75 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
         if verbose: print('sml FileNotFoundError '+ str(e))
         #pass
 
-    _first_key = None
+    ################################################################
+#
+#    _first_key = None
+#    for k,v in gDict.items():
+#        if k.startswith('sentinel_watch_syslog_rule_engine-'):
+#            if debug: print('ExpireQ item: ' + str(k))
+#            _first_key = k
+#            break
+#
+#    if _first_key:
+#        #print('_first_key ' + str(_first_key))
+#        now = time.time()
+#        if _first_key not in eDict:
+#
+#            end_time = now + expire
+#
+#            _expire = promDataParser('expire', gDict[_first_key])
+#            if debug: print('_expire from gDict ' + str(_expire))
+#
+#            if _expire:
+#                try:
+#                    end_time = now + int(_expire)
+#                    if verbose: print('SET EXPIRE ' + str(_expire))
+#                except Exception as e:
+#                    logger.error('processE promDataParser end_time ' + str(e))
+#                    end_time = now + expire
+#
+#            eDict[_first_key] = int(end_time)
+#        else:
+#            if int(now) > int(eDict[_first_key]):
+#                if debug: print('ExpireThis ' + str(_first_key) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
+#                gDict.pop(_first_key, None)
+    ################################################################
+
+    eL=[]
     for k,v in gDict.items():
         if k.startswith('sentinel_watch_syslog_rule_engine-'):
-            print(' startswith item: ' + str(k))
-            _first_key = k
-            break
+            #if verbose: print('Expire item: ' + str(k))
+            eL.append(k)
 
-    if _first_key:
-        #print('_first_key ' + str(_first_key))
+    #print('eL sz ' + str(len(eL)))
+    if len(eL) > 0:
+        #print('process eL')
         now = time.time()
-        if _first_key not in eDict:
 
-            end_time = now + expire
+        for _e in eL:
 
-            #print('gDict prom data ' + str(gDict[_first_key])) #prometheus data structure
-            #gDict prom data ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-X",b2sum="d3ca1737adc3396cf64e052dc462efb5ec13e623",seen="True",data="LQM-WiFi: (5G) txRTSFrm=16 txRTSFail=0 {txUcast=19} { } rxACKUcast=5",expire="3600",date="2021-03-23 10:11:49"} 2']
+            if _e in eDict:
+                #compare
+                if int(now) > int(eDict[_e]):
+                    #if debug: print('ExpireThis ' + str(_e) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_e])))
+                    if debug: print('ExpireThis ' + str(_e) + ' now '+str(int(now))+ ' eDict ' + str(int(eDict[_e])))
+                    gDict.pop(_e, None)
+            else:
+                #add
 
-            _expire = promDataParser('expire', gDict[_first_key])
-            #print('_expire from gDict ' + str(_expire))
-            if _expire:
-                try:
+                #get expire from prom data?
+                _expire = promDataParser('expire', gDict[_e])
+
+                if _expire:
+                    if verbose: print('_expire via gDict ' + str(_expire))
                     end_time = now + int(_expire)
-                    if verbose: print('SET EXPIRE ' + str(_expire))
-                except Exception as e:
-                    logger.error('processE promDataParser end_time ' + str(e))
+                else:
+                    if debug: print('WARN expire via default ' + str(_expire) + ' ' + str(_e))
                     end_time = now + expire
 
-            eDict[_first_key] = int(end_time)
-        else:
-            if int(now) > int(eDict[_first_key]):
-                if debug: print('ExpireThis ' + str(_first_key) + ' expire '+str(expire)+' now '+str(int(now))+ ' eDict ' + str(int(eDict[_first_key])) )
-                gDict.pop(_first_key, None)
+                #if debug: print('expire ' + str(_expire) + ' set ' +str(end_time))
 
+                eDict[_e] = int(end_time)
 
     return True
 
