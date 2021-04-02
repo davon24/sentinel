@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.22-1.dev.20210402-1.t3'
+__version__ = '1.6.22-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4285,7 +4285,7 @@ def processD(gDict):
 
 def processE(gDict, eDict, expire=864000): # i exist to expire
 
-    debug = True
+    debug = False
     verbose = False
 
     #print('process E in the house')
@@ -4359,7 +4359,7 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
 def sentrySharedMemoryManager(gDict, eList, interval):
 
     verbose = False
-    debug = True
+    debug = False
 
     while not exit.is_set():
 
@@ -4859,8 +4859,8 @@ def sentryMode(db_store, verbose=False):
     logging.info("Sentry Startup")
 
     eList=[0]
-    sharedmmgr = threading.Thread(target=sentrySharedMemoryManager, args=(gDict, eList, 0.5), name="SharedMemoryManager")
-    #sharedmmgr = multiprocessing.Process(target=sentrySharedMemoryManager, args=(gDict, eList, 5), name="SharedMemoryManager")
+    #sharedmmgr = threading.Thread(target=sentrySharedMemoryManager, args=(gDict, eList, 0.5), name="SharedMemoryManager")
+    sharedmmgr = threading.Thread(target=sentrySharedMemoryManager, args=(gDict, eList, 1), name="SharedMemoryManager")
     sharedmmgr.start()
 
     scheduler = threading.Thread(target=sentryScheduler, args=(db_store, gDict, 5), name="Scheduler")
