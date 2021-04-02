@@ -1,0 +1,45 @@
+
+klstsize 117 smklsize 117
+Exception in thread Scheduler:
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+    self.run()
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/threading.py", line 870, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/krink/sentinel/python/tools.py", line 4474, in sentryScheduler
+    pe = processE(gDict, eDict, eList, expire=864000)
+  File "/Users/krink/sentinel/python/tools.py", line 4305, in processE
+    for __k in gDict:
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/managers.py", line 1052, in __next__
+    return self._callmethod('__next__', args)
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/managers.py", line 850, in _callmethod
+    raise convert_to_error(kind, result)
+RuntimeError: dictionary changed size during iteration
+sentinel Apr 01 18:43:24 tools.py INFO: Sentry Job run proc-monitor
+
+
+
+
+
+debug. klstsize 43 smklsize 43
+Exception in thread Scheduler:
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+    self.run()
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/threading.py", line 870, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/krink/sentinel/python/tools.py", line 4473, in sentryScheduler
+    pe = processE(gDict, eDict, eList, expire=864000)
+  File "/Users/krink/sentinel/python/tools.py", line 4305, in processE
+    for __k in gDict:
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/managers.py", line 1052, in __next__
+    return self._callmethod('__next__', args)
+  File "/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/multiprocessing/managers.py", line 850, in _callmethod
+    raise convert_to_error(kind, result)
+RuntimeError: dictionary changed size during iteration
+sentinel Apr 01 19:29:01 tools.py INFO: Sentry Job run proc-monitor
+
+
+
+
+
