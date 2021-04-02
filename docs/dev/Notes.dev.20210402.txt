@@ -1,0 +1,66 @@
+
+",seen="True",data="ocspdTrustSettingsRead: OCSPD server error",date="2021-04-02 10:20:03"} 3']
+sentinel_watch_syslog_rule_engine-rule-t-cba3e16c0fb101f311882e399266ce1d86dd455c ['sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-t",b2sum="cba3e16c0fb101f311882e399266ce1d86dd455c",seen="False",data="skipping further reads. no CA revocation additions found: Error Domain=NSCocoaErrorDomain Code=260  The file “CARevocation.plist” couldn’t be opened because there is no such file.  UserInfo={NSFilePath=/Library/Keychains/CARevocation.plist, NSUnderlyingError=0x7ff181126ef0 {Error Domain=NSPOSIXErrorDomain Code=2  No such file or directory }}",date="2021-04-02 10:20:03"} 1']
+WARN expire via default None sentinel_watch_syslog_rule_engine-rule-t-d1d4bd8864d536799b57d2670777dc97f6a8c200
+WARN expire via default None sentinel_watch_syslog_rule_engine-rule-t-b95fb09708da9d0daeff2aef1e941dc04bbd2dcb
+WARN expire via default None sentinel_watch_syslog_rule_engine-rule-t-1ba447c803318fc745620a6f371dc6c1d05f0c84
+WARN expire via default None sentinel_watch_syslog_rule_engine-rule-t-20ee1ab178492b8acd45c01284df622571160e56
+WARN expire via default None sentinel_watch_syslog_rule_engine-rule-t-2d1b46c11583849cfd5f8560f9158341e1836b2b
+WARN expire via default None sentinel_watch_syslog_rule_engine-rule-t-cba3e16c0fb101f311882e399266ce1d86dd455c
+not equal 12 12
+debug. klstsize 12 smklsize 12
+
+
+✝ karl.rink@Karl-MacBook-Pro ~ % sentinel list-keys | grep cba3e16c0fb101f311882e399266ce1d86dd455c
+sentinel_watch_syslog_rule_engine-rule-t-cba3e16c0fb101f311882e399266ce1d86dd455c
+✝ karl.rink@Karl-MacBook-Pro ~ % sentinel list-proms | grep cba3e16c0fb101f311882e399266ce1d86dd455c
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-t",b2sum="cba3e16c0fb101f311882e399266ce1d86dd455c",seen="False",data="skipping further reads. no CA revocation additions found: Error Domain=NSCocoaErrorDomain Code=260  The file “CARevocation.plist” couldn’t be opened because there is no such file.  UserInfo={NSFilePath=/Library/Keychains/CARevocation.plist, NSUnderlyingError=0x7ff181126ef0 {Error Domain=NSPOSIXErrorDomain Code=2  No such file or directory }}",date="2021-04-02 10:20:03"} 1
+✝ karl.rink@Karl-MacBook-Pro ~ %
+
+
+---
+
+✝ karl.rink@Karl-MacBook-Pro ~ % sentinel list-keys | grep cba3e16c0fb101f311882e399266ce1d86dd455c
+sentinel_watch_syslog_rule_engine-rule-t-cba3e16c0fb101f311882e399266ce1d86dd455c
+✝ karl.rink@Karl-MacBook-Pro ~ % sentinel list-proms | grep cba3e16c0fb101f311882e399266ce1d86dd455c
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-t",b2sum="cba3e16c0fb101f311882e399266ce1d86dd455c",seen="False",data="skipping further reads. no CA revocation additions found: Error Domain=NSCocoaErrorDomain Code=260  The file “CARevocation.plist” couldn’t be opened because there is no such file.  UserInfo={NSFilePath=/Library/Keychains/CARevocation.plist, NSUnderlyingError=0x7ff181126ef0 {Error Domain=NSPOSIXErrorDomain Code=2  No such file or directory }}",date="2021-04-02 10:20:03"} 1
+✝ karl.rink@Karl-MacBook-Pro ~ % sentinel list-rules
+('rule-t', '2021-04-01 22:59:02', '{"config":"watch-syslog","search":"error","data":["eventMessage"],"not":["NoError"],"pass":["07a36a9fb66c3220979fb588d26ec60cc90d91df"]}')
+✝ karl.rink@Karl-MacBook-Pro ~ % 
+
+---
+
+
+✝ karl.rink@Karl-MacBook-Pro ~ % sentinel update-rule rule-t '{"config":"watch-syslog","search":"error","data":["eventMessage"],"not":["NoError"],"pass":["07a36a9fb66c3220979fb588d26ec60cc90d91df"],"expire":"30"}'
+True
+
+
+
+##############################################
+
+
+DEFAULT expire via default None sentinel_watch_syslog_rule_engine-rule-t-915d0fdf0b9b71fdfbb24d7e80702b0410836179
+not equal 11 9
+debug. klstsize 11 smklsize 11
+
+
+
+✝ karl.rink@Karl-MacBook-Pro ~ % sentinel list-keys | grep 915d0fdf0b9b71fdfbb24d7e80702b0410836179
+sentinel_watch_syslog_rule_engine-rule-t-915d0fdf0b9b71fdfbb24d7e80702b0410836179
+✝ karl.rink@Karl-MacBook-Pro ~ % sentinel list-proms | grep 915d0fdf0b9b71fdfbb24d7e80702b0410836179
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-t",b2sum="915d0fdf0b9b71fdfbb24d7e80702b0410836179",seen="False",data="WifiLoc, timer, sinceLastScanRequest, 300.4, lastScanRequestTimestamp, 639077012.2, erroredRequestType, 0, fIsActivelyScheduleWifiScans, 1",expire="30",date="2021-04-02 10:28:32"} 1
+✝ karl.rink@Karl-MacBook-Pro ~ %
+
+
+# promDataParser
+
+--------------------------------------------------------------
+
+# promDataSanitizer
+
+
+
+
+
+
+

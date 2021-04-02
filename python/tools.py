@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.22-1.dev.20210402-1'
+__version__ = '1.6.22-1.dev.20210402-1.t1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -880,6 +880,7 @@ def promDataSanitizer(_str):
     _str = _str.replace("'",' ')  #single quote
     _str = _str.replace("\\",' ') #backslash
     _str = _str.replace('`',' ')  #backtick
+    _str = _str.replace(',',' ')  #comma
     return _str
 
 
@@ -4417,13 +4418,13 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
                 #add
 
                 #get expire from prom data?
-                _expire = promDataParser('expire', gDict[_e])
+                _expire = promDataParser('expire', gDict[_e]) #may return None depends on the data
 
                 if _expire:
                     if verbose: print('_expire via gDict ' + str(_expire))
                     end_time = now + int(_expire)
                 else:
-                    if debug: print('WARN expire via default ' + str(_expire) + ' ' + str(_e))
+                    if debug: print('DEFAULT expire via default ' + str(_expire) + ' ' + str(_e))
                     end_time = now + expire
 
                 #if debug: print('expire ' + str(_expire) + ' set ' +str(end_time))
@@ -4459,7 +4460,7 @@ def sentrySharedMemoryManager(gDict, eList, interval):
             if verbose: print('FileExistsError ' + str(e))
 
             if klstsize != smklsize:
-                if debug: print('not equal ' +str(klstsize)+' '+str(klstsize))
+                if debug: print('not equal ' +str(klstsize)+' '+str(smklsize))
                 #read
                 smklr = shared_memory.ShareableList(name='sentinel-keys')
                 smklr.shm.close()
@@ -4499,6 +4500,7 @@ def promDataParser(promKey, promData):
     #print('promData ' + str(type(promData))) #<class 'str'>
     #print('promData: ' + promData)
     #sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-X",b2sum="2ed2fc412bfa54650d00fc5092b06ea320abf563",seen="True",data="LQM-WiFi: (5G) txRTSFrm=24 {txUcast=16} { } rxACKUcast=7",expire="3600",date="2021-03-23 10:28:07"} 2
+    #sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-t",b2sum="915d0fdf0b9b71fdfbb24d7e80702b0410836179",seen="False",data="WifiLoc, timer, sinceLastScanRequest, 300.4, lastScanRequestTimestamp, 639077012.2, erroredRequestType, 0, fIsActivelyScheduleWifiScans, 1",expire="30",date="2021-04-02 10:28:32"} 1
 
     data = promData
 
@@ -4507,8 +4509,11 @@ def promDataParser(promKey, promData):
         data = data[data.find('{'):]
         data = data.lstrip('{')
         data = data[:data.rfind('}')] #right find!
-        data = data.split(',')
 
+        #data = data.split(',')  # commas in the data?
+        data = data.split('",')
+
+        #print(str(data))
         #data is a list now...
         for item in data:
             #key = item.split('=')[0]
@@ -4522,6 +4527,8 @@ def promDataParser(promKey, promData):
             val = val.rstrip('"')
 
             #print(key, val)
+            #print(key)
+            #print(val)
             if key == promKey:
                 #print(key, val)
                 rtn = val
