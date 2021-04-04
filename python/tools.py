@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.22-1'
+__version__ = '1.6.23-1.dev.20210404-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -24,6 +24,8 @@ import os, pwd, grp
 import select
 import re
 import signal
+
+import resource
 
 import logging
 loglevel = logging.INFO
@@ -4231,14 +4233,21 @@ def sentryProcessJobs(db_store, gDict):
     return run
 
 #def processD(List):
-def processD(gDict):
+def processD(gDict, start):
+
+    debug = True
+
+    now = time.time()
+    uptime = now - start
+    #uptime = round(uptime, 1)
+    #uptime = format(uptime,".1f")
+    uptimef = format(uptime,".0f")
 
     #try:
 
-    sentinel_up = 1
-
-    promDATA = 'sentinel_up ' + str(sentinel_up)
-    gDict['sentinel_up'] = [ promDATA ]
+    #sentinel_up = 1
+    #promDATA = 'sentinel_up ' + str(sentinel_up)
+    #gDict['sentinel_up'] = [ promDATA ]
 
     #c = 0
     #for item in List:
@@ -4249,14 +4258,77 @@ def processD(gDict):
     tcount = 0
     for thread in threading.enumerate():
         tcount += 1
+        #print(str(thread.name))
 
     pcount = 0
     for proc in multiprocessing.active_children():
         pcount += 1
+        #print(str(proc.name))
+
+    #print('threading.stack_size ' + str(threading.stack_size()))
+    #threading.current_thread().getName()
+
+    #import resource
+    #u_self = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    #u_all  = resource.getrusage(resource.RUSAGE_BOTH).ru_maxrss
+    #print(u_self, u_all)
+
+    #import resource
+    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    #rss_c = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+
+    ru_utime = resource.getrusage(resource.RUSAGE_SELF).ru_utime
+    ru_stime = resource.getrusage(resource.RUSAGE_SELF).ru_stime
+
+    #ru_inblock = resource.getrusage(resource.RUSAGE_SELF).ru_inblock
+    #ru_oublock = resource.getrusage(resource.RUSAGE_SELF).ru_oublock
+
+    #ru_msgsnd = resource.getrusage(resource.RUSAGE_SELF).ru_msgsnd
+    #ru_msgrcv = resource.getrusage(resource.RUSAGE_SELF).ru_msgrcv
+
+    #ru_nsignals = resource.getrusage(resource.RUSAGE_SELF).ru_nsignals
+
+    #ru_nvcsw = resource.getrusage(resource.RUSAGE_SELF).ru_nvcsw
+    #ru_nivcsw = resource.getrusage(resource.RUSAGE_SELF).ru_nivcsw
+
+    total_rutime = ru_utime + ru_stime
+
+    #print(str(total_rutime))
+    #print(str(uptime))
+
+    #calculate cpu
+    try:
+        cpu_usage = 100 * (total_rutime / uptime)
+    except ZeroDivisionError as e:
+        if debug: print('ZeroDivisionError ' + str(e))
+        cpu_usage = -1
+
+    cpu_u = format(cpu_usage,".2f")
+
+    if debug: 
+        print('rss         ' + str(rss))
+        print('cpu         ' + str(cpu_u))
 
 
-    promDATA = 'sentinel_app_info{version="' + __version__ + '",threads="'+str(tcount)+'",procs="'+str(pcount)+'"} 1.0'
-    gDict['sentinel_app_info'] = [ promDATA ]
+        #print('rss_c ' + str(rss))
+
+        #print('ru_utime    ' + str(ru_utime))
+        #print('ru_stime    ' + str(ru_stime))
+        #print('ru_inblock  ' + str(ru_inblock))
+        #print('ru_oublock  ' + str(ru_oublock))
+        #print('ru_msgsnd   ' + str(ru_msgsnd))
+        #print('ru_msgrcv   ' + str(ru_msgrcv))
+        #print('ru_nsignals ' + str(ru_nsignals))
+        #print('ru_nvcsw   ' + str(ru_nvcsw))
+        #print('ru_nivcsw   ' + str(ru_nivcsw))
+
+    #os.cpu_count()
+
+    #promDATA = 'sentinel_app_info{version="' + __version__ + '",threads="'+str(tcount)+'",procs="'+str(pcount)+'"} 1.0'
+    #gDict['sentinel_app_info'] = [ promDATA ]
+
+    promDATA = 'sentinel_up{version="'+ __version__ +'",threads="'+str(tcount)+'",procs="'+str(pcount)+'",cpu="'+str(cpu_u)+'",rss="'+str(rss)+'",uptime="'+str(uptimef)+'"} 1'
+    gDict['sentinel_up'] = [ promDATA ]
 
     _arch = sys.implementation._multiarch
     _implementation = sys.implementation.name
@@ -4280,6 +4352,13 @@ def processD(gDict):
     #except BrokenPipeError as e:
     #    logging.error('processD ' + str(e))
     #    return False
+
+    #sz = sys.getsizeof(__main__)
+    #print('sz ' + str(sz))
+  
+    #n = __name__
+    #sz = __name__.__sizeof__()
+    #print('sz ' + str(n) + ' ' + str(sz))
 
     return True
 
@@ -4356,7 +4435,9 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
 
     return True
 
+
 def sentrySharedMemoryManager(gDict, eList, interval):
+    logging.info('Sentry SharedMemoryManager')
 
     verbose = False
     debug = False
@@ -4393,10 +4474,10 @@ def sentrySharedMemoryManager(gDict, eList, interval):
                 smklsize = len(smkl)
                 eList.insert(0, smklsize)
 
-        #print('klstsize '+str(klstsize))
-        #print('smklsize '+str(smklsize))
-
         if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
+
+        #rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        #print('rss_s ' + str(rss))
 
         time.sleep(interval)
 
@@ -4407,70 +4488,70 @@ def sentrySharedMemoryManager(gDict, eList, interval):
     return True
 
 ##################################################################################
-from multiprocessing.managers import BaseManager
-class SharesClass:
-    def set(self, List):
-        return shared_memory.ShareableList(List, name='sentinel-keys')
-
-class sentrySMM(BaseManager):
-    pass
-
-sentrySMM.register('Shares', SharesClass)
-
-def getKeyList(gDict):
-    KeyList = []
-    for __k in gDict:
-        KeyList.append(__k)
-    return KeyList
+#from multiprocessing.managers import BaseManager
+#class SharesClass:
+#    def set(self, List):
+#        return shared_memory.ShareableList(List, name='sentinel-keys')
+#
+#class sentrySMM(BaseManager):
+#    pass
+#
+#sentrySMM.register('Shares', SharesClass)
+#
+#def getKeyList(gDict):
+#    KeyList = []
+#    for __k in gDict:
+#        KeyList.append(__k)
+#    return KeyList
+###################################################################################
+#from multiprocessing.shared_memory import SharedMemory
+#def free_shared_memory(name):
+#    try:
+#        shared_memory = SharedMemory(name=name)
+#        shared_memory.unlink()
+#    except FileNotFoundError as e:
+#        return None
+#    return None
 ##################################################################################
-from multiprocessing.shared_memory import SharedMemory
-def free_shared_memory(name):
-    try:
-        shared_memory = SharedMemory(name=name)
-        shared_memory.unlink()
-    except FileNotFoundError as e:
-        return None
-    return None
-        
-
-def sentrySharedMemoryManager_TEST(gDict, eList, interval):
-    print('init sentrySharedMemoryManager')
-
-    debug = True
-
-    smm = sentrySMM()
-    smm.start()
-    shares = smm.Shares()
-
-    KeyList = []
-
-    while not exit.is_set():
-
-        try:
-            KeyList = getKeyList(gDict)
-        except RuntimeError as e:
-            if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
-        except AttributeError as e:
-            if debug: logging.debug('debug. AttributeError sentrySharedMemoryManager ' + str(e))
-
-        klstsize = len(KeyList)
-        smklsize = eList[0]
-
-        if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
-
-        if klstsize != smklsize:
-            #smklr = shared_memory.ShareableList(name='sentinel-keys')
-            free = free_shared_memory(name='sentinel-keys')
-            try:
-                shares.set(KeyList)
-                eList.insert(0, smklsize)
-            except FileExistsError as e:
-                if debug: print('debug. FileExistsError ' + str(e))
-
-        time.sleep(interval)
-
-    smm.shutdown()
-    return True
+#
+#def sentrySharedMemoryManager_TEST(gDict, eList, interval):
+#    print('init sentrySharedMemoryManager')
+#
+#    debug = True
+#
+#    smm = sentrySMM()
+#    smm.start()
+#    shares = smm.Shares()
+#
+#    KeyList = []
+#
+#    while not exit.is_set():
+#
+#        try:
+#            KeyList = getKeyList(gDict)
+#        except RuntimeError as e:
+#            if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
+#        except AttributeError as e:
+#            if debug: logging.debug('debug. AttributeError sentrySharedMemoryManager ' + str(e))
+#
+#        klstsize = len(KeyList)
+#        smklsize = eList[0]
+#
+#        if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
+#
+#        if klstsize != smklsize:
+#            #smklr = shared_memory.ShareableList(name='sentinel-keys')
+#            free = free_shared_memory(name='sentinel-keys')
+#            try:
+#                shares.set(KeyList)
+#                eList.insert(0, smklsize)
+#            except FileExistsError as e:
+#                if debug: print('debug. FileExistsError ' + str(e))
+#
+#        time.sleep(interval)
+#
+#    smm.shutdown()
+#    return True
 
 
 
@@ -4505,138 +4586,6 @@ def sentrySharedMemoryManager_TEST(gDict, eList, interval):
 #
 #    smm.shutdown()
 
-
-
-#def sentrySharedMemoryManager(gDict, eList, interval):
-#
-#    print('init sentrySharedMemoryManager')
-#
-#    #from multiprocessing.managers import SharedMemoryManager
-#
-#
-#    #smm = sentrySMM()
-#    #smm.start()
-#
-#    verbose = False
-#    debug = True
-#
-#    while not exit.is_set():
-#
-#        KeyList = []
-#        try:
-#            for __k in gDict:
-#                KeyList.append(__k)
-#        except RuntimeError as e:
-#            if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
-#        except AttributeError as e:
-#            if debug: logging.debug('debug. AttributeError sentrySharedMemoryManager ' + str(e))
-#
-#        klstsize = len(KeyList)
-#        smklsize = eList[0]
-#
-#        #shares = smm.get(KeyList)
-#        #shares = smm.get(KeyList)
-#
-#        try:
-#            with sentrySMM() as smm:
-#                shares = smm.Shares()
-#                shares.get(KeyList)
-#        except FileExistsError as e:
-#            print('FileExistsError ' + str(e))
-
-#        try:
-#            smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
-#            smklsize = len(smkl)
-#            eList.insert(0, smklsize)
-#        except FileExistsError as e:
-#            if verbose: print('FileExistsError ' + str(e))
-#
-#            if klstsize != smklsize:
-#                if debug: print('debug. not equal ShareableList ' +str(klstsize)+' '+str(smklsize))
-#                #read
-#                smklr = shared_memory.ShareableList(name='sentinel-keys')
-#                smklr.shm.close()
-#                smklr.shm.unlink()
-#                #write
-#                smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
-#                smklsize = len(smkl)
-#                eList.insert(0, smklsize)
-#
-#        #print('klstsize '+str(klstsize))
-#        #print('smklsize '+str(smklsize))
-
-#        if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
-#
-#        for i in range(interval):
-#            try:
-#                time.sleep(1)
-#            except Exception as e:
-#                logging.critical('break.sentrySharedMemoryManager ' + str(e))
-#                exit.set()
-#                break
-
-#    smkl = shared_memory.ShareableList(name='sentinel-keys')
-#    smkl.shm.close()
-#    smkl.shm.unlink()
-#
-#    return True
-
-
-def sentrySharedMemoryManager_V1(gDict, eList, interval):
-
-    verbose = False
-    debug = True
-
-    while not exit.is_set():
-
-        KeyList = []
-        try:
-            for __k in gDict:
-                KeyList.append(__k)
-        except RuntimeError as e:
-            if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
-        except AttributeError as e:
-            if debug: logging.debug('debug. AttributeError sentrySharedMemoryManager ' + str(e))
-
-        klstsize = len(KeyList)
-        smklsize = eList[0]
-
-        try:
-            smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
-            smklsize = len(smkl)
-            eList.insert(0, smklsize)
-        except FileExistsError as e:
-            if verbose: print('FileExistsError ' + str(e))
-
-            if klstsize != smklsize:
-                if debug: print('debug. not equal ShareableList ' +str(klstsize)+' '+str(smklsize))
-                #read
-                smklr = shared_memory.ShareableList(name='sentinel-keys')
-                smklr.shm.close()
-                smklr.shm.unlink()
-                #write
-                smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
-                smklsize = len(smkl)
-                eList.insert(0, smklsize)
-
-        #print('klstsize '+str(klstsize))
-        #print('smklsize '+str(smklsize))
-
-        if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
-
-        for i in range(interval):
-            try:
-                time.sleep(1)
-            except Exception as e:
-                logging.critical('break.sentrySharedMemoryManager ' + str(e))
-                exit.set()
-                break
-
-    smkl = shared_memory.ShareableList(name='sentinel-keys')
-    smkl.shm.close()
-    smkl.shm.unlink()
-
-    return True
 
 
 def promDataParser(promKey, promData):
@@ -4696,6 +4645,8 @@ def sentryScheduler(db_store, gDict, interval):
     eDict={}
     #eList=[0]
 
+    start = time.time()
+
     #while (sigterm == False):
     while not exit.is_set():
 
@@ -4711,7 +4662,7 @@ def sentryScheduler(db_store, gDict, interval):
             break
 
         try:
-            pd = processD(gDict)
+            pd = processD(gDict, start)
         #except BrokenPipeError as e:
         #except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
         except Exception as e:
@@ -4734,6 +4685,10 @@ def sentryScheduler(db_store, gDict, interval):
 
         #time.sleep(3)
         #time.sleep(interval)
+
+        #rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        #print('rss_t ' + str(rss))
+
         for i in range(interval):
             try:
                 time.sleep(1)
