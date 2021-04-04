@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.23-1.dev.20210404-1'
+__version__ = '1.6.24-1 🥚'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4235,7 +4235,7 @@ def sentryProcessJobs(db_store, gDict):
 #def processD(List):
 def processD(gDict, start):
 
-    debug = True
+    debug = False
 
     now = time.time()
     uptime = now - start
