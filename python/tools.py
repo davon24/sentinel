@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.25-1.dev.20210404-1'
+__version__ = '1.6.25-1.dev.kvm.20210405-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -3999,8 +3999,237 @@ def avScan(filedir, db_store):
 
     return True
     
-
 #--------
+
+def virshCheck(name, db_store, gDict, _name):
+    print('virshCheck')
+    #print('name: ' + str(name))
+    #print('_name: ' + str(_name))
+
+    from modules.kvm import hvm
+
+    uri = 'qemu://'
+    host = ''
+
+    try:
+        runningDict = hvm.ListDomainsDetailedClass(uri, host).get()
+        #print(json.dumps(runningDict, indent=2, sort_keys=True))
+    except Exception as e:
+        logging.error('virshCheck ' + str(e))
+        return str(e)
+
+    #print(str(type(runningDict)))
+    #print(str(runningDict))
+    #print(runningDict['hypervisor'])
+    #print(runningDict['domains'])
+
+    #hypervisor = runningDict['hypervisor']
+    #domains    = runningDict['domains']
+
+    hypervisor = runningDict.get('hypervisor')
+    domains    = runningDict.get('domains')
+
+    if hypervisor:
+        #print('hypervisor')
+        #cpu_count = runningDict['hypervisor']['cpu']['count']
+        cpu_count  = runningDict.get('hypervisor', {}).get('cpu', {}).get('count')
+        cpu_type   = runningDict.get('hypervisor', {}).get('cpu', {}).get('type')
+        cpu_idle   = runningDict.get('hypervisor', {}).get('cpu', {}).get('idle')
+        cpu_iowait = runningDict.get('hypervisor', {}).get('cpu', {}).get('iowait')
+        cpu_user   = runningDict.get('hypervisor', {}).get('cpu', {}).get('user')
+        cpu_kernel = runningDict.get('hypervisor', {}).get('cpu', {}).get('kernel')
+
+        mem_total  = runningDict.get('hypervisor', {}).get('mem', {}).get('total')
+        mem_free   = runningDict.get('hypervisor', {}).get('mem', {}).get('free')
+        mem_used   = runningDict.get('hypervisor', {}).get('mem', {}).get('used')
+
+        hv_type    = runningDict.get('hypervisor', {}).get('type')
+
+        _key = 'virshcheck-hypervisor-' + str(name)
+
+        prom =  'sentinel_job="'+str(name)+'",type="'+str(hv_type)+'",cpu="'+str(cpu_count)+'"arch="'+str(cpu_type)+'",'
+        prom += 'cpu_idle="'+str(cpu_idle)+'",cpu_iowait="'+str(cpu_iowait)+'",cpu_user="'+str(cpu_user)+'"cpu_kernel="'+str(cpu_kernel)+'",'
+        prom += 'mem_total="'+str(mem_total)+'",mem_free="'+str(mem_free)+'",mem_used="'+str(mem_used)+'"'
+
+        val = 1
+        gDict[_key] = [ 'sentinel_job_kvm_hypervisor{' + prom + '} ' + str(val) ]
+
+
+    if domains:
+    #if domains###########
+        #dD={}
+        #_key = 'virshcheck-domain-' + str(name)
+        #print('domains')
+        for domain in domains:
+        #for domain ###########
+            dD={}
+            #_key = 'virshcheck-domain-' + str(domain)
+            #print('domain ' + str(domain))
+            state = runningDict.get('domains', {}).get(domain, {}).get('state')
+            #k = 'virshcheck-domain-'+str(domain)
+            #k = domain
+            #dD[k]=state
+            dD['name']=str(domain)
+            dD['state']=str(state)
+
+            if state == 'running':
+
+                d_cpu_count   = runningDict.get('domains', {}).get(domain, {}).get('cpu', {}).get('count')
+                d_cpu_time    = runningDict.get('domains', {}).get(domain, {}).get('cpu', {}).get('cpu_time')
+                d_system_time = runningDict.get('domains', {}).get(domain, {}).get('cpu', {}).get('system_time')
+                d_user_time   = runningDict.get('domains', {}).get(domain, {}).get('cpu', {}).get('user_time')
+
+                d_mem_actual  = runningDict.get('domains', {}).get(domain, {}).get('mem', {}).get('actual')
+                d_mem_update  = runningDict.get('domains', {}).get(domain, {}).get('mem', {}).get('last_update')
+                d_mem_rss     = runningDict.get('domains', {}).get(domain, {}).get('mem', {}).get('rss')
+
+                #k = 'virshcheck-domain-'+str(domain)+'-d_cpu_count'
+                #k = str(domain) +'_cpu_count'
+                k = 'cpu_count'
+                dD[k]=d_cpu_count
+
+                #k = 'virshcheck-domain-'+str(domain)+'-d_cpu_time'
+                #k = str(domain)+'_cpu_time'
+                k = 'cpu_time'
+                dD[k]=d_cpu_time
+
+                #k = 'virshcheck-domain-'+str(domain)+'-d_system_time'
+                #k = str(domain)+'_system_time'
+                k = 'system_time'
+                dD[k]=d_system_time
+
+                #k = 'virshcheck-domain-'+str(domain)+'-d_user_time'
+                #k = str(domain)+'_user_time'
+                k = 'user_time'
+                dD[k]=d_user_time
+
+                #k = 'virshcheck-domain-'+str(domain)+'-d_mem_actual'
+                #k = str(domain)+'_mem_actual'
+                k = 'mem_actual'
+                dD[k]=d_mem_actual
+
+                #k = 'virshcheck-domain-'+str(domain)+'-d_mem_update'
+                #k = str(domain)+'_mem_update'
+                k = 'mem_update'
+                dD[k]=d_mem_update
+
+                #k = 'virshcheck-domain-'+str(domain)+'-d_mem_rss'
+                #k = str(domain)+'_mem_rss'
+                k = 'mem_rss'
+                dD[k]=d_mem_rss
+
+
+                disks = runningDict.get('domains', {}).get(domain, {}).get('disk')
+                for disk in disks:
+                    d_disk_device           = runningDict.get('domains', {}).get(domain, {}).get('disk', {}).get(disk, {}).get('device')
+                    d_disk_bytes_read       = runningDict.get('domains', {}).get(domain, {}).get('disk', {}).get(disk, {}).get('bytes_read')
+                    d_disk_bytes_written    = runningDict.get('domains', {}).get(domain, {}).get('disk', {}).get(disk, {}).get('bytes_written')
+                    d_disk_errors           = runningDict.get('domains', {}).get(domain, {}).get('disk', {}).get(disk, {}).get('number_of_errors')
+                    d_disk_read_requests    = runningDict.get('domains', {}).get(domain, {}).get('disk', {}).get(disk, {}).get('read_requests_issued')
+                    d_disk_write_requests   = runningDict.get('domains', {}).get(domain, {}).get('disk', {}).get(disk, {}).get('write_requests_issued')
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(disk)+'-d_disk_device'
+                    #k = str(domain)+'_'+str(disk)+'_device'
+                    k = str(disk)+'_device'
+                    dD[k]=d_disk_device
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(disk)+'-d_disk_bytes_read'
+                    #k = str(domain)+'_'+str(disk)+'_bytes_read'
+                    k = str(disk)+'_bytes_read'
+                    dD[k]=d_disk_bytes_read
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(disk)+'-d_disk_bytes_written'
+                    #k = str(domain)+'_'+str(disk)+'_bytes_written'
+                    k = str(disk)+'_bytes_written'
+                    dD[k]=d_disk_bytes_written
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(disk)+'-d_disk_errors'
+                    #k = str(domain)+'_'+str(disk)+'_errors'
+                    k = str(disk)+'_errors'
+                    dD[k]=d_disk_errors
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(disk)+'-d_disk_read_requests'
+                    #k = str(domain)+'_'+str(disk)+'_read_requests'
+                    k = str(disk)+'_read_requests'
+                    dD[k]=d_disk_read_requests
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(disk)+'-d_disk_write_requests'
+                    #k = str(domain)+'-'+str(disk)+'_write_requests'
+                    k = str(disk)+'_write_requests'
+                    dD[k]=d_disk_write_requests
+
+
+
+                nets = runningDict.get('domains', {}).get(domain, {}).get('net')
+                for net in nets:
+                    d_net_mac           = runningDict.get('domains', {}).get(domain, {}).get('net', {}).get(net, {}).get('mac')
+                    d_net_bridge        = runningDict.get('domains', {}).get(domain, {}).get('net', {}).get(net, {}).get('bridge')
+                    d_net_read_bytes    = runningDict.get('domains', {}).get(domain, {}).get('net', {}).get(net, {}).get('read_bytes')
+                    d_net_write_bytes   = runningDict.get('domains', {}).get(domain, {}).get('net', {}).get(net, {}).get('write_bytes')
+                    d_net_read_drops    = runningDict.get('domains', {}).get(domain, {}).get('net', {}).get(net, {}).get('read_drops')
+                    d_net_write_drops   = runningDict.get('domains', {}).get(domain, {}).get('net', {}).get(net, {}).get('write_drops')
+                    d_net_read_errors   = runningDict.get('domains', {}).get(domain, {}).get('net', {}).get(net, {}).get('read_errors')
+                    d_net_write_errors  = runningDict.get('domains', {}).get(domain, {}).get('net', {}).get(net, {}).get('write_errors')
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(net)+'-d_net_mac'
+                    #k = str(domain)+'_'+str(net)+'_mac'
+                    k = str(net)+'_mac'
+                    dD[k]=d_net_mac
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(net)+'-d_net_bridge'
+                    #k = str(domain)+'_'+str(net)+'_bridge'
+                    k = str(net)+'_bridge'
+                    dD[k]=d_net_bridge
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(net)+'-d_net_read_bytes'
+                    #k = str(domain)+'_'+str(net)+'_read_bytes'
+                    k = str(net)+'_read_bytes'
+                    dD[k]=d_net_read_bytes
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(net)+'-d_net_write_bytes'
+                    #k = str(domain)+'_'+str(net)+'_write_bytes'
+                    k = str(net)+'_write_bytes'
+                    dD[k]=d_net_write_bytes
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(net)+'-d_net_read_drops'
+                    #k = str(domain)+'_'+str(net)+'_read_drops'
+                    k = str(net)+'_read_drops'
+                    dD[k]=d_net_read_drops
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(net)+'-d_net_write_drops'
+                    #k = str(domain)+'_'+str(net)+'_write_drops'
+                    k = str(net)+'_write_drops'
+                    dD[k]=d_net_write_drops
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(net)+'-d_net_read_errors'
+                    #k = str(domain)+'_'+str(net)+'_read_errors'
+                    k = str(net)+'_read_errors'
+                    dD[k]=d_net_read_errors
+
+                    #k = 'virshcheck-domain-'+str(domain)+'-'+str(net)+'-d_net_write_errors'
+                    #k = str(domain)+'_'+str(net)+'_write_errors'
+                    k = str(net)+'_write_errors'
+                    dD[k]=d_net_write_errors
+
+    #if domains ###########
+        #for domain ###########
+            #####
+
+            prom = ''
+            c = len(dD)
+            for k,v in dD.items():
+                c -= 1
+                if c == 0:
+                    prom += str(k) + '="' + str(v) + '"'
+                else:
+                    prom += str(k) + '="' + str(v) + '",'
+
+            _key = 'virshcheck-domain-' + str(domain)
+            gDict[_key] = [ 'sentinel_job_kvm_domain{' + prom + '} ' + str('1') ]
+
+
+    return True
+
 
 options = {
  'vuln-scan' : vulnScan,
@@ -4010,10 +4239,13 @@ options = {
  'fim-check' : fimCheck,
  'ps-check' : psCheck,
  'established-check' : establishedCheck,
+ 'virsh-check' : virshCheck,
 }
 #options[sys.argv[2]](sys.argv[3:])
 
 def runJob(name, db_store, gDict):
+
+    fail = False
 
     #-start
     val = 0
@@ -4045,6 +4277,10 @@ def runJob(name, db_store, gDict):
         #del new_json['success']
         del jdata['success']
     except KeyError: pass
+    try:
+        #del new_json['error']
+        del jdata['error']
+    except KeyError: pass
 
     prom = ''
     c = len(jdata)
@@ -4075,16 +4311,32 @@ def runJob(name, db_store, gDict):
         run = options[_job](_data, db_store, gDict, name)
     except KeyError:
         # unknown "job":"????"
-        run = 'unknown job ' + str(_job)
+        run = 'Unknown job ' + str(_job)
+        logging.error(run)
+        fail = True
+    except Exception as e:
+        run = 'Exception job ' + str(_job) + ' ' + str(e)
+        logging.error(run)
+        fail = True
 
     #-done
     done = time.strftime("%Y-%m-%d %H:%M:%S")
     jdata['done'] = done
-    jdata['success'] = run
-    #update = updateJobsJson(name, json.dumps(new_json), db_store)
 
-    if run is True:
+    if fail:
+        jdata['success'] = 'Fail'
+        jdata['error'] = run
+        val = 0
+    else:
+        jdata['success'] = run
         val = 1
+
+    #if run is True:
+    #    val = 1
+    #else:
+    #    val = 0
+
+    #update = updateJobsJson(name, json.dumps(new_json), db_store)
 
     prom = ''
     c = len(jdata)
