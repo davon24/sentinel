@@ -12,6 +12,9 @@ apt-get install -y zlib1g-dev
 bash /build/pkg_dpkg.sh
 
 apt-get install -y rsync
+
+apt-get install -y libvirt-dev
+
 bash /build/pkg_dpkg_runtime.sh
 
 

@@ -38,6 +38,18 @@ LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib ./configure --enable-optimizations
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make altinstall
 
+#https://libvirt.org/sources/python/libvirt-python-7.2.0.tar.gz
+if [ ! -f ~/dpkgbuild/libvirt-python-7.2.0.tar.gz ]; then
+  curl -k https://libvirt.org/sources/python/libvirt-python-7.2.0.tar.gz >~/dpkgbuild/libvirt-python-7.2.0.tar.gz
+  tar xvf ~/dpkgbuild/libvirt-python-7.2.0.tar.gz -C ~/dpkgbuild/
+fi
+cd ~/dpkgbuild/libvirt-python-7.2.0
+#./configure --prefix=/usr/libexec/sentinel/runtime
+#make 
+#make install
+/usr/libexec/sentinel/runtime/bin/python3.8 setup.py build
+/usr/libexec/sentinel/runtime/bin/python3.8 setup.py install --prefix=/usr/libexec/sentinel/runtime
+
 cd /usr/libexec/sentinel/runtime/bin
 ln -s python3.8 python3
 

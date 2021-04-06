@@ -38,6 +38,8 @@ yum -y update
 yum -y groupinstall "Development Tools"
 yum -y install openssl-devel bzip2-devel libffi-devel
 
+yum -y libvirt-devel
+
 bash /build/pkg_rpm_runtime.sh
 
 

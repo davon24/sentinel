@@ -54,6 +54,18 @@ fi
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make
 LD_RUN_PATH=/usr/libexec/sentinel/runtime/lib make altinstall
 
+#libvirt
+#https://libvirt.org/sources/python/libvirt-python-7.2.0.tar.gz
+if [ ! -f ~/rpmbuild/SOURCES/libvirt-python-7.2.0.tar.gz ]; then
+  curl -k https://libvirt.org/sources/python/libvirt-python-7.2.0.tar.gz >~/rpmbuild/SOURCES/libvirt-python-7.2.0.tar.gz
+  tar xvf ~/rpmbuild/SOURCES/libvirt-python-7.2.0.tar.gz -C ~/rpmbuild/SOURCES/
+fi
+cd ~/rpmbuild/SOURCES/libvirt-python-7.2.0
+#./configure --prefix=/usr/libexec/sentinel/runtime
+/usr/libexec/sentinel/runtime/bin/python3.8 setup.py build
+/usr/libexec/sentinel/runtime/bin/python3.8 setup.py install --prefix=/usr/libexec/sentinel/runtime
+
+
 echo "Compiler Done"
 
 cd /usr/libexec/sentinel/runtime/bin

@@ -1,0 +1,18 @@
+
+#ubuntu-focal
+copying build/lib.linux-x86_64-3.8/libvirtmod.cpython-38-x86_64-linux-gnu.so -> /usr/libexec/sentinel/runtime/lib/python3.8/site-packages
+copying build/lib.linux-x86_64-3.8/libvirt.py -> /usr/libexec/sentinel/runtime/lib/python3.8/site-packages
+copying build/lib.linux-x86_64-3.8/libvirt_qemu.py -> /usr/libexec/sentinel/runtime/lib/python3.8/site-packages
+copying build/lib.linux-x86_64-3.8/libvirtaio.py -> /usr/libexec/sentinel/runtime/lib/python3.8/site-packages
+copying build/lib.linux-x86_64-3.8/libvirt_lxc.py -> /usr/libexec/sentinel/runtime/lib/python3.8/site-packages
+copying build/lib.linux-x86_64-3.8/libvirtmod_qemu.cpython-38-x86_64-linux-gnu.so -> /usr/libexec/sentinel/runtime/lib/python3.8/site-packages
+copying build/lib.linux-x86_64-3.8/libvirtmod_lxc.cpython-38-x86_64-linux-gnu.so -> /usr/libexec/sentinel/runtime/lib/python3.8/site-packages
+byte-compiling /usr/libexec/sentinel/runtime/lib/python3.8/site-packages/libvirt.py to libvirt.cpython-38.pyc
+byte-compiling /usr/libexec/sentinel/runtime/lib/python3.8/site-packages/libvirt_qemu.py to libvirt_qemu.cpython-38.pyc
+byte-compiling /usr/libexec/sentinel/runtime/lib/python3.8/site-packages/libvirtaio.py to libvirtaio.cpython-38.pyc
+byte-compiling /usr/libexec/sentinel/runtime/lib/python3.8/site-packages/libvirt_lxc.py to libvirt_lxc.cpython-38.pyc
+running install_egg_info
+Writing /usr/libexec/sentinel/runtime/lib/python3.8/site-packages/libvirt_python-7.2.0-py3.8.egg-info
+
+
+
