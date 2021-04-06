@@ -6,8 +6,8 @@
 
 Summary: Sentinel Python Application
 Name: sentinel
-Version: 1.6.26
-Release: 3%{?dist}
+Version: 1.6.27
+Release: 1%{?dist}
 License: GPL
 URL: https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz
 Group: Applications/Internet

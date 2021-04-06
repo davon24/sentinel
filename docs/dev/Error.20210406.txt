@@ -1,0 +1,34 @@
+
+Apr 06 13:46:32 smith prometheus-node-exporter[8314]: level=error ts=2021-04-06T20:46:32.306Z caller=textfile.go:209 collector=textfile msg="failed to collect textfile data" file=sentinel.db.prom err="failed to parse textfile data from \"/var/lib/prometheus/node-exporter/sentinel.db.prom\": text format parsing error in line 5: unexpected end of label value \"24\""
+
+
+karl.rink@smith:~$ cat /var/lib/prometheus/node-exporter/sentinel.db.prom
+sentinel_up{version="1.6.26-3",threads="5",procs="1",cpu="0.44",rss="33560",uptime="456"} 1
+sentinel_python_info{arch="x86_64-linux-gnu",implementation="cpython",major="3",minor="8",micro="6",version="3.8.6"} 1.0
+sentinel_python_sqlite_info{sqlite3="2.6.0",library="3.33.0"} 1.0
+sentinel_job{repeat="15min",job="kvm-check",start="2021-04-06 13:38:30",name="kvm-check-1",done="2021-04-06 13:38:30",success="True"} 1
+sentinel_job_kvm_hypervisor{sentinel_job="kvm-check-1",type="qemu",cpu="24"arch="x86_64",cpu_idle="443856362610000000",cpu_iowait="525453310000000",cpu_user="81655976900000000"cpu_kernel="7778260780000000",mem_total="32133",mem_free="333.98828125",mem_used="31800"} 1
+sentinel_job_kvm_domain{name="appserv-guest4",state="running",cpu_count="8",cpu_time="1378925038444481",system_time="726697450000000",user_time="77480000000",mem_actual="8388608",mem_update="1615409338",mem_rss="7052356",hda_device="/data/appserv-guest4/hda.qcow2",hda_bytes_read="1643884779520",hda_bytes_written="5085368397824",hda_errors="-1",hda_read_requests="33174955",hda_write_requests="572514550",eth0_mac="52:54:00:e4:25:bf",eth0_bridge="br0",eth0_read_bytes="19226336490975",eth0_write_bytes="13487742448744",eth0_read_drops="26487",eth0_write_drops="0",eth0_read_errors="0",eth0_write_errors="0"} 1
+sentinel_job_kvm_domain{name="olb-breakwater",state="shutoff"} 1
+sentinel_job_kvm_domain{name="appserv-smith",state="running",cpu_count="8",cpu_time="1550736267384170",system_time="687618300000000",user_time="221810000000",mem_actual="12582912",mem_update="1595289636",mem_rss="9540",hda_device="/data/appserv-smith/hda.qcow2",hda_bytes_read="7225993863680",hda_bytes_written="13151229940736",hda_errors="-1",hda_read_requests="449643658",hda_write_requests="1051887707",eth0_mac="52:54:00:29:06:a3",eth0_bridge="br0",eth0_read_bytes="18011084548545",eth0_write_bytes="13901092494882",eth0_read_drops="0",eth0_write_drops="0",eth0_read_errors="0",eth0_write_errors="0"} 1
+sentinel_job_kvm_domain{name="appserv-upgrade2",state="shutoff"} 1
+sentinel_job{repeat="5min",job="established-check",start="2021-04-06 13:44:25",name="established-monitor",done="2021-04-06 13:44:25",success="True"} 1
+sentinel_job{repeat="5min",job="ps-check",start="2021-04-06 13:44:25",name="proc-monitor",done="2021-04-06 13:44:26",success="True"} 1
+sentinel_job_output{procs="324",defunct="0",sentinel_job="proc-monitor"} 1
+sentinel_job{repeat="12hour",job="fim-check",config="fim-1",start="2021-04-06 13:39:25",name="fim-job-1",done="2021-04-06 13:39:25",success="True"} 1
+sentinel_job_output{config="fim-1",job="fim-job-1",done="2021-04-06 13:39:25"} 0
+sentinel_job_output{name="established-monitor",sentinel_job="established-check",proto="tcp",laddr="192.168.1.24",lport="22",faddr="192.168.2.241",fport="55184",prog="sshd",user="root",prog2="sshd",user2="root",prog3="sshd",user3="root",prog4="sshd",user4="karl.rink",done="2021-04-06 13:44:25"} 1
+karl.rink@smith:~$ 
+
+
+TYPO... missing comma
+
+sentinel_job_kvm_hypervisor{sentinel_job="kvm-check-1",type="qemu",cpu="24"arch="x86_64",cpu_idle="443856362610000000",cpu_iowait="525453310000000",cpu_user="81655976900000000"cpu_kernel="7778260780000000",mem_total="32133",mem_free="333.98828125",mem_used="31800"} 1
+
+
+,cpu="24"arch="x86_64",
+
+
+
+
+

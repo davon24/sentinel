@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.26-3'
+__version__ = '1.6.27-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4048,8 +4048,8 @@ def kvmCheck(name, db_store, gDict, _name):
 
         _key = 'virshcheck-hypervisor-' + str(name)
 
-        prom =  'sentinel_job="'+str(name)+'",type="'+str(hv_type)+'",cpu="'+str(cpu_count)+'"arch="'+str(cpu_type)+'",'
-        prom += 'cpu_idle="'+str(cpu_idle)+'",cpu_iowait="'+str(cpu_iowait)+'",cpu_user="'+str(cpu_user)+'"cpu_kernel="'+str(cpu_kernel)+'",'
+        prom =  'sentinel_job="'+str(name)+'",type="'+str(hv_type)+'",cpu="'+str(cpu_count)+'",arch="'+str(cpu_type)+'",'
+        prom += 'cpu_idle="'+str(cpu_idle)+'",cpu_iowait="'+str(cpu_iowait)+'",cpu_user="'+str(cpu_user)+'",cpu_kernel="'+str(cpu_kernel)+'",'
         prom += 'mem_total="'+str(mem_total)+'",mem_free="'+str(mem_free)+'",mem_used="'+str(mem_used)+'"'
 
         gDict[_key] = [ 'sentinel_job_kvm_hypervisor{' + prom + '} ' + str('1') ]
