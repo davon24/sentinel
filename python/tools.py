@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.25-1.dev.kvm.20210405-1'
+__version__ = '1.6.25-1.dev.kvm.20210405-2'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4001,21 +4001,22 @@ def avScan(filedir, db_store):
     
 #--------
 
-def virshCheck(name, db_store, gDict, _name):
-    print('virshCheck')
+#def virshCheck(name, db_store, gDict, _name):
+def kvmCheck(name, db_store, gDict, _name):
+    #print('kvmCheck')
     #print('name: ' + str(name))
     #print('_name: ' + str(_name))
 
-    from modules.kvm import hvm
+    from modules.hv import kvm
 
     uri = 'qemu://'
     host = ''
 
     try:
-        runningDict = hvm.ListDomainsDetailedClass(uri, host).get()
+        runningDict = kvm.ListDomainsDetailedClass(uri, host).get()
         #print(json.dumps(runningDict, indent=2, sort_keys=True))
     except Exception as e:
-        logging.error('virshCheck ' + str(e))
+        logging.error('kvmCheck ' + str(e))
         return str(e)
 
     #print(str(type(runningDict)))
@@ -4051,14 +4052,10 @@ def virshCheck(name, db_store, gDict, _name):
         prom += 'cpu_idle="'+str(cpu_idle)+'",cpu_iowait="'+str(cpu_iowait)+'",cpu_user="'+str(cpu_user)+'"cpu_kernel="'+str(cpu_kernel)+'",'
         prom += 'mem_total="'+str(mem_total)+'",mem_free="'+str(mem_free)+'",mem_used="'+str(mem_used)+'"'
 
-        val = 1
-        gDict[_key] = [ 'sentinel_job_kvm_hypervisor{' + prom + '} ' + str(val) ]
-
+        gDict[_key] = [ 'sentinel_job_kvm_hypervisor{' + prom + '} ' + str('1') ]
 
     if domains:
-    #if domains###########
-        #dD={}
-        #_key = 'virshcheck-domain-' + str(name)
+        val=0
         #print('domains')
         for domain in domains:
         #for domain ###########
@@ -4073,6 +4070,8 @@ def virshCheck(name, db_store, gDict, _name):
             dD['state']=str(state)
 
             if state == 'running':
+
+                val = 1
 
                 d_cpu_count   = runningDict.get('domains', {}).get(domain, {}).get('cpu', {}).get('count')
                 d_cpu_time    = runningDict.get('domains', {}).get(domain, {}).get('cpu', {}).get('cpu_time')
@@ -4117,7 +4116,6 @@ def virshCheck(name, db_store, gDict, _name):
                 #k = str(domain)+'_mem_rss'
                 k = 'mem_rss'
                 dD[k]=d_mem_rss
-
 
                 disks = runningDict.get('domains', {}).get(domain, {}).get('disk')
                 for disk in disks:
@@ -4225,8 +4223,7 @@ def virshCheck(name, db_store, gDict, _name):
                     prom += str(k) + '="' + str(v) + '",'
 
             _key = 'virshcheck-domain-' + str(domain)
-            gDict[_key] = [ 'sentinel_job_kvm_domain{' + prom + '} ' + str('1') ]
-
+            gDict[_key] = [ 'sentinel_job_kvm_domain{' + prom + '} ' + str(val) ]
 
     return True
 
@@ -4239,7 +4236,7 @@ options = {
  'fim-check' : fimCheck,
  'ps-check' : psCheck,
  'established-check' : establishedCheck,
- 'virsh-check' : virshCheck,
+ 'kvm-check' : kvmCheck,
 }
 #options[sys.argv[2]](sys.argv[3:])
 

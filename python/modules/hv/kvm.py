@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '20210404'
+__version__ = '20210405'
 
 import libvirt
 import sys
@@ -163,16 +163,11 @@ class ListDomainsDetailedClass(ListDomainsClass):
             diskDict = {}
             source = None
             for diskType in diskTypes:
-                #print('diskType ' + str(diskType))
                 diskNodes = diskType.childNodes
-                #print('diskNodes ' + str(diskNodes))
                 for diskNode in diskNodes:
-                    #print('diskNode ' + str(diskNode))
                     if diskNode.nodeName[0:1] != '#':
                         if diskNode.nodeName == 'source':
-                            #print('diskNode.nodeName source ')
                             for attr in diskNode.attributes.keys():
-                                #print('attr ' + str(attr))
                                 if diskNode.attributes[attr].name == 'dev':
                                     source = str(diskNode.attributes[attr].value)
                                 elif diskNode.attributes[attr].name == 'file':
