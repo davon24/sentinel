@@ -6,7 +6,7 @@
 
 Summary: Sentinel Python Application
 Name: sentinel
-Version: 1.6.24
+Version: 1.6.25
 Release: 1%{?dist}
 License: GPL
 URL: https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz
@@ -93,6 +93,12 @@ mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ps
 cp sentinel-%{version}/python/modules/ps/ps.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ps/ps.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ps/ps.py
 
+mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv
+cp sentinel-%{version}/python/modules/hv/kvm.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/kvm.py
+cp sentinel-%{version}/python/modules/hv/__init__.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/__init__.py
+chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/kvm.py
+
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -171,9 +177,11 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /usr/libexec/sentinel/db/manuf
 /usr/libexec/sentinel/sentinel.py
 /usr/libexec/sentinel/manuf.py
-/usr/libexec/sentinel/modules/ps/ps.py
 /usr/libexec/sentinel/store.py
 /usr/libexec/sentinel/tools.py
+/usr/libexec/sentinel/modules/ps/ps.py
+/usr/libexec/sentinel/modules/hv/kvm.py
+/usr/libexec/sentinel/modules/hv/__init__.py
 
 %if 0%{?rhel} == 8
 #%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyc
@@ -194,6 +202,8 @@ rm -rf $RPM_BUILD_ROOT
 %exclude /usr/libexec/sentinel/*.pyo
 %exclude /usr/libexec/sentinel/modules/ps/*.pyc
 %exclude /usr/libexec/sentinel/modules/ps/*.pyo
+%exclude /usr/libexec/sentinel/modules/hv/*.pyc
+%exclude /usr/libexec/sentinel/modules/hv/*.pyo
 
 %changelog
 * Wed Mar 10 2021 Karl Rink <karl@rink.us> v1.6.15-1

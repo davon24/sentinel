@@ -25,6 +25,10 @@ cp ~/dpkgbuild/sentinel-master/python/db/manuf ~/dpkgbuild/sentinel/usr/libexec/
 mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/ps
 cp ~/dpkgbuild/sentinel-master/python/modules/ps/ps.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/ps/ps.py
 
+mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/hv
+cp ~/dpkgbuild/sentinel-master/python/modules/hv/kvm.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/hv/kvm.py
+cp ~/dpkgbuild/sentinel-master/python/modules/hv/__init__.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/hv/__init__.py
+
 mkdir -p ~/dpkgbuild/sentinel/lib/systemd/system
 cp ~/dpkgbuild/sentinel-master/pkg/linux.sentinel.service ~/dpkgbuild/sentinel/lib/systemd/system/sentinel.service
 

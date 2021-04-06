@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.25-1.dev.kvm.20210405-2'
+__version__ = '1.6.25-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -4384,6 +4384,7 @@ def getDuration(_repeat):
     return scale, amt
 
 def sentryProcessor(db_store, gDict, interval):
+    logging.info('Sentry Processor')
 
     # run this every X
 
@@ -4886,6 +4887,7 @@ def promDataParser(promKey, promData):
 
 
 def sentryScheduler(db_store, gDict, interval):
+    logging.info('Sentry Scheduler')
 
     #run this every X
 
