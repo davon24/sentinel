@@ -1,0 +1,14 @@
+
+('established-monitor', '2021-03-18 02:15:52', '{"repeat": "5min", "job": "established-check", "start": "2021-03-17 19:15:52", "name": "established-monitor"}')
+
+if not done and start and no.success > repeat
+
+🐰 krink@KarlMBPro dev % sentinel list-jobs
+('established-monitor', '2021-03-18 02:15:52', '{"repeat": "5min", "job": "established-check", "start": "2021-03-17 19:15:52", "name": "established-monitor"}')
+('fim-job-1', '2021-04-08 00:07:09', '{"repeat": "12hour", "job": "fim-check", "config": "fim-1", "start": "2021-04-07 17:07:09", "name": "fim-job-1", "done": "2021-04-07 17:07:09", "success": true}')
+('proc-monitor', '2021-04-08 00:27:14', '{"repeat": "5min", "job": "ps-check", "start": "2021-04-07 17:27:14", "name": "proc-monitor", "done": "2021-04-07 17:27:14", "success": true}')
+('proc-monitor-2', '2021-03-21 04:58:46', '{"repeat": "1min", "job": "ps-check", "start": "2021-03-20 21:58:46", "name": "proc-monitor-2"}')
+('vuln-scan-1-subnet', '2021-04-03 18:18:13', '{"time": "2020-09-20 00:00:00", "job": "vuln-scan", "ips": ["192.168.0.1/24"], "start": "2021-04-03 10:57:45", "name": "vuln-scan-1-subnet", "done": "2021-04-03 11:18:13", "success": true}')
+
+
+

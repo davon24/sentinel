@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.27-1'
+__version__ = '1.6.28-1'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -3761,18 +3761,37 @@ def establishedCheck(name, db_store, gDict, _name):
         ppDict = lsofProtoPort(protoport)
 
         pdata = ''
-        _c = 0
+        _p = 0
+        _u = 0
+
+        #dedup prog user
+        _pD={}
+        _uD={}
+
         for _k,_v in ppDict.items():
-            #_c -= 1
-            _c += 1
+            #_c += 1
             vLL = _v.split()
             prog = vLL[2]
             user = vLL[3]
 
-            if _c > 1:
-                pdata += ',prog'+str(_c)+'="'+str(prog)+'",user'+str(_c)+'="'+str(user)+'"'
-            else:
-                pdata += ',prog="'+str(prog)+'",user="'+str(user)+'"'
+            #just overwrite each time
+            _pD[prog] = 1
+            _uD[user] = 1
+
+            #if _c > 1:
+            #    pdata += ',prog'+str(_p)+'="'+str(prog)+'",user'+str(_c)+'="'+str(user)+'"'
+            #else:
+            #    pdata += ',prog="'+str(prog)+'",user="'+str(user)+'"'
+
+        #-
+
+        for _k,_v in _pD.items():
+            _p += 1
+            pdata += ',prog'+str(_p)+'="'+str(_k)+'"'
+
+        for _k,_v in _uD.items():
+            _u += 1
+            pdata += ',user'+str(_u)+'="'+str(_k)+'"'
 
 
         data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"' + pdata
