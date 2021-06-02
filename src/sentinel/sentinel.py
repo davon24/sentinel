@@ -4,9 +4,9 @@ import sys
 import os
 import json
 
+sys.path.insert(0, os.path.dirname(__file__))
 import tools
 import store
-
 __version__ = tools.__version__
 
 def usage():
@@ -223,7 +223,9 @@ def main():
     #print(os.path.dirname(__file__))
     #sys.path.insert(0, os.path.dirname(__file__))
 
-    db_store = str(os.path.dirname(__file__)) + '/db/sentinel.db'
+
+    #db_store = str(os.path.dirname(__file__)) + '/db/sentinel.db'
+    db_store = '/tmp/sentinel.db'
     db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
 
     if sys.argv[1:]:
