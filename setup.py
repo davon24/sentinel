@@ -9,7 +9,7 @@ from setuptools import setup
 
 
 setup(
-    name = "sentinel",
+    name = "sentinel-tool",
     packages = ["sentinel"],
     entry_points = {
         "console_scripts": ['sentinel = sentinel.sentinel:main']
