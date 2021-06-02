@@ -209,13 +209,15 @@ def printListening():
         print(k,v)
     return True
 
-def run():
-        arpTbl = tools.getArps()
-        update = store.update_arp_data(db_store, arpTbl, db_manuf)
-        print(update)
-        return True
+#def run():
+#        arpTbl = tools.getArps()
+#        update = store.update_arp_data(db_store, arpTbl, db_manuf)
+#        print(update)
+#        return True
 
-if __name__ == '__main__':
+
+#if __name__ == '__main__':
+def main():
 
     #sys.path.insert(0,'db')
     #print(os.path.dirname(__file__))
@@ -1220,7 +1222,15 @@ if __name__ == '__main__':
             usage()
             sys.exit(0)
     else:
-        sys.exit(run())
+        #sys.exit(run())
+        arpTbl = tools.getArps()
+        update = store.update_arp_data(db_store, arpTbl, db_manuf)
+        print(update)
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
 
 
 
