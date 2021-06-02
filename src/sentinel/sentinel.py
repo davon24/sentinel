@@ -225,7 +225,7 @@ def main():
 
 
     #db_store = str(os.path.dirname(__file__)) + '/db/sentinel.db'
-    db_store = '/tmp/sentinel.db'
+    db_store = 'sentinel.db'
     db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
 
     if sys.argv[1:]:
