@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.28-2'
+__version__ = '1.6.28-3'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -33,6 +33,7 @@ logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
 datefmt = "%b %d %H:%M:%S"
 logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
+sys.path.insert(0, os.path.dirname(__file__))
 import store
 
 #import smtplib
