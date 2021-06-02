@@ -20,8 +20,9 @@ setup(
     author = "Karl Rink",
     author_email = "karl@rink.us",
     url = "https://gitlab.com/krink/sentinel",
-    install_requires = [ ],
-    packages=find_packages()
+    install_requires = [],
+    include_package_data=True,
+    package_data={'': ['db/manuf']},
     )
 
 
