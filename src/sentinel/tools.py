@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.6.28-4'
+#__version__ = '1.6.28-4'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -241,6 +241,29 @@ def tail(_file):
         return False
 
     return True
+
+def logstream(_format='json'):
+
+    if sys.platform == 'darwin':
+        _format = 'ndjson'
+        cmd = ['log', 'stream', '--style', _format] #macos
+    elif sys.platform == 'linux' or sys.platform == 'linux2':
+        cmd = ['journalctl', '-f', '-o', _format] #linux
+    else:
+        logging.critical('Fail: No log stream.  No such file or directory')
+        return False
+
+    f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+    while not exit.is_set():
+        line = f.stdout.readline()
+        if not line:
+            time.sleep(1) #break
+        else:
+            yield line
+        sys.stdout.flush()
+
+    return True
+
 
 def logstream_v2(_format='json'):
 

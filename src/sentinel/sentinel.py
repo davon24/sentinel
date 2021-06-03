@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 
+__version__ = '1.7.0-0'
+
 import sys
 import os
 import json
 
-sys.path.insert(0, os.path.dirname(__file__))
-import tools
-import store
-__version__ = tools.__version__
+#sys.path.insert(0, os.path.dirname(__file__))
+#import tools
+#import store
+
+from . import tools
+from . import store
+
+#__version__ = tools.__version__
 
 def usage():
     print(sys.argv[0] + ''' [option]
@@ -223,6 +229,7 @@ def main():
     #print(os.path.dirname(__file__))
     #sys.path.insert(0, os.path.dirname(__file__))
 
+    #sys.path.insert(0, os.path.dirname(__file__))
 
     #db_store = str(os.path.dirname(__file__)) + '/db/sentinel.db'
     db_store = 'sentinel.db'
@@ -853,8 +860,10 @@ def main():
             sys.exit(0)
 
         if sys.argv[1] == 'run-ps':
-            import modules.ps.ps
-            run = modules.ps.ps.get_ps()
+            #import modules.ps.ps
+            #run = modules.ps.ps.get_ps()
+            from .modules.ps import ps
+            run = ps.get_ps()
             print(run)
             sys.exit(0)
 
@@ -901,7 +910,8 @@ def main():
             sys.exit(0)
 
         if sys.argv[1] == 'file-type':
-            import modules.gitegridy.gitegridy as git
+            #import modules.gitegridy.gitegridy as git
+            from .modules.gitegridy import gitegridy as git
             _file = sys.argv[2]
             file_type = git.fileType(_file)
             print(file_type)
