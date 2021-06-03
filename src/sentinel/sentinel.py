@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.0-0'
 
 import sys
 import os
 import json
 
-#sys.path.insert(0, os.path.dirname(__file__))
-#import tools
-#import store
-
 from . import tools
 from . import store
 
-#__version__ = tools.__version__
+__version__ = tools.__version__
 
 def usage():
     print(sys.argv[0] + ''' [option]
