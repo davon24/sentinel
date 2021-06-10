@@ -1,13 +1,35 @@
-# sentinel  
+# Sentinel Server
 
+Sentinel Server is a python process that interacts with the operating system and presents data in prometheus format.  When run as a daemon process, users can schedule jobs and interact with the server via python shared_memory and prometheus interface.  
+
+[![Package Version](https://img.shields.io/pypi/v/sentinel-server.svg)](https://pypi.python.org/pypi/sentinel-server/)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
+
+https://prometheus.io/    
+
+## Install
 ```
-./sentinel.py [option]
+pip3 install sentinel-server
+```
+https://pypi.org/project/sentinel-server/    
+
+## Run server daemon process (sentry mode)
+requires python 3.8 minimum.   
+```
+python3.8 -m sentinel sentry    
+```
+
+## Client command   
+```
+sentinel [option]    
 ```
 
 ```
 ./sentinel.py --help   
 
     options:
+
+        list-proms
 
         nmap-net net
         ping-net ip/net
@@ -115,8 +137,6 @@
         av-scan dir|file
         list-avs
 
-        list-proms
-
         list-proms-db
         update-prom-db name data
         clear-proms-db
@@ -170,7 +190,15 @@
 
 ```
 
-Linux package repo hosting https://gitlab.com/_pkg/sentinel  
+---   
+
+Source project hosting
+https://gitlab.com/krink/sentinel   
+
+---   
+
+
+Legacy Linux package repo hosting https://gitlab.com/_pkg/sentinel  
 
 
 

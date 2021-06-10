@@ -15,6 +15,8 @@ def usage():
 
     options:
 
+        list-proms
+
         nmap-net net
         ping-net ip/net
 
@@ -121,8 +123,6 @@ def usage():
         av-scan dir|file
         list-avs
 
-        list-proms
-
         list-proms-db
         update-prom-db name data
         clear-proms-db
@@ -162,7 +162,6 @@ def usage():
 
         diff-system-profile-rowid rowid rowid
         get-system-profile-data rowid data
-
 
         tail file
         logstream
