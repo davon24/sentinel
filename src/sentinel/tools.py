@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.2'
+__version__ = '1.7.3'
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -928,8 +928,11 @@ def updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose=False):
             s[b]=1
 
         if '1' in _predict:
+            #promDataSanitizer
+            __sample = promDataSanitizer(_sample)
             _k = str(k)+'-'+str(b)
-            _prom = 'config="'+str(_key)+'",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(_sample) + '"'
+            #_prom = 'config="'+str(_key)+'",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(_sample) + '"'
+            _prom = 'config="'+str(_key)+'",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(__sample) + '"'
             gDict[_k] = [ 'sentinel_watch_syslog_sklearn{' + _prom + '} ' +str(s[b])]
 
             store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(s[b]), line, db_store)

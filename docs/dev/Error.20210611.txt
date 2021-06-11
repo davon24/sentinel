@@ -1,0 +1,13 @@
+
+sentinel_watch_syslog_sklearn{config="watch-syslog-sklearn-1",algo="naive_bayes.MultinomialNB",predict="1",seen="False",b2sum="31f8210bdde483de25769faaf8b6b7c5d046c567",sample="[corewifi] LQM: rssi=-60dBm noise=-94dBm snr=34 cca=2.0% txRate=702.0Mbps txFrames=7 txFail=0 txRetrans=2 txFallbackRate=175.5Mbps rxRate=702.0Mbps rxFrames=5 rxRetryFrames=5 beaconRecv=48 beaconSched=49 txFwFrames=6 txFwFail=0 txFwRetrans=0 Default  "} 1
+
+
+level=error ts=2021-06-11T21:37:36.875Z caller=textfile.go:209 collector=textfile msg="failed to collect textfile data" file=sentinel.db.prom err="failed to parse textfile data from \"/var/run/sentinel/sentinel.db.prom\": text format parsing error in line 47: unexpected end of label value \"time=\""
+
+
+
+sentinel_watch_syslog_sklearn{config="watch-syslog-sklearn-1",algo="naive_bayes.MultinomialNB",predict="1",seen="False",b2sum="a98d05043c5a8da8c2d183ccfbdfde507b5c7a19",sample="time="2021-06-11T21:37:12Z" level=info msg="guest: still waiting for osxfs-data after 77h45m0.001011228s" Default  "} 1
+
+
+
+
