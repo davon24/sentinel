@@ -1,0 +1,4 @@
+
+"How To Train Your Syslog_(model)" #https://en.wikipedia.org/wiki/How_to_Train_Your_SysLog(model)
+
+

@@ -1,9 +1,23 @@
-# machine learning with syslog data (supervised)  
+
+# supervised machine learning with syslog data (sklearn) MacOS   
 
 supervised learning with naive bayes algorithms  
 https://scikit-learn.org/stable/modules/classes.html#module-sklearn.naive_bayes  
 
 These are supervised learning methods based on applying Bayes’ theorem with strong (naive) feature independence assumptions.    
+
+---
+## Install/Setup
+requires python 3.8 or newer
+```
+pip3 install sentinel-server
+```
+requires [sklearn](https://scikit-learn.org)  
+```
+pip3 install -U scikit-learn   
+```
+
+This demo/doc is on MacOS log stream
 
 ---    
 We'll start by capturing 3000 lines of syslog data...  
@@ -51,6 +65,7 @@ naive_bayes.BernoulliNB (Naive Bayes classifier for multivariate Bernoulli model
 Like MultinomialNB, this classifier is suitable for discrete data. The difference is that while MultinomialNB works with occurrence counts, BernoulliNB is designed for binary/boolean features.    
 https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html    
 
+
 Configure the program to use these algorithms and "watch" the incoming syslog data.    
 ```
 sentinel update-config watch-syslog-sklearn-1 '{"config":"logstream","logfile":"stream","sklearn":[{"naive_bayes.MultinomialNB":["eventMessage","messageType","category"]},{"naive_bayes.BernoulliNB":["eventMessage","messageType","category"]}]}'
@@ -61,7 +76,7 @@ We'll use keys eventMessage, messageType, and category for the scope of our data
 
 We instantiate the algorithms and model by running the sentinel program in sentry mode.  there is a verbose mode.    
 ```
-sentinel sentry --verbose
+python3.8 -m sentinel sentry --verbose
 ```
 
 The sentinel program reads in the training set (sentinel list-training) and displays how many records and how many are tagged as '1'   
@@ -118,7 +133,7 @@ sentinel list-training 3001
 
 Once the model has been adjusted, you have re-initialize the program on the new model.  This new model now has 3001 entries and 114 that are tagged '1'.     
 ```    
-sentinel sentry --verbose    
+python3.8 -m sentinel sentry --verbose   
 sentinel Feb 01 11:16:30 tools.py INFO: naive_bayes.MultinomialNB training records 3001 tagged 114 scope ['eventMessage', 'messageType', 'category']
 sentinel Feb 01 11:16:30 tools.py INFO: naive_bayes.BernoulliNB training records 3001 tagged 114 scope ['eventMessage', 'messageType', 'category']
 ```    
@@ -126,7 +141,7 @@ sentinel Feb 01 11:16:30 tools.py INFO: naive_bayes.BernoulliNB training records
 We can keep adjusting our model until we no longer occur these types of occurrences.  In this training session, I added 5 more occurrences that I deemed false-positives.    
 Tagging all five new entries as '0', the model now has a training set of 3006 total records with 114 tagged as '1'.    
 ```
-sentinel sentry --verbose
+python3.8 -m sentinel sentry --verbose   
 sentinel Feb 01 11:20:56 tools.py INFO: naive_bayes.MultinomialNB training records 3006 tagged 114 scope ['eventMessage', 'messageType', 'category']
 sentinel Feb 01 11:20:57 tools.py INFO: naive_bayes.BernoulliNB training records 3006 tagged 114 scope ['eventMessage', 'messageType', 'category']
 ```
@@ -143,11 +158,16 @@ Using the "bag of words" approach for text analysis on syslog data does appear t
 An interesting observation;   
 While training my model sets on syslog data,     
 I have found that the naive_bayes BernoulliNB has less false-positives than MultinomialNB,    
-which is interesting to me since naive_bayes MultinomialNB is the ?common?/?popular? text classification algorithm.    
+which is interesting to me since naive_bayes MultinomialNB is the ?common?/*popular* text classification algorithm.    
 
-"How To Train Your Syslog_(model)" #https://en.wikipedia.org/wiki/How_to_Train_Your_Dragon_(film)    
+---
 
 
+TODO: 
+  auto prune occurrence table? 
+  put occurrence in mem (not sql)
+  make auto tagger
+  auto reload on model update
 
 
 

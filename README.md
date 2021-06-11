@@ -193,7 +193,7 @@ sentinel [option]
 
 ## Docs
 
-[machine learning with syslog data (supervised)](docs/README.sklearn.naive_bayes.syslog.mac.md)
+[supervised machine learning with syslog data (sklearn)](docs/README.sklearn.naive_bayes.syslog.mac.md)
 
 ---   
 
