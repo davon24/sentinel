@@ -1,4 +1,4 @@
-#file:/etc/systemd/system/sentinel-sentry.service
+#file:/etc/systemd/system/sentinel-server.service
 
 [Unit]
 Description=Sentinel Sentry Service
