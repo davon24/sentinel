@@ -1,0 +1,4 @@
+
+sentinel_watch_syslog_rule_engine{b2sum="0044da360208909905f41824396788c724c84b53",config="watch-syslog",data="IPv6: eth0: IPv6 duplicate address 2603:8000:2602:2500:dea6:32ff:febe:6835 used by 00:a0:c6:00:00:01 detected!",date="2021-06-14 00:09:58",expire="86400",instance="192.168.0.16:9100",job="node",rule="rule-7",seen="True"}	47
+
+
