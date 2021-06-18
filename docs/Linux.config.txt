@@ -16,6 +16,11 @@ sentinel update-rule rule-5 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFI
 sentinel update-rule rule-6 '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"su"},{"PRIORITY":"5"}]}'
 sentinel update-rule rule-7 '{"config":"watch-syslog","search":"duplicate address","data":["MESSAGE"],"expire":"86400"}'
 
+sentinel update-rule rule-8 '{"config":"watch-syslog","search":"Failed password","data":["MESSAGE"],"expire":"86400"}'
+sentinel update-rule rule-9 '{"config":"watch-syslog","search":"Invalid user","ignorecase":"False","data":["MESSAGE"],"expire":"86400"}'
+sentinel update-rule rule-10 '{"config":"watch-syslog","search":"Accepted password","ignorecase":"False","data":["MESSAGE"],"expire":"86400"}'
+
+
 #sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["MESSAGE"],"not":["xfs collector failed"]}'
 
 sentinel update-fim fim-1 '{}'

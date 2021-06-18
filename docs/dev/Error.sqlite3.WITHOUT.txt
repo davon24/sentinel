@@ -1,0 +1,32 @@
+
+[root@sftp-us-west-1c sentinel]# sentinel run-create-db
+Traceback (most recent call last):
+  File "/usr/local/bin/sentinel", line 11, in <module>
+    sys.exit(main())
+  File "/usr/local/lib/python3.8/site-packages/sentinel/sentinel.py", line 856, in main
+    run = store.createDB(db_store)
+  File "/usr/local/lib/python3.8/site-packages/sentinel/store.py", line 52, in createDB
+    cur.execute(create_ip)
+sqlite3.OperationalError: near "WITHOUT": syntax error
+
+
+sentinel_up{version="1.7.3",threads="5",procs="1",cpu="0.46",rss="21740",uptime="35"} 1
+sentinel_python_info{arch="x86_64-linux-gnu",implementation="cpython",major="3",minor="8",micro="5",version="3.8.5"} 1.0
+sentinel_python_sqlite_info{sqlite3="2.6.0",library="3.7.17"} 1.0
+
+[root@sftp-us-west-1c ~]# /usr/bin/python3.8
+Python 3.8.5 (default, Feb 18 2021, 01:24:20) 
+[GCC 7.3.1 20180712 (Red Hat 7.3.1-12)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import sqlite3
+>>> sqlite3.sqlite_version
+'3.7.17'
+>>> print(sqlite3.__file__)
+/usr/lib64/python3.8/sqlite3/__init__.py
+>>> sqlite3.version
+'2.6.0'
+
+
+requires python 3.8.6 or higher
+
+
