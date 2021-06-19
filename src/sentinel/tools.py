@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.4'
+__version__ = '1.7.5'
+
+import sqlite3
+if sqlite3.sqlite_version < (3, 30, 0):
+    print('Requires Python sqlite3 library 3.30.0 or higher. This version: ' + str(sqlite3.sqlite_version))
+    sys.exit(1)
 
 from subprocess import Popen, PIPE, STDOUT
 import threading
@@ -14,7 +19,6 @@ import collections
 import socket
 import json
 
-import sqlite3
 
 from hashlib import blake2b, blake2s
 
