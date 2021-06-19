@@ -1,3 +1,10 @@
 
+#python3 shared_memory
 sentinel expire-keys `sentinel list-keys`
+
+#mac
+alias sentinel='cd /opt/sentinel && sentinel'
+
+#linux
+alias sentinel='cd /user/libexec/sentinel && sentinel'
 

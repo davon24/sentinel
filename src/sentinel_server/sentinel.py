@@ -8,9 +8,10 @@ if sys.version_info < (3, 8, 5):
 
 import os
 
-PACKAGE_PARENT = '.'
-SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
-sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
+#PACKAGE_PARENT = '.'
+#SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+#sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
 from tools import *
 from store import *

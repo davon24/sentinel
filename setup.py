@@ -10,11 +10,11 @@ from setuptools import setup
 
 setup(
     name = "sentinel-server",
-    packages = ["sentinel"],
+    packages = ["sentinel_server"],
     entry_points = {
-        "console_scripts": ['sentinel = sentinel.sentinel:main']
+        "console_scripts": ['sentinel = sentinel_server.sentinel:main']
         },
-    version = '1.7.6',
+    version = '1.7.7',
     description = "sentinel command and daemon",
     long_description = "Python command line tool for administration of sentinel.",
     author = "Karl Rink",
