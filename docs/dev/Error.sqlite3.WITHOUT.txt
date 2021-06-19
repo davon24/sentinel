@@ -29,4 +29,22 @@ Type "help", "copyright", "credits" or "license" for more information.
 
 requires python 3.8.6 or higher
 
+---
+
+actually works w/ python 3.8.5, but needs sql 3.33.1 min.
+
+sentinel_python_sqlite_info{instance="linux:9100", job="node_exporter", library="3.33.0", sqlite3="2.6.0"}
+
+ ---
+
+# /usr/bin/python3
+Python 3.8.5 (default, May 27 2021, 13:30:53) 
+[GCC 9.3.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import sqlite3
+>>> sqlite3.sqlite_version
+'3.31.1'
+>>>
+
+
 
