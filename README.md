@@ -15,7 +15,7 @@ https://pypi.org/project/sentinel-server/
 ## Server daemon process (sentry mode)
 requires python 3.8 minimum.   
 ```
-python3.8 -m sentinel sentry    
+python3.8 -m sentinel_server sentry    
 ```
 
 ## Client command   
