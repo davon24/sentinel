@@ -1,12 +1,9 @@
 
 # -*- coding: utf-8 -*-
 
-
 """setup.py: setuptools control."""
 
-
 from setuptools import setup
-
 
 setup(
     name = "sentinel-server",
@@ -27,7 +24,6 @@ setup(
         'modules/hv/kvm.py',
         'modules/gitegridy/gitegridy.py',
         ]},
-    obsoletes = ["sentinel","sentinel-server"],
     )
 
 
