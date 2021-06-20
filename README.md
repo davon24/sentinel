@@ -13,7 +13,7 @@ pip3 install sentinel-server
 https://pypi.org/project/sentinel-server/    
 
 ## Server daemon process (sentry mode)
-requires python 3.8 minimum.   
+requires python 3.8.5 or newer  
 ```
 python3.8 -m sentinel_server sentry    
 ```
