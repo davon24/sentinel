@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.7-1'
+__version__ = '1.7.7-2'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 30, 0):
