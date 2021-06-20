@@ -76,8 +76,12 @@ We'll use keys eventMessage, messageType, and category for the scope of our data
 
 We instantiate the algorithms and model by running the sentinel program in sentry mode.  there is a verbose mode.    
 ```
-python3.8 -m sentinel sentry --verbose
+python3.8 -m sentinel_server sentry --verbose
 ```
+```
+sentinel sentry
+```
+
 
 The sentinel program reads in the training set (sentinel list-training) and displays how many records and how many are tagged as '1'   
 ```
@@ -133,7 +137,7 @@ sentinel list-training 3001
 
 Once the model has been adjusted, you have re-initialize the program on the new model.  This new model now has 3001 entries and 114 that are tagged '1'.     
 ```    
-python3.8 -m sentinel sentry --verbose   
+python3.8 -m sentinel_server sentry --verbose   
 sentinel Feb 01 11:16:30 tools.py INFO: naive_bayes.MultinomialNB training records 3001 tagged 114 scope ['eventMessage', 'messageType', 'category']
 sentinel Feb 01 11:16:30 tools.py INFO: naive_bayes.BernoulliNB training records 3001 tagged 114 scope ['eventMessage', 'messageType', 'category']
 ```    
@@ -141,7 +145,7 @@ sentinel Feb 01 11:16:30 tools.py INFO: naive_bayes.BernoulliNB training records
 We can keep adjusting our model until we no longer occur these types of occurrences.  In this training session, I added 5 more occurrences that I deemed false-positives.    
 Tagging all five new entries as '0', the model now has a training set of 3006 total records with 114 tagged as '1'.    
 ```
-python3.8 -m sentinel sentry --verbose   
+python3.8 -m sentinel_server sentry --verbose   
 sentinel Feb 01 11:20:56 tools.py INFO: naive_bayes.MultinomialNB training records 3006 tagged 114 scope ['eventMessage', 'messageType', 'category']
 sentinel Feb 01 11:20:57 tools.py INFO: naive_bayes.BernoulliNB training records 3006 tagged 114 scope ['eventMessage', 'messageType', 'category']
 ```

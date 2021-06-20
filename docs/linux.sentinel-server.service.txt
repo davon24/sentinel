@@ -1,4 +1,5 @@
 #file:/etc/systemd/system/sentinel-server.service
+#pip3 install sentinel-server
 
 [Unit]
 Description=Sentinel Sentry Service
@@ -9,10 +10,8 @@ Restart=always
 User=root
 Group=root
 WorkingDirectory=/usr/libexec/sentinel
-ExecStart=/usr/bin/python3 -m sentinel sentry
+ExecStart=/usr/bin/python3 -m sentinel_server sentry
 
 [Install]
 WantedBy=multi-user.target
-
-# pip3 install sentinel-server
 
