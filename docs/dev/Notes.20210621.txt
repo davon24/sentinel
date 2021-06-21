@@ -1,0 +1,16 @@
+
+# /usr/bin/python3.8
+Python 3.8.5 (default, Feb 18 2021, 01:24:20) 
+[GCC 7.3.1 20180712 (Red Hat 7.3.1-12)] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import sqlite3
+>>> sqlite3.sqlite_version_info
+(3, 7, 17)
+>>> 
+# uname -a
+Linux monitor-us-west-1c 4.14.219-161.340.amzn2.x86_64 #1 SMP Thu Feb 4 05:54:19 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
+
+# yum install -y amazon-linux-extras
+# amazon-linux-extras enable python3.8
+# yum install python3.8
+

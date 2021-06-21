@@ -2,6 +2,8 @@
 
 __version__ = '1.7.8'
 
+import sys
+
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 30, 0):
     print('Requires Python sqlite3 library 3.30.0 or higher. This version: ' + str(sqlite3.sqlite_version))
@@ -12,7 +14,6 @@ import threading
 import multiprocessing
 from multiprocessing import shared_memory
 
-import sys
 import time
 import datetime
 import collections
