@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.8-3'
+__version__ = '1.7.8-4'
 
 import sys
 
 import sqlite3
-if sqlite3.sqlite_version_info < (3, 30, 0):
+if sqlite3.sqlite_version_info < (3, 28, 0):
     print('Requires Python sqlite3 library 3.30.0 or higher. This version: ' + str(sqlite3.sqlite_version))
     sys.exit(1)
 

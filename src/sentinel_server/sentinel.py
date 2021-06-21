@@ -2,7 +2,7 @@
 
 import sys
 
-if sys.version_info < (3, 8, 5):
+if sys.version_info < (3, 8, 1):
     print('Requires Python version 3.8.5 or higher. This version: ' + str(sys.version_info))
     sys.exit(1)
 
