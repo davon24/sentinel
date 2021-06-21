@@ -8,7 +8,11 @@ sentinel update-job proc-monitor '{"repeat": "5min", "job": "ps-check"}'
 #
 sentinel update-config watch-syslog '{"config":"logstream","logfile":"stream","rules":["eventMessage","eventType","messageType","subsystem","category","processImagePath","senderImagePath","source"]}'
 
-sentinel update-rule rule-1 '{"config":"watch-syslog","search":"Call Trace","ignorecase":"False","data":["eventMessage"]}'
+#sentinel update-rule rule-1 '{"config":"watch-syslog","search":"Call Trace","ignorecase":"False","data":["eventMessage"]}'
+#sentinel update-rule watch-syslog-rule-1 '{"config":"watch-syslog-logstream","search":"Error","ignorecase":"False","data":["eventMessage"],"not":["NoError"],"pass":["866d144919148df7e27de9e6a0b68f59a994577d"]}'
+sentinel update-rule rule-1 '{"config":"watch-syslog-logstream","search":"Error","ignorecase":"False","data":["eventMessage"],"not":["NoError"],"pass":["866d144919148df7e27de9e6a0b68f59a994577d"]}'
+
+
 sentinel update-rule rule-2 '{"config":"watch-syslog","search":"Out of memory","ignorecase":"False","data":["eventMessage"]}'
 sentinel update-rule rule-3 '{"config":"watch-syslog","search":"Killed process","ignorecase":"False","data":["eventMessage"]}'
 sentinel update-rule rule-4 '{"config":"watch-syslog","search":"error","data":["eventMessage"]}'
