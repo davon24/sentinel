@@ -2,13 +2,16 @@
 
 __version__ = '1.7.8-4'
 
-import sys
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
-    print('Requires Python sqlite3 library 3.30.0 or higher. This version: ' + str(sqlite3.sqlite_version))
-    sys.exit(1)
+    #print('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
+    #sys.exit(1)
+    #raise Exception('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
+    #raise ImportError('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
+    raise RuntimeError('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
 
+import sys
 from subprocess import Popen, PIPE, STDOUT
 import threading
 import multiprocessing

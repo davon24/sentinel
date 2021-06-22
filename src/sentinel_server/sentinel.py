@@ -3,8 +3,11 @@
 import sys
 
 if sys.version_info < (3, 8, 1):
-    print('Requires Python version 3.8.5 or higher. This version: ' + str(sys.version_info))
-    sys.exit(1)
+    #print('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
+    #sys.exit(1)
+    #raise Exception('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
+    #raise ImportError('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
+    raise RuntimeError('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
 
 import os
 

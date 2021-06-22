@@ -1,0 +1,20 @@
+
+
+revisit mac established,
+
+['tcp4', '192.168.3.247', '49684', '35.186.224.47', '443']
+['tcp4', '192.168.3.247', '49679', '35.190.245.57', '4070']
+['tcp4', '192.168.3.247', '49678', '17.57.144.116', '5223']
+
+% lsof -i TCP:49679
+COMMAND PID      USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Spotify 520 karl.rink  131u  IPv4 0xd812c4ff03f39471      0t0  TCP karl-macbook-pro.rt.lan:49679->57.245.190.35.bc.googleusercontent.com:4070 (ESTABLISHED)
+
+
+% sentinel list-proms | grep 49679
+sentinel_job_output{name="established-monitor",sentinel_job="established-check",proto="tcp4",laddr="192.168.3.247",lport="49679",faddr="35.190.245.57",fport="4070",prog1="Spotify",user1="karl.rink",done="2021-06-22 11:19:07"} 1
+
+
+# osascript -e 'display notification "Lorem ipsum dolor sit amet" with title "Title"'
+
+
