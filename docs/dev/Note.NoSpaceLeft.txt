@@ -1,0 +1,22 @@
+
+sentinel Apr 13 20:28:27 tools.py INFO: Sentry Job run proc-monitor
+sentinel Apr 13 20:28:59 tools.py INFO: Sentry Job run established-monitor
+sentinel Apr 13 20:30:04 tools.py INFO: Sentry Job run established-monitor
+sentinel Apr 13 20:31:09 tools.py INFO: Sentry Job run established-monitor
+sentinel Apr 13 20:32:14 tools.py INFO: Sentry Job run established-monitor
+sentinel Apr 13 20:33:19 tools.py INFO: Sentry Job run established-monitor
+sentinel Apr 13 20:33:28 tools.py INFO: Sentry Job run proc-monitor
+sentinel Apr 13 20:34:27 tools.py INFO: Sentry Job run established-monitor
+sentinel Apr 13 20:35:26 tools.py CRITICAL: sentryProcessor sigterm True [Errno 28] No space left on device
+
+
+
+
+^Cproc name  <SpawnProcess name='SyncManager-1' pid=46984 parent=46982 started>   46984
+sentinel Apr 13 22:35:44 tools.py INFO: Sentry Cleanup: True
+sentinel Apr 13 22:35:44 tools.py INFO: Sentry Shutdown: True
+sentry.loop
+🐰 krink@KarlMBPro sentinel %
+
+
+
