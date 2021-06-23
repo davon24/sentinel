@@ -1,3 +1,4 @@
+
 # Sentinel Server
 
 Sentinel is a python program that interacts with the operating system and presents data in [prometheus](https://prometheus.io) format.  When run as a daemon process, users can schedule jobs and interact with the server via python shared_memory and prometheus interface.  
@@ -6,14 +7,20 @@ Sentinel is a python program that interacts with the operating system and presen
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 
 
-## Install
+## Install via pip
+requires python 3.8 or newer  
 ```
 pip3 install sentinel-server
 ```
 https://pypi.org/project/sentinel-server/    
 
+## Run via src
+```
+git clone https://gitlab.com/krink/sentinel.git
+python3 sentinel/src/sentinel_server/sentinel.py
+```
+
 ## Server daemon process (sentry mode)
-requires python 3.8.5 or newer  
 ```
 python3.8 -m sentinel_server sentry    
 ```
@@ -24,7 +31,7 @@ sentinel [option]
 ```
 
 ```
-./sentinel.py --help   
+./sentinel.py --help
 
     options:
 
@@ -164,6 +171,18 @@ sentinel [option]
         mark-training tag
         mark-training-on name
 
+        list-system-profile
+        list-system-profile-full
+        gen-system-profile
+        get-system-profile-name name
+        get-system-profile-rowid rowid
+        del-system-profile-name name
+        del-system-profile-rowid rowid
+        clear-system-profile
+
+        diff-system-profile-rowid rowid rowid
+        get-system-profile-data rowid data
+
         tail file
         logstream
         logstream-json
@@ -171,21 +190,27 @@ sentinel [option]
         run-create-db
         run-ps
 
-        sentry
+        sentry [--verbose]
 
         ---
 
         config
 
-                watch-syslog:
+                logstream:
                     rules
                     sklearn naive_bayes.MultinomialNB
                             naive_bayes.BernoulliNB
+                            neural_network.MLPClassifier
+                tail:
+                    rules
 
-                watch-resin-log
-                watch-mariadb-audit-log
-                watch-ssh
+                http_server
 
+                pushgateway
+
+        get-keys
+        list-keys
+        expire-keys key1 key2 key3...
 
 ```
 
@@ -194,11 +219,6 @@ sentinel [option]
 ## Docs
 
 [supervised machine learning with syslog data (sklearn)](docs/README.sklearn.naive_bayes.syslog.mac.md)
-
----   
-
-## Project hosting
-https://gitlab.com/krink/sentinel   
 
 ---   
 
