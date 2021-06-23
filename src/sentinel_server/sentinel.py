@@ -3,18 +3,10 @@
 import sys
 
 if sys.version_info < (3, 8, 1):
-    #print('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
-    #sys.exit(1)
-    #raise Exception('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
-    #raise ImportError('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
     raise RuntimeError('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
 
 import os
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
-#PACKAGE_PARENT = '.'
-#SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
-#sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
 from tools import *
 from store import *
@@ -189,23 +181,23 @@ def usage():
 
         config
 
-                watch-syslog:
+                logstream:
                     rules
                     sklearn naive_bayes.MultinomialNB
                             naive_bayes.BernoulliNB
+                            neural_network.MLPClassifier
+                tail:
+                    rules
 
-                watch-resin-log
-                watch-mariadb-audit-log
+                http_server
+
+                pushgateway
 
         get-keys
         list-keys
         expire-keys key1 key2 key3...
 
 Version: {} '''.format(__version__))
-
-
-#sentinel get-system-profile-data 1 "['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']"  
-
 
 
 def printArps():
@@ -216,29 +208,15 @@ def printArps():
         print(v,k)
     return True
 
-def printListening():
-    cntDct = tools.cntLsOf()
-    for k,v in sorted(cntDct.items()):
-        print(k,v)
-    return True
-
-#def run():
-#        arpTbl = tools.getArps()
-#        update = store.update_arp_data(db_store, arpTbl, db_manuf)
-#        print(update)
-#        return True
+#def printListening():
+#    cntDct = tools.cntLsOf()
+#    for k,v in sorted(cntDct.items()):
+#        print(k,v)
+#    return True
 
 
-#if __name__ == '__main__':
 def main():
 
-    #sys.path.insert(0,'db')
-    #print(os.path.dirname(__file__))
-    #sys.path.insert(0, os.path.dirname(__file__))
-
-    #sys.path.insert(0, os.path.dirname(__file__))
-
-    #db_store = str(os.path.dirname(__file__)) + '/db/sentinel.db'
     db_store = 'sentinel.db'
     db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
 
@@ -1241,7 +1219,6 @@ def main():
             usage()
             sys.exit(0)
     else:
-        #sys.exit(run())
         arpTbl = tools.getArps()
         update = store.update_arp_data(db_store, arpTbl, db_manuf)
         print(update)

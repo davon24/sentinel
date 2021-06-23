@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.8-4'
-
+__version__ = '1.7.8-5-20210623-1'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
-    #print('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
-    #sys.exit(1)
-    #raise Exception('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
-    #raise ImportError('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
     raise RuntimeError('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
 
 import sys
@@ -22,7 +17,6 @@ import datetime
 import collections
 import socket
 import json
-
 
 from hashlib import blake2b, blake2s
 
@@ -273,68 +267,68 @@ def logstream(_format='json'):
     return True
 
 
-def logstream_v2(_format='json'):
+#def logstream_v2(_format='json'):
+#
+#    if sys.platform == 'darwin':
+#        _format = 'ndjson'
+#        cmd = ['log', 'stream', '--style', _format] #macos
+#    elif sys.platform == 'linux' or sys.platform == 'linux2':
+#        cmd = ['journalctl', '-f', '-o', _format] #linux
+#    else:
+#        logging.critical('Fail: No log stream.  No such file or directory')
+#        return False
+#
+#    #try:
+#
+#    f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+#    #while (f.returncode == None):
+#    while not exit.is_set():
+#        line = f.stdout.readline()
+#        if not line:
+#            time.sleep(1) #break
+#        else:
+#            yield line
+#        sys.stdout.flush()
+#
+#    #except (KeyboardInterrupt, SystemExit, Exception) as e:
+#    #    #os.kill(f.pid, signal.SIGKILL)
+#    #    #f.kill() #SIGKILL
+#    #    f.terminate() #SIGTERM
+#    #    logging.critical('Exception in logstream_v2 ' + str(e))
+#    #    #return False
+#    #    sys.exit(1)
+#
+#    return True
 
-    if sys.platform == 'darwin':
-        _format = 'ndjson'
-        cmd = ['log', 'stream', '--style', _format] #macos
-    elif sys.platform == 'linux' or sys.platform == 'linux2':
-        cmd = ['journalctl', '-f', '-o', _format] #linux
-    else:
-        logging.critical('Fail: No log stream.  No such file or directory')
-        return False
-
-    #try:
-
-    f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-    #while (f.returncode == None):
-    while not exit.is_set():
-        line = f.stdout.readline()
-        if not line:
-            time.sleep(1) #break
-        else:
-            yield line
-        sys.stdout.flush()
-
-    #except (KeyboardInterrupt, SystemExit, Exception) as e:
-    #    #os.kill(f.pid, signal.SIGKILL)
-    #    #f.kill() #SIGKILL
-    #    f.terminate() #SIGTERM
-    #    logging.critical('Exception in logstream_v2 ' + str(e))
-    #    #return False
-    #    sys.exit(1)
-
-    return True
-
-def logstream_v1(_format='json'):
-
-    if sys.platform == 'darwin':
-        _format = 'ndjson'
-        cmd = ['log', 'stream', '--style', _format] #macos
-    elif sys.platform == 'linux' or sys.platform == 'linux2':
-        cmd = ['journalctl', '-f', '-o', _format] #linux
-    else:
-        logging.critical('Fail: No log stream.  No such file or directory')
-        return False
-
-    try:
-        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-        while (f.returncode == None):
-            line = f.stdout.readline()
-            if not line:
-                time.sleep(1) #break
-            else:
-                yield line
-            sys.stdout.flush()
-
-    except (KeyboardInterrupt, SystemExit, Exception) as e:
-        #os.kill(f.pid, signal.SIGKILL)
-        #f.terminate() #SIGTERM
-        f.kill() #SIGKILL
-        logging.critical('Exception in logstream ' + str(e))
-        return False
-
-    return True
+#def logstream_v1(_format='json'):
+#
+#    if sys.platform == 'darwin':
+#        _format = 'ndjson'
+#        cmd = ['log', 'stream', '--style', _format] #macos
+#    elif sys.platform == 'linux' or sys.platform == 'linux2':
+#        cmd = ['journalctl', '-f', '-o', _format] #linux
+#    else:
+#        logging.critical('Fail: No log stream.  No such file or directory')
+#        return False
+#
+#    try:
+#        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
+#        while (f.returncode == None):
+#            line = f.stdout.readline()
+#            if not line:
+#                time.sleep(1) #break
+#            else:
+#                yield line
+#            sys.stdout.flush()
+#
+#    except (KeyboardInterrupt, SystemExit, Exception) as e:
+#        #os.kill(f.pid, signal.SIGKILL)
+#        #f.terminate() #SIGTERM
+#        f.kill() #SIGKILL
+#        logging.critical('Exception in logstream ' + str(e))
+#        return False
+#
+#    return True
 
 
 def extractLstDct(_list):
@@ -915,6 +909,7 @@ def promDataSanitizer(_str):
     _str = _str.replace("\\",' ') #backslash
     _str = _str.replace('`',' ')  #backtick
     _str = _str.replace(',',' ')  #comma
+    _str = _str.replace('“',' ')  #italic quote
     return _str
 
 
@@ -993,12 +988,12 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     elapsed_interval = 30 #1h is 60*60 (3600 seconds)
     end_time = time.time() + elapsed_interval
 
-
     ##########################################################################
-    for line in logstream_v2():
+    #for line in logstream_v2():
+    for line in logstream():
 
         if exit.is_set():
-            print('logstream_v2 exit is set')
+            print('logstream exit is set')
             break
 
         line = line.decode('utf-8')
@@ -1692,6 +1687,48 @@ def unPath(_path):
     return L
 
 #----------------------------------------------------------------------------------------
+
+def sentryPushGateway(db_store, key, gDict, verbose=False):
+
+    if verbose: print('key is ' + str(key))
+
+    _config   = json.loads(store.getData('configs', key, db_store)[0]).get('config', None)
+    _host     = json.loads(store.getData('configs', key, db_store)[0]).get('host', '127.0.0.1')
+    _port     = json.loads(store.getData('configs', key, db_store)[0]).get('port', 9091)
+    _path     = json.loads(store.getData('configs', key, db_store)[0]).get('path', '/metrics')
+    _interval = json.loads(store.getData('configs', key, db_store)[0]).get('interval', 30)
+
+    if verbose: print(str(_config))
+
+    if _config != 'pushgateway':
+        return False
+
+    c=0
+    while not exit.is_set():
+        try:
+            print('push metrics here and now')
+        except Exception as e:
+            logging.critical('sentryPushGateway sigterm True ' + str(e))
+            exit.set()
+            break
+
+        for i in range(_interval):
+            try:
+                time.sleep(1)
+            except Exception as e:
+                logging.critical('break.sentryPushGateway ' + str(e))
+                exit.set()
+                break
+
+        c+=1
+        if c > 5:
+            c=0
+        if verbose: print(str(c))
+
+
+    return True
+
+
 #----------------------------------------------------------------------------------------
 
 
@@ -5112,14 +5149,9 @@ def sentryMode(db_store, verbose=False):
 
     signal.signal(signal.SIGHUP, sentrySIGHUP)
 
-
-    #from multiprocessing import shared_memory
-    #sml = shared_memory.ShareableList([], name='sentinel')
-
     logging.info("Sentry Startup")
 
     eList=[0]
-    #sharedmmgr = threading.Thread(target=sentrySharedMemoryManager, args=(gDict, eList, 0.5), name="SharedMemoryManager")
     sharedmmgr = threading.Thread(target=sentrySharedMemoryManager, args=(gDict, eList, 1), name="SharedMemoryManager")
     sharedmmgr.start()
 
@@ -5155,6 +5187,11 @@ def sentryMode(db_store, verbose=False):
         if conf == 'tail':
             tailer = multiprocessing.Process(target=sentryLogTail, args=(db_store, key, gDict, verbose))
             tailer.start()
+            #running.append(tailer)
+
+        if conf == 'pushgateway':
+            pushgw = multiprocessing.Process(target=sentryPushGateway, args=(db_store, key, gDict, verbose))
+            pushgw.start()
             #running.append(tailer)
 
             
