@@ -18,3 +18,19 @@ sentinel_job_output{name="established-monitor",sentinel_job="established-check",
 # osascript -e 'display notification "Lorem ipsum dolor sit amet" with title "Title"'
 
 
+---
+
+import requests
+
+job_name='my_custom_metrics'
+instance_name='10.20.0.1:9000'
+provider='hetzner'
+payload_key='cpu_utilization'
+payload_value='21.90'
+
+response = requests.post('http://localhost:9091/metrics/job/{j}/instance/{i}/team/{t}'.format(j=job_name, i=instance_name, t=team_name), data='{k} {v}\n'.format(k=payload_key, v=payload_value))
+print(response.status_code)
+
+
+
+
