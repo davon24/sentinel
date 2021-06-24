@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.9'
+__version__ = '1.7.10'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -912,6 +912,7 @@ def promDataSanitizer(_str):
     _str = _str.replace('`',' ')  #backtick
     _str = _str.replace(',',' ')  #comma
     _str = _str.replace('“',' ')  #italic quote
+    _str = _str.replace('\n',' ') #lines breaks
     return _str
 
 

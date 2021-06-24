@@ -1,0 +1,22 @@
+
+level=error ts=2021-06-24T23:16:42.546Z caller=textfile.go:209 collector=textfile msg="failed to collect textfile data" file=sentinel.db.prom err="failed to parse textfile data from \"/var/lib/prometheus/node-exporter/sentinel.db.prom\": text format parsing error in line 16: label value \"[com.apple.calendar.store.log.caldav] [(\" contains unescaped new-line"
+
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="d8a9d95d543d7223a87041f5c1ef5ca4e93d150b",seen="True",data="[com.apple.calendar.store.log.caldav] [(
+    0   CalendarPersistence                 0x00007fff34bee9a0 -[CalManagedCalDAVPrincipal setPushTransportDictionary:] + 864
+    1   CalendarPersistence                 0x00007fff34c94659 -[CalDAVAccountRefreshQueueableOperation(Private) updatePrincipal:forCalendarHome:error:] + 220
+    2   CalendarPersistence                 0x00007fff34c941dc -[CalDAVAccountRefreshQueueableOperation(Private) _regularRefreshCalendarsForPrincipalCoreDAV:isDeepRefresh:error:] + 455
+    3   CalendarPersistence                 0x00007fff34c92f5e -[CalDAVAccountRefreshQueueableOperation(Private) _refreshCalendarsForPrincipalCoreDAV:error:] + 506
+    4   CalendarPersistence                 0x00007fff34c92c64 -[CalDAVAccountRefreshQueueableOperation(Private) refreshCalendarsForPrincipalCoreDAV:error:] + 282
+    5   CalendarPersistence                 0x00007fff34c8d981 -[CalDAVAccountRefreshQueueableOperation(Private) refresh] + 854
+    6   CalendarPersistence                 0x00007fff34c8c4ff -[CalDAVAccountRefreshQueueableOperation refreshWithExceptionHandling] + 226
+    7   libdispatch.dylib                   0x00007fff2041f623 _dispatch_call_block_and_release + 12
+    8   libdispatch.dylib                   0x00007fff20420806 _dispatch_client_callout + 8
+    9   libdispatch.dylib                   0x00007fff2042f976 _dispatch_root_queue_drain + 676
+    10  libdispatch.dylib                   0x00007fff2042ff70 _dispatch_worker_thread2 + 92
+    11  libsystem_pthread.dylib             0x00007fff205c7417 _pthread_wqthread + 244
+    12  libsystem_pthread.dylib             0x00007fff205c642f start_wqthread + 15
+)]",date="2021-06-24 16:03:55"} 2
+
+
+
+
