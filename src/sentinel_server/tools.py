@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.8-5-20210624-1'
+__version__ = '1.7.8-5'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -37,6 +37,8 @@ logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
 sys.path.insert(0, os.path.dirname(__file__))
 import store
+
+#import requests
 
 #import smtplib
 #import ssl
@@ -1690,7 +1692,7 @@ def unPath(_path):
 
 def sentryPushGateway(db_store, key, gDict, verbose=False):
 
-    if verbose: print('key is ' + str(key))
+    #if verbose: print('key is ' + str(key))
 
     _config   = json.loads(store.getData('configs', key, db_store)[0]).get('config', None)
     _host     = json.loads(store.getData('configs', key, db_store)[0]).get('host', '127.0.0.1')
@@ -1699,7 +1701,7 @@ def sentryPushGateway(db_store, key, gDict, verbose=False):
     _path     = json.loads(store.getData('configs', key, db_store)[0]).get('path', '/metrics')
     _interval = json.loads(store.getData('configs', key, db_store)[0]).get('interval', 30)
 
-    if verbose: print(str(_config))
+    #if verbose: print(str(_config))
 
     if _config != 'pushgateway':
         return False
@@ -1720,15 +1722,9 @@ def sentryPushGateway(db_store, key, gDict, verbose=False):
 
     c=0
     while not exit.is_set():
-        try:
-            print('push metrics here and now')
-            post = sentryPost(gDict, url)
-            print('post status ' + str(post))
 
-        except Exception as e:
-            logging.critical('sentryPushGateway sigterm True ' + str(e))
-            exit.set()
-            break
+        post = sentryPushGatewayPost(gDict, url)
+        #print('post status ' + str(post))
 
         for i in range(_interval):
             try:
@@ -1740,17 +1736,18 @@ def sentryPushGateway(db_store, key, gDict, verbose=False):
 
         c+=1
         if c > 5:
+            if verbose: print('pushgateway ' + str(c))
             c=0
-        if verbose: print(str(c))
-
+        #if verbose: print(str(c))
 
     return True
 
 
 #----------------------------------------------------------------------------------------
 
-def sentryPost(gDict, url):
+def sentryPushGatewayPost(gDict, url):
     import requests
+    status_code = 0
     job_name='sentinel'
 
     data = ''
@@ -1764,14 +1761,20 @@ def sentryPost(gDict, url):
 
     #_url = 'http://192.168.0.13:9091/metrics/job/sentinel_job/instance/10.10.0.9:9111'
 
-    response = requests.post(url=url, data=data, headers={'Content-Type': 'application/octet-stream'})
+    try:
+        response = requests.post(url=url, data=data, headers={'Content-Type': 'application/octet-stream'})
+        status_code = response.status_code
 
-    print(response.status_code)
+    except requests.exceptions.RequestException as e:
+        #print('requests.exceptions.RequestException ' + str(e))
+        logging.error('requests.exceptions.RequestException ' + str(e))
 
-    print('post is done')
+    #print(response.status_code)
 
+    #print('post is done')
     #return True
-    return str(response.status_code)
+    #return str(response.status_code)
+    return status_code
 
 #🌈 karl.rink@Karl-MacBook-Pro ~ % curl http://192.168.0.13:9091/metrics
 #sentinel_up{cpu="3.03",instance="10.10.0.9:9111",job="sentinel_job",procs="2",rss="18628608",threads="5",uptime="5",version="1.7.8-5-20210623-1"} 1
