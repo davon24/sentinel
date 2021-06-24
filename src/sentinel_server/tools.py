@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.8-5'
+__version__ = '1.7.9'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -1691,6 +1691,7 @@ def unPath(_path):
 #----------------------------------------------------------------------------------------
 
 def sentryPushGateway(db_store, key, gDict, verbose=False):
+    logging.info('Sentry PushGateway')
 
     #if verbose: print('key is ' + str(key))
 
@@ -1736,7 +1737,7 @@ def sentryPushGateway(db_store, key, gDict, verbose=False):
 
         c+=1
         if c > 5:
-            if verbose: print('pushgateway ' + str(c))
+            if verbose: print('pushgateway ' + str(post))
             c=0
         #if verbose: print(str(c))
 
@@ -1747,8 +1748,6 @@ def sentryPushGateway(db_store, key, gDict, verbose=False):
 
 def sentryPushGatewayPost(gDict, url):
     import requests
-    status_code = 0
-    job_name='sentinel'
 
     data = ''
 
@@ -1768,6 +1767,7 @@ def sentryPushGatewayPost(gDict, url):
     except requests.exceptions.RequestException as e:
         #print('requests.exceptions.RequestException ' + str(e))
         logging.error('requests.exceptions.RequestException ' + str(e))
+        status_code = 0
 
     #print(response.status_code)
 
