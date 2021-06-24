@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.8-5-20210623-2'
+__version__ = '1.7.8-5-20210624-1'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -1695,6 +1695,7 @@ def sentryPushGateway(db_store, key, gDict, verbose=False):
     _config   = json.loads(store.getData('configs', key, db_store)[0]).get('config', None)
     _host     = json.loads(store.getData('configs', key, db_store)[0]).get('host', '127.0.0.1')
     _port     = json.loads(store.getData('configs', key, db_store)[0]).get('port', 9091)
+    _proto    = json.loads(store.getData('configs', key, db_store)[0]).get('proto', 'http')
     _path     = json.loads(store.getData('configs', key, db_store)[0]).get('path', '/metrics')
     _interval = json.loads(store.getData('configs', key, db_store)[0]).get('interval', 30)
 
@@ -1703,11 +1704,26 @@ def sentryPushGateway(db_store, key, gDict, verbose=False):
     if _config != 'pushgateway':
         return False
 
+    #_url = 'http://192.168.0.13:9091/metrics/job/sentinel_job/instance/10.10.0.9:9111'
+
+    #instance_name = ""
+    #hostname = socket.gethostname()
+    #ip = socket.gethostbyname(hostname)
+
+    short_hostname = socket.gethostname().split('.')[0]
+
+    instance_name = str(short_hostname) + ':shared_memory'
+
+    job_name = 'sentinel_push'
+
+    url = str(_proto)+'://'+str(_host)+':'+str(_port)+str(_path)+'/job/'+str(job_name)+'/instance/'+str(instance_name)
+
     c=0
     while not exit.is_set():
         try:
             print('push metrics here and now')
-            post = sentryPost(gDict)
+            post = sentryPost(gDict, url)
+            print('post status ' + str(post))
 
         except Exception as e:
             logging.critical('sentryPushGateway sigterm True ' + str(e))
@@ -1733,28 +1749,29 @@ def sentryPushGateway(db_store, key, gDict, verbose=False):
 
 #----------------------------------------------------------------------------------------
 
-def sentryPost(gDict):
+def sentryPost(gDict, url):
     import requests
     job_name='sentinel'
 
-    _data = ''
+    data = ''
 
     for k,v in gDict.items():
         #print(v)
         for item in v:
             #print(item)
-            _data += str(item) + '\n'
+            data += str(item) + '\n'
 
 
-    _url = 'http://192.168.0.13:9091/metrics/job/sentinel_job/instance/10.10.0.9:9111'
+    #_url = 'http://192.168.0.13:9091/metrics/job/sentinel_job/instance/10.10.0.9:9111'
 
-    response = requests.post(url=_url, data=_data, headers={'Content-Type': 'application/octet-stream'})
+    response = requests.post(url=url, data=data, headers={'Content-Type': 'application/octet-stream'})
 
     print(response.status_code)
 
     print('post is done')
 
-    return True
+    #return True
+    return str(response.status_code)
 
 #🌈 karl.rink@Karl-MacBook-Pro ~ % curl http://192.168.0.13:9091/metrics
 #sentinel_up{cpu="3.03",instance="10.10.0.9:9111",job="sentinel_job",procs="2",rss="18628608",threads="5",uptime="5",version="1.7.8-5-20210623-1"} 1
