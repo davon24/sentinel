@@ -193,7 +193,7 @@ def usage():
 
         list-keys
         list-vals
-        get-key key
+        get-val key
         expire-keys key1 key2 key3...
 
 Version: {} '''.format(__version__))
@@ -1216,13 +1216,17 @@ def main():
             l.shm.unlink()
             sys.exit(0)
 
-        if sys.argv[1] == 'get-key':
-            #key = sys.argv[2]
+        if sys.argv[1] == 'get-val':
+            key = sys.argv[2]
             from multiprocessing import shared_memory
             l = shared_memory.ShareableList(name='sentinel-shm')
-            #print(l)
-            if sys.argv[2] in l:
-                print(sys.argv[2])
+
+            for i in range(0,len(l),2):
+                _key = l[i]
+                _val = l[i+1]
+                if _key == key:
+                    print(_val)
+
             l.shm.close()
             l.shm.unlink()
             sys.exit(0)
