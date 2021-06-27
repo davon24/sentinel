@@ -39,4 +39,11 @@ sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="77c
 sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="77cd9766445c972ef8fb9ae0e557debf2f1d1e94",seen="False",data="[com.apple.calendar.store.log.ICS] [ICS Error for file: BEGIN:VCALENDAR^M VERSION:2.0^M PRODID:https://daveandbusters.app.rsvpify.com^M X-PUBLISHED-TTL:P1W^M BEGIN:VEVENT^M UID:60d803abcafb2^M DTSTART:20170215T080000Z^M SEQUENCE:0^M TRANSP:OPAQUE^M DTEND:-00011130T080000Z^M LOCATION:6801 Hollywood Blvd Los Angeles CA 90028^M SUMMARY:Dave and Busters^M CLASS:PUBLIC^M ORGANIZER;CN=Shelbi:MAILTO:events@usaepay.com^M DTSTAMP:20210626T235051Z^M END:VEVENT^M END:VCALENDAR]",date="2021-06-26 21:50:51"} 1
 
 
+---
+
+
+🌈 krink@KarlMBPro sentinel % grep usaepay sentinel.db.prom
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="24d46a2e944f53bbf149b4fecd305af61b676981",seen="False",data="[com.apple.calendar.store.log.ICS] [ICS Error for file: BEGIN:VCALENDAR  VERSION:2.0  PRODID:https://daveandbusters.app.rsvpify.com  X-PUBLISHED-TTL:P1W  BEGIN:VEVENT  UID:60d80d28e45b5  DTSTART:20170215T080000Z  SEQUENCE:0  TRANSP:OPAQUE  DTEND:-00011130T080000Z  LOCATION:6801 Hollywood Blvd Los Angeles CA 90028  SUMMARY:Dave and Busters  CLASS:PUBLIC  ORGANIZER;CN=Shelbi:MAILTO:events@usaepay.com  DTSTAMP:20210627T003120Z  END:VEVENT  END:VCALENDAR]",date="2021-06-26 22:31:21"} 1
+
+
 

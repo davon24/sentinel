@@ -8,3 +8,6 @@ alias sentinel='cd /opt/sentinel && sentinel'
 #linux
 alias sentinel='cd /user/libexec/sentinel && sentinel'
 
+# sentinel.py list-keys-metric | sort -k 2 -n
+
+
