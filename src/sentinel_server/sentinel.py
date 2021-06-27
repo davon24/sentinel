@@ -1283,7 +1283,7 @@ def main():
             for item in il:
                 #print(item, next(il))
                 n = next(il)
-                print(item, n)
+                print(item, n.split()[-1])
 
 
             l.shm.close()
