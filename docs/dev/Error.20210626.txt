@@ -1,0 +1,42 @@
+
+
+sentinel_watch_syslog_rule_engine-rule-4-59b03aefa00ad4aaff0d66db9a5d962774130ff3 1
+sentinel_watch_syslog_rule_engine-rule-4-5024c3f6c46987ff91f134cb21e30a3791542f33 20:58:24"}
+
+
+
+~/sentinel/src/sentinel_server/sentinel.py list-proms | grep 5024c3f6c46987ff91f134cb21e30a3791542f33
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="5024c3f6c46987ff91f134cb21e30a3791542f33",seen="False",data="[A2D1EF76-16F2-487D-A356-A030AE1D0604🍢] Processing external database change for tags (     CalDAVError      CalDAVPrincipal ).",date="2021-06-26 20:58:24"} 1
+
+
+
+🌈 krink@KarlMBPro sentinel % ~/sentinel/src/sentinel_server/sentinel.py list-keys | grep 5024c3f6c46987ff91f134cb21e30a3791542f33
+sentinel_watch_syslog_rule_engine-rule-4-5024c3f6c46987ff91f134cb21e30a3791542f33
+🌈 krink@KarlMBPro sentinel % ~/sentinel/src/sentinel_server/sentinel.py list-vals | grep 5024c3f6c46987ff91f134cb21e30a3791542f33
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="5024c3f6c46987ff91f134cb21e30a3791542f33",seen="False",data="[A2D1EF76-16F2-487D-A356-A030AE1D0604🍢] Processing external database change for tags (     CalDAVError      CalDAVPrincipal ).",date="2021-06-26 20:58:24"}
+🌈 krink@KarlMBPro sentinel %
+
+
+
+sentinel_watch_syslog_rule_engine-rule-4-77cd9766445c972ef8fb9ae0e557debf2f1d1e94 sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="77cd9766445c9 END:VCALENDAR]",date="2021-06-26 21:50:51"} 10028om.apple.calendar.store.log.ICS] [ICS Error for file: BEGIN:VCALENDAR
+
+
+
+sentinel_watch_syslog_rule_engine-rule-6-cbed2a1016cace4ef755a07be56e5af51540c3c3 sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-6",b2sum="cbed2a1016cace4ef755a07be56e5af51540c3c3",seen="False",data="{ traceID : 516839734321086468   eventMessage :  <private> setEnabledTopics <private> ignoredTopics <private> opportunisticTopics <private> nonWakingTopics <private> sendToDaemon: YES completion: (null)    eventType :  logEvent    source : None   formatString :  %@ setEnabledTopics %@ ignoredTopics %@ opportunisticTopics %@ nonWakingTopics %@ sendToDaemon: %@ completion: %@    activityIdentifier : 0   subsystem :  com.apple.apsd    category :  connection    threadID : 806760   senderImageUUID :  6BF45799-EAA7-3F54-B3BB-501F40B0F62F    backtrace : { frames : [{ imageOffset : 61253   imageUUID :  6BF45799-EAA7-3F54-B3BB-501F40B0F62F }]}   bootUUID :      processImagePath :  /System/Library/PrivateFrameworks/CalendarAgent.framework/Executables/CalendarAgent    timestamp :  2021-06-26 21:50:51.877931-0700    senderImagePath :  /System/Library/PrivateFrameworks/ApplePushService.framework/Versions/A/ApplePushService    machTimestamp : 228375836076031   messageType :  Default    processImageUUID :  F3DCB8B3-E3DB-385F-BAE6-482FC3BB5E97    processID : 474   senderProgramCounter : 61253   parentActivityIdentifier : 0   timezoneName :   }",date="2021-06-26 21:50:51"} 1
+
+sentinel_watch_syslog_rule_engine-rule-4-77cd9766445c972ef8fb9ae0e557debf2f1d1e94 sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="77cd9766445c9 END:VCALENDAR]",date="2021-06-26 21:50:51"} 10028om.apple.calendar.store.log.ICS] [ICS Error for file: BEGIN:VCALENDAR
+
+sentinel_watch_syslog_rule_engine-rule-4-1a75950e8b275daa63f4a79dd9f6d4ef87997d49 sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="1a75950e8b275daa63f4a79dd9f6d4ef87997d49",seen="False",data="register name: CalDAVQueueOperationErrorNotification object: kCFNotificationAnyObject token: 11c0000002b pid: 748",date="2021-06-26 21:50:52"} 1
+
+
+
+🌈 krink@KarlMBPro sentinel % ~/sentinel/src/sentinel_server/sentinel.py list-proms | grep 77cd9766445c972ef8fb9ae0e557debf2f1d1e94
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="77cd9766445c972ef8fb9ae0e557debf2f1d1e94",seen="False",data="[com.apple.calendar.store.log.ICS] [ICS Error for file: BEGIN:VCALENDAR
+🌈 krink@KarlMBPro sentinel %
+
+
+
+sentinel_watch_syslog_rule_engine{config="watch-syslog",rule="rule-4",b2sum="77cd9766445c972ef8fb9ae0e557debf2f1d1e94",seen="False",data="[com.apple.calendar.store.log.ICS] [ICS Error for file: BEGIN:VCALENDAR^M VERSION:2.0^M PRODID:https://daveandbusters.app.rsvpify.com^M X-PUBLISHED-TTL:P1W^M BEGIN:VEVENT^M UID:60d803abcafb2^M DTSTART:20170215T080000Z^M SEQUENCE:0^M TRANSP:OPAQUE^M DTEND:-00011130T080000Z^M LOCATION:6801 Hollywood Blvd Los Angeles CA 90028^M SUMMARY:Dave and Busters^M CLASS:PUBLIC^M ORGANIZER;CN=Shelbi:MAILTO:events@usaepay.com^M DTSTAMP:20210626T235051Z^M END:VEVENT^M END:VCALENDAR]",date="2021-06-26 21:50:51"} 1
+
+
+

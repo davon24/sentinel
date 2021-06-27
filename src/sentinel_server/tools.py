@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.11.pre.20210626-6'
+__version__ = '1.7.11.pre.20210626-7'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -913,6 +913,8 @@ def promDataSanitizer(_str):
     _str = _str.replace(',',' ')  #comma
     _str = _str.replace('“',' ')  #italic quote
     _str = _str.replace('\n',' ') #lines breaks
+    _str = _str.replace('\r',' ') #lines return
+    _str = _str.replace('^M',' ') #ctrlM
     return _str
 
 
@@ -4848,16 +4850,29 @@ def sentrySharedMemoryManager(gDict, eList, interval):
         try:
             #for __k in gDict:
             for __k,__v in gDict.items():
-                #KeyList.append(__k)
+                KeyList.append(__k)
 
                 #print(str(type(__k))) #str
                 #print(str(__k))
-                KeyList.append(__k)
+                #KeyList.append(__k)
+                #v=gDict[__k]
+
+                #if len(__v) == 1:
+                #    KeyList.append(__v[0])
+                #else:
+                #    print('ERROR keylist')
+                #    logging.error('keylist_error')
+                #    KeyList.append('keylist_error')
+                        
+                KeyList.append(__v[0] + '\n')
 
                 #print(str(type(__v))) #lst
                 #print(str(__v))
                 #ValList.append(__v[0])
-                KeyList.append(str(__v[0]))
+
+                #KeyList.append(str(__v[0]))
+                #KeyList.append(__v[0])
+                  
 
         except RuntimeError as e:
             if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
@@ -5332,12 +5347,12 @@ def sentryMode(db_store, verbose=False):
         #    except FileNotFoundError:
         #        ...
 
-        #try:
-        #    smklr = shared_memory.ShareableList(name='sentinel-keys')
-        #    smklr.shm.close()
-        #    smklr.shm.unlink()
-        #except FileNotFoundError:
-        #    ...
+        try:
+            smklr = shared_memory.ShareableList(name='sentinel-shm')
+            smklr.shm.close()
+            smklr.shm.unlink()
+        except FileNotFoundError:
+            ...
 
         logging.info("Sentry Shutdown: " + str(exit.is_set()))
         #sys.exit(1)
