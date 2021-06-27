@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+# coding=utf-8
 
-__version__ = '1.7.11'
+__version__ = '1.7.12-pre-20210627-1'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -906,6 +907,11 @@ def updategDictR(_key, gDict, rule_hit, r, line, rulesDct, db_store,  verbose=Fa
 #    return True
 
 def promDataSanitizer(_str):
+
+    #print(type(_str))
+
+    #_str = _str.decode('utf8', 'ignore')
+
     _str = _str.replace('"',' ')  #quote
     _str = _str.replace("'",' ')  #single quote
     _str = _str.replace("\\",' ') #backslash
@@ -915,6 +921,9 @@ def promDataSanitizer(_str):
     _str = _str.replace('\n',' ') #lines breaks
     _str = _str.replace('\r',' ') #lines return
     _str = _str.replace('^M',' ') #ctrlM
+
+    #_str = _str.decode('utf8', 'ignore')
+
     return _str
 
 
