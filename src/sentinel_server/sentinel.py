@@ -192,6 +192,7 @@ def usage():
                 pushgateway
 
         list-keys
+        list-keys-metric
         list-vals
         get-key key
         expire-keys key1 key2 key3...
@@ -1259,6 +1260,27 @@ def main():
             l.shm.close()
             l.shm.unlink()
             sys.exit(0)
+
+        if sys.argv[1] == 'list-keys-metric':
+            from multiprocessing import shared_memory
+            l = shared_memory.ShareableList(name='sentinel-shm')
+            #print(l)
+            #il = iter(l)
+            #for item in il:
+            #    #print(item, next(il))
+            #    print(item)
+            #    next(il)
+            for i in range(0,len(l),2):
+                key = l[i]
+                val = l[i+1]
+                #print(key)
+                #print(val.split()[-1])
+                print(key, val.split()[-1])
+
+            l.shm.close()
+            l.shm.unlink()
+            sys.exit(0)
+
 
 
 
