@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.11.pre.20210626-1'
+__version__ = '1.7.11.pre.20210626-2'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -4775,14 +4775,14 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
         sml = shared_memory.ShareableList(name='sentinel-update')
         #print('sml internal update ' + str(sml))
 
-        #for item in sml:
-        #    if debug: print('debug. expiring ' + str(item))
-        #    gDict.pop(item, None)
+        for item in sml:
+            if debug: print('debug. expiring ' + str(item))
+            gDict.pop(item, None)
 
-        for i in range(0,len(sml),2):
-            key = l[i]
-            val = l[i+1]
-            gDict.pop(key, None)
+        #for i in range(0,len(sml),2):
+        #    key = sml[i]
+        #    val = sml[i+1]
+        #    gDict.pop(key, None)
             
     except FileNotFoundError as e:
         if verbose: print('sml FileNotFoundError '+ str(e))
