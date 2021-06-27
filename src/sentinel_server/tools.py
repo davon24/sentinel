@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.11.pre.20210626-5'
+__version__ = '1.7.11.pre.20210626-6'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -4845,12 +4845,10 @@ def sentrySharedMemoryManager(gDict, eList, interval):
     while not exit.is_set():
 
         KeyList = []
-        #ValList = []
         try:
             #for __k in gDict:
             for __k,__v in gDict.items():
                 #KeyList.append(__k)
-                #ValList.append([__k, __v])
 
                 #print(str(type(__k))) #str
                 #print(str(__k))
@@ -4859,7 +4857,7 @@ def sentrySharedMemoryManager(gDict, eList, interval):
                 #print(str(type(__v))) #lst
                 #print(str(__v))
                 #ValList.append(__v[0])
-                KeyList.append(__v[0])
+                KeyList.append(str(__v[0]))
 
         except RuntimeError as e:
             if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
@@ -4870,9 +4868,7 @@ def sentrySharedMemoryManager(gDict, eList, interval):
         smklsize = eList[0]
 
         try:
-            #smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
             smkl = shared_memory.ShareableList(KeyList, name='sentinel-shm')
-            #smvl = shared_memory.ShareableList(ValList, name='sentinel-vals')
             smklsize = len(smkl)
             eList.insert(0, smklsize)
 
@@ -4883,20 +4879,12 @@ def sentrySharedMemoryManager(gDict, eList, interval):
                 if debug: print('debug. not equal ShareableList ' +str(klstsize)+' '+str(smklsize))
 
                 #read
-                #smklr = shared_memory.ShareableList(name='sentinel-keys')
                 smklr = shared_memory.ShareableList(name='sentinel-shm')
                 smklr.shm.close()
                 smklr.shm.unlink()
 
-                #smvlr = shared_memory.ShareableList(name='sentinel-vals')
-                #smvlr.shm.close()
-                #smvlr.shm.unlink()
-
-
                 #write
-                #smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
                 smkl = shared_memory.ShareableList(KeyList, name='sentinel-shm')
-                #smvl = shared_memory.ShareableList(ValList, name='sentinel-vals')
 
                 smklsize = len(smkl)
                 eList.insert(0, smklsize)
@@ -4908,10 +4896,6 @@ def sentrySharedMemoryManager(gDict, eList, interval):
     smkl = shared_memory.ShareableList(name='sentinel-shm')
     smkl.shm.close()
     smkl.shm.unlink()
-
-    #smvl = shared_memory.ShareableList(name='sentinel-vals')
-    #smvl.shm.close()
-    #smvl.shm.unlink()
 
     return True
 
