@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '1.7.10'
+__version__ = '1.7.11.pre.20210626-1'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -4774,13 +4774,19 @@ def processE(gDict, eDict, expire=864000): # i exist to expire
     try:
         sml = shared_memory.ShareableList(name='sentinel-update')
         #print('sml internal update ' + str(sml))
-        for item in sml:
-            if debug: print('debug. expiring ' + str(item))
-            gDict.pop(item, None)
 
+        #for item in sml:
+        #    if debug: print('debug. expiring ' + str(item))
+        #    gDict.pop(item, None)
+
+        for i in range(0,len(sml),2):
+            key = l[i]
+            val = l[i+1]
+            gDict.pop(key, None)
+            
     except FileNotFoundError as e:
         if verbose: print('sml FileNotFoundError '+ str(e))
-        #pass
+        pass
 
     ################################################################
 
@@ -4839,9 +4845,22 @@ def sentrySharedMemoryManager(gDict, eList, interval):
     while not exit.is_set():
 
         KeyList = []
+        #ValList = []
         try:
-            for __k in gDict:
+            #for __k in gDict:
+            for __k,__v in gDict.items():
+                #KeyList.append(__k)
+                #ValList.append([__k, __v])
+
+                #print(str(type(__k))) #str
+                #print(str(__k))
                 KeyList.append(__k)
+
+                #print(str(type(__v))) #lst
+                #print(str(__v))
+                #ValList.append(__v[0])
+                KeyList.append(__v[0])
+
         except RuntimeError as e:
             if debug: logging.debug('debug. RuntimeError sentrySharedMemoryManager ' + str(e))
         except AttributeError as e:
@@ -4851,33 +4870,48 @@ def sentrySharedMemoryManager(gDict, eList, interval):
         smklsize = eList[0]
 
         try:
-            smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+            #smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+            smkl = shared_memory.ShareableList(KeyList, name='sentinel-shm')
+            #smvl = shared_memory.ShareableList(ValList, name='sentinel-vals')
             smklsize = len(smkl)
             eList.insert(0, smklsize)
+
         except FileExistsError as e:
             if verbose: print('FileExistsError ' + str(e))
 
             if klstsize != smklsize:
                 if debug: print('debug. not equal ShareableList ' +str(klstsize)+' '+str(smklsize))
+
                 #read
-                smklr = shared_memory.ShareableList(name='sentinel-keys')
+                #smklr = shared_memory.ShareableList(name='sentinel-keys')
+                smklr = shared_memory.ShareableList(name='sentinel-shm')
                 smklr.shm.close()
                 smklr.shm.unlink()
+
+                #smvlr = shared_memory.ShareableList(name='sentinel-vals')
+                #smvlr.shm.close()
+                #smvlr.shm.unlink()
+
+
                 #write
-                smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+                #smkl = shared_memory.ShareableList(KeyList, name='sentinel-keys')
+                smkl = shared_memory.ShareableList(KeyList, name='sentinel-shm')
+                #smvl = shared_memory.ShareableList(ValList, name='sentinel-vals')
+
                 smklsize = len(smkl)
                 eList.insert(0, smklsize)
 
         if debug: print('debug. klstsize '+str(klstsize)+' smklsize '+str(smklsize))
 
-        #rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        #print('rss_s ' + str(rss))
-
         time.sleep(interval)
 
-    smkl = shared_memory.ShareableList(name='sentinel-keys')
+    smkl = shared_memory.ShareableList(name='sentinel-shm')
     smkl.shm.close()
     smkl.shm.unlink()
+
+    #smvl = shared_memory.ShareableList(name='sentinel-vals')
+    #smvl.shm.close()
+    #smvl.shm.unlink()
 
     return True
 
@@ -5314,12 +5348,12 @@ def sentryMode(db_store, verbose=False):
         #    except FileNotFoundError:
         #        ...
 
-        try:
-            smklr = shared_memory.ShareableList(name='sentinel-keys')
-            smklr.shm.close()
-            smklr.shm.unlink()
-        except FileNotFoundError:
-            ...
+        #try:
+        #    smklr = shared_memory.ShareableList(name='sentinel-keys')
+        #    smklr.shm.close()
+        #    smklr.shm.unlink()
+        #except FileNotFoundError:
+        #    ...
 
         logging.info("Sentry Shutdown: " + str(exit.is_set()))
         #sys.exit(1)

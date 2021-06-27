@@ -77,9 +77,7 @@ def usage():
         clear-ips
 
         list-jobs
-        list-jobs-running
         list-jobs-available
-        run-job name
         update-job name data
         delete-job name
         clear-jobs
@@ -193,8 +191,9 @@ def usage():
 
                 pushgateway
 
-        get-keys
         list-keys
+        list-vals
+        get-key key
         expire-keys key1 key2 key3...
 
 Version: {} '''.format(__version__))
@@ -691,11 +690,14 @@ def main():
             print(clear)
             sys.exit(0)
 
-        if sys.argv[1] == 'run-job':
-            name = sys.argv[2]
-            run = tools.runJob(name, db_store)
-            print(str(run))
-            sys.exit(0)
+#
+# run-job name
+#        if sys.argv[1] == 'run-job':
+#            name = sys.argv[2]
+#            run = tools.runJob(name, db_store)
+#            print(str(run))
+#            sys.exit(0)
+#def runJob(name, db_store, gDict):
 
         if sys.argv[1] == 'sentry':
             try: v = sys.argv[2]
@@ -704,9 +706,27 @@ def main():
             print(str(run))
             sys.exit(0)
 
-        if sys.argv[1] == 'list-jobs-running':
-            run = tools.listRunning(db_store)
-            sys.exit(0)
+#
+# list-jobs-running
+
+        #if sys.argv[1] == 'list-jobs-running':
+        #    run = tools.listRunning(db_store)
+        #    sys.exit(0)
+
+#def listRunning(db_store):
+#    rows = store.getAllCounts(db_store)
+#    for row in rows:
+#        print(row)
+#    return True
+
+#def getAllCounts(db_file):
+#    con = sql_connection(db_file)
+#    cur = con.cursor()
+#    cur.execute("SELECT * FROM counts;")
+#    rows = cur.fetchall()
+#    return rows
+
+
 
         if sys.argv[1] == 'b2sum':
             _file = sys.argv[2]
@@ -1196,23 +1216,58 @@ def main():
             l.shm.unlink()
             sys.exit(0)
 
-        if sys.argv[1] == 'get-keys':
+        if sys.argv[1] == 'get-key':
+            #key = sys.argv[2]
             from multiprocessing import shared_memory
-            l = shared_memory.ShareableList(name='sentinel-keys')
-            print(l)
+            l = shared_memory.ShareableList(name='sentinel-shm')
+            #print(l)
+            if sys.argv[2] in l:
+                print(sys.argv[2])
             l.shm.close()
             l.shm.unlink()
             sys.exit(0)
 
         if sys.argv[1] == 'list-keys':
             from multiprocessing import shared_memory
-            l = shared_memory.ShareableList(name='sentinel-keys')
+            l = shared_memory.ShareableList(name='sentinel-shm')
             #print(l)
-            for item in l:
+            il = iter(l)
+            for item in il:
+                #print(item, next(il))
                 print(item)
+                next(il)
             l.shm.close()
             l.shm.unlink()
             sys.exit(0)
+
+        if sys.argv[1] == 'list-vals':
+            from multiprocessing import shared_memory
+            l = shared_memory.ShareableList(name='sentinel-shm')
+            #print(l)
+            #il = iter(l)
+            #for item in il:
+            #    #print(value)
+            #    print(next(il))
+            for i in range(0,len(l),2):
+                key = l[i]
+                val = l[i+1]
+                print(val)
+            l.shm.close()
+            l.shm.unlink()
+            sys.exit(0)
+
+
+
+        #if sys.argv[1] == 'get-shm':
+        #    from multiprocessing import shared_memory
+        #    l = shared_memory.ShareableList(name='sentinel-update')
+        #    #print(l)
+        #    for item in l:
+        #        print(item)
+        #    l.shm.close()
+        #    l.shm.unlink()
+        #    sys.exit(0)
+
 
 
         else:
