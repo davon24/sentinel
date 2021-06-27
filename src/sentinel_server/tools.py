@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.12-pre-20210627-3'
+__version__ = '1.7.12-pre-20210627-4'
 
 import sqlite3
 if sqlite3.sqlite_version_info < (3, 28, 0):
@@ -4873,8 +4873,8 @@ def sentrySharedMemoryManager(gDict, eList, interval):
                 #    logging.error('keylist_error')
                 #    KeyList.append('keylist_error')
                         
-                #KeyList.append(__v[0] + '\n')
-                KeyList.append(__v[0])
+                #KeyList.append(__v[0])
+                KeyList.append(__v[0] + '\n')
 
                 #print(str(type(__v))) #lst
                 #print(str(__v))
