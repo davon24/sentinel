@@ -1227,7 +1227,7 @@ def main():
                 _key = l[i]
                 _val = l[i+1]
                 if _key == key:
-                    print(_val)
+                    print(_val.rstrip())
 
             l.shm.close()
             l.shm.unlink()
