@@ -1217,19 +1217,20 @@ def main():
             #print(_data)
 
             data = tools.promDataParser('data', d[key])
-            print(data)
+            #print(data)
 
-            print('WORKING')
+            #print('WORKING.ON')
+            if str(sys.platform).startswith('linux'):
+                j = { 'MESSAGE' : data }
+            elif sys.platform == 'darwin':
+                j = { 'eventMessage' : data }
 
-                
             #_copy = store.copyOccurrenceToTable(data, 'model', db_store)
             tag=0
-            #_copy = store.updateTable(tag, data, 'model', db_store)
-            #print(_copy)
-
+            _copy = store.updateTable(tag, json.dumps(j), 'model', db_store)
+            print(_copy)
 
             sys.exit(0)
-
 
             #    if _key == key:
             #        print(_val.rstrip())
