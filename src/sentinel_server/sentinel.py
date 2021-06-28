@@ -6,6 +6,14 @@ import sys
 if sys.version_info < (3, 8, 1):
     raise RuntimeError('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
 
+if sys.platform not in ('linux','linux2','darwin','cygwin'):
+    raise RuntimeError('Platform not supported. This platform: ' + str(sys.platform))
+
+import sqlite3
+
+if sqlite3.sqlite_version_info < (3, 28, 0):
+    raise RuntimeError('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
+
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 
@@ -134,11 +142,17 @@ def usage():
         list-b2sums
         clear-b2sums
 
-        list-sshwatch
-        clear-sshwatch
+        # list-sshwatch
+        # clear-sshwatch
 
         list-counts
         clear-counts
+
+        list-model [id|tags tag]
+        update-model tag json
+        update-model-tag id tag
+        delete-model id
+        clear-model
 
         list-training [id|tags tag]
         update-training tag json
@@ -148,12 +162,13 @@ def usage():
 
         list-occurrence [name|-eq,-gt,-lt,-ne,-le,-ge num]
         delete-occurrence name
-        copy-occurrence name
         clear-occurrence
 
+        copy-occurrence name
+
         sample-logstream count
-        mark-training tag
-        mark-training-on name
+        # ? mark-training tag
+        # ? mark-training-on name
 
         list-system-profile
         list-system-profile-full
@@ -208,12 +223,6 @@ def printArps():
             continue
         print(v,k)
     return True
-
-#def printListening():
-#    cntDct = tools.cntLsOf()
-#    for k,v in sorted(cntDct.items()):
-#        print(k,v)
-#    return True
 
 
 def main():
@@ -1012,19 +1021,24 @@ def main():
             print(clear)
             sys.exit(0)
 
-        if sys.argv[1] == 'list-sshwatch':
-            rows = store.selectAll('sshwatch', db_store)
-            for row in rows:
-                print(row)
-            sys.exit(0)
+        #if sys.argv[1] == 'list-sshwatch':
+        #    rows = store.selectAll('sshwatch', db_store)
+        #    for row in rows:
+        #        print(row)
+        #    sys.exit(0)
 
-        if sys.argv[1] == 'clear-sshwatch':
-            clear = store.clearAll('sshwatch', db_store)
-            print(clear)
-            sys.exit(0)
+        #if sys.argv[1] == 'clear-sshwatch':
+        #    clear = store.clearAll('sshwatch', db_store)
+        #    print(clear)
+        #    sys.exit(0)
 
         if sys.argv[1] == 'clear-training':
             clear = store.clearAll('training', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-model':
+            clear = store.clearAll('model', db_store)
             print(clear)
             sys.exit(0)
 
@@ -1049,6 +1063,50 @@ def main():
                     print(row)
             sys.exit(0)
 
+        if sys.argv[1] == 'list-model':
+            try: _id = sys.argv[2]
+            except IndexError: _id = None
+
+            if _id:
+
+                if _id  == 'tags':
+                    _tag = sys.argv[3]
+                    #rows = store.getAllTrainingTags(_tag, db_store)
+                    rows = store.getAllTableTags(_tag, 'model', db_store)
+                    for row in rows:
+                        print(row)
+                else:
+                    row = store.getByID('model', _id, db_store)
+                    print(row)
+
+            else:
+                rows = store.getAll('model', db_store)
+                for row in rows:
+                    print(row)
+            sys.exit(0)
+
+
+        if sys.argv[1] == 'update-model':
+            tag = sys.argv[2]
+            data = sys.argv[3]
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError:
+                print('invalid json')
+                sys.exit(1)
+            #run = store.updateTraining(tag, data, db_store)
+            run = store.updateTable(tag, data, 'model', db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'update-model-tag':
+            _id = sys.argv[2]
+            tag = sys.argv[3]
+            #run = store.updateTrainingTag(_id, tag, db_store)
+            run = store.updateTableTag(_id, tag, 'model', db_store)
+            print(run)
+            sys.exit(0)
+
+
         if sys.argv[1] == 'update-training':
             tag = sys.argv[2]
             data = sys.argv[3]
@@ -1072,6 +1130,13 @@ def main():
             delete = store.deleteFromRowid('training', rowid, db_store)
             print(delete)
             sys.exit(0)
+
+        if sys.argv[1] == 'delete-model':
+            rowid = sys.argv[2]
+            delete = store.deleteFromRowid('model', rowid, db_store)
+            print(delete)
+            sys.exit(0)
+
 
         if sys.argv[1] == 'sample-logstream':
             count = sys.argv[2]
@@ -1121,11 +1186,81 @@ def main():
             print(delete)
             sys.exit(0)
 
+        #if sys.argv[1] == 'copy-occurrence':
+        #    name = sys.argv[2]
+        #    _copy = store.copyOccurrenceToTraining(name, db_store)
+        #    print(_copy)
+        #    sys.exit(0)
+
+
         if sys.argv[1] == 'copy-occurrence':
-            name = sys.argv[2]
-            _copy = store.copyOccurrenceToTraining(name, db_store)
-            print(_copy)
+            key = sys.argv[2]
+            d={}
+            #_copy = store.copyOccurrenceToTraining(name, db_store)
+            #print(_copy)
+            from multiprocessing import shared_memory
+            l = shared_memory.ShareableList(name='sentinel-shm')
+            for i in range(0,len(l),2):
+                _key = l[i]
+                _val = l[i+1]
+                if _key == key:
+                    d[_key]=_val
+                    break
+            l.shm.close()
+            l.shm.unlink()
+
+            if key not in d.keys():
+                print('Not Found: ' + key)
+                sys.exit(0)
+
+            #_data = d[key]
+            #print(_data)
+
+            data = tools.promDataParser('data', d[key])
+            print(data)
+
+            print('WORKING')
+
+                
+            #_copy = store.copyOccurrenceToTable(data, 'model', db_store)
+            tag=0
+            #_copy = store.updateTable(tag, data, 'model', db_store)
+            #print(_copy)
+
+
             sys.exit(0)
+
+
+            #    if _key == key:
+            #        print(_val.rstrip())
+            #        break
+            #    else:
+            #        print("Not Found: " + key)
+
+            #if key in l:
+            #    print('True.present')
+            #    _key = l[i]
+            #    _val = l[i+1]
+            #    print(_val.rstrip())
+
+            #print(type(str(l)))
+            #print(l)
+
+            #ll = list(l)
+            #print(type(str(ll)))
+
+            #try:
+            #    i = l.index(key)
+            #except ValueError as e:
+            #    print('Not Found: ' + key)
+            #    sys.exit(0)
+
+            #print(str(i))
+
+            #l.shm.close()
+            #l.shm.unlink()
+            #sys.exit(0)
+
 
         if sys.argv[1] == 'list-system-profile-full':
             rows = store.getAll('system_profile', db_store)

@@ -103,15 +103,20 @@ def createDB(db_file):
     cur.execute(create_b2sums)
     cur.execute(create_b2sumsi)
 
-    create_sshwatch  = "CREATE TABLE IF NOT EXISTS sshwatch (name TEXT PRIMARY KEY NOT NULL,data JSON) WITHOUT ROWID;"
-    create_sshwatchi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_sshwatch ON sshwatch (name);"
-    cur.execute(create_sshwatch)
-    cur.execute(create_sshwatchi)
+    #create_sshwatch  = "CREATE TABLE IF NOT EXISTS sshwatch (name TEXT PRIMARY KEY NOT NULL,data JSON) WITHOUT ROWID;"
+    #create_sshwatchi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_sshwatch ON sshwatch (name);"
+    #cur.execute(create_sshwatch)
+    #cur.execute(create_sshwatchi)
 
     create_rules  = "CREATE TABLE IF NOT EXISTS rules (name TEXT PRIMARY KEY NOT NULL,timestamp TEXT,data JSON) WITHOUT ROWID;"
     create_rulesi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_rules ON rules (name);"
     cur.execute(create_rules)
     cur.execute(create_rulesi)
+
+    create_model  = "CREATE TABLE IF NOT EXISTS model (tag TEXT, data JSON);"
+    create_modeli = "CREATE UNIQUE INDEX IF NOT EXISTS idx_model ON model (tag, data);"
+    cur.execute(create_model)
+    cur.execute(create_modeli)
 
     create_training  = "CREATE TABLE IF NOT EXISTS training (tag TEXT, data JSON);"
     create_trainingi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_training ON training (tag, data);"
@@ -131,15 +136,6 @@ def createDB(db_file):
     con.commit()
 
     return con
-
-#def createMemDB(memdb):
-#    create_table  = "CREATE TABLE IF NOT EXISTS counts (name TEXT PRIMARY KEY NOT NULL,count INTEGER) WITHOUT ROWID;"
-#    with memdb:
-#        memdb.execute(create_table)
-#        # Successful memdb.commit() is called automatically afterwards
-#    return True
-# Within one process it is possible to share an in-memory database if you use the file::memory:?cache=shared
-# but this is still not accessible from other another process.
 
 ###############################################################################################################################################
 
@@ -271,11 +267,11 @@ def print_all(db_file):
     return True
 
 
-def insert_table(con):
-    cur = con.cursor()
-    cur.execute("INSERT INTO arp VALUES('ff:ff:ff:ff:ff:ff', '(192.168.0.255)', '{}')")
-    con.commit()
-    return True
+#def insert_table(con):
+#    cur = con.cursor()
+#    cur.execute("INSERT INTO arp VALUES('ff:ff:ff:ff:ff:ff', '(192.168.0.255)', '{}')")
+#    con.commit()
+#    return True
 
 
 def update_data_manuf(mac, mfname, db_file):
@@ -698,6 +694,26 @@ def replaceINTO(tbl, name, data, db_file):
         return False
     return True
 
+#def updateModel(tag, data, db_file):
+def updateTable(tag, data, tbl, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('REPLACE INTO '+str(tbl)+' VALUES(?,?)', (tag, data))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
+def updateTableTag(_id, tag, tbl, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('UPDATE '+str(tbl)+' SET tag=? WHERE rowid=?', (tag, _id))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
+
 def updateTraining(tag, data, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
@@ -715,6 +731,7 @@ def updateTrainingTag(_id, tag, db_file):
     if cur.rowcount == 0:
         return False
     return True
+
 
 
 
@@ -861,6 +878,13 @@ def getByOp(tbl, op, num, db_file):
     return rows
 
 
+def getAllTableTags(tag, tbl, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT rowid,* FROM training WHERE tag=? ORDER by rowid DESC;', (tag,))
+    rows = cur.fetchall()
+    return rows
+
 
 def getAllTrainingTags(tag, db_file):
     con = sqlConnection(db_file)
@@ -1000,6 +1024,21 @@ def copyOccurrenceToTraining(name, db_file):
     if cur.rowcount == 0:
         return False
     return True
+
+
+def copyOccurrenceToTable(name, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    tag='1'
+    cur.execute('INSERT INTO training (tag,data) SELECT name,data FROM occurrence WHERE name=? ;', (name,))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
+
+
+
 
 
 if __name__ == '__main__':

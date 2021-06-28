@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.12'
+__version__ = '1.7.13.pre-20210627-1'
 
 import sqlite3
-if sqlite3.sqlite_version_info < (3, 28, 0):
-    raise RuntimeError('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
+#if sqlite3.sqlite_version_info < (3, 28, 0):
+#    raise RuntimeError('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
 
 import sys
 from subprocess import Popen, PIPE, STDOUT
@@ -704,7 +704,8 @@ def sklearnNaiveBayesMultinomialNB(scope, db_store):
     y=[]
 
     #open/load training data
-    rows = store.getAll('training', db_store)
+    #rows = store.getAll('training', db_store)
+    rows = store.getAll('model', db_store)
     if len(rows) == 0:
         #print('Zero training data')
         logging.error('Zero training data. Can not perform naive_bayes.MultinomialNB')
@@ -735,7 +736,7 @@ def sklearnNaiveBayesMultinomialNB(scope, db_store):
     targets = y_train
     classifier.fit(counts, targets)
 
-    logging.info('naive_bayes.MultinomialNB training records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope))
+    logging.info('naive_bayes.MultinomialNB model records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope))
 
     return (vectorizer, classifier)
 
@@ -750,7 +751,8 @@ def sklearnNaiveBayesBernoulliNB(scope, db_store):
     y=[]
 
     #open/load training data
-    rows = store.getAll('training', db_store)
+    #rows = store.getAll('training', db_store)
+    rows = store.getAll('model', db_store)
     if len(rows) == 0:
         #print('Zero training data')
         logging.error('Zero training data. Can not perform naive_bayes.BernoulliNB')
@@ -780,7 +782,7 @@ def sklearnNaiveBayesBernoulliNB(scope, db_store):
     targets = y_train
     classifier.fit(counts, targets)
 
-    logging.info('naive_bayes.BernoulliNB training records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope))
+    logging.info('naive_bayes.BernoulliNB model records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope))
 
     return (vectorizer, classifier)
 
@@ -948,11 +950,13 @@ def updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose=False):
             #promDataSanitizer
             __sample = promDataSanitizer(_sample)
             _k = str(k)+'-'+str(b)
-            #_prom = 'config="'+str(_key)+'",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(_sample) + '"'
-            _prom = 'config="'+str(_key)+'",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(__sample) + '"'
+            #_prom = 'config="'+str(_key)+'",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",sample="' + str(__sample) + '"'
+            _prom = 'config="'+str(_key)+'",algo="'+str(k)+'",predict="1",seen="'+str(seen)+'",b2sum="'+str(b)+'",data="' + str(__sample) + '"'
             gDict[_k] = [ 'sentinel_watch_syslog_sklearn{' + _prom + '} ' +str(s[b])]
 
-            store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(s[b]), line, db_store)
+            #no longer store in sql, uses shared_memory now...
+            #store_occurrence = store.replaceINTOtrio('occurrence', str(_k), str(s[b]), line, db_store)
+
             if verbose: print(_k, gDict[_k])
 
     return True
@@ -1093,7 +1097,8 @@ def sampleLogStream(count, db_store):
 
         tag=0
 
-        run = store.updateTraining(tag, line, db_store)
+        #run = store.updateTraining(tag, line, db_store)
+        run = store.updateTable(tag, line, 'model', db_store)
         print(line)
 
     return True

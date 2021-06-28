@@ -21,7 +21,7 @@ This demo/doc is on MacOS log stream
 
 ---    
 We'll start by capturing 3000 lines of syslog data...  
-taking a small sample to build a data set for our model.   
+taking a small sample to build a training set for our model.   
 ```  
 sentinel sample-logstream 3000   
 ```  
@@ -32,10 +32,10 @@ we need to comb through this data.
 Identify and mark anything that would be recognizable as pattern.   
 In our case, we'll look for any errors, faults, or concerns...    
 ```  
-sentinel list-model
+sentinel list-training
 ```    
 
-An example of a message in our sample model data that has an error,    
+An example of a message in our training data that has an error,    
 rowid 124,  tag '0'   
 ```
 (124, '0', '{"traceID":424856721912238084,"eventMessage":"error: XPC: synchronousRemoteObjectProxyWithErrorHandler encountered error: Error Domain=NSCocoaErrorDomain Code=4099 \\"The connection to service on pid 0 named com.apple.Maps.MapsSync.store was invalidated.\\" UserInfo={NSDebugDescription=The connection to service on pid 0 named com.apple.Maps.MapsSync.store was invalidated.}","eventType":"logEvent","source":null,"formatString":"%{public}s: %{public}s\\n","activityIdentifier":0,"subsystem":"com.apple.coredata","category":"error","threadID":22252,"senderImageUUID":"76179A55-CA89-3967-A0A7-C419DB735983","backtrace":{"frames":[{"imageOffset":3466575,"imageUUID":"76179A55-CA89-3967-A0A7-C419DB735983"}]},"bootUUID":"","processImagePath":"\\/usr\\/libexec\\/routined","timestamp":"2021-01-28 09:48:53.963884-0800","senderImagePath":"\\/System\\/Library\\/Frameworks\\/CoreData.framework\\/Versions\\/A\\/CoreData","machTimestamp":1380234956447,"messageType":"Error","processImageUUID":"31C8CE8F-CF2C-3F3F-9589-5378221FA202","processID":397,"senderProgramCounter":3466575,"parentActivityIdentifier":0,"timezoneName":""}\n')
@@ -45,7 +45,7 @@ We are using a binary 0 or 1 to tag our data.  All the sample-logstream data cam
 Now we'll inspect the data and tag any pieces of data that match our criteria.    
 We'll tag such messages with a '1'    
 ```
-sentinel update-model-tag 124 1
+sentinel update-training-tag 124 1
 ```
 
 Once all 3000 samples have been reviewed and marked either '0' or '1',    
@@ -79,11 +79,11 @@ We instantiate the algorithms and model by running the sentinel program in sentr
 python3.8 -m sentinel_server sentry --verbose
 ```
 ```
-sentinel sentry --verbose
+sentinel sentry
 ```
 
 
-The sentinel program reads in the model data set (sentinel list-model) and displays how many records and how many are tagged as '1'   
+The sentinel program reads in the training set (sentinel list-training) and displays how many records and how many are tagged as '1'   
 ```
 sentinel Feb 01 10:06:30 tools.py INFO: Sentry watch-syslog naive_bayes.MultinomialNB
 sentinel Feb 01 10:06:30 tools.py INFO: naive_bayes.MultinomialNB training records 3000 tagged 114 scope ['eventMessage', 'messageType', 'category']
@@ -99,43 +99,17 @@ which returns a '0' or '1'
 
 A '1' is a prediction.    
 
-Predictions are in shared_memory and prometheus format
+Predictions are saved in the occurrence table.    
 ```
-sentinel list-keys
+sentinel list-occurrence
 ```
-
-Prometheus output
-```
-sentinel list-proms
-```
-
----
-
-```
-sentinel get-key naive_bayes.MultinomialNB-51500ef81e3364556f3578b293b81dfa1c503854
-```
-```
-sentinel_watch_syslog_sklearn{config="watch-syslog-sklearn-1",algo="naive_bayes.MultinomialNB",predict="1",seen="True",b2sum="51500ef81e3364556f3578b293b81dfa1c503854",sample="[Privacy] Did stop advertising with error: (null) Default WirelessProximity "} 295
-```
-
-
-
-
-sentinel copy-occurrence naive_bayes.MultinomialNB-51500ef81e3364556f3578b293b81dfa1c503854
-
-
-
-
-
-
-
 
 false-positive https://en.wikipedia.org/wiki/False_positives_and_false_negatives    
 Modeling here is basically eliminating false-positives.    
 
 We may find occurrences that are predicted as '1', but are not a concern.    
 ```
-sentinel get-key naive_bayes.MultinomialNB-f01910b0a4ecd16c2632dcb78cd8f4b0b362ab7b
+sentinel list-occurrence naive_bayes.MultinomialNB-f01910b0a4ecd16c2632dcb78cd8f4b0b362ab7b
 ('naive_bayes.MultinomialNB-f01910b0a4ecd16c2632dcb78cd8f4b0b362ab7b', 21, '{"traceID":5567583286198276,"eventMessage":"LQM-WiFi:TX(58:D9:D5:2F:4C:65) AC<SU MS NB NRS NA CM EX TF FFP MRET FLE> BE<0 0 0 0 0 0 0 0 0 0 0> (5000ms)","eventType":"logEvent","source":null,"formatString":"LQM-WiFi:TX(%02X:%02X:%02X:%02X:%02X:%02X) AC<SU MS NB NRS NA CM EX TF FFP MRET FLE> %s<%lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld> (%llums)\\n","activityIdentifier":0,"subsystem":"","category":"","threadID":1717080,"senderImageUUID":"0E77C487-4C15-3458-AAFA-A9224B8A5D67","backtrace":{"frames":[{"imageOffset":894250,"imageUUID":"0E77C487-4C15-3458-AAFA-A9224B8A5D67"}]},"bootUUID":"","processImagePath":"\\/kernel","timestamp":"2021-01-31 21:17:26.816110-0800","senderImagePath":"\\/System\\/Library\\/Extensions\\/IO80211FamilyV2.kext\\/Contents\\/MacOS\\/IO80211FamilyV2","machTimestamp":615478952438929,"messageType":"Default","processImageUUID":"82E2050C-5936-3D24-AD3B-EC4EC5C09E11","processID":0,"senderProgramCounter":894250,"parentActivityIdentifier":0,"timezoneName":""}\n')
 ```
 
