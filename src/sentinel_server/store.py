@@ -699,10 +699,12 @@ def updateTable(tag, data, tbl, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('REPLACE INTO '+str(tbl)+' VALUES(?,?)', (tag, data))
+    rowid = cur.lastrowid
     con.commit()
     if cur.rowcount == 0:
-        return False
-    return True
+        return None
+    #return True
+    return rowid
 
 def updateTableTag(_id, tag, tbl, db_file):
     con = sqlConnection(db_file)

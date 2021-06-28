@@ -1196,8 +1196,6 @@ def main():
         if sys.argv[1] == 'copy-occurrence':
             key = sys.argv[2]
             d={}
-            #_copy = store.copyOccurrenceToTraining(name, db_store)
-            #print(_copy)
             from multiprocessing import shared_memory
             l = shared_memory.ShareableList(name='sentinel-shm')
             for i in range(0,len(l),2):
@@ -1224,43 +1222,14 @@ def main():
                 j = { 'MESSAGE' : data }
             elif sys.platform == 'darwin':
                 j = { 'eventMessage' : data }
+            else:
+                j = { 'data' : data }
 
-            #_copy = store.copyOccurrenceToTable(data, 'model', db_store)
             tag=0
             _copy = store.updateTable(tag, json.dumps(j), 'model', db_store)
             print(_copy)
 
             sys.exit(0)
-
-            #    if _key == key:
-            #        print(_val.rstrip())
-            #        break
-            #    else:
-            #        print("Not Found: " + key)
-
-            #if key in l:
-            #    print('True.present')
-            #    _key = l[i]
-            #    _val = l[i+1]
-            #    print(_val.rstrip())
-
-            #print(type(str(l)))
-            #print(l)
-
-            #ll = list(l)
-            #print(type(str(ll)))
-
-            #try:
-            #    i = l.index(key)
-            #except ValueError as e:
-            #    print('Not Found: ' + key)
-            #    sys.exit(0)
-
-            #print(str(i))
-
-            #l.shm.close()
-            #l.shm.unlink()
-            #sys.exit(0)
 
 
         if sys.argv[1] == 'list-system-profile-full':

@@ -1,4 +1,8 @@
 
+# IN PROGRESS CHANGES
+
+---
+
 # supervised machine learning with syslog data (sklearn) MacOS   
 
 supervised learning with naive bayes algorithms  
@@ -17,7 +21,7 @@ requires [sklearn](https://scikit-learn.org)
 pip3 install -U scikit-learn   
 ```
 
-This demo/doc is on MacOS log stream
+This demo+doc is on MacOS log stream
 
 ---    
 We'll start by capturing 3000 lines of syslog data...  
@@ -119,16 +123,12 @@ sentinel_watch_syslog_sklearn{config="watch-syslog-sklearn-1",algo="naive_bayes.
 ```
 
 
-
-
 sentinel copy-occurrence naive_bayes.MultinomialNB-51500ef81e3364556f3578b293b81dfa1c503854
 
+sentinel update-model-tag 2027 1
 
-
-
-
-
-
+# IN PROGRESS.  lets get a return of row_id (last insert) for the copy-occurrence
+# IN PROGRESS.  don't restart the process to re-init the model after model data change
 
 false-positive https://en.wikipedia.org/wiki/False_positives_and_false_negatives    
 Modeling here is basically eliminating false-positives.    
