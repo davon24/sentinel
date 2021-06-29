@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.14.dev.20210628-1'
+__version__ = '1.7.14.dev.20210628-2'
 
 import sqlite3
-#if sqlite3.sqlite_version_info < (3, 28, 0):
-#    raise RuntimeError('Requires Python sqlite3 library 3.28.0 or higher. This version: ' + str(sqlite3.sqlite_version))
 
 import sys
 from subprocess import Popen, PIPE, STDOUT
@@ -47,6 +45,8 @@ import store
 
 #from sklearn.feature_extraction.text import CountVectorizer
 #from sklearn.naive_bayes import MultinomialNB
+
+#from sklearn.neural_network import MLPClassifier
 
 class HTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -972,13 +972,21 @@ def sklearnInitAlgoDict(algoDct, db_store):
         vectorizer, classifier = sklearnNaiveBayesBernoulliNB(algoDct['naive_bayes.BernoulliNB'], db_store)
         skInitDct['naive_bayes.BernoulliNB'] = [vectorizer, classifier]
 
+    if 'neural_network.MLPClassifier' in algoDct.keys():
+        #vectorizer, classifier = sklearnNaiveBayesBernoulliNB(algoDct['naive_bayes.BernoulliNB'], db_store)
+        #skInitDct['naive_bayes.BernoulliNB'] = [vectorizer, classifier]
+        from sklearn.neural_network import MLPClassifier
+        classifier = MLPClassifier(hidden_layer_sizes=(150,100,50),max_iter=300,activation='relu',solver='krink',random_state=1)
+        skInitDct['neural_network.MLPClassifier'] = [classifier]
+
+
     return skInitDct
 
 
 
 def sentryLogStream(db_store, _key, gDict, verbose=False):
     #logging.info('Sentry watch-syslog logstream ')
-
+    debug=True
 
     conf = store.getData('configs', _key, db_store)
     if conf:
@@ -998,7 +1006,9 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
 
     if sklearn:
         algoDct = getAlgoDict(sklearn)
+        if debug: print('algoDct ' + str(algoDct))
         skInitDct = sklearnInitAlgoDict(algoDct, db_store)
+        db_hash = 'abcdefghijklmnop'
 
     r={}
     s={}
@@ -1017,21 +1027,33 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
         line = line.decode('utf-8')
         jline = json.loads(line)
 
-        if rules:
 
-            if time.time() > end_time:
+        if time.time() > end_time:
+            if rules:
                 new_rulesDct = getExpertRules(_key, db_store)
                 if rulesDct != new_rulesDct:
                     rulesDct = getExpertRules(_key, db_store)
                     _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
                     gDict[_k] = [ 'sentinel_watch_syslog_rule_engine_info{' + _prom + '} 1.0' ]
                     logging.info('Sentry Expert_Rules Reloaded ' + str(len(rulesDct)) + ' ' + b2checksum(str(rulesDct)) )
-                end_time = time.time() + elapsed_interval
+
+            if sklearn:
+                #db_hash = getModelHash(db_store)
+                db_hash = 'abcdefghijklmnop'
+
+            end_time = time.time() + elapsed_interval
+            print('... ... ...end_time ' + str(end_time))
+
+        if rules:
 
             rule_hit = expertLogStreamRulesEngineGeneralJson(jline, rules, rulesDct)
             if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, rulesDct, db_store, verbose)
 
         if sklearn:
+            #if time.time() > end_time:
+            #    db_hash = getModelHash
+
+
             sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
             if sklearn_hit: updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose)
 
@@ -5281,8 +5303,8 @@ def sentryMode(db_store, verbose=False):
             _metric_path = _config['path']
 
         if conf == 'logstream':
-            tailer = multiprocessing.Process(target=sentryLogStream, args=(db_store, key, gDict, verbose))
-            tailer.start()
+            logstream = multiprocessing.Process(target=sentryLogStream, args=(db_store, key, gDict, verbose))
+            logstream.start()
             #running.append(tailer)
 
         if conf == 'tail':
