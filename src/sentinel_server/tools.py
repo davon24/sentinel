@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.14.dev.20210629-1'
+__version__ = '1.7.14'
 
 import sqlite3
 
