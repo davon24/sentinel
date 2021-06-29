@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.14.dev.20210628-2'
+__version__ = '1.7.14.dev.20210629-1'
 
 import sqlite3
 
@@ -710,7 +710,7 @@ def sklearnNaiveBayesMultinomialNB(scope, db_store):
         #print('Zero training data')
         logging.error('Zero training data. Can not perform naive_bayes.MultinomialNB')
         return (False, False)
-
+    b2 = b2checksum(str(rows))
     c=0
     t=0
     for row in rows:
@@ -736,7 +736,7 @@ def sklearnNaiveBayesMultinomialNB(scope, db_store):
     targets = y_train
     classifier.fit(counts, targets)
 
-    logging.info('naive_bayes.MultinomialNB model records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope))
+    logging.info('naive_bayes.MultinomialNB model records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope) + ' b2sum ' + str(b2))
 
     return (vectorizer, classifier)
 
@@ -757,6 +757,7 @@ def sklearnNaiveBayesBernoulliNB(scope, db_store):
         #print('Zero training data')
         logging.error('Zero training data. Can not perform naive_bayes.BernoulliNB')
         return (False, False)
+    b2 = b2checksum(str(rows))
 
     c=0
     t=0
@@ -782,7 +783,7 @@ def sklearnNaiveBayesBernoulliNB(scope, db_store):
     targets = y_train
     classifier.fit(counts, targets)
 
-    logging.info('naive_bayes.BernoulliNB model records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope))
+    logging.info('naive_bayes.BernoulliNB model records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope) + ' b2sum ' + str(b2))
 
     return (vectorizer, classifier)
 
@@ -998,6 +999,7 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
     #load rules (getExpertRules)
     if rules:
         rulesDct = getExpertRules(_key, db_store)
+
         _k = 'sentinel_watch_syslog_rule_engine_info-1'
         _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
         gDict[_k] = [ 'sentinel_watch_syslog_rule_engine_info{' + _prom + '} 1.0' ]
@@ -1008,7 +1010,12 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
         algoDct = getAlgoDict(sklearn)
         if debug: print('algoDct ' + str(algoDct))
         skInitDct = sklearnInitAlgoDict(algoDct, db_store)
-        db_hash = 'abcdefghijklmnop'
+        db_hash = b2checksum(str(store.getAll('model', db_store)))
+
+        _k = 'sentinel_watch_syslog_sklearn_info-1'
+        _prom = 'sklearn_loaded="'+str(algoDct)+'",b2sum="'+str(db_hash)+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
+        gDict[_k] = [ 'sentinel_watch_syslog_sklearn_info{' + _prom + '} 1.0' ]
+        
 
     r={}
     s={}
@@ -1029,20 +1036,28 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
 
 
         if time.time() > end_time:
+            end_time = time.time() + elapsed_interval
+            #print('end_time ' + str(end_time))
+
             if rules:
                 new_rulesDct = getExpertRules(_key, db_store)
                 if rulesDct != new_rulesDct:
                     rulesDct = getExpertRules(_key, db_store)
+                    
                     _prom = 'rules_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
+                    _k = 'sentinel_watch_syslog_rule_engine_info-1'
                     gDict[_k] = [ 'sentinel_watch_syslog_rule_engine_info{' + _prom + '} 1.0' ]
                     logging.info('Sentry Expert_Rules Reloaded ' + str(len(rulesDct)) + ' ' + b2checksum(str(rulesDct)) )
 
             if sklearn:
-                #db_hash = getModelHash(db_store)
-                db_hash = 'abcdefghijklmnop'
+                new_db_hash = b2checksum(str(store.getAll('model', db_store)))
+                if db_hash != new_db_hash:
+                    db_hash = new_db_hash
+                    skInitDct = sklearnInitAlgoDict(algoDct, db_store)
 
-            end_time = time.time() + elapsed_interval
-            print('... ... ...end_time ' + str(end_time))
+                    _k = 'sentinel_watch_syslog_sklearn_info-1'
+                    _prom = 'sklearn_loaded="'+str(algoDct)+'",b2sum="'+str(db_hash)+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
+                    gDict[_k] = [ 'sentinel_watch_syslog_sklearn_info{' + _prom + '} 1.0' ]
 
         if rules:
 
@@ -1050,9 +1065,6 @@ def sentryLogStream(db_store, _key, gDict, verbose=False):
             if rule_hit: updategDictR(_key, gDict, rule_hit, r, line, rulesDct, db_store, verbose)
 
         if sklearn:
-            #if time.time() > end_time:
-            #    db_hash = getModelHash
-
 
             sklearn_hit = sklearnPredict(line, algoDct, skInitDct)
             if sklearn_hit: updategDictS(_key, gDict, sklearn_hit, s, line, db_store, verbose)
