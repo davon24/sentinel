@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.14'
+__version__ = '1.7.15.dev-20210629-1'
 
 import sqlite3
 
@@ -788,6 +788,69 @@ def sklearnNaiveBayesBernoulliNB(scope, db_store):
     return (vectorizer, classifier)
 
 
+def sklearnNeuralNetworkMLPClassifier(scope, db_store):
+    logging.info('Sentry watch-syslog neural_network.MLPClassifier')
+
+    from sklearn.neural_network import MLPClassifier
+    from sklearn.model_selection import train_test_split
+
+    X=[]
+    y=[]
+
+    #open/load training data
+    #rows = store.getAll('training', db_store)
+    rows = store.getAll('model', db_store)
+    if len(rows) == 0:
+        #print('Zero training data')
+        logging.error('Zero training data. Can not perform naive_bayes.MultinomialNB')
+        return (False, False)
+    b2 = b2checksum(str(rows))
+    c=0
+    t=0
+    for row in rows:
+        c+=1
+        #print(row)
+        _id = row[0]
+        _tag = row[1]
+        _jsn = row[2]
+        #print(_id, _tag, _jsn)
+
+        data = concatJsnData(scope, _jsn)
+
+        if int(_tag) != 0:
+            t+=1
+
+        y.append(_tag)
+        X.append(data)
+
+    #training_set, validation_set = train_test_split(data, test_size = 0.2, random_state = 21)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 21)
+
+    #X_train, X_test, y_train, y_test = train_test_split(X, y)
+    #vectorizer = CountVectorizer()
+    #counts = vectorizer.fit_transform(X_train)
+    #classifier = MultinomialNB()
+    #targets = y_train
+    #classifier.fit(counts, targets)
+
+
+    classifier = MLPClassifier(hidden_layer_sizes=(150,100,50), max_iter=300,activation = 'relu',solver='adam',random_state=1)
+    classifier.fit(X_train, y_train)
+
+    # need to fit_transform the data...
+    #ValueError: could not convert string to float: '[com.apple.calendar.store.log.caldav.http] [Task 63] Default calendar '
+
+    logging.info('neural_network.MLPClassifier model records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope) + ' b2sum ' + str(b2))
+
+    return classifier
+
+    #Predicting y for X_val
+    #y_pred = classifier.predict(X_val)
+
+
+
+
 def getAlgoDict(_sklearn):
     algoDict={}
     for item in _sklearn:
@@ -800,8 +863,14 @@ def getAlgoDict(_sklearn):
 def sklearnPredict(line, algoDct, skInitDct):
     pDct={}
 
+    #print('DEBUG '  + str(algoDct))
+    #print('DEBUG '  + str(algoDct['naive_bayes.MultinomialNB'])) # ['eventMessage', 'messageType', 'category']
+
+
+    scope = algoDct['naive_bayes.MultinomialNB'] #['eventMessage', 'messageType', 'category']
     sample = []
-    _sample = concatJsnData(algoDct['naive_bayes.MultinomialNB'], line)
+    #_sample = concatJsnData(algoDct['naive_bayes.MultinomialNB'], line)
+    _sample = concatJsnData(scope, line)
     sample.append(_sample)
 
     #for key in algoDct.keys():
@@ -976,10 +1045,11 @@ def sklearnInitAlgoDict(algoDct, db_store):
     if 'neural_network.MLPClassifier' in algoDct.keys():
         #vectorizer, classifier = sklearnNaiveBayesBernoulliNB(algoDct['naive_bayes.BernoulliNB'], db_store)
         #skInitDct['naive_bayes.BernoulliNB'] = [vectorizer, classifier]
-        from sklearn.neural_network import MLPClassifier
-        classifier = MLPClassifier(hidden_layer_sizes=(150,100,50),max_iter=300,activation='relu',solver='krink',random_state=1)
-        skInitDct['neural_network.MLPClassifier'] = [classifier]
-
+        #from sklearn.neural_network import MLPClassifier
+        #classifier = MLPClassifier(hidden_layer_sizes=(150,100,50),max_iter=300,activation='relu',solver='krink',random_state=1)
+        classifier = sklearnNeuralNetworkMLPClassifier(algoDct['neural_network.MLPClassifier'], db_store)
+        vectorizer = ''
+        skInitDct['neural_network.MLPClassifier'] = [vectorizer, classifier]
 
     return skInitDct
 

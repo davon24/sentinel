@@ -1,0 +1,16 @@
+
+https://scikit-learn.org/stable/modules/neural_networks_supervised.html
+
+https://www.kdnuggets.com/2016/10/beginners-guide-neural-networks-python-scikit-learn.html/2
+
+https://analyticsindiamag.com/a-beginners-guide-to-scikit-learns-mlpclassifier/
+
+https://ai.intelligentonlinetools.com/ml/tag/mlp-classifier/
+
+https://www.python-course.eu/neural_networks_with_scikit.php
+
+https://medium.com/civis-analytics/an-intro-to-natural-language-processing-in-python-framing-text-classification-in-familiar-terms-33778d1aa3ca
+
+https://www.kaggle.com/ahmethamzaemra/mlpclassifier-example
+
+
