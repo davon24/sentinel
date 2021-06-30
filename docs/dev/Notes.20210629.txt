@@ -13,4 +13,6 @@ https://medium.com/civis-analytics/an-intro-to-natural-language-processing-in-py
 
 https://www.kaggle.com/ahmethamzaemra/mlpclassifier-example
 
+https://machinelearningmastery.com/prepare-text-data-machine-learning-scikit-learn/
+
 
