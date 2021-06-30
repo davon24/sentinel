@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.15.dev-20210629-1'
+__version__ = '1.7.15'
 
 import sqlite3
 
@@ -794,6 +794,8 @@ def sklearnNeuralNetworkMLPClassifier(scope, db_store):
     from sklearn.neural_network import MLPClassifier
     from sklearn.model_selection import train_test_split
 
+    from sklearn.feature_extraction.text import CountVectorizer
+
     X=[]
     y=[]
 
@@ -834,16 +836,22 @@ def sklearnNeuralNetworkMLPClassifier(scope, db_store):
     #targets = y_train
     #classifier.fit(counts, targets)
 
+    vectorizer = CountVectorizer()
+    counts = vectorizer.fit_transform(X_train)
+    targets = y_train
 
     classifier = MLPClassifier(hidden_layer_sizes=(150,100,50), max_iter=300,activation = 'relu',solver='adam',random_state=1)
-    classifier.fit(X_train, y_train)
+
+    #classifier.fit(X_train, y_train)
+    classifier.fit(counts, targets)
 
     # need to fit_transform the data...
     #ValueError: could not convert string to float: '[com.apple.calendar.store.log.caldav.http] [Task 63] Default calendar '
 
     logging.info('neural_network.MLPClassifier model records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope) + ' b2sum ' + str(b2))
 
-    return classifier
+    #return classifier
+    return (vectorizer, classifier)
 
     #Predicting y for X_val
     #y_pred = classifier.predict(X_val)
@@ -1047,8 +1055,7 @@ def sklearnInitAlgoDict(algoDct, db_store):
         #skInitDct['naive_bayes.BernoulliNB'] = [vectorizer, classifier]
         #from sklearn.neural_network import MLPClassifier
         #classifier = MLPClassifier(hidden_layer_sizes=(150,100,50),max_iter=300,activation='relu',solver='krink',random_state=1)
-        classifier = sklearnNeuralNetworkMLPClassifier(algoDct['neural_network.MLPClassifier'], db_store)
-        vectorizer = ''
+        vectorizer, classifier = sklearnNeuralNetworkMLPClassifier(algoDct['neural_network.MLPClassifier'], db_store)
         skInitDct['neural_network.MLPClassifier'] = [vectorizer, classifier]
 
     return skInitDct
