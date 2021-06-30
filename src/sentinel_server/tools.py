@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.15'
+__version__ = '1.7.16.dev.20210630-1'
 
 import sqlite3
 
@@ -45,7 +45,6 @@ import store
 
 #from sklearn.feature_extraction.text import CountVectorizer
 #from sklearn.naive_bayes import MultinomialNB
-
 #from sklearn.neural_network import MLPClassifier
 
 class HTTPHandler(BaseHTTPRequestHandler):
@@ -693,6 +692,61 @@ def concatJsnData(scope, _jsn):
     return dta
 
 
+def sklearnVectorizerClassifier(scope, db_store):
+
+    #get CountVectorizer, HashingVectorizer, TfidfVectorizer
+
+    #get naive_bayes.MultinomialNB, naive_bayes.BernoulliNB, 
+
+    logging.info('Sentry watch-syslog naive_bayes.MultinomialNB')
+
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.model_selection import train_test_split
+
+    #from sklearn.neural_network import MLPClassifier
+
+    X=[]
+    y=[]
+
+    #open/load training data
+    #rows = store.getAll('training', db_store)
+    rows = store.getAll('model', db_store)
+    if len(rows) == 0:
+        #print('Zero training data')
+        logging.error('Zero training data. Can not perform naive_bayes.MultinomialNB')
+        return (False, False)
+    b2 = b2checksum(str(rows))
+    c=0
+    t=0
+    for row in rows:
+        c+=1
+        #print(row)
+        _id = row[0]
+        _tag = row[1]
+        _jsn = row[2]
+        #print(_id, _tag, _jsn)
+
+        data = concatJsnData(scope, _jsn)
+
+        if int(_tag) != 0:
+            t+=1
+
+        y.append(_tag)
+        X.append(data)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    vectorizer = CountVectorizer()
+    counts = vectorizer.fit_transform(X_train)
+    classifier = MultinomialNB()
+    targets = y_train
+    classifier.fit(counts, targets)
+
+    logging.info('naive_bayes.MultinomialNB model records '+str(c)+' tagged '+str(t)+ ' scope ' + str(scope) + ' b2sum ' + str(b2))
+
+    return (vectorizer, classifier)
+
+
 def sklearnNaiveBayesMultinomialNB(scope, db_store):
     logging.info('Sentry watch-syslog naive_bayes.MultinomialNB')
 
@@ -837,7 +891,9 @@ def sklearnNeuralNetworkMLPClassifier(scope, db_store):
     #classifier.fit(counts, targets)
 
     vectorizer = CountVectorizer()
+
     counts = vectorizer.fit_transform(X_train)
+
     targets = y_train
 
     classifier = MLPClassifier(hidden_layer_sizes=(150,100,50), max_iter=300,activation = 'relu',solver='adam',random_state=1)
