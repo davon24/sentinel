@@ -34,6 +34,8 @@ def usage():
         nmap-net net
         ping-net ip/net
 
+        net-scan net
+
         port-scan [ip/net] [level]
         list-nmaps
         nmap ip [level]
@@ -288,6 +290,13 @@ def main():
             pn = tools.nmapNet(ip)
             print(pn)
             sys.exit(0)
+
+        if sys.argv[1] == 'net-scan':
+            net = sys.argv[2]
+            scan = tools.netScan(net, db_store, {}, 'net-scan')
+            print(scan)
+            sys.exit(0)
+
 
         if sys.argv[1] == 'listening':
             p = tools.printListenPorts()

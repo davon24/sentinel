@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.16.dev.20210630-1'
+__version__ = '1.7.16.dev.20210710-1'
 
 import sqlite3
 
@@ -3832,6 +3832,58 @@ def portScan(ips, level, db_store, gDict, name):
     scan = runNmapScanMultiProcessDict(hostLst, level, db_store, gDict, name)
     return scan
 
+
+def netScan(ips, db_store, gDict, name):
+
+    ipLst=[]
+
+    #scan = runNmapScanMultiProcessDict(ips, db_store, gDict, name)
+
+    if isinstance(ips, list):
+        #ips = ips[0]
+        #listToStr = ' '.join([str(elem) for elem in l])
+        ips = ' '.join([str(elem) for elem in ips])
+
+    cmd = 'nmap -n -sn ' + str(ips)
+
+    print(cmd)
+    print(name)
+
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+    for line in out:
+        line =  line.decode('utf-8').strip('\n')
+        print(line)
+        if line.startswith('Nmap scan report for'):
+            ip = line.split()[-1]
+            #ipLst.append(ip)
+            _key = 'net-scan-' + ip
+            prom = 'name="' + str(name) + '",sentinel_job="net-scan",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str('report') + '"'
+            gDict[_key] = [ 'sentinel_net_scan{' + prom + '} ' + str('1') ]
+
+        if line.startswith('Nmap done: '):
+            addrs = line.split(':')[1]
+
+    #PROM INTEGRATION
+    #val=1
+    #now = time.strftime("%Y-%m-%d %H:%M:%S")
+    #_key = 'net-scan-' + b2checksum(ips)
+    #prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",report="' + str('report') + '"'
+    #gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+
+    scan = True
+    return scan
+
+#Nmap scan report for 192.168.0.253
+#Host is up (0.0041s latency).
+#Nmap scan report for 192.168.0.254
+#Host is up (0.0068s latency).
+#Nmap done: 256 IP addresses (16 hosts up) scanned in 24.44 seconds
+
+
 def isNet(ips):
     try:
         net = ips.split('/')[1]
@@ -4560,6 +4612,7 @@ options = {
  'port-scan' : portScan1,
  'port-scan2' : portScan2,
  'detect-scan' : detectScan,
+ 'net-scan' : netScan,
  'fim-check' : fimCheck,
  'ps-check' : psCheck,
  'established-check' : establishedCheck,
