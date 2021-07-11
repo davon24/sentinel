@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.16.dev.20210710-1'
+__version__ = '1.7.16.dev.20210710-2'
 
 import sqlite3
 
@@ -3835,9 +3835,9 @@ def portScan(ips, level, db_store, gDict, name):
 
 def netScan(ips, db_store, gDict, name):
 
-    ipLst=[]
-
     #scan = runNmapScanMultiProcessDict(ips, db_store, gDict, name)
+
+    seen = False
 
     if isinstance(ips, list):
         #ips = ips[0]
@@ -3853,18 +3853,51 @@ def netScan(ips, db_store, gDict, name):
 
     proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
     out = proc.stdout.readlines()
-    for line in out:
-        line =  line.decode('utf-8').strip('\n')
-        print(line)
+
+    print('out is type ' + str(type(out))) #list
+
+    #for line in out:
+    #for i in range(0, len(out), 2):
+    #for (a,b) in out:
+    #for item in out:
+
+    l = len(out)
+    for index, item in enumerate(out):
+
+        line =  item.decode('utf-8').strip('\n')
+
         if line.startswith('Nmap scan report for'):
             ip = line.split()[-1]
-            #ipLst.append(ip)
+            #print(ip)
+
+            nextline = out[index + 1]
+            nline = nextline.decode('utf-8').strip('\n')
+            if nline.startswith('Host is up'):
+                latency = nline.split('(')[1].split()[0]
+            else:
+                latency = None
+
+            #print(latency)
+
             _key = 'net-scan-' + ip
-            prom = 'name="' + str(name) + '",sentinel_job="net-scan",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str('report') + '"'
+            if _key in gDict.keys():
+                seen = True
+            prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip)+'",latency="'+str(latency)+'",done="'+str(now)+'",seen="'+str(seen)+'"'
             gDict[_key] = [ 'sentinel_net_scan{' + prom + '} ' + str('1') ]
 
+
+
         if line.startswith('Nmap done: '):
-            addrs = line.split(':')[1]
+            addrs = line.split(':')[1].split()[0]
+            #print(addrs)
+            hosts_up = line.split('(')[1].split()[0]
+            #print(hosts_up)
+            scan_time = line.split()[-2]
+
+            _key = 'net-scan-info-' + b2checksum(ips)
+            prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",b2sum="' + str(b2checksum(ips)) + '"'
+            prom += ',addresses="'+str(addrs)+'",hosts_up="'+str(hosts_up)+'",scan_time="'+str(scan_time)+'"'
+            gDict[_key] = [ 'sentinel_net_scan_info{' + prom + '} ' + str('1') ]
 
     #PROM INTEGRATION
     #val=1
