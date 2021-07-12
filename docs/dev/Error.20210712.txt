@@ -1,4 +1,22 @@
 
+
+Jul 12 18:47:10 ubuntu100 python3[5798]: sentinel Jul 12 18:47:10 tools.py INFO: Sentry Job run proc-monitor
+Jul 12 18:47:21 ubuntu100 python3[5850]: Process Process-5:
+Jul 12 18:47:21 ubuntu100 python3[5850]: Traceback (most recent call last):
+Jul 12 18:47:21 ubuntu100 python3[5850]:   File "/usr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+Jul 12 18:47:21 ubuntu100 python3[5850]:     self.run()
+Jul 12 18:47:21 ubuntu100 python3[5850]:   File "/usr/lib/python3.8/multiprocessing/process.py", line 108, in run
+Jul 12 18:47:21 ubuntu100 python3[5850]:     self._target(*self._args, **self._kwargs)
+Jul 12 18:47:21 ubuntu100 python3[5850]:   File "/usr/local/lib/python3.8/dist-packages/sentinel_server/tools.py", line 3973, in netScan
+Jul 12 18:47:21 ubuntu100 python3[5850]:     prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip)+'",latency="'+str('None')+'",done="'+str(now)+'",seen="'+str('0')+'"'
+Jul 12 18:47:21 ubuntu100 python3[5850]: UnboundLocalError: local variable 'ip' referenced before assignment
+Jul 12 18:47:21 ubuntu100 python3[5798]: sentinel Jul 12 18:47:21 tools.py INFO: Sentry Job run net-scan-192.168.3.0/24
+
+
+
+----
+
+
 Jul 12 18:26:46 ubuntu100 python3[5274]: sentinel Jul 12 18:26:46 tools.py INFO: Sentry Job run established-monitor
 Jul 12 18:26:46 ubuntu100 python3[5274]: sentinel Jul 12 18:26:46 tools.py INFO: Sentry Job run proc-monitor
 Jul 12 18:27:37 ubuntu100 python3[5274]: sentinel Jul 12 18:27:37 tools.py INFO: Sentry Job run net-scan-192.168.0.0/24

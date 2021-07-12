@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.17'
+__version__ = '1.7.18'
 
 import sqlite3
 
@@ -3970,7 +3970,7 @@ def netScan(ips, db_store, gDict, name):
 
             if k_ in gDict.keys():
                 #print('Yes.Yes ' + k_)
-                prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip)+'",latency="'+str('None')+'",done="'+str(now)+'",seen="'+str('0')+'"'
+                prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip_)+'",latency="'+str('None')+'",done="'+str(now)+'",seen="'+str('0')+'"'
                 gDict[k_] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str('0') ]
 
 
