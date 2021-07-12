@@ -6,3 +6,5 @@ sentinel update-job net-scan-1 '{"repeat": "5min", "job": "net-scan", "ips": ["1
 
 sentinel update-job net-scan-1 '{"repeat": "1min", "job": "net-scan", "ips": ["192.168.0.1/24"]}'
 
+sentinel update-job net-scan-1 '{"repeat": "3min", "job": "net-scan", "ips": ["192.168.0.0/24"]}'
+

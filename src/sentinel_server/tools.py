@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.16.dev.20210711-3'
+__version__ = '1.7.16'
 
 import sqlite3
 
@@ -3833,6 +3833,13 @@ def portScan(ips, level, db_store, gDict, name):
     return scan
 
 
+def netScanProc(ips, db_store, gDict, name):
+    #scan = netScan(ips, db_store, gDict, name)
+    scan = multiprocessing.Process(target=netScan, args=(ips, db_store, gDict, name))
+    scan.start()
+    scan.join()
+    return True
+
 def netScan(ips, db_store, gDict, name):
 
     #scan = runNmapScanMultiProcessDict(ips, db_store, gDict, name)
@@ -3934,7 +3941,9 @@ def netScan(ips, db_store, gDict, name):
             #print(hosts_up)
             scan_time = line.split()[-2]
 
+            #_key = 'net-scan-info-' + b2checksum(ips)
             _key = 'net-scan-info-' + b2checksum(ips)
+
             prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",b2sum="' + str(b2checksum(ips)) + '"'
             prom += ',addresses="'+str(addrs)+'",hosts_up="'+str(hosts_up)+'",scan_time="'+str(scan_time)+'"'
             gDict[_key] = [ 'sentinel_net_scan_info{' + prom + '} ' + str('1') ]
@@ -4700,7 +4709,7 @@ options = {
  'port-scan' : portScan1,
  'port-scan2' : portScan2,
  #'detect-scan' : detectScan,
- 'net-scan' : netScan,
+ 'net-scan' : netScanProc,
  'fim-check' : fimCheck,
  'ps-check' : psCheck,
  'established-check' : establishedCheck,

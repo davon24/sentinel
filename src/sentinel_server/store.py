@@ -448,9 +448,21 @@ def replaceIPs(ip, data, db_file):
 def deleteIPs(ip, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
-    cur.execute("DELETE FROM ips WHERE ip=? ;", (ip,))
+    #cur.execute("DELETE FROM ips WHERE ip=? ;", (ip,))
+    cur.execute("DELETE FROM ips WHERE name=? ;", (ip,))
+    rowid = cur.lastrowid
+    rowcount = cur.rowcount
     con.commit()
-    return True
+    #if cur.rowcount == 0:
+    #    return None
+    #return rowid
+    #return True
+
+    if rowcount == 1:
+        return True
+    else:
+        return False
+    #return rowcount
 
 def getNmaps(db_file):
     con = sqlConnection(db_file)
