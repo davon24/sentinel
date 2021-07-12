@@ -1,0 +1,63 @@
+
+Jul 12 18:26:46 ubuntu100 python3[5274]: sentinel Jul 12 18:26:46 tools.py INFO: Sentry Job run established-monitor
+Jul 12 18:26:46 ubuntu100 python3[5274]: sentinel Jul 12 18:26:46 tools.py INFO: Sentry Job run proc-monitor
+Jul 12 18:27:37 ubuntu100 python3[5274]: sentinel Jul 12 18:27:37 tools.py INFO: Sentry Job run net-scan-192.168.0.0/24
+Jul 12 18:27:49 ubuntu100 python3[5412]: Process Process-4:
+Jul 12 18:27:49 ubuntu100 python3[5412]: Traceback (most recent call last):
+Jul 12 18:27:49 ubuntu100 python3[5412]:   File "/usr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+Jul 12 18:27:49 ubuntu100 python3[5412]:     self.run()
+Jul 12 18:27:49 ubuntu100 python3[5412]:   File "/usr/lib/python3.8/multiprocessing/process.py", line 108, in run
+Jul 12 18:27:49 ubuntu100 python3[5412]:     self._target(*self._args, **self._kwargs)
+Jul 12 18:27:49 ubuntu100 python3[5412]:   File "/usr/local/lib/python3.8/dist-packages/sentinel_server/tools.py", line 3901, in netScan
+Jul 12 18:27:49 ubuntu100 python3[5412]:     latency = nline.split('(')[1].split()[0]
+Jul 12 18:27:49 ubuntu100 python3[5412]: IndexError: list index out of range
+Jul 12 18:27:49 ubuntu100 python3[5274]: sentinel Jul 12 18:27:49 tools.py INFO: Sentry Job run net-scan-192.168.3.0/24
+
+
+root@ubuntu100:~# nmap -n -sn 192.168.0.0/24
+Starting Nmap 7.80 ( https://nmap.org ) at 2021-07-12 18:37 UTC
+Nmap scan report for 192.168.0.1
+Host is up (0.0015s latency).
+Nmap scan report for 192.168.0.2
+Host is up (0.0011s latency).
+Nmap scan report for 192.168.0.3
+Host is up (0.00070s latency).
+Nmap scan report for 192.168.0.4
+Host is up (0.00089s latency).
+Nmap scan report for 192.168.0.5
+Host is up (0.0010s latency).
+Nmap scan report for 192.168.0.6
+Host is up (0.0012s latency).
+Nmap scan report for 192.168.0.8
+Host is up (0.00081s latency).
+Nmap scan report for 192.168.0.9
+Host is up (0.0033s latency).
+Nmap scan report for 192.168.0.10
+Host is up (0.0020s latency).
+Nmap scan report for 192.168.0.13
+Host is up (0.0012s latency).
+Nmap scan report for 192.168.0.15
+Host is up (0.00099s latency).
+Nmap scan report for 192.168.0.16
+Host is up (0.00092s latency).
+Nmap scan report for 192.168.0.20
+Host is up (0.0011s latency).
+Nmap scan report for 192.168.0.21
+Host is up (0.0018s latency).
+Nmap scan report for 192.168.0.22
+Host is up (0.13s latency).
+Nmap scan report for 192.168.0.81
+Host is up (0.0012s latency).
+Nmap scan report for 192.168.0.220
+Host is up (0.0020s latency).
+Nmap scan report for 192.168.0.221
+Host is up (0.0022s latency).
+Nmap scan report for 192.168.0.253
+Host is up (0.00088s latency).
+Nmap scan report for 192.168.0.254
+Host is up (0.00082s latency).
+Nmap done: 256 IP addresses (20 hosts up) scanned in 26.93 seconds
+root@ubuntu100:~# 
+
+
+

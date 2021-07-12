@@ -218,7 +218,7 @@ sentinel [option]
 
 ## Docs
 
-[supervised machine learning with syslog data (sklearn)](docs/README.sklearn.naive_bayes.syslog.mac.md)
+[docs](docs/)
 
 ---   
 

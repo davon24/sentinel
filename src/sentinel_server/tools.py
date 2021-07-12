@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.16'
+__version__ = '1.7.17'
 
 import sqlite3
 
@@ -3898,7 +3898,10 @@ def netScan(ips, db_store, gDict, name):
             nline = nextline.decode('utf-8').strip('\n')
 
             if nline.startswith('Host is up'):
-                latency = nline.split('(')[1].split()[0]
+                try:
+                    latency = nline.split('(')[1].split()[0]
+                except IndexError:
+                    latency = None
             else:
                 latency = None
 
