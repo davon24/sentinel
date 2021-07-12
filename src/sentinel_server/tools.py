@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.16.dev.20210711-2'
+__version__ = '1.7.16.dev.20210711-3'
 
 import sqlite3
 
@@ -3951,50 +3951,15 @@ def netScan(ips, db_store, gDict, name):
     #seen=2 second time
     #seen=3 from the sql db
 
-    #for __ip in ipList:
-    #    print('__ip ' + __ip)
-    #    if __ip not in ipDict.keys():
-    #        print('Not.Not ip ' + __ip)
-
-    #for k__ in ipDict.keys():
-    #for k_ in gDict.keys():
-    #    k__ = 
-    #    #_key = 'net-scan-' + ip
-    #    if not k__ in ipList:
-    #        print('Not.Not ip ' + k__)
-
-    #for ip_ in ipList:
-    #    k_ = 'net-scan-' + ip_
-#
-#        if k_ not in gDict.keys():
-#            print('Not.Not ip ' + k_)
-
-
-#    for ip_ in ipList:
-#        print(ip_)
-#        
-#        k_ = 'net-scan-' + ip_
-#
-#        if k_ not in gDict.keys():
-#            print('Not.Not ' + k_)
-#
-#        if k_ not in gDict.keys():
-#            print('Not.Not ' + k_)
-
     for ip_ in ipDict.keys():
         if not ip_ in ipList:
-            print('Not ip ' + ip_)
+            #print('Not ip ' + ip_)
             k_ = 'net-scan-' + ip_
 
-            #if k_ not in gDict.keys():
-            #    print('Not.Not ' + k_)
-
             if k_ in gDict.keys():
-                print('Yes.Yes ' + k_)
-
+                #print('Yes.Yes ' + k_)
                 prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip)+'",latency="'+str('None')+'",done="'+str(now)+'",seen="'+str('0')+'"'
                 gDict[k_] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str('0') ]
-
 
 
     scan = True
