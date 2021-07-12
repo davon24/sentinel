@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.16.dev.20210711-1'
+__version__ = '1.7.16.dev.20210711-2'
 
 import sqlite3
 
@@ -3849,7 +3849,7 @@ def netScan(ips, db_store, gDict, name):
         #print(_json)
         ipDict[_ip] = _date
 
-    seen = 0
+    seen = -1
 
 
     #sys.exit(99)
@@ -3877,12 +3877,14 @@ def netScan(ips, db_store, gDict, name):
     #for item in out:
 
     #l = len(out)
+    ipList=[]
     for index, item in enumerate(out):
 
         line = item.decode('utf-8').strip('\n')
 
         if line.startswith('Nmap scan report for'):
             ip = line.split()[-1]
+            ipList.append(ip)
             #print(ip)
 
             nextline = out[index + 1]
@@ -3915,10 +3917,14 @@ def netScan(ips, db_store, gDict, name):
             #else:
             #    seen = 0
 
+            #if not ip _key not in gDict.keys():
+            #    seen = 0
+
+            # if in gDict but not in scanIP, host went away seen=0
+
             prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip)+'",latency="'+str(latency)+'",done="'+str(now)+'",seen="'+str(seen)+'"'
             #gDict[_key] = [ 'sentinel_net_scan{' + prom + '} ' + str('1') ]
-            gDict[_key] = [ 'sentinel_net_scan{' + prom + '} ' + str(seen) ]
-
+            gDict[_key] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str(seen) ]
 
 
         if line.startswith('Nmap done: '):
@@ -3939,6 +3945,56 @@ def netScan(ips, db_store, gDict, name):
     #_key = 'net-scan-' + b2checksum(ips)
     #prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",report="' + str('report') + '"'
     #gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+    #seen=0 seen, but gone now
+    #seen=1 first time seen
+    #seen=2 second time
+    #seen=3 from the sql db
+
+    #for __ip in ipList:
+    #    print('__ip ' + __ip)
+    #    if __ip not in ipDict.keys():
+    #        print('Not.Not ip ' + __ip)
+
+    #for k__ in ipDict.keys():
+    #for k_ in gDict.keys():
+    #    k__ = 
+    #    #_key = 'net-scan-' + ip
+    #    if not k__ in ipList:
+    #        print('Not.Not ip ' + k__)
+
+    #for ip_ in ipList:
+    #    k_ = 'net-scan-' + ip_
+#
+#        if k_ not in gDict.keys():
+#            print('Not.Not ip ' + k_)
+
+
+#    for ip_ in ipList:
+#        print(ip_)
+#        
+#        k_ = 'net-scan-' + ip_
+#
+#        if k_ not in gDict.keys():
+#            print('Not.Not ' + k_)
+#
+#        if k_ not in gDict.keys():
+#            print('Not.Not ' + k_)
+
+    for ip_ in ipDict.keys():
+        if not ip_ in ipList:
+            print('Not ip ' + ip_)
+            k_ = 'net-scan-' + ip_
+
+            #if k_ not in gDict.keys():
+            #    print('Not.Not ' + k_)
+
+            if k_ in gDict.keys():
+                print('Yes.Yes ' + k_)
+
+                prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip)+'",latency="'+str('None')+'",done="'+str(now)+'",seen="'+str('0')+'"'
+                gDict[k_] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str('0') ]
+
 
 
     scan = True
