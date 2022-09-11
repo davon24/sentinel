@@ -1,4 +1,48 @@
 
+
+root@ubuntu100:~# nmap -n -sn 192.168.3.0/24
+Starting Nmap 7.80 ( https://nmap.org ) at 2021-07-13 00:53 UTC
+Nmap scan report for 192.168.3.1
+Host is up (0.00047s latency).
+MAC Address: 70:8B:CD:D0:67:10 (Asustek Computer)
+Nmap scan report for 192.168.3.100
+Host is up.
+Nmap done: 256 IP addresses (2 hosts up) scanned in 2.20 seconds
+
+
+root@ubuntu100:~# nmap -sU -p 67,68 192.168.3.0/24
+Starting Nmap 7.80 ( https://nmap.org ) at 2021-07-13 00:54 UTC
+Nmap scan report for _gateway (192.168.3.1)
+Host is up (0.00053s latency).
+
+PORT   STATE         SERVICE
+67/udp open|filtered dhcps
+68/udp closed        dhcpc
+MAC Address: 70:8B:CD:D0:67:10 (Asustek Computer)
+
+Nmap scan report for 192.168.3.4
+Host is up (0.24s latency).
+
+PORT   STATE  SERVICE
+67/udp closed dhcps
+68/udp closed dhcpc
+MAC Address: 38:F9:D3:C4:B5:F9 (Apple)
+
+Nmap scan report for ubuntu100 (192.168.3.100)
+Host is up (0.00034s latency).
+
+PORT   STATE  SERVICE
+67/udp closed dhcps
+68/udp closed dhcpc
+
+Nmap done: 256 IP addresses (3 hosts up) scanned in 5.59 seconds
+root@ubuntu100:~#
+
+
+---
+
+
+
 sentinel update-job net-scan-2 '{"repeat": "3min", "job": "net-scan", "ips": ["192.168.0.0/24","192.168.3.0/24"]}'
 
 

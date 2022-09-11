@@ -891,7 +891,7 @@ def getByOp(tbl, op, num, db_file):
     rows = cur.fetchall()
     return rows
 
-
+# HARDCODED table
 def getAllTableTags(tag, tbl, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()

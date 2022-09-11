@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1.7.18'
+#__version__ = '1.7.pre19.dev-20210712-1'
 
 import sqlite3
 
@@ -3834,13 +3834,147 @@ def portScan(ips, level, db_store, gDict, name):
 
 
 def netScanProc(ips, db_store, gDict, name):
-    #scan = netScan(ips, db_store, gDict, name)
     scan = multiprocessing.Process(target=netScan, args=(ips, db_store, gDict, name))
     scan.start()
     scan.join()
     return True
 
 def netScan(ips, db_store, gDict, name):
+    logging.info('NetScan version 2')
+
+    if isinstance(ips, list):
+        ips = ' '.join([str(elem) for elem in ips])
+
+    cmd = 'nmap -n -sU ' + str(ips)
+
+    #read all ips from db
+    ipDict={}
+    rows = store.selectAll('ips', db_store)
+    #for row in rows:
+    #    print(row)
+        #dbDict[ ] = 1
+    for _ip, _date, _json in rows:
+        #print(_ip)
+        #print(_date)
+        #print(_json)
+        ipDict[_ip] = _date
+
+    seen = -1
+
+
+    #sys.exit(99)
+
+
+    #print(cmd)
+    #print(name)
+
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    out = proc.stdout.readlines()
+
+    #print('out is type ' + str(type(out))) #list
+
+    #for line in out:
+    #for i in range(0, len(out), 2):
+    #for (a,b) in out:
+    #for item in out:
+
+    #l = len(out)
+    ipList=[]
+    for index, item in enumerate(out):
+
+        line = item.decode('utf-8').strip('\n')
+
+        if line.startswith('Nmap scan report for'):
+            ip = line.split()[-1]
+            ipList.append(ip)
+            #print(ip)
+
+            nextline = out[index + 1]
+            nline = nextline.decode('utf-8').strip('\n')
+
+            if nline.startswith('Host is up'):
+                try:
+                    latency = nline.split('(')[1].split()[0]
+                except IndexError:
+                    latency = None
+            else:
+                latency = None
+
+            #print(latency)
+
+            #check if ip is _ip
+            if ip in ipDict.keys():
+                seen = 3
+            else:
+                #print('insert+add ipDict ' + str(ip))
+                replace = store.replaceINTO('ips', str(ip), json.dumps('{}'), db_store)
+                #print(replace)
+                ipDict[ip] = now
+                seen = 1
+
+            #else:
+            #    seen = 2
+
+            _key = 'net-scan-' + ip
+
+            if _key in gDict.keys():
+                seen = 2
+            #else:
+            #    seen = 0
+
+            #if not ip _key not in gDict.keys():
+            #    seen = 0
+
+            # if in gDict but not in scanIP, host went away seen=0
+
+            prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip)+'",latency="'+str(latency)+'",done="'+str(now)+'",seen="'+str(seen)+'"'
+            #gDict[_key] = [ 'sentinel_net_scan{' + prom + '} ' + str('1') ]
+            gDict[_key] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str(seen) ]
+
+
+        if line.startswith('Nmap done: '):
+            addrs = line.split(':')[1].split()[0]
+            #print(addrs)
+            hosts_up = line.split('(')[1].split()[0]
+            #print(hosts_up)
+            scan_time = line.split()[-2]
+
+            #_key = 'net-scan-info-' + b2checksum(ips)
+            _key = 'net-scan-info-' + b2checksum(ips)
+
+            prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",b2sum="' + str(b2checksum(ips)) + '"'
+            prom += ',addresses="'+str(addrs)+'",hosts_up="'+str(hosts_up)+'",scan_time="'+str(scan_time)+'"'
+            gDict[_key] = [ 'sentinel_net_scan_info{' + prom + '} ' + str('1') ]
+
+    #PROM INTEGRATION
+    #val=1
+    #now = time.strftime("%Y-%m-%d %H:%M:%S")
+    #_key = 'net-scan-' + b2checksum(ips)
+    #prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",report="' + str('report') + '"'
+    #gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+    #seen=0 seen, but gone now
+    #seen=1 first time seen
+    #seen=2 second time
+    #seen=3 from the sql db
+
+    for ip_ in ipDict.keys():
+        if not ip_ in ipList:
+            #print('Not ip ' + ip_)
+            k_ = 'net-scan-' + ip_
+
+            if k_ in gDict.keys():
+                #print('Yes.Yes ' + k_)
+                prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip_)+'",latency="'+str('None')+'",done="'+str(now)+'",seen="'+str('0')+'"'
+                gDict[k_] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str('0') ]
+
+
+    scan = True
+    return scan
+
+def netScan_v1(ips, db_store, gDict, name):
 
     #scan = runNmapScanMultiProcessDict(ips, db_store, gDict, name)
 

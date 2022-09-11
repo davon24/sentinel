@@ -22,7 +22,8 @@ from store import *
 
 import json
 
-__version__ = tools.__version__
+__version__ = "1.8 dev1"
+# __version__ = tools.__version__
 
 def usage():
     print(sys.argv[0] + ''' [option]
