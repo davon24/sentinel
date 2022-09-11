@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8-dev1_r2"
+__version__ = "1.8-dev1_r3"
 
 import sys
 
@@ -139,33 +139,30 @@ def usage():
         list-avs
 
         list-proms-db
-        update-prom-db name data
-        clear-proms-db
+          update-prom-db name data
+          clear-proms-db
 
         list-b2sums
         clear-b2sums
-
-        # list-sshwatch
-        # clear-sshwatch
 
         list-counts
         clear-counts
 
         list-model [id|tags tag]
-        update-model tag json
-        update-model-tag id tag
-        delete-model id
-        clear-model
+          update-model tag json
+          update-model-tag id tag
+          delete-model id
+          clear-model
 
         list-training [id|tags tag]
-        update-training tag json
-        update-training-tag id tag
-        delete-training id
-        clear-training
+          update-training tag json
+          update-training-tag id tag
+          delete-training id
+          clear-training
 
         list-occurrence [name|-eq,-gt,-lt,-ne,-le,-ge num]
-        delete-occurrence name
-        clear-occurrence
+          delete-occurrence name
+          clear-occurrence
 
         copy-occurrence name
 
@@ -174,13 +171,13 @@ def usage():
         # ? mark-training-on name
 
         list-system-profile
-        list-system-profile-full
-        gen-system-profile
-        get-system-profile-name name
-        get-system-profile-rowid rowid
-        del-system-profile-name name
-        del-system-profile-rowid rowid
-        clear-system-profile
+          list-system-profile-full
+          gen-system-profile
+          get-system-profile-name name
+          get-system-profile-rowid rowid
+          del-system-profile-name name
+          del-system-profile-rowid rowid
+          clear-system-profile
 
         diff-system-profile-rowid rowid rowid
         get-system-profile-data rowid data
@@ -192,9 +189,10 @@ def usage():
         run-create-db
         run-ps
 
+        ---
+
         sentry
 
-        ---
 
         config
 
@@ -1198,13 +1196,10 @@ def main():
 
         if sys.argv[1] == 'ip-whois':
             _ip = sys.argv[2]
-            #print('IP-WHOIS ', _ip)
-
-            #_ipwhois = store.copyOccurrenceToTraining(_ip)
-
-            #from .modules.ipwhois import ipwhois
             import modules.ipwhois.ipwhois
-            _ipwhois = modules.ipwhois.ipwhois.ipwhois_iplocation(_ip)
+
+            #_ipwhois = modules.ipwhois.ipwhois.ipwhois_iplocation(_ip)
+            _ipwhois = modules.ipwhois.ipwhois.ipwhois_ipapi(_ip)
 
             print(_ipwhois)
             sys.exit(0)
