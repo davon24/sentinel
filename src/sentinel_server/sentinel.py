@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+__version__ = "1.8-dev1_r2"
+
 import sys
 
 if sys.version_info < (3, 8, 1):
@@ -22,9 +24,6 @@ from store import *
 
 import json
 
-__version__ = "1.8 dev1"
-# __version__ = tools.__version__
-
 def usage():
     print(sys.argv[0] + ''' [option]
 
@@ -32,23 +31,27 @@ def usage():
 
         list-proms
 
+        list-configs
+          update-config name data
+          delete-config name
+          clear-configs
+
         nmap-net net
         ping-net ip/net
-
         net-scan net
 
         port-scan [ip/net] [level]
-        list-nmaps
-        nmap ip [level]
-        del-nmap ip
-        clear-nmaps
+          list-nmaps
+          nmap ip [level]
+          del-nmap ip
+          clear-nmaps
 
         vuln-scan [ip/net]
-        list-vulns [id]
-        del-vuln id
-        clear-vulns
-        check-vuln id
-        email-vuln id
+          list-vulns [id]
+          del-vuln id
+          clear-vulns
+          check-vuln id
+          email-vuln id
 
         arps
         manuf mac
@@ -56,79 +59,76 @@ def usage():
         rdns ip [srv]
         myip
 
+        ip-whois ip
+
         udp ip port
         udpscan ip port
         tcp ip port
 
         list-macs
-        update-manuf mac
-        update-dns mac ip
+          update-manuf mac
+          update-dns mac ip
 
         listening
-        listening-detailed
-        listening-details port
-        listening-allowed
-        listening-alerts
-        listening-allow port
-        listening-remove port
+          listening-detailed
+          listening-details port
+          listening-allowed
+          listening-alerts
+          listening-allow port
+          listening-remove port
 
         established
-        established-lsof
-        established-rules
-        established-rules-filter
-        established-rule ALLOW|DENY proto laddr lport faddr fport
-        established-alerts
-        delete-established-rule rowid
-        clear-established-rules
+          established-lsof
+          established-rules
+          established-rules-filter
+          established-rule ALLOW|DENY proto laddr lport faddr fport
+          established-alerts
+          delete-established-rule rowid
+          clear-established-rules
 
         list-ips
-        update-ip ip data
-        update-ip-item ip item value
-        delete-ip-item ip item value
-        del-ip ip
-        clear-ips
+          update-ip ip data
+          update-ip-item ip item value
+          delete-ip-item ip item value
+          del-ip ip
+          clear-ips
 
         list-jobs
-        list-jobs-available
-        update-job name data
-        delete-job name
-        clear-jobs
-
-        list-configs
-        update-config name data
-        delete-config name
-        clear-configs
+          list-jobs-available
+          update-job name data
+          delete-job name
+          clear-jobs
 
         list-rules
-        update-rule name data
-        delete-rule name
-        clear-rules
+          update-rule name data
+          delete-rule name
+          clear-rules
 
         list-reports
-        update-report name data
-        delete-report name
-        clear-reports
+          update-report name data
+          delete-report name
+          clear-reports
 
         list-alerts
-        delete-alert id
-        run-alert name
-        update-alert name data
-        run-alert name
-        clear-alerts
+          delete-alert id
+          run-alert name
+          update-alert name data
+          run-alert name
+          clear-alerts
 
         list-fims
-        list-fims-changed
-        check-fim [name]
-        b2sum-fim [name]
-        b2sum /dir/file
-        update-fim name data
-        delete-fim id
+          list-fims-changed
+          check-fim [name]
+          b2sum-fim [name]
+          b2sum /dir/file
+          update-fim name data
+          delete-fim id
         add-fim name /dir/file
         del-fim name /dir/file
 
         list-files
-        add-file /dir/file
-        del-file /dir/file
+          add-file /dir/file
+          del-file /dir/file
         fim-restore /dir/file [/dir/file]
         fim-diff
         clear-files
@@ -1196,11 +1196,18 @@ def main():
             print(delete)
             sys.exit(0)
 
-        #if sys.argv[1] == 'copy-occurrence':
-        #    name = sys.argv[2]
-        #    _copy = store.copyOccurrenceToTraining(name, db_store)
-        #    print(_copy)
-        #    sys.exit(0)
+        if sys.argv[1] == 'ip-whois':
+            _ip = sys.argv[2]
+            #print('IP-WHOIS ', _ip)
+
+            #_ipwhois = store.copyOccurrenceToTraining(_ip)
+
+            #from .modules.ipwhois import ipwhois
+            import modules.ipwhois.ipwhois
+            _ipwhois = modules.ipwhois.ipwhois.ipwhois_iplocation(_ip)
+
+            print(_ipwhois)
+            sys.exit(0)
 
 
         if sys.argv[1] == 'copy-occurrence':
