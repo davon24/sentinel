@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+__version__ = 'tools-2022-09-12'
+
 import sqlite3
 
 import sys
@@ -68,6 +70,26 @@ class HTTPHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         self.send_error(405) #405 Method Not Allowed
         return
+
+class APIHTTPHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == _api_path: #/api
+            self.send_response(200)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+
+            line = '{"status":"ok"}'
+            self.wfile.write(bytes(str(line), 'utf-8'))
+
+        else:
+            self.send_error(404) #404 Not Found
+        return
+
+    def do_POST(self):
+        self.send_error(405) #405 Method Not Allowed
+        return
+
+
 
 class ThreadWithReturnValue(threading.Thread):
     def __init__(self, group=None, target=None, name=None,
@@ -265,70 +287,6 @@ def logstream(_format='json'):
         sys.stdout.flush()
 
     return True
-
-
-#def logstream_v2(_format='json'):
-#
-#    if sys.platform == 'darwin':
-#        _format = 'ndjson'
-#        cmd = ['log', 'stream', '--style', _format] #macos
-#    elif sys.platform == 'linux' or sys.platform == 'linux2':
-#        cmd = ['journalctl', '-f', '-o', _format] #linux
-#    else:
-#        logging.critical('Fail: No log stream.  No such file or directory')
-#        return False
-#
-#    #try:
-#
-#    f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-#    #while (f.returncode == None):
-#    while not exit.is_set():
-#        line = f.stdout.readline()
-#        if not line:
-#            time.sleep(1) #break
-#        else:
-#            yield line
-#        sys.stdout.flush()
-#
-#    #except (KeyboardInterrupt, SystemExit, Exception) as e:
-#    #    #os.kill(f.pid, signal.SIGKILL)
-#    #    #f.kill() #SIGKILL
-#    #    f.terminate() #SIGTERM
-#    #    logging.critical('Exception in logstream_v2 ' + str(e))
-#    #    #return False
-#    #    sys.exit(1)
-#
-#    return True
-
-#def logstream_v1(_format='json'):
-#
-#    if sys.platform == 'darwin':
-#        _format = 'ndjson'
-#        cmd = ['log', 'stream', '--style', _format] #macos
-#    elif sys.platform == 'linux' or sys.platform == 'linux2':
-#        cmd = ['journalctl', '-f', '-o', _format] #linux
-#    else:
-#        logging.critical('Fail: No log stream.  No such file or directory')
-#        return False
-#
-#    try:
-#        f = Popen(cmd, shell=False, stdout=PIPE,stderr=PIPE)
-#        while (f.returncode == None):
-#            line = f.stdout.readline()
-#            if not line:
-#                time.sleep(1) #break
-#            else:
-#                yield line
-#            sys.stdout.flush()
-#
-#    except (KeyboardInterrupt, SystemExit, Exception) as e:
-#        #os.kill(f.pid, signal.SIGKILL)
-#        #f.terminate() #SIGTERM
-#        f.kill() #SIGKILL
-#        logging.critical('Exception in logstream ' + str(e))
-#        return False
-#
-#    return True
 
 
 def extractLstDct(_list):
@@ -5190,6 +5148,8 @@ def processD(gDict, start):
     #promDATA = 'sentinel_app_info{version="' + __version__ + '",threads="'+str(tcount)+'",procs="'+str(pcount)+'"} 1.0'
     #gDict['sentinel_app_info'] = [ promDATA ]
 
+# __version__
+
     promDATA = 'sentinel_up{version="'+ __version__ +'",threads="'+str(tcount)+'",procs="'+str(pcount)+'",cpu="'+str(cpu_u)+'",rss="'+str(rss)+'",uptime="'+str(uptimef)+'"} 1'
     gDict['sentinel_up'] = [ promDATA ]
 
@@ -5651,6 +5611,28 @@ def procHTTPServer(port, metric_path, db_file):
     httpd = HTTPServer(('', port), HTTPHandler)
     return httpd.serve_forever()
 
+
+def apiHTTPServer(port, api_path, db_file):
+    logging.info('Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
+    global _api_path
+    _api_path = api_path
+
+    global db_store
+    db_store = db_file
+
+    if os.getuid() == 0:
+        run_as_user = "nobody"
+        uid = pwd.getpwnam(run_as_user)[2]
+        logging.info('Sentry API HTTPServer Drop Privileges to uid ' + str(uid))
+        os.setuid(uid)
+
+    httpd = HTTPServer(('', port), APIHTTPHandler)
+    return httpd.serve_forever()
+
+
+
+
+
 # function to return key for any value
 #def get_key(_dct, val):
 #    for key, value in _dct.items():
@@ -5727,6 +5709,12 @@ def sentryMode(db_store, verbose=False):
 
     for key,conf in cDct.items():
 
+        if conf == 'api_server':
+            api_server = True
+            _config = json.loads(store.getData('configs', key, db_store)[0])
+            _port = _config['port']
+            _api_path = _config['path']
+
         if conf == 'http_server':
             http_server = True
             _config = json.loads(store.getData('configs', key, db_store)[0])
@@ -5778,7 +5766,16 @@ def sentryMode(db_store, verbose=False):
 
     try:
 
-        if http_server:
+        if api_server:
+            try:
+                p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store))
+                p.start()
+            finally:
+                exit.set()
+                p.join()
+
+
+        elif http_server:
             try:
                 p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
                 p.start()
