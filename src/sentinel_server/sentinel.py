@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8-dev1_r3"
+__version__ = "1.8-dev1_r4"
 
 import sys
 
@@ -1203,6 +1203,17 @@ def main():
 
             print(_ipwhois)
             sys.exit(0)
+
+        if sys.argv[1] == 'rclnt':
+            _url = sys.argv[2]
+            import modules.rclnt.rclient
+
+            _client_post = modules.rclnt.rclient.http_post(_url)
+
+            print(_client_post)
+            sys.exit(0)
+
+
 
 
         if sys.argv[1] == 'copy-occurrence':

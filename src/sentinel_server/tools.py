@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#__version__ = '1.7.pre19.dev-20210712-1'
-
 import sqlite3
 
 import sys
@@ -4851,6 +4849,7 @@ options = {
  'ps-check' : psCheck,
  'established-check' : establishedCheck,
  'kvm-check' : kvmCheck,
+ #'rclnt-run' : rclntRun,
 }
 #options[sys.argv[2]](sys.argv[3:])
 
