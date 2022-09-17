@@ -23,8 +23,19 @@ def http_post(url):
 
     data = '{"uuid":"' + str(uuid_var) + '"}'
 
+    #username = 'test1'
+    #password = 'test1'
+                                 #auth=requests.auth.HTTPBasicAuth(username, password),
+
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication
+    # Bearer https://datatracker.ietf.org/doc/html/rfc6750
+
     try:
-        response = requests.post(url=url, json=data, headers={'Content-Type': 'application/json'})
+        response = requests.post(url=url,
+                                 headers={'Content-Type': 'application/json',
+                                          'Authorization': 'Bearer ' + str(uuid_var)},
+                                 json=data
+                                )
         response_code = response.status_code
 
     except requests.exceptions.RequestException as e:
@@ -32,6 +43,12 @@ def http_post(url):
         logging.error('requests.exceptions.RequestException ' + str(e))
         response = str(e)
         response_code = 0
+
+    except requests.exceptions.JSONDecodeError as e:
+        logging.error('requests.exceptions.JSONDecodeError ' + str(e))
+        response = str(e)
+
+
 
     return response, response_code
 

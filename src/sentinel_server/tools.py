@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = 'tools-2022-09-12'
+__version__ = 'tools-2022-09-17-0'
 
 import sqlite3
 
@@ -72,21 +72,79 @@ class HTTPHandler(BaseHTTPRequestHandler):
         return
 
 class APIHTTPHandler(BaseHTTPRequestHandler):
+#import requests
+#class APIHTTPHandler(requests.auth.AuthBase):
     def do_GET(self):
         if self.path == _api_path: #/api
             self.send_response(200)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
 
-            line = '{"status":"ok"}'
+            line = '{"status":"ok", "method":"get"}'
             self.wfile.write(bytes(str(line), 'utf-8'))
 
         else:
             self.send_error(404) #404 Not Found
         return
 
+    #self.send_error(405) #405 Method Not Allowed
+
+
     def do_POST(self):
-        self.send_error(405) #405 Method Not Allowed
+        print(self.path)
+        print(_api_path)
+
+        print(self.headers)
+
+        self.content_type = self.headers['Content-Type']
+        print(self.content_type)
+        if self.content_type != 'application/json':
+            self.send_response(415)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            line = '{"status":"Unsupported Media Type", "status_code": 415, "method":"post"}'
+            self.wfile.write(bytes(str(line), 'utf-8'))
+            return
+
+
+        self.auth_string = self.headers['Authorization']
+        print(self.auth_string)
+        if self.auth_string is None:
+            self.send_response(401)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            line = '{"status":"Unauthorized", "status_code": 401, "method":"post"}'
+            self.wfile.write(bytes(str(line), 'utf-8'))
+            return
+
+        if self.path == _api_path + '/post': # /api/post
+
+            self.send_response(200)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+
+            self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+
+            # need try/catch here
+            json_data = json.loads(self.data_string)
+
+            line = '{"status":"Ok", "status_code":200, "method":"post"}'
+            self.wfile.write(bytes(str(line), 'utf-8'))
+
+            #print(self.data_string)
+            print(json_data)
+            return
+
+
+        else:
+            #self.send_error(404) #404 Not Found
+            self.send_response(404)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            line = '{"status":"Not Found", "status_code": 404, "method":"post"}'
+            self.wfile.write(bytes(str(line), 'utf-8'))
+            return
+
         return
 
 
