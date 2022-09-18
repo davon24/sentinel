@@ -30,24 +30,30 @@ def http_post(url):
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication
     # Bearer https://datatracker.ietf.org/doc/html/rfc6750
 
-    try:
-        response = requests.post(url=url,
-                                 headers={'Content-Type': 'application/json',
-                                          'Authorization': 'Bearer ' + str(uuid_var)},
-                                 json=data
-                                )
-        response_code = response.status_code
+#    try:
 
-    except requests.exceptions.RequestException as e:
-        #print('requests.exceptions.RequestException ' + str(e))
-        logging.error('requests.exceptions.RequestException ' + str(e))
-        response = str(e)
-        response_code = 0
 
-    except requests.exceptions.JSONDecodeError as e:
-        logging.error('requests.exceptions.JSONDecodeError ' + str(e))
-        response = str(e)
+    import base64
+    encoded_token = base64.b64encode(str(uuid_var).encode()).decode()
 
+    response = requests.post(url=url,
+                             headers={'Content-Type': 'application/json',
+                                      'Authorization': 'Bearer ' + str(encoded_token)},
+                             json=data
+                            )
+    response_code = response.status_code
+
+                         #auth=requests.auth.HTTPBasicAuth('username', 'password'),
+
+    #except requests.exceptions.RequestException as e:
+    #    #print('requests.exceptions.RequestException ' + str(e))
+    #    logging.error('requests.exceptions.RequestException ' + str(e))
+    #    response = response + str(e)
+    #    response_code = 0
+
+#    except requests.exceptions.JSONDecodeError as e:
+#        logging.error('requests.exceptions.JSONDecodeError ' + str(e))
+#        response = response + str(e)
 
 
     return response, response_code
@@ -63,7 +69,14 @@ if __name__ == '__main__':
 
         post,rcode = http_post(url)
 
-        print(post.json(), rcode)
+        try:
+            data = post.json()
+        except requests.exceptions.JSONDecodeError as e:
+            print('Error ' + str(e))
+            data = post
+
+        #print(post.json(), rcode)
+        print(data, rcode)
 
 
     else:

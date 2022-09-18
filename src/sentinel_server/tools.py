@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = 'tools-2022-09-17-0'
+__version__ = 'tools-2022-09-17-1'
 
 import sqlite3
 
@@ -96,6 +96,8 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
 
         print(self.headers)
 
+
+        # make sure data is json
         self.content_type = self.headers['Content-Type']
         print(self.content_type)
         if self.content_type != 'application/json':
@@ -106,7 +108,7 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(bytes(str(line), 'utf-8'))
             return
 
-
+        # make sure has auth
         self.auth_string = self.headers['Authorization']
         print(self.auth_string)
         if self.auth_string is None:
@@ -117,6 +119,23 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(bytes(str(line), 'utf-8'))
             return
 
+        bearer = self.auth_string.split(' ')[0]
+        token = self.auth_string.split(' ')[1]
+        print(bearer)
+        print(token)
+        
+        if bearer != 'Bearer':
+            self.send_response(401)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "authorization": str(bearer)}'
+            self.wfile.write(bytes(str(line), 'utf-8'))
+            return
+
+        # get auth tokens
+
+
+        # make sure has path
         if self.path == _api_path + '/post': # /api/post
 
             self.send_response(200)
@@ -132,6 +151,7 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(bytes(str(line), 'utf-8'))
 
             #print(self.data_string)
+            print(self.auth_string)
             print(json_data)
             return
 
