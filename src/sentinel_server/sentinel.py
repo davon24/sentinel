@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8-dev1_r6-api-server1-1.1"
+__version__ = "1.8-dev1_r6-api-server1-1.2"
 
 import sys
 
@@ -143,10 +143,15 @@ def usage():
           clear-proms-db
 
         list-b2sums
-        clear-b2sums
+          clear-b2sums
 
         list-counts
-        clear-counts
+          clear-counts
+
+        list-api-tokens
+          update-api-token token data
+          delete-api-token token
+          clear-api-tokens
 
         list-model [id|tags tag]
           update-model tag json
@@ -906,6 +911,36 @@ def main():
             clear = store.clearAll('counts', db_store)
             print(clear)
             sys.exit(0)
+
+
+        if sys.argv[1] == 'list-api-tokens':
+            reports = store.selectAll('bearer', db_store)
+            for row in reports:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-api-tokens':
+            clear = store.clearAll('bearer', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'update-api-token':
+            token = sys.argv[2]
+            data = sys.argv[3]
+            try: valid_json = json.loads(data)
+            except json.decoder.JSONDecodeError:
+                print('invalid json')
+                sys.exit(1)
+            run = store.replaceINTO('bearer', token, data, db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-api-token':
+            token = sys.argv[2]
+            delete = store.deleteFromClmn('bearer', 'token', token, db_store)
+            print(delete)
+            sys.exit(0)
+
 
         if sys.argv[1] == 'list-proms':
             _prom = str(db_store) + '.prom'

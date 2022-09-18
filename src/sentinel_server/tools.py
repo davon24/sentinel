@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = 'tools-2022-09-17-1'
+__version__ = 'tools-2022-09-18-0'
 
 import sqlite3
 
@@ -123,16 +123,34 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
         token = self.auth_string.split(' ')[1]
         print(bearer)
         print(token)
+
+        print('bearer stage')
         
         if bearer != 'Bearer':
             self.send_response(401)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
-            line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "authorization": str(bearer)}'
+            #line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "authorization": str(bearer)}'
+            line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "bearer": "none"}'
             self.wfile.write(bytes(str(line), 'utf-8'))
             return
 
         # get auth tokens from sqlite
+        #bearer_token = store.get_bearer(token, db_bearer)
+        bearer_token = store.get_bearer(token, db_store)
+        print(bearer_token)
+
+        #if token != bearer_token:
+        if not bearer_token:
+            self.send_response(401)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            #line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "authorization": str(bearer), "token": str(token)}'
+            line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "authorization": "bearer", "bearer": "token"}'
+            self.wfile.write(bytes(str(line), 'utf-8'))
+            return
+
+        print('accepted bearer_token')
 
 
         # make sure has path
@@ -1091,6 +1109,8 @@ def promDataSanitizer(_str):
     _str = _str.replace('\n',' ') #lines breaks
     _str = _str.replace('\r',' ') #lines return
     _str = _str.replace('^M',' ') #ctrlM
+
+    _str = _str.replace(':',' ') #colon
 
     #_str = _str.decode('utf8', 'ignore')
 

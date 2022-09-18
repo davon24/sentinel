@@ -17,7 +17,10 @@ def http_post(url):
 
     #uuid_var = uuid.uuid3(uuid.NAMESPACE_DNS, string_data)
 
-    uuid_var = uuid.uuid4()
+    #uuid_var = uuid.uuid4()
+    #uuid_var = uuid.uuid1()
+
+    uuid_var = '65724b0c-3796-11ed-9388-be25de1b53ca'
 
     print(uuid_var)
 

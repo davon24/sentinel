@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# version 2022-09-18-0
+
 import sqlite3
 import os
 import time
@@ -132,6 +134,12 @@ def createDB(db_file):
     create_system_profilei = "CREATE UNIQUE INDEX IF NOT EXISTS idx_system_profile ON system_profile (name);"
     cur.execute(create_system_profile)
     cur.execute(create_system_profilei)
+
+    create_bearer_token = "CREATE TABLE IF NOT EXISTS bearer (token TEXT PRIMARY KEY NOT NULL, timestamp TEXT, data JSON);"
+    create_bearer_tokeni = "CREATE UNIQUE INDEX IF NOT EXISTS idx_bearer_token ON bearer (token);"
+    cur.execute(create_bearer_token)
+    cur.execute(create_bearer_tokeni)
+
 
     con.commit()
 
@@ -325,6 +333,18 @@ def get_manuf(mac, manuf_file):
     #manuf = mf.get_manuf(mac, 'db/manuf')
     manuf = mf.get_manuf(mac, manuf_file)
     return manuf
+
+def get_bearer(token, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("SELECT token FROM bearer WHERE token=?", (token,))
+    record = cur.fetchone()
+    if record is None:
+        return None
+    return record
+    #print(record[0])
+    #jdata = json.loads(record[0])
+    #return jdata
 
 
 #def update_manuf(mac, manuf_file, db_file):
@@ -808,6 +828,16 @@ def deleteFrom(tbl, name, db_file):
     if cur.rowcount == 0:
         return False
     return True
+
+def deleteFromClmn(tbl, clmn, item, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('DELETE FROM ' + str(tbl) + ' WHERE ' + str(clmn) + '=? ;', (item,))
+    con.commit()
+    if cur.rowcount == 0:
+        return False
+    return True
+
 
 #def selectAllrowid(tbl, db_file):
 #    con = sqlConnection(db_file)
