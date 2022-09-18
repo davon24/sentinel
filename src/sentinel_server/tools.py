@@ -132,7 +132,7 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(bytes(str(line), 'utf-8'))
             return
 
-        # get auth tokens
+        # get auth tokens from sqlite
 
 
         # make sure has path
