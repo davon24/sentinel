@@ -4,7 +4,7 @@
 import sys
 import requests
 import uuid
-
+import json
 
 def http_post(url):
 
@@ -24,7 +24,11 @@ def http_post(url):
 
     print(uuid_var)
 
-    data = '{"uuid":"' + str(uuid_var) + '"}'
+    json_dict = { 'uuid': uuid_var,
+                  'hostname': 'this-hostname'
+                }
+
+    #json_str = '{"uuid":"' + str(uuid_var) + '"}'
 
     #username = 'test1'
     #password = 'test1'
@@ -42,10 +46,11 @@ def http_post(url):
     response = requests.post(url=url,
                              headers={'Content-Type': 'application/json',
                                       'Authorization': 'Bearer ' + str(encoded_token)},
-                             json=data
+                             json=json.dumps(json_dict)
                             )
     response_code = response.status_code
 
+                             #json=json.dumps(json_str)
                          #auth=requests.auth.HTTPBasicAuth('username', 'password'),
 
     #except requests.exceptions.RequestException as e:

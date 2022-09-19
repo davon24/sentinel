@@ -81,7 +81,8 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             line = '{"status":"ok", "method":"get"}'
-            self.wfile.write(bytes(str(line), 'utf-8'))
+            self.wfile.write(json.dumps(line).encode())
+            #self.wfile.write(bytes(str(line), 'utf-8'))
 
         else:
             self.send_error(404) #404 Not Found
@@ -91,40 +92,40 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
 
 
     def do_POST(self):
-        print(self.path)
-        print(_api_path)
-
-        print(self.headers)
+        #print(self.path)
+        #print(_api_path)
+        #print(self.headers)
 
 
         # make sure data is json
         self.content_type = self.headers['Content-Type']
-        print(self.content_type)
+        #print(self.content_type)
         if self.content_type != 'application/json':
             self.send_response(415)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
             line = '{"status":"Unsupported Media Type", "status_code": 415, "method":"post"}'
-            self.wfile.write(bytes(str(line), 'utf-8'))
+            self.wfile.write(json.dumps(line).encode())
+            #self.wfile.write(bytes(str(line), 'utf-8'))
             return
 
         # make sure has auth
         self.auth_string = self.headers['Authorization']
-        print(self.auth_string)
+        #print(self.auth_string)
         if self.auth_string is None:
             self.send_response(401)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
             line = '{"status":"Unauthorized", "status_code": 401, "method":"post"}'
-            self.wfile.write(bytes(str(line), 'utf-8'))
+            #self.wfile.write(bytes(str(line), 'utf-8'))
+            self.wfile.write(json.dumps(line).encode())
             return
 
         bearer = self.auth_string.split(' ')[0]
         token = self.auth_string.split(' ')[1]
-        print(bearer)
-        print(token)
-
-        print('bearer stage')
+        #print(bearer)
+        #print(token)
+        #print('bearer stage')
         
         if bearer != 'Bearer':
             self.send_response(401)
@@ -132,13 +133,14 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.end_headers()
             #line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "authorization": str(bearer)}'
             line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "bearer": "none"}'
-            self.wfile.write(bytes(str(line), 'utf-8'))
+            #self.wfile.write(bytes(str(line), 'utf-8'))
+            self.wfile.write(json.dumps(line).encode())
             return
 
         # get auth tokens from sqlite
         #bearer_token = store.get_bearer(token, db_bearer)
         bearer_token = store.get_bearer(token, db_store)
-        print(bearer_token)
+        #print(bearer_token)
 
         #if token != bearer_token:
         if not bearer_token:
@@ -147,11 +149,11 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.end_headers()
             #line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "authorization": str(bearer), "token": str(token)}'
             line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "authorization": "bearer", "bearer": "token"}'
-            self.wfile.write(bytes(str(line), 'utf-8'))
+            #self.wfile.write(bytes(str(line), 'utf-8'))
+            self.wfile.write(json.dumps(line).encode())
             return
 
-        print('accepted bearer_token')
-
+        #print('accepted bearer_token')
 
         # make sure has path
         if self.path == _api_path + '/post': # /api/post
@@ -163,14 +165,56 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.data_string = self.rfile.read(int(self.headers['Content-Length']))
 
             # need try/catch here
-            json_data = json.loads(self.data_string)
+            #data = self.data_string
+            #data = json.loads(self.data_string)
+            #data = json.loads(self.data_string)
 
-            line = '{"status":"Ok", "status_code":200, "method":"post"}'
-            self.wfile.write(bytes(str(line), 'utf-8'))
+            #json_data = json.loads(self.data_string)
+            #json_data = json.loads(self.data_string)
+            #json_data = json.loads(self.data_string.decode("utf-8"))
+
+            #json_data = json.dumps(self.data_string.decode("utf-8"))
+            #json_data = json.loads(self.data_string)
+            #json_data = json.loads(self.data_string)
+            #json_data = json.dumps(json.loads(self.data_string))
+
+            #print('------------------------')
+            #print(str(type(data)))
+            #print(json.loads(data.decode()))
+            #print(data)
+
+            jdata = json.loads(json.loads(self.data_string))
+            #jdata = json.loads(data)
+
+            #print(jdata)
+            #print(jdata['uuid'])
+            #print(jdata.get('uuid', None))
+
+            jdata_uuid = jdata.get('uuid', None)
+
+
+            #print(data.get('uuid'))
+            #print(data.decode('utf-8'))
+            #print(data[0])
+            #print(json_data[0])
+            #print(json_data['uuid'])
+            #print(json.loads(json_data["uuid"]))
+            #print('------------------------')
+
+            #client_uuid = json_data['uuid']
+            #print(client_uuid)
+
+            #line = '{"status":"Ok", "status_code":200, "method":"post", "bearer": str(bearer_token)}'
+            #line = '{"status":"Ok", "status_code":200, "method":"post", "bearer": "' + str(bearer_token[0]) + '"}'
+            #line = '{"status":"Ok", "status_code":200, "method":"post", "bearer": true, "uuid": "' + str(client_uuid) +  '"}'
+            #line = '{"status":"Ok", "status_code":200, "method":"post", "bearer": true, "uuid": "' + str(jdata['uuid']) +  '"}'
+            line = '{"status":"Ok", "status_code":200, "method":"post", "bearer": true, "uuid": "' + str(jdata_uuid) +  '"}'
+            #self.wfile.write(bytes(str(line), 'utf-8'))
+            self.wfile.write(json.dumps(line).encode())
 
             #print(self.data_string)
-            print(self.auth_string)
-            print(json_data)
+            #print(self.auth_string)
+            #print(json_data)
             return
 
 
@@ -180,7 +224,8 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
             line = '{"status":"Not Found", "status_code": 404, "method":"post"}'
-            self.wfile.write(bytes(str(line), 'utf-8'))
+            #self.wfile.write(bytes(str(line), 'utf-8'))
+            self.wfile.write(json.dumps(line).encode())
             return
 
         return
