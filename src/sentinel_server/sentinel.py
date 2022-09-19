@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8-dev1_r6-api-server1-1.3"
+__version__ = "1.8-dev1_r6-api-server1-1.4"
 
 import sys
 
@@ -210,8 +210,9 @@ def usage():
                     rules
 
                 http_server
-
+                api_server
                 pushgateway
+                remote_client
 
         list-keys
         list-keys-metric

@@ -4409,6 +4409,7 @@ def delFimFile(name, _file, db_store):
 
 
 def psCheck(name, db_store, gDict, _name):
+    #print('psCheck.run')
     import modules.ps.ps
     psDct = modules.ps.ps.get_ps()
 
@@ -4940,6 +4941,31 @@ def kvmCheck(name, db_store, gDict, _name):
     return True
 
 
+def RemoteClient(name, db_store, gDict, _name):
+    print('RemoteClient.run')
+
+    #get uid and url
+
+
+    rDct = {}
+    _key = 'remoteclient-' + str(name)
+
+    rDct['sentinel_job'] = name
+    val = 1
+
+    prom = ''
+    c = len(rDct)
+    for k,v in rDct.items():
+        c -= 1
+        if c == 0:
+            prom += str(k) + '="' + str(v) + '"'
+        else:
+            prom += str(k) + '="' + str(v) + '",'
+
+    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+    return True
+
+
 options = {
  'vuln-scan' : vulnScan,
  'port-scan' : portScan1,
@@ -4950,6 +4976,7 @@ options = {
  'ps-check' : psCheck,
  'established-check' : establishedCheck,
  'kvm-check' : kvmCheck,
+ 'remote-client' : RemoteClient,
  #'rclnt-run' : rclntRun,
 }
 #options[sys.argv[2]](sys.argv[3:])
@@ -5737,6 +5764,7 @@ def sentryCleanup(db_store):
     logging.info("Sentry Cleanup: True")
     return True
 
+
 def procHTTPServer(port, metric_path, db_file):
     logging.info('Sentry start HTTPServer port: '+str(port)+' path: '+str(metric_path))
     global _metric_path
@@ -5852,6 +5880,12 @@ def sentryMode(db_store, verbose=False):
 
     for key,conf in cDct.items():
 
+        if conf == 'remote_client':
+            remote_client = True
+            _config = json.loads(store.getData('configs', key, db_store)[0])
+            _uuid = _config['uuid']
+            _url = _config['url']
+
         if conf == 'api_server':
             api_server = True
             _config = json.loads(store.getData('configs', key, db_store)[0])
@@ -5909,33 +5943,59 @@ def sentryMode(db_store, verbose=False):
 
     try:
 
-        if api_server:
-            try:
-                p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store))
-                p.start()
-            finally:
-                exit.set()
-                p.join()
+        # this is a job instead...
+        #if remote_client:
+        #    try:
+        #        p = multiprocessing.Process(target=RemoteClient, args=(_uuid, _url, db_store))
+        #        p.start()
+        #    finally:
+        #        exit.set()
+        #        p.join()
 
 
-        elif http_server:
-            try:
-                p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
-                p.start()
-            finally:
-                exit.set()
-                p.join()
+        #if api_server:
+        #    try:
+        #        p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store))
+        #        p.start()
+        #    finally:
+        #        exit.set()
+        #        p.join()
+
+
+        #elif http_server:
+        #if http_server:
+        #    try:
+        #        p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
+        #        p.start()
+        #    finally:
+        #        exit.set()
+        #        p.join()
             
-        else:
+        #else:
             #signal.pause() #time.sleep(60) #time.sleep(-1) #ValueError: sleep length must be non-negative
 
-            import asyncio
-            loop = asyncio.get_event_loop()
-            try:
-                loop.run_forever()
-            finally:
-                exit.set()
-                loop.close()
+            #import asyncio
+            #loop = asyncio.get_event_loop()
+            #try:
+            #    loop.run_forever()
+            #finally:
+            #    exit.set()
+            #    loop.close()
+
+        import asyncio
+        loop = asyncio.get_event_loop()
+        try:
+            if api_server:
+                p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store))
+                p.start()
+            if http_server:
+                p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
+                p.start()
+            loop.run_forever()
+        finally:
+            exit.set()
+            loop.close()
+
 
         print('pid ' + str(os.getpid()))
         #sys.exit(99)
