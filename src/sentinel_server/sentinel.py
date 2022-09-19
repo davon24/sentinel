@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8-dev1_r6-api-server1-1.4"
+__version__ = "1.8-dev1_r6-api-server1-1.5"
 
 import sys
 

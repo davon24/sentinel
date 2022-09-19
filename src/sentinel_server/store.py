@@ -337,11 +337,12 @@ def get_manuf(mac, manuf_file):
 def get_bearer(token, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
-    cur.execute("SELECT token FROM bearer WHERE token=?", (token,))
+    cur.execute("SELECT token,data FROM bearer WHERE token=?", (token,))
     record = cur.fetchone()
     if record is None:
         return None
     return record
+
     #print(record[0])
     #jdata = json.loads(record[0])
     #return jdata
