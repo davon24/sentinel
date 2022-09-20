@@ -5,28 +5,26 @@ import sys
 import uuid
 import json
 import base64
-
-import subprocess
-from subprocess import Popen, PIPE, STDOUT
-#from subprocess import Popen, PIPE, STDOUT, check_output
-#import subprocess
+from subprocess import Popen, PIPE, TimeoutExpired
 
 import requests
 
 import store
 
-def http_post(url, uuid):
+def http_post(url, data_dict):
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication
     # Bearer https://datatracker.ietf.org/doc/html/rfc6750
 
-    json_dict = { 'uuid': uuid }
+    #json_dict = { 'uuid': uuid }
 
-    encoded_token = base64.b64encode(str(uuid).encode()).decode()
+    uuid = data_dict.get('uuid', None)
+
+    encoded_token = base64.b64encode(str(uuid).encode('utf-8')).decode('utf-8')
 
     response = requests.post(url=url,
                              headers={'Content-Type': 'application/json',
                                       'Authorization': 'Bearer ' + str(encoded_token)},
-                             json=json.dumps(json_dict)
+                             json=json.dumps(data_dict)
                             )
     response_code = response.status_code
 
@@ -50,19 +48,21 @@ if __name__ == '__main__':
 
         for key,conf in cDct.items():
             if conf == 'remote_client':
-                remote_client = True
+                #remote_client = True
                 _config = json.loads(store.getData('configs', key, db_file)[0])
                 _uuid = _config['uuid']
                 _url = _config['url']
 
 
-        print(remote_client)
+        #print(remote_client)
         print(_uuid)
         print(_url)
 
         #sys.exit(1)
 
-        post, rcode = http_post(_url, _uuid)
+        d = { 'uuid': _uuid }
+
+        post, code = http_post(_url, d)
         try:
             #data = json.dumps(post.json())
             data = post.json()
@@ -71,22 +71,29 @@ if __name__ == '__main__':
             data = post
 
         #print(post.json(), rcode)
-        print(data, rcode)
+        print(data, code)
 
         #print(data.get('command', None))
         command = data.get('command', None)
-
-#subprocess.run(args, *, stdin=None, input=None, stdout=None, stderr=None, shell=False, cwd=None, timeout=None, check=False, encoding=None, errors=None)
+        timeout = data.get('timeout', 10)
+        
+        output = None
+        exitcode = 99
 
         if command:
             print('run command...')
-            seconds = 3
+            #seconds = 3
+
+            token_bytes = base64.b64decode(command)
+            untoken = token_bytes.decode('utf-8')
+            print(untoken)
+
             try:
-                proc = Popen(command.split(), stdout=PIPE, stderr=PIPE)
-                output = proc.communicate(timeout=seconds)
+                proc = Popen(untoken.split(), stdout=PIPE, stderr=PIPE)
+                output = proc.communicate(timeout=timeout)
                 exitcode = proc.returncode
 
-            except subprocess.TimeoutExpired as error_timeout:
+            except TimeoutExpired as error_timeout:
                 output = str(error_timeout)
                 exitcode = 4
 
@@ -95,8 +102,32 @@ if __name__ == '__main__':
                 exitcode = 1
 
 
-        print(output)
-        print(exitcode)
+        print(str(type(output[0].decode('utf-8'))))
+        print(output[0].decode('utf-8'))
+
+        #print(str(type(output.decode('utf-8'))))
+        #print(output.decode('utf-8'))
+
+        #print(output.decode('utf-8'))
+        #print(exitcode)
+
+        if command and output:
+            #encoded_output = base64.b64encode(str(output).encode('utf-8')).decode('utf-8')
+            encoded_output = base64.b64encode(str(output[0].decode('utf-8')).encode('utf-8')).decode('utf-8')
+            rd = { 'uuid': _uuid, 'command': command, 'output': encoded_output, 'exitcode': exitcode }
+            rpost, rcode = http_post(_url, rd)
+            try:
+                rdata = rpost.json()
+            except requests.exceptions.JSONDecodeError as e:
+                print('Error ' + str(e))
+                rdata = rpost
+
+            print(rdata, rcode)
+
+        #print(post.json(), rcode)
+        #print(data, code)
+        #print(rdata, rcode)
+
 
 
     else:

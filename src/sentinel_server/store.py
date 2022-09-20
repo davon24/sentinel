@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# version 2022-09-18-0
+# version 2022-09-20-0
 
 import sqlite3
 import os
@@ -139,6 +139,16 @@ def createDB(db_file):
     create_bearer_tokeni = "CREATE UNIQUE INDEX IF NOT EXISTS idx_bearer_token ON bearer (token);"
     cur.execute(create_bearer_token)
     cur.execute(create_bearer_tokeni)
+
+    # https://www.sqlite.org/autoinc.html
+    # Whenever you create a table without specifying the WITHOUT ROWID option,
+    # you get an implicit auto-increment column called rowid. 
+    # The rowid column store 64-bit signed integer that uniquely identifies a row in the table.
+    #create_client_commands  = "CREATE TABLE IF NOT EXISTS client_commands (id INTEGER PRIMARY KEY NOT NULL, token TEXT, timestamp TEXT, data JSON);"
+    create_client_commands  = "CREATE TABLE IF NOT EXISTS client_commands (token TEXT, timestamp TEXT, data JSON);"
+    #create_client_commandsi = "CREATE UNIQUE INDEX IF NOT EXISTS idx_client_commands ON client_commands (rowid);"
+    cur.execute(create_client_commands)
+    #cur.execute(create_client_commandsi)
 
 
     con.commit()
@@ -839,7 +849,6 @@ def deleteFromClmn(tbl, clmn, item, db_file):
         return False
     return True
 
-
 #def selectAllrowid(tbl, db_file):
 #    con = sqlConnection(db_file)
 #    cur = con.cursor()
@@ -851,12 +860,12 @@ def deleteFromClmn(tbl, clmn, item, db_file):
 def selectAll(tbl, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
-    #cur.execute("SELECT rowid,* FROM " + str(tbl) + ";")
     cur.execute("SELECT * FROM " + str(tbl) + ";")
     rows = cur.fetchall()
+    return rows
+    #cur.execute("SELECT rowid,* FROM " + str(tbl) + ";")
     #if cur.rowcount == 0:
     #    return False
-    return rows
 
 def getAll(tbl, db_file):
     con = sqlConnection(db_file)
@@ -1039,6 +1048,14 @@ def getAllCounts(db_file):
     cur.execute("SELECT * FROM counts;")
     rows = cur.fetchall()
     return rows
+
+def insertINTOClientCommand(token, data, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("INSERT INTO client_commands VALUES(?,DATETIME('now'),?)", (token, data))
+    con.commit()
+    return True
+
 
 #def updateData(tbl, name, data, db_file):
 #def updateJobs(name, jdata, db_file):

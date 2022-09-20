@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8-dev1_r6-api-server1-1.5"
+__version__ = "1.8-dev1_r6-api-server1-1.6"
 
 import sys
 
@@ -153,6 +153,12 @@ def usage():
           delete-api-token token
           clear-api-tokens
 
+        list-client-commands
+          clear-client-commands
+          delete-client-command rowid
+
+        base64 <string>
+
         list-model [id|tags tag]
           update-model tag json
           update-model-tag id tag
@@ -241,6 +247,12 @@ def main():
 
         if sys.argv[1] == '--version':
             print(__version__)
+            sys.exit(0)
+
+        if sys.argv[1] == 'base64':
+            string = sys.argv[2]
+            base64_output = base64.b64encode(string.encode('utf-8')).decode('utf-8')
+            print(base64_output)
             sys.exit(0)
 
         if sys.argv[1] == 'manuf':
@@ -910,6 +922,24 @@ def main():
 
         if sys.argv[1] == 'clear-counts':
             clear = store.clearAll('counts', db_store)
+            print(clear)
+            sys.exit(0)
+
+        if sys.argv[1] == 'list-client-commands':
+            #reports = store.selectAll('client_commands', db_store)
+            reports = store.getAll('client_commands', db_store)
+            for row in reports:
+                print(row)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-client-command':
+            rowid = sys.argv[2]
+            delete = store.deleteFromRowid('client_commands', rowid, db_store)
+            print(delete)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-client-commands':
+            clear = store.clearAll('client_commands', db_store)
             print(clear)
             sys.exit(0)
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = 'tools-2022-09-18-0'
+__version__ = 'tools-2022-09-20-0'
 
 import sqlite3
 
@@ -16,6 +16,7 @@ import datetime
 import collections
 import socket
 import json
+import base64
 
 from hashlib import blake2b, blake2s
 
@@ -72,8 +73,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
         return
 
 class APIHTTPHandler(BaseHTTPRequestHandler):
-#import requests
-#class APIHTTPHandler(requests.auth.AuthBase):
+
     def do_GET(self):
         if self.path == _api_path: #/api
             self.send_response(200)
@@ -162,6 +162,20 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
         #print(bearer_token[1])
 
         bearer_data = json.loads(bearer_token[1])
+        print(bearer_data) #{'command': 'ping google.com'}
+        #encoded_bearer_data = base64.b64encode(str(bearer_data).encode('utf-8')).decode('utf-8')
+
+        command = bearer_data.get('command', None)
+        print(command)
+
+        if command:
+            encoded_command = base64.b64encode(str(command).encode('utf-8')).decode('utf-8')
+            print(encoded_command)
+            client_data = { 'command': encoded_command }
+        else:
+            client_data = {}
+
+
 
         # make sure has path
         if self.path == _api_path + '/post': # /api/post
@@ -179,15 +193,13 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             jdata = json.loads(json.loads(self.data_string))
 
 
+
             # safe get
             jdata_uuid = jdata.get('uuid', None)
-            #jdata_hostname = jdata.get('hostname', None)
-
-            #print('------------------------')
-
-            #line = '{"status":"Ok", "status_code": 200, "method":"post", "bearer": true, "uuid": "' + str(jdata_uuid) + '",'
-            #line += json.dumps(bearer_data)
-            #line += '"hostname":"' + str(jdata_hostname) + '"}'
+            jdata_command = jdata.get('command', None)
+            jdata_output = jdata.get('output', None)
+            jdata_exitcode = jdata.get('exitcode', None)
+            print('this is the client command...' + str(jdata_command))
 
             line = { 'status': 'Ok',
                      'status_code': 200,
@@ -195,7 +207,54 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
                      'uuid': str(jdata_uuid),
                    }
 
-            line.update(bearer_data)
+
+            line.update(client_data)
+
+            if jdata_command:
+                # wipe command from list-api-tokens
+                #run = store.replaceINTO('bearer', bearer_token, json.loads('{}'), db_store)
+                #this_data = json.loads('{}')
+                #d_data = {'action':'done'}
+                #no_data = {}
+                #store.replaceINTO('bearer', str(bearer_token), this_data, db_store)
+                #run = store.replaceINTO('bearer', 'token_1234', json.dumps('{}'), db_store)
+                run = store.replaceINTO('bearer', bearer_token[0], json.dumps({}), db_store)
+                print(run)
+                
+                # put command in done w/ exitcode
+
+                #token_bytes = base64.b64decode(command)
+                #untoken = token_bytes.decode('utf-8')
+                #print(untoken)
+
+                command_token = base64.b64decode(jdata_command)
+                command_untoken = command_token.decode('utf-8')
+
+                output_token = base64.b64decode(jdata_output)
+                output_untoken = output_token.decode('utf-8')
+
+
+                client_command_data = { 'uuid': str(jdata_uuid),
+                                        'command': str(command_untoken),
+                                        'output': str(output_untoken),
+                                        'exitcode': str(jdata_exitcode)
+                                      }
+                insert = store.insertINTOClientCommand(bearer_token[0], json.dumps(client_command_data), db_store)
+                print(insert)
+
+                # update client knowledge
+                line.update({'recieved': 'output'})
+                
+
+            #jdata_hostname = jdata.get('hostname', None)
+            #print('------------------------')
+
+            #line = '{"status":"Ok", "status_code": 200, "method":"post", "bearer": true, "uuid": "' + str(jdata_uuid) + '",'
+            #line += json.dumps(bearer_data)
+            #line += '"hostname":"' + str(jdata_hostname) + '"}'
+
+
+            #line.update(bearer_data)
 
             #print(str(type(line)))
             #print(str(type(bearer_data)))
