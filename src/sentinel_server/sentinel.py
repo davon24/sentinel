@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8-dev1_r7-work.here"
+__version__ = "1.8-dev1_r8"
 
 import sys
 
@@ -19,10 +19,11 @@ if sqlite3.sqlite_version_info < (3, 28, 0):
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 
+import json
+
 from tools import *
 from store import *
 
-import json
 
 def usage():
     print(sys.argv[0] + ''' [option]

@@ -29,16 +29,17 @@ import signal
 
 import resource
 
+
 import logging
 loglevel = logging.INFO
 logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
 datefmt = "%b %d %H:%M:%S"
 logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
+import requests
+
 sys.path.insert(0, os.path.dirname(__file__))
 import store
-
-#import requests
 
 #import smtplib
 #import ssl
@@ -162,15 +163,15 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
         #print(bearer_token[1])
 
         bearer_data = json.loads(bearer_token[1])
-        print(bearer_data) #{'command': 'ping google.com'}
+        #print(bearer_data) #{'command': 'ping google.com'}
         #encoded_bearer_data = base64.b64encode(str(bearer_data).encode('utf-8')).decode('utf-8')
 
         command = bearer_data.get('command', None)
-        print(command)
+        #print(command)
 
         if command:
             encoded_command = base64.b64encode(str(command).encode('utf-8')).decode('utf-8')
-            print(encoded_command)
+            #print(encoded_command)
             client_data = { 'command': encoded_command }
         else:
             client_data = {}
@@ -192,21 +193,18 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
 
             jdata = json.loads(json.loads(self.data_string))
 
-
-
             # safe get
             jdata_uuid = jdata.get('uuid', None)
             jdata_command = jdata.get('command', None)
             jdata_output = jdata.get('output', None)
             jdata_exitcode = jdata.get('exitcode', None)
-            print('this is the client command...' + str(jdata_command))
+            #print('this is the client command...' + str(jdata_command))
 
             line = { 'status': 'Ok',
                      'status_code': 200,
                      'method': 'post',
                      'uuid': str(jdata_uuid),
                    }
-
 
             line.update(client_data)
 
@@ -219,7 +217,7 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
                 #store.replaceINTO('bearer', str(bearer_token), this_data, db_store)
                 #run = store.replaceINTO('bearer', 'token_1234', json.dumps('{}'), db_store)
                 run = store.replaceINTO('bearer', bearer_token[0], json.dumps({}), db_store)
-                print(run)
+                #print(run)
                 
                 # put command in done w/ exitcode
 
@@ -240,7 +238,7 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
                                         'exitcode': str(jdata_exitcode)
                                       }
                 insert = store.insertINTOClientCommand(bearer_token[0], json.dumps(client_command_data), db_store)
-                print(insert)
+                #print(insert)
 
                 # update client knowledge
                 line.update({'recieved': 'output'})
@@ -4986,63 +4984,117 @@ def kvmCheck(name, db_store, gDict, _name):
 
     return True
 
+def http_post(url, dataDict):
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication
+    # Bearer https://datatracker.ietf.org/doc/html/rfc6750
+    # dataDict = { 'uuid': uuid }
+
+    uuid = dataDict.get('uuid', None)
+
+    encoded_token = base64.b64encode(str(uuid).encode('utf-8')).decode('utf-8')
+
+    response = requests.post(url=url,
+                             headers={'Content-Type': 'application/json',
+                                      'Authorization': 'Bearer ' + str(encoded_token)},
+                             json=json.dumps(dataDict)
+                            )
+    response_code = response.status_code
+
+    return response, response_code
+
 
 def RemoteClient(name, db_store, gDict, _name):
-    print('RemoteClient.run')
+    #print(_name) remote-client-2
+
+    post = None
+    data = {}
+    code = None
+
+    rpost = None
+    rdata = {}
+    rcode = None
+
+    _uuid = None
+    _url = None
+
+    output = None
+    exitcode = 99
 
     #get uid and url
-
     # read the job table Sentry Job run remote-client-1 and remote-client-2
-
-    #jobs = list_jobs()
-    #jobs = store.selectAll('jobs', db_store)
-    #for job in jobs:
-    #    print(job)
-
-
-    print('Name: ' + name)
-    print(_name)
-
     # config get name remote-client-2
-
-    #cDct={}
 
     jobs = store.selectAll('jobs', db_store)
     for job in jobs:
         #print(job[0]) # remote-client-2
         if job[0] == name:
-            print('get conf job ' + str(name) + ' now...')
-            #print(job[0].get('uuid', None))
-            #print(job[0].get('url', None))
-
-            # work.here
-
-            print(job['uuid'])
-            print(job['url'])
+            #print('get conf job ' + str(name) + ' now...')
+            jconf = json.loads(job[2])
+            _uuid = jconf.get('uuid', None)
+            _url  = jconf.get('url', None)
 
 
+    #print('_uuid ' + str(_uuid))
+    #print('_url ' + str(_url))
 
-        #print(job[1])
-        #print(jobs[0])
-        #print('---------------------------------------------------------------')
-        #print(jobs[1])
-        #print('---------------------------------------------------------------')
-        #print(jobs[2])
-        #print('---------------------------------------------------------------')
-        #job_ = json.loads(jobs[2])
-        #cDct[jobs[0]] = job_.get('job', None)
+    d = { 'uuid': _uuid }
 
-    #for key,cjob in cDct.items():
-    #    if cjob == 'remote-client':
-    #        remote_client = True
-    #        _jobs = json.loads(store.getData('jobs', key, db_store)[0])
-    #        _uuid = _jobs['uuid']
-    #        _url = _jobs['url']
+    try:
+        post, code = http_post(_url, d)
+        data = post.json()
+    except Exception as e:
+        post = None
+        data = { 'error': str(e) }
+        code = 100
 
-    #print('_uuid' + str(_uuid))
-    #print('_url' + str(_url))
 
-    rDct = {}
+    try:
+        command = data.get('command', None)
+    except AttributeError:
+        command = None
+    try:
+        timeout = data.get('timeout', 10)
+    except AttributeError:
+        timeout = 10
+
+
+    if command:
+        token_bytes = base64.b64decode(command)
+        untoken = token_bytes.decode('utf-8')
+
+        try:
+            proc = Popen(untoken.split(), stdout=PIPE, stderr=PIPE)
+            output = proc.communicate(timeout=timeout)
+            exitcode = proc.returncode
+
+        except TimeoutExpired as e:
+            output = str(e)
+            exitcode = 4
+
+        except FileNotFoundError as error_filenotfound:
+            output = str(error_filenotfound)
+            exitcode = 1
+
+
+    if command and output:
+        encoded_output = base64.b64encode(str(output[0].decode('utf-8')).encode('utf-8')).decode('utf-8')
+        rd = { 'uuid': _uuid, 'command': command, 'output': encoded_output, 'exitcode': exitcode }
+
+        try:
+            rpost, rcode = http_post(_url, rd)
+            rdata = rpost.json()
+
+        except Exception as e:
+            rpost = None
+            rdata = { 'error': str(e) }
+            rcode = 100
+
+
+    rDct = {'post': promDataSanitizer(str(data)),
+            'error': str(code),
+            'rpost': promDataSanitizer(str(rdata)),
+            'rerror': str(rcode),
+           }
     _key = 'remoteclient-' + str(name)
 
     rDct['sentinel_job'] = name
