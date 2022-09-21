@@ -4988,10 +4988,59 @@ def kvmCheck(name, db_store, gDict, _name):
 
 
 def RemoteClient(name, db_store, gDict, _name):
-    #print('RemoteClient.run')
+    print('RemoteClient.run')
 
     #get uid and url
 
+    # read the job table Sentry Job run remote-client-1 and remote-client-2
+
+    #jobs = list_jobs()
+    #jobs = store.selectAll('jobs', db_store)
+    #for job in jobs:
+    #    print(job)
+
+
+    print('Name: ' + name)
+    print(_name)
+
+    # config get name remote-client-2
+
+    #cDct={}
+
+    jobs = store.selectAll('jobs', db_store)
+    for job in jobs:
+        #print(job[0]) # remote-client-2
+        if job[0] == name:
+            print('get conf job ' + str(name) + ' now...')
+            #print(job[0].get('uuid', None))
+            #print(job[0].get('url', None))
+
+            # work.here
+
+            print(job['uuid'])
+            print(job['url'])
+
+
+
+        #print(job[1])
+        #print(jobs[0])
+        #print('---------------------------------------------------------------')
+        #print(jobs[1])
+        #print('---------------------------------------------------------------')
+        #print(jobs[2])
+        #print('---------------------------------------------------------------')
+        #job_ = json.loads(jobs[2])
+        #cDct[jobs[0]] = job_.get('job', None)
+
+    #for key,cjob in cDct.items():
+    #    if cjob == 'remote-client':
+    #        remote_client = True
+    #        _jobs = json.loads(store.getData('jobs', key, db_store)[0])
+    #        _uuid = _jobs['uuid']
+    #        _url = _jobs['url']
+
+    #print('_uuid' + str(_uuid))
+    #print('_url' + str(_url))
 
     rDct = {}
     _key = 'remoteclient-' + str(name)
