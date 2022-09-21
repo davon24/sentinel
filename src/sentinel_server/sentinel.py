@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8-dev1_r8"
+__version__ = "1.8-dev1_r9"
 
 import sys
 
@@ -149,6 +149,9 @@ def usage():
         list-counts
           clear-counts
 
+        register-client job_name server_key
+        remote-client job_name
+
         list-api-tokens
           update-api-token token data
           delete-api-token token
@@ -219,7 +222,6 @@ def usage():
                 http_server
                 api_server
                 pushgateway
-                remote_client
 
         list-keys
         list-keys-metric
@@ -944,6 +946,20 @@ def main():
             print(clear)
             sys.exit(0)
 
+        if sys.argv[1] == 'remote-client':
+            job_name = sys.argv[2]
+            run = tools.RClient(job_name, db_store)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'register-client':
+            job_name = sys.argv[2]
+            server_key = sys.argv[3]
+
+            run = tools.register_client(job_name, server_key, db_store)
+            print(run)
+
+            sys.exit(0)
 
         if sys.argv[1] == 'list-api-tokens':
             reports = store.selectAll('bearer', db_store)

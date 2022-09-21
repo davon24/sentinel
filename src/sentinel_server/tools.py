@@ -93,10 +93,6 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
 
 
     def do_POST(self):
-        #print(self.path)
-        #print(_api_path)
-        #print(self.headers)
-
 
         # make sure data is json
         self.content_type = self.headers['Content-Type']
@@ -133,6 +129,65 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(line).encode('utf-8'))
             return
 
+
+        #---- register ----#
+        if self.path == _api_path + '/register': # /api/register
+
+            self.data_string = self.rfile.read(int(self.headers['Content-Length']))
+
+            jdata = json.loads(json.loads(self.data_string))
+
+            jdata_uuid = jdata.get('uuid', None)
+            jdata_key  = jdata.get('key', None)
+
+            # get key from config
+            cDct={}
+            configs = store.selectAll('configs', db_store)
+            for config in configs:
+                #print(config[0], config[1], config[2])
+                config_ = json.loads(config[2])
+                cDct[config[0]] = config_.get('config', None)
+            for key,conf in cDct.items():
+                if conf == 'api_server':
+                    _config = json.loads(store.getData('configs', key, db_store)[0])
+                    #_port = _config['port']
+                    #_api_path = _config['path']
+                    _key = _config['key']
+            #print(_key)
+
+            if jdata_key == _key:
+                #print('insert bearer_token')
+                #print(bearer_token[0])
+                register = store.replaceINTO('bearer', token, json.dumps({}), db_store)
+
+            else:
+                line = { 'status': 'Unauthorized',
+                         'status_code': 401,
+                         'method': 'post',
+                         'uuid': str(jdata_uuid),
+                         'key': 'invalid'
+                       }
+                self.send_response(401)
+                self.send_header("Content-type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps(line).encode('utf-8'))
+                return
+
+            line = { 'status': 'Ok',
+                     'status_code': 200,
+                     'method': 'post',
+                     'uuid': str(jdata_uuid),
+                     'registered': str(register)
+                   }
+
+            self.send_response(200)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(json.dumps(line).encode('utf-8'))
+            return
+        #---- register ----#
+
+        #---- post     ----#
         # get auth tokens from sqlite
         # bearer_token = store.get_bearer(token, db_bearer)
         # print(bearer_token)
@@ -175,7 +230,6 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             client_data = { 'command': encoded_command }
         else:
             client_data = {}
-
 
 
         # make sure has path
@@ -259,6 +313,8 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
 
             self.wfile.write(json.dumps(line).encode('utf-8'))
             return
+        #---- post     ----#
+
 
 
         else:
@@ -341,6 +397,55 @@ class NmapSN:
 
         return ipL
 
+
+def register_client(job_name, server_key, db_store):
+
+    #print(job_name)
+    #print(server_key)
+
+    jobs = store.selectAll('jobs', db_store)
+    for job in jobs:
+        #print(job[0]) # remote-client-2
+        if job[0] == job_name:
+            #print('get conf job ' + str(name) + ' now...')
+            jconf = json.loads(job[2])
+            _uuid = jconf.get('uuid', None)
+            _url  = jconf.get('url', None)
+
+    #print(_uuid)
+    #print(_url)
+    #print(_url.replace('post', 'register', 1))
+
+    _reg_url = _url.replace('post', 'register', 1)
+
+    d = { 'uuid': _uuid, 'key': server_key }
+
+    try:
+        post, code = http_post(_reg_url, d)
+        data = post.json()
+    except Exception as e:
+        post = None
+        data = { 'error': str(e) }
+        code = 100
+
+    print(data, code)
+
+    #cDct={}
+    #configs = store.selectAll('configs', db_store)
+    #for config in configs:
+    #    #print(config[0], config[1], config[2])
+    #    config_ = json.loads(config[2])
+    #    cDct[config[0]] = config_.get('config', None)
+    #for key,conf in cDct.items():
+    #    if conf == 'api_server':
+    #        _config = json.loads(store.getData('configs', key, db_store)[0])
+    #        _port = _config['port']
+    #        _api_path = _config['path']
+    #        _key = _config['key']
+    #print(_key)
+
+
+    return
 
 def getPlatform():
     if sys.platform == 'linux' or sys.platform == 'linux2':
@@ -1199,7 +1304,7 @@ def promDataSanitizer(_str):
     _str = _str.replace('\r',' ') #lines return
     _str = _str.replace('^M',' ') #ctrlM
 
-    _str = _str.replace(':',' ') #colon
+    #_str = _str.replace(':',' ') #colon
 
     #_str = _str.decode('utf8', 'ignore')
 
@@ -5002,8 +5107,12 @@ def http_post(url, dataDict):
 
     return response, response_code
 
+def RClient(name, db_store):
+    _name = name
+    _gDict = {}
+    return RemoteClient(name, db_store, _gDict, _name, verbose=True)
 
-def RemoteClient(name, db_store, gDict, _name):
+def RemoteClient(name, db_store, gDict, _name, verbose=False):
     #print(_name) remote-client-2
 
     post = None
@@ -5091,9 +5200,9 @@ def RemoteClient(name, db_store, gDict, _name):
 
 
     rDct = {'post': promDataSanitizer(str(data)),
-            'error': str(code),
+            'code': str(code),
             'rpost': promDataSanitizer(str(rdata)),
-            'rerror': str(rcode),
+            'rrcode': str(rcode),
            }
     _key = 'remoteclient-' + str(name)
 
@@ -5108,6 +5217,9 @@ def RemoteClient(name, db_store, gDict, _name):
             prom += str(k) + '="' + str(v) + '"'
         else:
             prom += str(k) + '="' + str(v) + '",'
+
+    if verbose:
+        print(prom)
 
     gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
     return True
@@ -6027,11 +6139,11 @@ def sentryMode(db_store, verbose=False):
 
     for key,conf in cDct.items():
 
-        if conf == 'remote_client':
-            remote_client = True
-            _config = json.loads(store.getData('configs', key, db_store)[0])
-            _uuid = _config['uuid']
-            _url = _config['url']
+        #if conf == 'remote_client':
+        #    remote_client = True
+        #    _config = json.loads(store.getData('configs', key, db_store)[0])
+        #    _uuid = _config['uuid']
+        #    _url = _config['url']
 
         if conf == 'api_server':
             api_server = True
@@ -6132,12 +6244,15 @@ def sentryMode(db_store, verbose=False):
         import asyncio
         loop = asyncio.get_event_loop()
         try:
+
             if api_server:
                 p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store))
                 p.start()
+
             if http_server:
                 p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
                 p.start()
+
             loop.run_forever()
         finally:
             exit.set()
