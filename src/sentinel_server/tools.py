@@ -31,7 +31,6 @@ import asyncio
 
 import resource
 
-
 import logging
 loglevel = logging.INFO
 logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
@@ -42,6 +41,32 @@ import requests
 
 sys.path.insert(0, os.path.dirname(__file__))
 import store
+
+import ssl
+if sys.platform == 'darwin':
+    #ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1108)
+    #print('MACOSX made me do it this way...')
+
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+    ssl_context.verify_mode = ssl.CERT_REQUIRED
+    ssl_context.check_hostname = True
+    ssl_context.load_default_certs()
+
+    import certifi
+    #print(certifi.where())
+    #import os
+
+    openssl_dir, openssl_cafile = os.path.split(
+            ssl.get_default_verify_paths().openssl_cafile)
+
+    ssl_context.load_verify_locations(
+            cafile=os.path.relpath(certifi.where()),
+            capath=None,
+            cadata=None)
+else:
+    ssl_context = ssl.create_default_context()
+
+
 
 #import smtplib
 #import ssl
@@ -3930,7 +3955,7 @@ def processVulnData(data):
 def sendEmail(subject, message, db_store):
     #import os
     import smtplib
-    import ssl
+    #import ssl
     #if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
     #    getattr(ssl, '_create_unverified_context', None)):
     #    ssl._create_default_https_context = ssl._create_unverified_context
@@ -5103,7 +5128,8 @@ def http_post(url, dataDict):
     response = requests.post(url=url,
                              headers={'Content-Type': 'application/json',
                                       'Authorization': 'Bearer ' + str(encoded_token)},
-                             json=json.dumps(dataDict)
+                             json=json.dumps(dataDict),
+                             verify=False
                             )
     response_code = response.status_code
 
@@ -6044,7 +6070,7 @@ def procHTTPServer(port, metric_path, db_file):
     return httpd.serve_forever()
 
 
-def apiHTTPServer(port, api_path, db_file):
+def apiHTTPServer(port, api_path, db_file, key_file, cert_file):
     logging.info('Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
     global _api_path
     _api_path = api_path
@@ -6060,10 +6086,11 @@ def apiHTTPServer(port, api_path, db_file):
 
     httpd = HTTPServer(('', port), APIHTTPHandler)
     #import ssl
-    #httpd.socket = ssl.wrap_socket (httpd.socket,
-    #    keyfile="path/to/key.pem",
-    #    certfile='path/to/cert.pem', server_side=True)
-    #openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365
+    httpd.socket = ssl.wrap_socket(httpd.socket,
+                                   keyfile=key_file,
+                                   certfile=cert_file,
+                                   server_side=True)
+    # openssl req -x509 -newkey rsa:4096 -keyout ssl/key.pem -out ssl/cert.pem -sha256 -nodes -days 3650 -subj '/CN=localhost'
     return httpd.serve_forever()
 
 
@@ -6156,7 +6183,10 @@ def sentryMode(db_store, verbose=False):
             _port = _config['port']
             _api_path = _config['path']
 
-            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store))
+            _keyfile  = _config['keyfile']
+            _certfile = _config['certfile']
+
+            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile))
             p.start()
 
         if conf == 'http_server':
