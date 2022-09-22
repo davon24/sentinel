@@ -74,37 +74,37 @@ cp sentinel-%{version}/pkg/sentinel.sh $RPM_BUILD_ROOT/usr/sbin/sentinel
 
 mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel
 
-cp sentinel-%{version}/python/sentinel.py $RPM_BUILD_ROOT/usr/libexec/sentinel/sentinel.py
+cp sentinel-%{version}/src/sentinel_server/sentinel.py $RPM_BUILD_ROOT/usr/libexec/sentinel/sentinel.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/sentinel.py
 
-cp sentinel-%{version}/python/tools.py $RPM_BUILD_ROOT/usr/libexec/sentinel/tools.py
+cp sentinel-%{version}/src/sentinel_server/tools.py $RPM_BUILD_ROOT/usr/libexec/sentinel/tools.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/tools.py
 
-cp sentinel-%{version}/python/store.py $RPM_BUILD_ROOT/usr/libexec/sentinel/store.py
+cp sentinel-%{version}/src/sentinel_server/store.py $RPM_BUILD_ROOT/usr/libexec/sentinel/store.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/store.py
 
-cp sentinel-%{version}/python/manuf.py $RPM_BUILD_ROOT/usr/libexec/sentinel/manuf.py
+cp sentinel-%{version}/src/sentinel_server/manuf.py $RPM_BUILD_ROOT/usr/libexec/sentinel/manuf.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/manuf.py
 
 mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel/db
-cp sentinel-%{version}/python/db/manuf $RPM_BUILD_ROOT/usr/libexec/sentinel/db/manuf
+cp sentinel-%{version}/src/sentinel_server/db/manuf $RPM_BUILD_ROOT/usr/libexec/sentinel/db/manuf
 
 mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ps
-cp sentinel-%{version}/python/modules/ps/ps.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ps/ps.py
+cp sentinel-%{version}/src/sentinel_server/modules/ps/ps.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ps/ps.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ps/ps.py
 
 mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv
-cp sentinel-%{version}/python/modules/hv/kvm.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/kvm.py
-cp sentinel-%{version}/python/modules/hv/__init__.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/__init__.py
+cp sentinel-%{version}/src/sentinel_server/modules/hv/kvm.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/kvm.py
+cp sentinel-%{version}/src/sentinel_server/modules/hv/__init__.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/__init__.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/kvm.py
 
 mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/gitegridy
-cp sentinel-%{version}/python/modules/gitegridy/gitegridy.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/gitegridy/gitegridy.py
+cp sentinel-%{version}/src/sentinel_server/modules/gitegridy/gitegridy.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/gitegridy/gitegridy.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/gitegridy/gitegridy.py
 
 mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois
-cp sentinel-%{version}/python/modules/ipwhois/ipwhois.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois/ipwhois.py
-cp sentinel-%{version}/python/modules/ipwhois/__init__.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois/__init__.py
+cp sentinel-%{version}/src/sentinel_server/modules/ipwhois/ipwhois.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois/ipwhois.py
+cp sentinel-%{version}/src/sentinel_server/modules/ipwhois/__init__.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois/__init__.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois/ipwhois.py
 
 
