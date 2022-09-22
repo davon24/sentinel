@@ -30,3 +30,21 @@ sentinel update-job remote-client-2 '{"repeat": "1min", "job": "remote-client","
 
 sentinel register-client remote-client-2 "xyz321"
 
+
+
+---
+
+# ssl self signed cert
+
+// POST Request
+response = requests.post(
+    "https://127.0.0.1:8443/api/post", 
+    headers=headers, 
+    data=payload,
+    verify=False  # <---- Added
+)
+
+import urllib3
+urllib3.disable_warnings()
+
+

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = 'tools-2022-09-22-0'
+__version__ = 'tools-2022-09-22-1'
 
 import sqlite3
 
@@ -64,9 +64,13 @@ if sys.platform == 'darwin':
             capath=None,
             cadata=None)
 else:
-    ssl_context = ssl.create_default_context()
+    ssl._create_default_https_context = ssl._create_unverified_context
+    #ssl_context = ssl.create_default_context()
+    #ssl_context.check_hostname = False
+    #ssl_context.verify_mode = ssl.CERT_NONE
 
-
+from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 #import smtplib
 #import ssl
