@@ -3,6 +3,8 @@
 build-centos8:
    image: centos:8
    script:
+      - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+      - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
       - yum install -y rpm-build
       - echo "Building RPM"
       - mkdir package
@@ -20,6 +22,8 @@ build-centos8:
 build-centos8-runtime:
    image: centos:8
    script:
+      - sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+      - sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
       - yum install -y rpm-build
       - yum -y update
       - yum -y groupinstall "Development Tools"
