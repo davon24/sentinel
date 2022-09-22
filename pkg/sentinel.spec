@@ -6,8 +6,8 @@
 
 Summary: Sentinel Python Application
 Name: sentinel
-Version: 1.6.28
-Release: 1%{?dist}
+Version: 1.8.0
+Release: 0%{?dist}
 License: GPL
 URL: https://gitlab.com/krink/sentinel/-/archive/master/sentinel-master.tar.gz
 Group: Applications/Internet
@@ -98,6 +98,15 @@ cp sentinel-%{version}/python/modules/hv/kvm.py $RPM_BUILD_ROOT/usr/libexec/sent
 cp sentinel-%{version}/python/modules/hv/__init__.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/__init__.py
 chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/hv/kvm.py
 
+mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/gitegridy
+cp sentinel-%{version}/python/modules/gitegridy/gitegridy.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/gitegridy/gitegridy.py
+chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/gitegridy/gitegridy.py
+
+mkdir -p $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois
+cp sentinel-%{version}/python/modules/ipwhois/ipwhois.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois/ipwhois.py
+cp sentinel-%{version}/python/modules/ipwhois/__init__.py $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois/__init__.py
+chmod 755 $RPM_BUILD_ROOT/usr/libexec/sentinel/modules/ipwhois/ipwhois.py
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -182,6 +191,9 @@ rm -rf $RPM_BUILD_ROOT
 /usr/libexec/sentinel/modules/ps/ps.py
 /usr/libexec/sentinel/modules/hv/kvm.py
 /usr/libexec/sentinel/modules/hv/__init__.py
+/usr/libexec/sentinel/modules/gitegridy/gitegridy.py
+/usr/libexec/sentinel/modules/ipwhois/ipwhois.py
+/usr/libexec/sentinel/modules/ipwhois/__init__.py
 
 %if 0%{?rhel} == 8
 #%exclude /usr/lib/python2.7/site-packages/scrawl/*.pyc
@@ -204,8 +216,15 @@ rm -rf $RPM_BUILD_ROOT
 %exclude /usr/libexec/sentinel/modules/ps/*.pyo
 %exclude /usr/libexec/sentinel/modules/hv/*.pyc
 %exclude /usr/libexec/sentinel/modules/hv/*.pyo
+%exclude /usr/libexec/sentinel/modules/gitegridy/*.pyc
+%exclude /usr/libexec/sentinel/modules/gitegridy/*.pyo
+%exclude /usr/libexec/sentinel/modules/ipwhois/*.pyc
+%exclude /usr/libexec/sentinel/modules/ipwhois/*.pyo
 
 %changelog
+* Wed Sep 21 2022 Karl Rink <karl@rink.us> v1.8.0-0
+- 1.8.0-0 release 🍁
+
 * Wed Mar 10 2021 Karl Rink <karl@rink.us> v1.6.15-1
 - 1.6.15-1 release 🍀
 
