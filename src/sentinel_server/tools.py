@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = 'tools-2022-09-21-0'
+__version__ = 'tools-2022-09-22-0'
 
 import sqlite3
 
@@ -26,6 +26,8 @@ import os, pwd, grp
 import select
 import re
 import signal
+
+import asyncio
 
 import resource
 
@@ -6057,11 +6059,11 @@ def apiHTTPServer(port, api_path, db_file):
         os.setuid(uid)
 
     httpd = HTTPServer(('', port), APIHTTPHandler)
-    # import ssl
+    #import ssl
     #httpd.socket = ssl.wrap_socket (httpd.socket,
     #    keyfile="path/to/key.pem",
     #    certfile='path/to/cert.pem', server_side=True)
-    # openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365
+    #openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365
     return httpd.serve_forever()
 
 
@@ -6133,8 +6135,6 @@ def sentryMode(db_store, verbose=False):
     processor.start()
 
 
-    http_server = False
-
     cDct={}
     configs = store.selectAll('configs', db_store)
     for config in configs:
@@ -6156,11 +6156,17 @@ def sentryMode(db_store, verbose=False):
             _port = _config['port']
             _api_path = _config['path']
 
+            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store))
+            p.start()
+
         if conf == 'http_server':
             http_server = True
             _config = json.loads(store.getData('configs', key, db_store)[0])
             _port = _config['port']
             _metric_path = _config['path']
+
+            p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
+            p.start()
 
         if conf == 'logstream':
             logstream = multiprocessing.Process(target=sentryLogStream, args=(db_store, key, gDict, verbose))
@@ -6177,117 +6183,27 @@ def sentryMode(db_store, verbose=False):
             pushgw.start()
             #running.append(tailer)
 
-            
-    #########################
-#    resin_watch = store.getData('configs', 'watch-resin-log', db_store)
-#        resin_watch_config = json.loads(resin_watch[0])
-#        _logfile = resin_watch_config['logfile']
-#        _match   = resin_watch_config['match']
-#        #resin_tailer = threading.Thread(target=sentryTailResinLog, args=(db_store, gDict, _logfile), name="ResinLogWatch")
-#        #resin_tailer.setDaemon(True)
-#        resin_tailer = multiprocessing.Process(target=sentryTailResinLog, args=(db_store, gDict, _logfile))
-#        #resin_tailer.join()
-#
-#    mariadb_watch = store.getData('configs', 'watch-mariadb-audit-log', db_store)
-#        mariadb_tailer = multiprocessing.Process(target=sentryTailMariaDBAuditLog, args=(db_store, gDict, _logfile))
-#
-#    ssh_watch = store.getData('configs', 'watch-ssh-linux-log', db_store)
-#        ssh_watch_config = json.loads(ssh_watch[0])
-#        _logfile  = ssh_watch_config['logfile']
-#        _thresh   = ssh_watch_config['thresh']
-#        _attempts = ssh_watch_config['attempts']
-#        _clear    = ssh_watch_config['clear']
-#        ssh_tailer = multiprocessing.Process(target=sentryIPSLinuxSSH, args=(db_store, gDict, _logfile))
-#
-#    syslog_watch = store.getData('configs', 'watch-syslog', db_store)
-#    prometheus_config = store.getData('configs', 'prometheus', db_store)
 
-
-
-
+    loop = asyncio.get_event_loop()
     try:
 
-        # this is a job instead...
-        #if remote_client:
-        #    try:
-        #        p = multiprocessing.Process(target=RemoteClient, args=(_uuid, _url, db_store))
-        #        p.start()
-        #    finally:
-        #        exit.set()
-        #        p.join()
-
-
-        #if api_server:
-        #    try:
-        #        p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store))
-        #        p.start()
-        #    finally:
-        #        exit.set()
-        #        p.join()
-
-
-        #elif http_server:
-        #if http_server:
-        #    try:
-        #        p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
-        #        p.start()
-        #    finally:
-        #        exit.set()
-        #        p.join()
-            
-        #else:
-            #signal.pause() #time.sleep(60) #time.sleep(-1) #ValueError: sleep length must be non-negative
-
-            #import asyncio
-            #loop = asyncio.get_event_loop()
-            #try:
-            #    loop.run_forever()
-            #finally:
-            #    exit.set()
-            #    loop.close()
-
-        import asyncio
-        loop = asyncio.get_event_loop()
-        try:
-
-            if api_server:
-                p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store))
-                p.start()
-
-            if http_server:
-                p = multiprocessing.Process(target=procHTTPServer, args=(_port, _metric_path, db_store))
-                p.start()
-
-            loop.run_forever()
-        finally:
-            exit.set()
-            loop.close()
-
+        logging.info("Sentry Daemon")
+        loop.run_forever()
 
         print('pid ' + str(os.getpid()))
         #sys.exit(99)
 
     except (KeyboardInterrupt, SystemExit, Exception):
         exit.set()
-        #sigterm = True
-
         sentryCleanup(db_store)
-
-        #smList = [ 'sentinel-keys', 'sentinel-update' ]
-        #for name in smList:
-        #    try:
-        #        smklr = shared_memory.ShareableList(name.format(name=name))
-        #        smklr.shm.close()
-        #        smklr.shm.unlink()
-        #    except FileNotFoundError:
-        #        ...
+        loop.close()
 
         try:
             smklr = shared_memory.ShareableList(name='sentinel-shm')
             smklr.shm.close()
             smklr.shm.unlink()
         except FileNotFoundError:
-            ...
+            pass
 
         logging.info("Sentry Shutdown: " + str(exit.is_set()))
         #sys.exit(1)
@@ -6299,4 +6215,5 @@ def sentryMode(db_store, verbose=False):
 if __name__ == '__main__':
 # requires cli tools: arp, ping, lsof, nslookup, nmap, tail
     pass
+
 
