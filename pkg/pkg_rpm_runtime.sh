@@ -65,8 +65,13 @@ cd ~/rpmbuild/SOURCES/libvirt-python-7.2.0
 /usr/libexec/sentinel/runtime/bin/python3.8 setup.py build
 /usr/libexec/sentinel/runtime/bin/python3.8 setup.py install --prefix=/usr/libexec/sentinel/runtime
 
-
 echo "Compiler Done"
+
+# install python requests
+/usr/libexec/sentinel/runtime/bin/python3.8 -m pip install requests
+
+# /usr/libexec/sentinel/runtime/lib/python3.8/site-packages/pip/_vendor/requests/utils.py
+mv /usr/libexec/sentinel/runtime/lib/python3.8/site-packages/pip/_vendor/requests /usr/libexec/sentinel/runtime/lib/python3.8/site-packages/pip/
 
 cd /usr/libexec/sentinel/runtime/bin
 ln -s python3.8 python3

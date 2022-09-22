@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = 'tools-2022-09-20-0'
+__version__ = 'tools-2022-09-21-0'
 
 import sqlite3
 
@@ -6057,6 +6057,11 @@ def apiHTTPServer(port, api_path, db_file):
         os.setuid(uid)
 
     httpd = HTTPServer(('', port), APIHTTPHandler)
+    # import ssl
+    #httpd.socket = ssl.wrap_socket (httpd.socket,
+    #    keyfile="path/to/key.pem",
+    #    certfile='path/to/cert.pem', server_side=True)
+    # openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365
     return httpd.serve_forever()
 
 
