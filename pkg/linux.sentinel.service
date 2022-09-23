@@ -6,7 +6,7 @@ Description=Sentinel Sentry Service
 Restart=always
 Environment="LD_LIBRARY_PATH=/usr/libexec/sentinel/runtime/lib"
 Environment="PATH=/usr/libexec/sentinel/runtime/bin:/usr/bin:/usr/sbin:/bin:/sbin"
-WorkingDirectory=/usr/libexec/sentinel
+WorkingDirectory=/usr/libexec/sentinel/db
 ExecStart=/usr/libexec/sentinel/sentinel.py sentry
 
 [Install]

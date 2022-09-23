@@ -6,7 +6,7 @@ __version__ = 'tools-2022-09-22-2'
 import sqlite3
 
 import sys
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT, TimeoutExpired
 import threading
 import multiprocessing
 from multiprocessing import shared_memory
