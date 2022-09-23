@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = 'tools-2022-09-22-1'
+__version__ = 'tools-2022-09-22-2'
 
 import sqlite3
 
@@ -189,7 +189,9 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             if jdata_key == _key:
                 #print('insert bearer_token')
                 #print(bearer_token[0])
-                register = store.replaceINTO('bearer', token, json.dumps({}), db_store)
+                client_address = self.client_address[0]
+                client_data = {'client_address': str(client_address)}
+                register = store.replaceINTO('bearer', token, json.dumps(client_data), db_store)
 
             else:
                 line = { 'status': 'Unauthorized',
