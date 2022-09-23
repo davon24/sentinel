@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# version 2022-09-20-0
-
 import sqlite3
 import os
 import time

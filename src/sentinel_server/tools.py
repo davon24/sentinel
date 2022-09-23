@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = 'tools-2022-09-22-2'
+from sentinel import __version__
 
 import sqlite3
 
@@ -329,6 +329,7 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
 
                 # update client knowledge
                 line.update({'recieved': 'output'})
+                #line.update({'recieved': str(jdata_output) })
                 
 
             #jdata_hostname = jdata.get('hostname', None)
@@ -5206,18 +5207,13 @@ def RemoteClient(name, db_store, gDict, _name, verbose=False):
         untoken = token_bytes.decode('utf-8')
 
         try:
-            proc = Popen(untoken.split(), stdout=PIPE, stderr=PIPE)
+            proc = Popen(untoken, stdout=PIPE, stderr=PIPE, shell=True)
             output = proc.communicate(timeout=timeout)
             exitcode = proc.returncode
 
         except TimeoutExpired as e:
             output = str(e)
             exitcode = 4
-
-        except FileNotFoundError as error_filenotfound:
-            output = str(error_filenotfound)
-            exitcode = 1
-
 
     if command and output:
         encoded_output = base64.b64encode(str(output[0].decode('utf-8')).encode('utf-8')).decode('utf-8')
