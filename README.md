@@ -5,6 +5,8 @@ Sentinel is a python program that interacts with the operating system and presen
 
 [![Package Version](https://img.shields.io/pypi/v/sentinel-server.svg)](https://pypi.python.org/pypi/sentinel-server/)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
 
 ## Install via pip
@@ -37,21 +39,27 @@ sentinel [option]
 
         list-proms
 
+        list-configs
+          update-config name data
+          delete-config name
+          clear-configs
+
         nmap-net net
         ping-net ip/net
+        net-scan net
 
         port-scan [ip/net] [level]
-        list-nmaps
-        nmap ip [level]
-        del-nmap ip
-        clear-nmaps
+          list-nmaps
+          nmap ip [level]
+          del-nmap ip
+          clear-nmaps
 
         vuln-scan [ip/net]
-        list-vulns [id]
-        del-vuln id
-        clear-vulns
-        check-vuln id
-        email-vuln id
+          list-vulns [id]
+          del-vuln id
+          clear-vulns
+          check-vuln id
+          email-vuln id
 
         arps
         manuf mac
@@ -59,81 +67,76 @@ sentinel [option]
         rdns ip [srv]
         myip
 
+        ip-whois ip
+
         udp ip port
         udpscan ip port
         tcp ip port
 
         list-macs
-        update-manuf mac
-        update-dns mac ip
+          update-manuf mac
+          update-dns mac ip
 
         listening
-        listening-detailed
-        listening-details port
-        listening-allowed
-        listening-alerts
-        listening-allow port
-        listening-remove port
+          listening-detailed
+          listening-details port
+          listening-allowed
+          listening-alerts
+          listening-allow port
+          listening-remove port
 
         established
-        established-lsof
-        established-rules
-        established-rules-filter
-        established-rule ALLOW|DENY proto laddr lport faddr fport
-        established-alerts
-        delete-established-rule rowid
-        clear-established-rules
+          established-lsof
+          established-rules
+          established-rules-filter
+          established-rule ALLOW|DENY proto laddr lport faddr fport
+          established-alerts
+          delete-established-rule rowid
+          clear-established-rules
 
         list-ips
-        update-ip ip data
-        update-ip-item ip item value
-        delete-ip-item ip item value
-        del-ip ip
-        clear-ips
+          update-ip ip data
+          update-ip-item ip item value
+          delete-ip-item ip item value
+          del-ip ip
+          clear-ips
 
         list-jobs
-        list-jobs-running
-        list-jobs-available
-        run-job name
-        update-job name data
-        delete-job name
-        clear-jobs
-
-        list-configs
-        update-config name data
-        delete-config name
-        clear-configs
+          list-jobs-available
+          update-job name data
+          delete-job name
+          clear-jobs
 
         list-rules
-        update-rule name data
-        delete-rule name
-        clear-rules
+          update-rule name data
+          delete-rule name
+          clear-rules
 
         list-reports
-        update-report name data
-        delete-report name
-        clear-reports
+          update-report name data
+          delete-report name
+          clear-reports
 
         list-alerts
-        delete-alert id
-        run-alert name
-        update-alert name data
-        run-alert name
-        clear-alerts
+          delete-alert id
+          run-alert name
+          update-alert name data
+          run-alert name
+          clear-alerts
 
         list-fims
-        list-fims-changed
-        check-fim [name]
-        b2sum-fim [name]
-        b2sum /dir/file
-        update-fim name data
-        delete-fim id
+          list-fims-changed
+          check-fim [name]
+          b2sum-fim [name]
+          b2sum /dir/file
+          update-fim name data
+          delete-fim id
         add-fim name /dir/file
         del-fim name /dir/file
 
         list-files
-        add-file /dir/file
-        del-file /dir/file
+          add-file /dir/file
+          del-file /dir/file
         fim-restore /dir/file [/dir/file]
         fim-diff
         clear-files
@@ -144,41 +147,59 @@ sentinel [option]
         list-avs
 
         list-proms-db
-        update-prom-db name data
-        clear-proms-db
+          update-prom-db name data
+          clear-proms-db
 
         list-b2sums
-        clear-b2sums
-
-        list-sshwatch
-        clear-sshwatch
+          clear-b2sums
 
         list-counts
-        clear-counts
+          clear-counts
+
+        register-client job_name server_key
+        remote-client job_name
+
+        list-api-tokens
+          update-api-token token data
+          delete-api-token token
+          clear-api-tokens
+
+        list-client-commands
+          clear-client-commands
+          delete-client-command rowid
+
+        base64 <string>
+
+        list-model [id|tags tag]
+          update-model tag json
+          update-model-tag id tag
+          delete-model id
+          clear-model
 
         list-training [id|tags tag]
-        update-training tag json
-        update-training-tag id tag
-        delete-training id
-        clear-training
+          update-training tag json
+          update-training-tag id tag
+          delete-training id
+          clear-training
 
         list-occurrence [name|-eq,-gt,-lt,-ne,-le,-ge num]
-        delete-occurrence name
+          delete-occurrence name
+          clear-occurrence
+
         copy-occurrence name
-        clear-occurrence
 
         sample-logstream count
-        mark-training tag
-        mark-training-on name
+        # ? mark-training tag
+        # ? mark-training-on name
 
         list-system-profile
-        list-system-profile-full
-        gen-system-profile
-        get-system-profile-name name
-        get-system-profile-rowid rowid
-        del-system-profile-name name
-        del-system-profile-rowid rowid
-        clear-system-profile
+          list-system-profile-full
+          gen-system-profile
+          get-system-profile-name name
+          get-system-profile-rowid rowid
+          del-system-profile-name name
+          del-system-profile-rowid rowid
+          clear-system-profile
 
         diff-system-profile-rowid rowid rowid
         get-system-profile-data rowid data
@@ -190,9 +211,10 @@ sentinel [option]
         run-create-db
         run-ps
 
-        sentry [--verbose]
-
         ---
+
+        sentry
+
 
         config
 
@@ -205,12 +227,15 @@ sentinel [option]
                     rules
 
                 http_server
-
+                api_server
                 pushgateway
 
-        get-keys
         list-keys
+        list-keys-metric
+        list-vals
+        get-key key
         expire-keys key1 key2 key3...
+
 
 ```
 
