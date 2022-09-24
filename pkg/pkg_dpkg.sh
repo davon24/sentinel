@@ -14,20 +14,20 @@ ver=`awk '/^Version: / {print $2}' ~/dpkgbuild/sentinel-master/pkg/control`
 
 mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel
 
-cp ~/dpkgbuild/sentinel-master/python/sentinel.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/sentinel.py
-cp ~/dpkgbuild/sentinel-master/python/tools.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/tools.py
-cp ~/dpkgbuild/sentinel-master/python/store.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/store.py
-cp ~/dpkgbuild/sentinel-master/python/manuf.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/manuf.py
+cp ~/dpkgbuild/sentinel-master/src/sentinel_server/sentinel.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/sentinel.py
+cp ~/dpkgbuild/sentinel-master/src/sentinel_server/tools.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/tools.py
+cp ~/dpkgbuild/sentinel-master/src/sentinel_server/store.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/store.py
+cp ~/dpkgbuild/sentinel-master/src/sentinel_server/manuf.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/manuf.py
 
 mkdir ~/dpkgbuild/sentinel/usr/libexec/sentinel/db
-cp ~/dpkgbuild/sentinel-master/python/db/manuf ~/dpkgbuild/sentinel/usr/libexec/sentinel/db/
+cp ~/dpkgbuild/sentinel-master/src/sentinel_server/db/manuf ~/dpkgbuild/sentinel/usr/libexec/sentinel/db/
 
 mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/ps
-cp ~/dpkgbuild/sentinel-master/python/modules/ps/ps.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/ps/ps.py
+cp ~/dpkgbuild/sentinel-master/src/sentinel_server/modules/ps/ps.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/ps/ps.py
 
 mkdir -p ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/hv
-cp ~/dpkgbuild/sentinel-master/python/modules/hv/kvm.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/hv/kvm.py
-cp ~/dpkgbuild/sentinel-master/python/modules/hv/__init__.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/hv/__init__.py
+cp ~/dpkgbuild/sentinel-master/src/sentinel_server/modules/hv/kvm.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/hv/kvm.py
+cp ~/dpkgbuild/sentinel-master/src/sentinel_server/modules/hv/__init__.py ~/dpkgbuild/sentinel/usr/libexec/sentinel/modules/hv/__init__.py
 
 mkdir -p ~/dpkgbuild/sentinel/lib/systemd/system
 cp ~/dpkgbuild/sentinel-master/pkg/linux.sentinel.service ~/dpkgbuild/sentinel/lib/systemd/system/sentinel.service
