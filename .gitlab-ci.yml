@@ -130,6 +130,49 @@ build-centos6-runtime:
          - package/*.rpm
 
 
+build-ubuntu22:
+   image: ubuntu:22.04
+   script:
+     - apt-get update
+     - apt-get install -y build-essential
+     - apt-get install -y curl
+     - echo "Building DPKG"
+     - mkdir -p package
+     - cp pkg/pkg_dpkg.sh .
+     - ./pkg_dpkg.sh
+     - cp ~/dpkgbuild/*.deb package/
+   only:
+     - tags
+   except:
+     - branches
+   artifacts:
+      paths:
+        - package/*.deb
+
+build-ubuntu22-runtime:
+   image: ubuntu:22.04
+   script:
+     - export DEBIAN_FRONTEND=noninteractive
+     - apt-get update
+     - apt-get install -y build-essential
+     - apt-get install -y curl
+     - apt-get install -y rsync
+     - apt-get install -y zlib1g-dev
+     - apt-get install -y libvirt-dev
+     - echo "Building DPKG"
+     - mkdir -p package
+     - cp pkg/pkg_dpkg_runtime.sh .
+     - ./pkg_dpkg_runtime.sh
+     - cp ~/dpkgbuild/*.deb package/
+   only:
+     - tags
+   except:
+     - branches
+   artifacts:
+      paths:
+        - package/*.deb
+
+
 build-ubuntu20:
    image: ubuntu:20.04
    script:

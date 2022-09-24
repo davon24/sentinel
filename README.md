@@ -247,7 +247,7 @@ sentinel [option]
 
 ---   
 
-Legacy Linux package repo hosting https://gitlab.com/_pkg/sentinel  
+Linux package repo hosting https://gitlab.com/_pkg/sentinel  
 
 ---
 
