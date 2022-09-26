@@ -5136,7 +5136,8 @@ def http_post(url, dataDict):
                              headers={'Content-Type': 'application/json',
                                       'Authorization': 'Bearer ' + str(encoded_token)},
                              json=json.dumps(dataDict),
-                             verify=False
+                             verify=False,
+                             timeout=10
                             )
     response_code = response.status_code
 
@@ -5178,19 +5179,34 @@ def RemoteClient(name, db_store, gDict, _name, verbose=False):
             _url  = jconf.get('url', None)
 
 
-    #print('_uuid ' + str(_uuid))
-    #print('_url ' + str(_url))
+    if verbose:
+        print('_uuid ' + str(_uuid))
+        print('_url ' + str(_url))
 
     d = { 'uuid': _uuid }
 
-    try:
-        post, code = http_post(_url, d)
-        data = post.json()
-    except Exception as e:
-        post = None
-        data = { 'error': str(e) }
-        code = 100
+    #try:
+    post, code = http_post(_url, d)
 
+    if verbose:
+        print('post ' + str(post))
+        print('code ' + str(code))
+
+        #if code == 200:
+        #    data = post.json()
+        #else:
+        #    data = post
+    #except Exception as e:
+    #    post = None
+    #    code = 99
+        #data = { 'error': str(e) }
+
+    #print('post ' + str(post))
+    try:
+        data = post.json()
+    except requests.exceptions.JSONDecodeError as e:
+        #data = { 'json_error': str(e) }
+        data = { 'request_error': str(post) }
 
     try:
         command = data.get('command', None)
@@ -5219,14 +5235,26 @@ def RemoteClient(name, db_store, gDict, _name, verbose=False):
         encoded_output = base64.b64encode(str(output[0].decode('utf-8')).encode('utf-8')).decode('utf-8')
         rd = { 'uuid': _uuid, 'command': command, 'output': encoded_output, 'exitcode': exitcode }
 
-        try:
-            rpost, rcode = http_post(_url, rd)
-            rdata = rpost.json()
+        #try:
+        rpost, rcode = http_post(_url, rd)
 
-        except Exception as e:
-            rpost = None
-            rdata = { 'error': str(e) }
-            rcode = 100
+        try:
+            rdata = rpost.json()
+        except requests.exceptions.JSONDecodeError as e:
+            rdata = { 'request_error': str(rpost) }
+
+
+            #if rcode == 200:
+            #    rdata = rpost.json()
+            #else:
+            #    rdata = rpost
+
+            #rdata = rpost.json()
+
+        #except Exception as e:
+        #    rpost = None
+        #    rdata = { 'error': str(e) }
+        #    rcode = 100
 
 
     rDct = {'post': promDataSanitizer(str(data)),

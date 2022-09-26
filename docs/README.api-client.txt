@@ -1,0 +1,5 @@
+
+# mac
+
+mkdir Library/Sentinel
+
