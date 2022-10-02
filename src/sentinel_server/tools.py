@@ -32,10 +32,11 @@ import asyncio
 import resource
 
 import logging
-loglevel = logging.INFO
-logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
-datefmt = "%b %d %H:%M:%S"
-logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
+#loglevel = logging.INFO
+#loglevel = logging.ERROR
+#logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
+#datefmt = "%b %d %H:%M:%S"
+#logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
 
 import requests
 
@@ -1324,11 +1325,7 @@ def updategDictR(_key, gDict, rule_hit, r, line, rulesDct, db_store,  verbose=Fa
 
 def promDataSanitizer(_str):
 
-    #print(type(_str))
-
-    #_str = _str.decode('utf8', 'ignore')
-
-    _str = _str.replace('"',' ')  #quote
+    _str = _str.replace('"','')  #quote
     _str = _str.replace("'",' ')  #single quote
     _str = _str.replace("\\",' ') #backslash
     _str = _str.replace('`',' ')  #backtick
@@ -1339,7 +1336,6 @@ def promDataSanitizer(_str):
     _str = _str.replace('^M',' ') #ctrlM
 
     #_str = _str.replace(':',' ') #colon
-
     #_str = _str.decode('utf8', 'ignore')
 
     return _str
@@ -6174,14 +6170,48 @@ exit = threading.Event()
 
 def sentryMode(db_store, verbose=False):
 
+    #import logging
+    #loglevel = logging.INFO
+    #loglevel = logging.ERROR
+    logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
+    datefmt = "%b %d %H:%M:%S"
+
+    # python default level is WARNING
+    # loglevel = logging.INFO
+
+    if verbose:
+        #print(verbose)
+        if verbose.lower() == 'debug':
+            loglevel = logging.DEBUG
+        elif verbose.lower() == 'info':
+            loglevel = logging.INFO
+        elif verbose.lower() == 'warning':
+            loglevel = logging.WARNING
+        elif verbose.lower() == 'error':
+            loglevel = logging.ERROR
+        elif verbose.lower() == 'critical':
+            loglevel = logging.CRITICAL
+        else:
+            loglevel = logging.DEBUG
+    else:
+        #loglevel = logging.DEBUG
+        #loglevel = logging.INFO
+        #loglevel = logging.WARNING
+        #loglevel = logging.ERROR
+        loglevel = logging.CRITICAL
+
+    logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
+
+    logging.info("Sentry Startup")
+    logging.info("Sentry Logging " + str(loglevel))
+
     manager = multiprocessing.Manager()
     gDict = manager.dict()
 
     signal.signal(signal.SIGHUP, sentrySIGHUP)
 
-    logging.info("Sentry Startup")
-
     eList=[0]
+
     sharedmmgr = threading.Thread(target=sentrySharedMemoryManager, args=(gDict, eList, 1), name="SharedMemoryManager")
     sharedmmgr.start()
 
