@@ -367,8 +367,8 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             _prom = 'this_loaded="yes",api_server="yes",load_time="yes"'
             _k = 'sentinel_api_server_engine_info-1'
             #gDict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
-            gd_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
-            #api_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
+            #gd_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
+            api_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
             # PermissionError: [Errno 13] Permission denied
 
             return
@@ -5500,44 +5500,44 @@ def sentryProcessor(db_store, gDict, interval):
 
     return True
 
-#def apiProcessor(db_store, api_Dict, interval):
-#    logging.info('Sentry API Processor')
-#
-#    # run this every X
-#
-#    _prom = str(db_store) + '.api.prom'
-#
-#    #while (sigterm == False):
-#    c=0
-#    while not exit.is_set():
-#        try:
-#            with open(_prom, 'w+') as _file:
-#                for k,v in api_Dict.items():
-#                    for item in v:
-##                        _file.write(item + '\n')
-#
-#        #except BrokenPipeError as e:
-#        #except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
-#        except Exception as e:
-#            logging.critical('sentry API Processor sigterm True ' + str(e))
-#            exit.set()
-#            break
-#
-#        #time.sleep(10)
-#        #time.sleep(interval)
-#        for i in range(interval):
-#            try:
-#                time.sleep(1)
-#            except Exception as e:
-#                logging.critical('break.sentry API Processor ' + str(e))
-#                exit.set()
-#                break
-#        c+=1
-#        if c > 5:
-#            c=0
-#        #print(str(c))
-#
-#    return True
+def apiProcessor(db_store, api_Dict, interval):
+    logging.info('Sentry API Processor')
+
+    # run this every X
+
+    _prom = str(db_store) + '.api_server.prom'
+
+    #while (sigterm == False):
+    c=0
+    while not exit.is_set():
+        try:
+            with open(_prom, 'w+') as _file:
+                for k,v in api_Dict.items():
+                    for item in v:
+                        _file.write(item + '\n')
+
+        #except BrokenPipeError as e:
+        #except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+        except Exception as e:
+            logging.critical('sentry API Processor sigterm True ' + str(e))
+            exit.set()
+            break
+
+        #time.sleep(10)
+        #time.sleep(interval)
+        for i in range(interval):
+            try:
+                time.sleep(1)
+            except Exception as e:
+                logging.critical('break.sentry API Processor ' + str(e))
+                exit.set()
+                break
+        c+=1
+        if c > 5:
+            c=0
+        #print(str(c))
+
+    return True
 
 
 def sentryProcessJobs(db_store, gDict):
@@ -6179,12 +6179,12 @@ def apiHTTPServer(port, api_path, db_file, key_file, cert_file, gDict):
         logging.info('Sentry API HTTPServer Drop Privileges to uid ' + str(uid))
         os.setuid(uid)
 
-    #global api_Dict
-    #api_manager = multiprocessing.Manager()
-    #api_Dict = api_manager.dict()
+    global api_Dict
+    api_manager = multiprocessing.Manager()
+    api_Dict = api_manager.dict()
 
-    #api_processor = threading.Thread(target=apiProcessor, args=(db_store, api_Dict, 10), name="Processor")
-    #api_processor.start()
+    api_processor = threading.Thread(target=apiProcessor, args=(db_store, api_Dict, 10), name="Processor")
+    api_processor.start()
 
     httpd = HTTPServer(('', port), APIHTTPHandler)
     #import ssl
