@@ -112,10 +112,13 @@ class HTTPHandler(BaseHTTPRequestHandler):
 
 class APIHTTPHandler(BaseHTTPRequestHandler):
 
-    #def __init__(self):
+    #def __init__(self, self_Dict):
+    #    self.self_Dict = {}
     #    self.manager = multiprocessing.Manager()
     #    self.api_Dict = manager.dict()
     #    #self.api_Dict = {}
+
+    #api_Dict = {}    
 
     def do_GET(self):
         if self.path == _api_path: #/api
@@ -363,12 +366,14 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(line).encode('utf-8'))
 
 
+            _k = 'sentinel_api_server_client_info-' + str(bearer_token[0])
             #_prom = 'this_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
             _prom = 'this_loaded="yes",api_server="yes",load_time="yes"'
-            _k = 'sentinel_api_server_engine_info-1'
+            _prom += 'bearer_token="' + str(bearer_token[0]) + '"'
+            print(_prom)
             #gDict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
             #gd_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
-            api_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
+            api_Dict[_k] = [ 'sentinel_api_server_client_info{' + _prom + '} 1' ] #beer.here need to increment
             # PermissionError: [Errno 13] Permission denied
 
             return
@@ -6159,7 +6164,7 @@ def procHTTPServer(port, metric_path, db_file):
     return httpd.serve_forever()
 
 
-def apiHTTPServer(port, api_path, db_file, key_file, cert_file, gDict):
+def apiHTTPServer(port, api_path, db_file, key_file, cert_file):
 
     logging.info('Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
 
@@ -6169,8 +6174,8 @@ def apiHTTPServer(port, api_path, db_file, key_file, cert_file, gDict):
     global db_store
     db_store = db_file
 
-    global gd_Dict
-    gd_Dict = gDict
+    #global gd_Dict
+    #gd_Dict = gDict
 
     if os.getuid() == 0:
         run_as_user = "nobody"
@@ -6183,11 +6188,12 @@ def apiHTTPServer(port, api_path, db_file, key_file, cert_file, gDict):
     api_manager = multiprocessing.Manager()
     api_Dict = api_manager.dict()
 
-    api_processor = threading.Thread(target=apiProcessor, args=(db_store, api_Dict, 10), name="Processor")
+    api_processor = threading.Thread(target=apiProcessor, args=(db_store, api_Dict, 10), name="APIProcessor")
     api_processor.start()
 
     httpd = HTTPServer(('', port), APIHTTPHandler)
     #import ssl
+    #print('httpd.HTTPServer ' + str(port))
     httpd.socket = ssl.wrap_socket(httpd.socket,
                                    keyfile=key_file,
                                    certfile=cert_file,
@@ -6315,7 +6321,7 @@ def sentryMode(db_store, verbose=False):
 
         if conf == 'api_server':
             api_server = True
-            print('api_server: True!')
+            #print('api_server: True!')
             _config = json.loads(store.getData('configs', key, db_store)[0])
             _port = _config['port']
             _api_path = _config['path']
@@ -6323,8 +6329,8 @@ def sentryMode(db_store, verbose=False):
             _keyfile  = _config['keyfile']
             _certfile = _config['certfile']
 
-            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile, gDict))
-            #p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile))
+            #p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile, gDict))
+            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile))
             p.start()
 
             #api_processor = threading.Thread(target=apiProcessor, args=(db_store, gDict, 10), name="Processor")
