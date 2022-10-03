@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8.3-devR2"
+__version__ = "1.8.3-devR3"
 
 import sys
 
@@ -206,7 +206,7 @@ def usage():
 
         ---
 
-        sentry
+        sentry [debug|info|warning|error|critical]
 
 
         config
@@ -219,9 +219,10 @@ def usage():
                 tail:
                     rules
 
-                http_server
                 api_server
+                http_server
                 pushgateway
+
 
         list-keys
         list-keys-metric

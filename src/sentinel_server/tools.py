@@ -46,7 +46,7 @@ import store
 import ssl
 if sys.platform == 'darwin':
     #ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1108)
-    #print('MACOSX made me do it this way...')
+    #print('MACOSX...')
 
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
     ssl_context.verify_mode = ssl.CERT_REQUIRED
@@ -82,6 +82,7 @@ requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 #from sklearn.neural_network import MLPClassifier
 
 class HTTPHandler(BaseHTTPRequestHandler):
+
     def do_GET(self):
         if self.path == _metric_path: #/metrics
             self.send_response(200)
@@ -105,7 +106,16 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_error(405) #405 Method Not Allowed
         return
 
+    def do_HEAD(self):
+        self.send_error(501) #501 Not Implemented
+        return
+
 class APIHTTPHandler(BaseHTTPRequestHandler):
+
+    #def __init__(self):
+    #    self.manager = multiprocessing.Manager()
+    #    self.api_Dict = manager.dict()
+    #    #self.api_Dict = {}
 
     def do_GET(self):
         if self.path == _api_path: #/api
@@ -114,11 +124,15 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             line = '{"status":"ok", "method":"get"}'
-            self.wfile.write(json.dumps(line).encode('utf-8'))
+            self.wfile.write(line.encode('utf-8'))
             #self.wfile.write(bytes(str(line), 'utf-8'))
 
         else:
             self.send_error(404) #404 Not Found
+        return
+
+    def do_HEAD(self):
+        self.send_error(501) #501 Not Implemented
         return
 
     #self.send_error(405) #405 Method Not Allowed
@@ -347,6 +361,16 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             #print(str(type(bearer_data)))
 
             self.wfile.write(json.dumps(line).encode('utf-8'))
+
+
+            #_prom = 'this_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
+            _prom = 'this_loaded="yes",api_server="yes",load_time="yes"'
+            _k = 'sentinel_api_server_engine_info-1'
+            #gDict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
+            gd_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
+            #api_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
+            # PermissionError: [Errno 13] Permission denied
+
             return
         #---- post     ----#
 
@@ -5476,6 +5500,45 @@ def sentryProcessor(db_store, gDict, interval):
 
     return True
 
+#def apiProcessor(db_store, api_Dict, interval):
+#    logging.info('Sentry API Processor')
+#
+#    # run this every X
+#
+#    _prom = str(db_store) + '.api.prom'
+#
+#    #while (sigterm == False):
+#    c=0
+#    while not exit.is_set():
+#        try:
+#            with open(_prom, 'w+') as _file:
+#                for k,v in api_Dict.items():
+#                    for item in v:
+##                        _file.write(item + '\n')
+#
+#        #except BrokenPipeError as e:
+#        #except (KeyboardInterrupt, SystemExit, Exception, BrokenPipeError) as e:
+#        except Exception as e:
+#            logging.critical('sentry API Processor sigterm True ' + str(e))
+#            exit.set()
+#            break
+#
+#        #time.sleep(10)
+#        #time.sleep(interval)
+#        for i in range(interval):
+#            try:
+#                time.sleep(1)
+#            except Exception as e:
+#                logging.critical('break.sentry API Processor ' + str(e))
+#                exit.set()
+#                break
+#        c+=1
+#        if c > 5:
+#            c=0
+#        #print(str(c))
+#
+#    return True
+
 
 def sentryProcessJobs(db_store, gDict):
     run = None
@@ -6096,19 +6159,32 @@ def procHTTPServer(port, metric_path, db_file):
     return httpd.serve_forever()
 
 
-def apiHTTPServer(port, api_path, db_file, key_file, cert_file):
+def apiHTTPServer(port, api_path, db_file, key_file, cert_file, gDict):
+
     logging.info('Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
+
     global _api_path
     _api_path = api_path
 
     global db_store
     db_store = db_file
 
+    global gd_Dict
+    gd_Dict = gDict
+
     if os.getuid() == 0:
         run_as_user = "nobody"
         uid = pwd.getpwnam(run_as_user)[2]
+
         logging.info('Sentry API HTTPServer Drop Privileges to uid ' + str(uid))
         os.setuid(uid)
+
+    #global api_Dict
+    #api_manager = multiprocessing.Manager()
+    #api_Dict = api_manager.dict()
+
+    #api_processor = threading.Thread(target=apiProcessor, args=(db_store, api_Dict, 10), name="Processor")
+    #api_processor.start()
 
     httpd = HTTPServer(('', port), APIHTTPHandler)
     #import ssl
@@ -6239,6 +6315,7 @@ def sentryMode(db_store, verbose=False):
 
         if conf == 'api_server':
             api_server = True
+            print('api_server: True!')
             _config = json.loads(store.getData('configs', key, db_store)[0])
             _port = _config['port']
             _api_path = _config['path']
@@ -6246,8 +6323,12 @@ def sentryMode(db_store, verbose=False):
             _keyfile  = _config['keyfile']
             _certfile = _config['certfile']
 
-            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile))
+            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile, gDict))
+            #p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile))
             p.start()
+
+            #api_processor = threading.Thread(target=apiProcessor, args=(db_store, gDict, 10), name="Processor")
+            #api_processor.start()
 
         if conf == 'http_server':
             http_server = True
