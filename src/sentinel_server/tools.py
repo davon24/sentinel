@@ -32,6 +32,9 @@ import asyncio
 import resource
 
 import logging
+#logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+
 #loglevel = logging.INFO
 #loglevel = logging.ERROR
 #logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
@@ -112,23 +115,17 @@ class HTTPHandler(BaseHTTPRequestHandler):
 
 class APIHTTPHandler(BaseHTTPRequestHandler):
 
-    #def __init__(self, self_Dict):
-    #    self.self_Dict = {}
-    #    self.manager = multiprocessing.Manager()
-    #    self.api_Dict = manager.dict()
-    #    #self.api_Dict = {}
-
-    #api_Dict = {}    
-
     def do_GET(self):
         if self.path == _api_path: #/api
             self.send_response(200)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
 
-            line = '{"status":"ok", "method":"get"}'
-            self.wfile.write(line.encode('utf-8'))
+            #line = '{"status":"ok", "method":"get"}'
+            #self.wfile.write(line.encode('utf-8'))
             #self.wfile.write(bytes(str(line), 'utf-8'))
+            line = {'status':'ok', 'method':'get'}
+            self.wfile.write(json.dumps(line).encode('utf-8'))
 
         else:
             self.send_error(404) #404 Not Found
@@ -150,8 +147,9 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.send_response(415)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
-            line = '{"status":"Unsupported Media Type", "status_code": 415, "method":"post"}'
+            line = {'status':'Unsupported Media Type', 'status_code': 415, 'method':'post'}
             self.wfile.write(json.dumps(line).encode('utf-8'))
+            #self.wfile.write(line.encode('utf-8'))
             #self.wfile.write(bytes(str(line), 'utf-8'))
             return
 
@@ -162,9 +160,10 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.send_response(401)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
-            line = '{"status":"Unauthorized", "status_code": 401, "method":"post"}'
-            #self.wfile.write(bytes(str(line), 'utf-8'))
+            line = {'status':'Unauthorized', 'status_code': 401, 'method':'post'}
             self.wfile.write(json.dumps(line).encode('utf-8'))
+            #self.wfile.write(bytes(str(line), 'utf-8'))
+            #self.wfile.write(line.encode('utf-8'))
             return
 
         bearer = self.auth_string.split(' ')[0]
@@ -174,8 +173,9 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.send_response(401)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
-            line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "bearer": "none"}'
+            line = {'status':'Unauthorized', 'status_code': 401, 'method':'post', 'bearer': 'none'}
             self.wfile.write(json.dumps(line).encode('utf-8'))
+            #self.wfile.write(line.encode('utf-8'))
             return
 
 
@@ -248,8 +248,14 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.send_response(500)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
-            line = '{"status":"Internal Server Error", "status_code": 500, "method":"post", "sqlite3": "OperationalError",'
-            line += '"error": "' + str(err) + '"}'
+            #line = '{"status":"Internal Server Error", "status_code": 500, "method":"post", "sqlite3": "OperationalError",'
+            #line += '"error": "' + str(err) + '"}'
+            line = {'status':'Internal Server Error',
+                    'status_code': 500,
+                    'method':'post',
+                    'sqlite3': 'OperationalError',
+                    'error': str(err)
+                   }
             self.wfile.write(json.dumps(line).encode('utf-8'))
             return
 
@@ -259,7 +265,7 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.send_response(401)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
-            line = '{"status":"Unauthorized", "status_code": 401, "method":"post", "authorization": "bearer", "token": "invalid"}'
+            line = {'status':'Unauthorized', 'status_code': 401, 'method':'post', 'authorization': 'bearer', 'token': 'invalid'}
             self.wfile.write(json.dumps(line).encode('utf-8'))
             return
 
@@ -369,7 +375,8 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             _k = 'sentinel_api_server_client_info-' + str(bearer_token[0])
             #_prom = 'this_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
             _prom = 'this_loaded="yes",api_server="yes",load_time="yes"'
-            _prom += 'bearer_token="' + str(bearer_token[0]) + '"'
+            #_prom += 'bearer_token="' + str(bearer_token[0]) + '"'
+            _prom += ',uuid="' + str(jdata_uuid) + '"'
             print(_prom)
             #gDict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
             #gd_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
@@ -386,9 +393,7 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
-            line = '{"status":"Not Found", "status_code": 404, "method":"post"}'
-            #self.wfile.write(bytes(str(line), 'utf-8'))
-            #self.wfile.write(json.dumps(line), 'utf-8')
+            line = {'status':'Not Found', 'status_code': 404, 'method':'post'}
             self.wfile.write(json.dumps(line).encode('utf-8'))
             return
 
@@ -1355,10 +1360,10 @@ def updategDictR(_key, gDict, rule_hit, r, line, rulesDct, db_store,  verbose=Fa
 def promDataSanitizer(_str):
 
     _str = _str.replace('"','')  #quote
-    _str = _str.replace("'",' ')  #single quote
+    _str = _str.replace("'",'')  #single quote
     _str = _str.replace("\\",' ') #backslash
     _str = _str.replace('`',' ')  #backtick
-    _str = _str.replace(',',' ')  #comma
+    _str = _str.replace(',','')  #comma
     _str = _str.replace('“',' ')  #italic quote
     _str = _str.replace('\n',' ') #lines breaks
     _str = _str.replace('\r',' ') #lines return
@@ -6164,9 +6169,15 @@ def procHTTPServer(port, metric_path, db_file):
     return httpd.serve_forever()
 
 
-def apiHTTPServer(port, api_path, db_file, key_file, cert_file):
+def apiHTTPServer(port, api_path, db_file, key_file, cert_file, runuser):
+    #print('apiHTTP Server')
 
-    logging.info('Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
+    print(logging.root.level)
+    #print(logging.level)
+    #logging.getLevelName(myLogger.level)
+
+    #logging.info('Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
+    logger.log(logging.root.level, 'Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
 
     global _api_path
     _api_path = api_path
@@ -6178,7 +6189,8 @@ def apiHTTPServer(port, api_path, db_file, key_file, cert_file):
     #gd_Dict = gDict
 
     if os.getuid() == 0:
-        run_as_user = "nobody"
+        #run_as_user = "nobody"
+        run_as_user = runuser
         uid = pwd.getpwnam(run_as_user)[2]
 
         logging.info('Sentry API HTTPServer Drop Privileges to uid ' + str(uid))
@@ -6252,9 +6264,6 @@ exit = threading.Event()
 
 def sentryMode(db_store, verbose=False):
 
-    #import logging
-    #loglevel = logging.INFO
-    #loglevel = logging.ERROR
     logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
     datefmt = "%b %d %H:%M:%S"
 
@@ -6269,6 +6278,7 @@ def sentryMode(db_store, verbose=False):
             loglevel = logging.INFO
         elif verbose.lower() == 'warning':
             loglevel = logging.WARNING
+            logformat = 'sentinel %(asctime)s: %(message)s'
         elif verbose.lower() == 'error':
             loglevel = logging.ERROR
         elif verbose.lower() == 'critical':
@@ -6276,15 +6286,29 @@ def sentryMode(db_store, verbose=False):
         else:
             loglevel = logging.DEBUG
     else:
-        #loglevel = logging.DEBUG
-        #loglevel = logging.INFO
-        #loglevel = logging.WARNING
-        #loglevel = logging.ERROR
-        loglevel = logging.CRITICAL
+        loglevel = logging.WARNING
+        logformat = 'sentinel %(asctime)s: %(message)s'
 
-    logging.basicConfig(level=loglevel, format=logformat, datefmt=datefmt)
+    logging.basicConfig(level=loglevel,
+                        format=logformat,
+                        datefmt=datefmt,
+                        handlers=[
+                            #logging.FileHandler("sentinel.log"),
+                            logging.StreamHandler(sys.stdout)
+                        ]
+                       )
 
-    logging.info("Sentry Startup")
+
+    #logging.critical("Sentry critical") # 50
+    #logging.error("Sentry error")       # 40
+    #logging.warning("Sentry warning")   # 30
+    #logging.info("Sentry info")         # 20
+    #logging.debug("Sentry debug")       # 10
+    #logging.notset("Sentry notest")     #  0
+
+    print(logging.root.level)
+
+    logging.log(30, "Sentry Startup")
     logging.info("Sentry Logging " + str(loglevel))
 
     manager = multiprocessing.Manager()
@@ -6320,7 +6344,7 @@ def sentryMode(db_store, verbose=False):
         #    _url = _config['url']
 
         if conf == 'api_server':
-            api_server = True
+            #api_server = True
             #print('api_server: True!')
             _config = json.loads(store.getData('configs', key, db_store)[0])
             _port = _config['port']
@@ -6329,15 +6353,20 @@ def sentryMode(db_store, verbose=False):
             _keyfile  = _config['keyfile']
             _certfile = _config['certfile']
 
+            try:
+                _runuser  = _config['user']
+            except KeyError:
+                _runuser = 'nobody'
+
             #p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile, gDict))
-            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile))
+            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile, _runuser))
             p.start()
 
             #api_processor = threading.Thread(target=apiProcessor, args=(db_store, gDict, 10), name="Processor")
             #api_processor.start()
 
         if conf == 'http_server':
-            http_server = True
+            #http_server = True
             _config = json.loads(store.getData('configs', key, db_store)[0])
             _port = _config['port']
             _metric_path = _config['path']

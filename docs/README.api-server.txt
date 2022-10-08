@@ -4,7 +4,7 @@
 mkdir ssl
 openssl req -x509 -newkey rsa:4096 -keyout ssl/key.pem -out ssl/cert.pem -sha256 -nodes -days 3650 -subj '/CN=localhost'
 
-sentinel update-config api-http-service '{"config": "api_server","port": 8443, "path": "/api", "key": "abc123", "keyfile": "ssl/key.pem", "certfile": "ssl/cert.pem"}'
+sentinel update-config api-http-service '{"config": "api_server","port": 8443, "path": "/api", "key": "abc123", "keyfile": "ssl/key.pem", "certfile": "ssl/cert.pem", "user":"nobody"}'
 
 
 
