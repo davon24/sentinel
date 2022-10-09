@@ -1,7 +1,7 @@
 
 
 build-centos9:
-   image: redhat:ubi9
+   image: almalinux:9
    script:
       - yum install -y rpm-build
       - echo "Building RPM"
@@ -18,7 +18,7 @@ build-centos9:
          - package/*.rpm
 
 build-centos9-runtime:
-   image: redhat:ubi9
+   image: almalinux:9
    script:
       - yum install -y rpm-build
       - yum -y update
