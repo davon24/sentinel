@@ -235,6 +235,25 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
             self.wfile.write(json.dumps(line).encode('utf-8'))
+
+            # client logging, then return
+
+            client_address = self.client_address[0]
+
+            _h = 'register-' + str(jdata_uuid) + '-' + str(client_address)
+            server_Dict[_h] = server_Dict.get(_h, 0) + 1
+
+            now = time.strftime("%Y-%m-%d %H:%M:%S")
+            client_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
+
+            _k = 'sentinel_api_server_register_client_info-' + str(jdata_uuid)
+            _prom = ''
+            _prom += 'uuid="' + str(jdata_uuid) + '"'
+            _prom += ',client_ip="' + str(client_address) + '"'
+            _prom += ',time="' + str(client_time) + '"'
+
+            api_Dict[_k] = [ 'sentinel_api_server_register_client_info{' + _prom + '} ' + str(server_Dict[_h]) ] # 🍺
+
             return
         #---- register ----#
 
@@ -371,17 +390,36 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
 
             self.wfile.write(json.dumps(line).encode('utf-8'))
 
+            client_address = self.client_address[0]
+            #client_data = {'client_address': str(client_address)}
+
+            _h = str(jdata_uuid) + '-' + str(client_address)
+            server_Dict[_h] = server_Dict.get(_h, 0) + 1
+
+            now = time.strftime("%Y-%m-%d %H:%M:%S")
+            client_time = datetime.datetime.strptime(now, "%Y-%m-%d %H:%M:%S")
 
             _k = 'sentinel_api_server_client_info-' + str(bearer_token[0])
             #_prom = 'this_loaded="'+str(len(rulesDct))+'",rules_b2sum="'+b2checksum(str(rulesDct))+'",load_time="'+str(time.strftime("%Y-%m-%d %H:%M:%S"))+'"'
-            _prom = 'this_loaded="yes",api_server="yes",load_time="yes"'
+            _prom = ''
             #_prom += 'bearer_token="' + str(bearer_token[0]) + '"'
-            _prom += ',uuid="' + str(jdata_uuid) + '"'
-            print(_prom)
+            _prom += 'uuid="' + str(jdata_uuid) + '"'
+            _prom += ',client_ip="' + str(client_address) + '"'
+            _prom += ',time="' + str(client_time) + '"'
+            #_prom += ',time_since="' + str(time_since) + '"'
+            #print(_prom)
+
             #gDict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
             #gd_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
-            api_Dict[_k] = [ 'sentinel_api_server_client_info{' + _prom + '} 1' ] #beer.here need to increment
+
+            #api_Dict[_k] = [ 'sentinel_api_server_client_info{' + _prom + '} 1' ] #beer.here need to increment
+
+            #api_Dict[_k] = [ 'sentinel_api_server_client_info{' + _prom + '} ' + str(server_Dict[jdata_uuid]) ] #beer.here need to increment
+            api_Dict[_k] = [ 'sentinel_api_server_client_info{' + _prom + '} ' + str(server_Dict[_h]) ] # 🍺
+
+
             # PermissionError: [Errno 13] Permission denied
+
 
             return
         #---- post     ----#
@@ -6214,6 +6252,10 @@ def apiHTTPServer(port, api_path, db_file, key_file, cert_file, runuser, logleve
     global api_Dict
     api_manager = multiprocessing.Manager()
     api_Dict = api_manager.dict()
+
+    global server_Dict
+    server_manager = multiprocessing.Manager()
+    server_Dict = server_manager.dict()
 
     api_processor = threading.Thread(target=apiProcessor, args=(db_store, api_Dict, 10), name="APIProcessor")
     api_processor.start()
