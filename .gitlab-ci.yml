@@ -1,6 +1,6 @@
 
 
-build-centos9:
+build-alma9:
    image: almalinux:9
    script:
       - yum install -y rpm-build
@@ -17,7 +17,7 @@ build-centos9:
       paths:
          - package/*.rpm
 
-build-centos9-runtime:
+build-alma9-runtime:
    image: almalinux:9
    script:
       - yum install -y rpm-build
