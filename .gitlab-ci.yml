@@ -26,7 +26,7 @@ build-alma9-runtime:
       - yum -y groupinstall "Development Tools"
       - yum -y install openssl-devel bzip2-devel libffi-devel
       - yum -y install python3-devel
-      - yum -y install libvirt-devel
+      #- yum -y install libvirt-devel
       - echo "Building RPM"
       - mkdir package
       - cp pkg/pkg_rpm_runtime.sh .
