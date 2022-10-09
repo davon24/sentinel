@@ -33,7 +33,7 @@ import resource
 
 import logging
 #logger = logging.getLogger(__name__)
-logger = logging.getLogger()
+#logger = logging.getLogger()
 
 #loglevel = logging.INFO
 #loglevel = logging.ERROR
@@ -6169,15 +6169,30 @@ def procHTTPServer(port, metric_path, db_file):
     return httpd.serve_forever()
 
 
-def apiHTTPServer(port, api_path, db_file, key_file, cert_file, runuser):
+def apiHTTPServer(port, api_path, db_file, key_file, cert_file, runuser, loglevel):
     #print('apiHTTP Server')
 
-    print(logging.root.level)
+    # print(logging.root.level) # 30 default
+
     #print(logging.level)
     #logging.getLevelName(myLogger.level)
-
     #logging.info('Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
-    logger.log(logging.root.level, 'Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
+
+    if loglevel == 30:
+        #print('loglevel 30 warning')
+        logformat = 'sentinel %(asctime)s: %(message)s'
+    else:
+        logformat = 'sentinel %(asctime)s %(filename)s %(levelname)s: %(message)s'
+
+    logging.basicConfig(datefmt='%b %d %H:%M:%S',
+                        format=logformat,
+                        level=loglevel)
+
+    #print(logging.root.level) # 30 default
+
+    #logger.log(logging.root.level, 'Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
+    #logger.log(logging.root.level, 'Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
+    logging.log(logging.root.level, 'Sentry start API HTTPServer port: '+str(port)+' path: '+str(api_path))
 
     global _api_path
     _api_path = api_path
@@ -6306,7 +6321,7 @@ def sentryMode(db_store, verbose=False):
     #logging.debug("Sentry debug")       # 10
     #logging.notset("Sentry notest")     #  0
 
-    print(logging.root.level)
+    #print(logging.root.level)
 
     logging.log(30, "Sentry Startup")
     logging.info("Sentry Logging " + str(loglevel))
@@ -6359,7 +6374,7 @@ def sentryMode(db_store, verbose=False):
                 _runuser = 'nobody'
 
             #p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile, gDict))
-            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile, _runuser))
+            p = multiprocessing.Process(target=apiHTTPServer, args=(_port, _api_path, db_store, _keyfile, _certfile, _runuser, loglevel))
             p.start()
 
             #api_processor = threading.Thread(target=apiProcessor, args=(db_store, gDict, 10), name="Processor")
