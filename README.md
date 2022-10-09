@@ -35,6 +35,7 @@ sentinel [option]
 ```
 ./sentinel.py --help
 
+
     options:
 
         list-proms
@@ -213,7 +214,7 @@ sentinel [option]
 
         ---
 
-        sentry
+        sentry [debug|info|warning|error|critical]
 
 
         config
@@ -226,15 +227,17 @@ sentinel [option]
                 tail:
                     rules
 
-                http_server
                 api_server
+                http_server
                 pushgateway
+
 
         list-keys
         list-keys-metric
         list-vals
         get-key key
         expire-keys key1 key2 key3...
+
 
 
 ```
