@@ -1,5 +1,45 @@
 
 
+build-centos9:
+   image: centos:9
+   script:
+      - yum install -y rpm-build
+      - echo "Building RPM"
+      - mkdir package
+      - cp pkg/pkg_rpm.sh .
+      - ./pkg_rpm.sh
+      - cp ~/rpmbuild/RPMS/noarch/*.rpm package/
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.rpm
+
+build-centos9-runtime:
+   image: centos:9
+   script:
+      - yum install -y rpm-build
+      - yum -y update
+      - yum -y groupinstall "Development Tools"
+      - yum -y install openssl-devel bzip2-devel libffi-devel
+      - yum -y install python3-devel
+      - yum -y install libvirt-devel
+      - echo "Building RPM"
+      - mkdir package
+      - cp pkg/pkg_rpm_runtime.sh .
+      - ./pkg_rpm_runtime.sh
+      - cp ~/rpmbuild/RPMS/x86_64/*.rpm package/
+   only:
+      - tags
+   except:
+      - branches
+   artifacts:
+      paths:
+         - package/*.rpm
+
+
 build-centos8:
    image: centos:8
    script:
