@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8.3"
+__version__ = "1.8.4-Dev1"
 
 import sys
 
@@ -136,8 +136,8 @@ def usage():
 
         file-type /dir/file
 
-        av-scan dir|file
         list-avs
+        av-scan dir|file
 
         list-proms-db
           update-prom-db name data
@@ -162,6 +162,7 @@ def usage():
           delete-client-command rowid
 
         base64 <string>
+        unbase64 <base64>
 
         list-model [id|tags tag]
           update-model tag json
@@ -257,6 +258,12 @@ def main():
             string = sys.argv[2]
             base64_output = base64.b64encode(string.encode('utf-8')).decode('utf-8')
             print(base64_output)
+            sys.exit(0)
+
+        if sys.argv[1] == 'unbase64':
+            string = sys.argv[2]
+            unbase64_output = base64.b64decode(string.encode('utf-8')).decode('utf-8')
+            print(unbase64_output)
             sys.exit(0)
 
         if sys.argv[1] == 'manuf':
@@ -905,10 +912,16 @@ def main():
             print(str(run))
             sys.exit(0)
 
+        if sys.argv[1] == 'ntp-check':
+            run = tools.ntpCheck('ntp-check-cli', db_store, {}, 'ntp-check-cli', verbose=True)
+            print(run)
+            sys.exit(0)
+
         if sys.argv[1] == 'run-ps':
             #import modules.ps.ps
             #run = modules.ps.ps.get_ps()
-            from .modules.ps import ps
+            #from .modules.ps import ps
+            from modules.ps import ps
             run = ps.get_ps()
             print(run)
             sys.exit(0)
@@ -1019,7 +1032,8 @@ def main():
 
         if sys.argv[1] == 'file-type':
             #import modules.gitegridy.gitegridy as git
-            from .modules.gitegridy import gitegridy as git
+            #from .modules.gitegridy import gitegridy as git
+            from modules.gitegridy import gitegridy as git
             _file = sys.argv[2]
             file_type = git.fileType(_file)
             print(file_type)

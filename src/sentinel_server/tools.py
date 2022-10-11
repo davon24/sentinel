@@ -4658,6 +4658,35 @@ def delFimFile(name, _file, db_store):
         return False
 
 
+def ntpCheck(name, db_store, gDict, _name, verbose=False):
+    #print('ntpCheck.run')
+    #import modules.ps.ps
+    #psDct = modules.ps.ps.get_ps()
+
+    Dct = {'ntp_check':'True'}
+
+    _key = 'ntpcheck-' + str(name)
+
+    Dct['sentinel_job'] = name
+    #val = 1
+    val = 0
+
+    prom = ''
+    c = len(Dct)
+    for k,v in Dct.items():
+        c -= 1
+        if c == 0:
+            prom += str(k) + '="' + str(v) + '"'
+        else:
+            prom += str(k) + '="' + str(v) + '",'
+
+    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+    if verbose:
+        print(gDict)
+
+    return True
+
 
 def psCheck(name, db_store, gDict, _name):
     #print('psCheck.run')
@@ -5362,6 +5391,7 @@ options = {
  'established-check' : establishedCheck,
  'kvm-check' : kvmCheck,
  'remote-client' : RemoteClient,
+ 'ntp-check' : ntpCheck,
  #'rclnt-run' : rclntRun,
 }
 #options[sys.argv[2]](sys.argv[3:])
