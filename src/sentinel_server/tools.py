@@ -393,6 +393,8 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             client_address = self.client_address[0]
             #client_data = {'client_address': str(client_address)}
 
+            x_forward = self.headers['X-Forwarded-For']
+
             _h = str(jdata_uuid) + '-' + str(client_address)
             server_Dict[_h] = server_Dict.get(_h, 0) + 1
 
@@ -405,21 +407,13 @@ class APIHTTPHandler(BaseHTTPRequestHandler):
             #_prom += 'bearer_token="' + str(bearer_token[0]) + '"'
             _prom += 'uuid="' + str(jdata_uuid) + '"'
             _prom += ',client_ip="' + str(client_address) + '"'
+            _prom += ',x_forward_ip="' + str(x_forward) + '"'
             _prom += ',time="' + str(client_time) + '"'
             #_prom += ',time_since="' + str(time_since) + '"'
             #print(_prom)
 
-            #gDict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
-            #gd_Dict[_k] = [ 'sentinel_api_server_engine_info{' + _prom + '} 1' ]
-
-            #api_Dict[_k] = [ 'sentinel_api_server_client_info{' + _prom + '} 1' ] #beer.here need to increment
-
-            #api_Dict[_k] = [ 'sentinel_api_server_client_info{' + _prom + '} ' + str(server_Dict[jdata_uuid]) ] #beer.here need to increment
             api_Dict[_k] = [ 'sentinel_api_server_client_info{' + _prom + '} ' + str(server_Dict[_h]) ] # 🍺
-
-
             # PermissionError: [Errno 13] Permission denied
-
 
             return
         #---- post     ----#
