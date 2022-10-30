@@ -1663,8 +1663,39 @@ def genSystemProfile(db_store):
 
 
 def genSystemProfileLinux(db_store):
-    print('TODO genSystemProfile Linux')
-    return False
+    #print('TODO genSystemProfile Linux')
+    print('WORKING ON...')
+
+    print(sys.platform)
+
+    # rpm or dpkg?
+    # dpkg -l
+    # rpm -qa
+
+    #import platform
+    #print(platform.machine())
+    #print(platform.system())
+    #print(platform.version())
+
+    #print(platform.freedesktop_os_release()) # python 3.10
+    # cat /etc/os-release
+    # ID_LIKE=debian
+
+    # check if dpkg command exists...  just run the command...
+
+    cmd = 'dpkg --list'
+    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    #out = proc.stdout.read()
+    out = proc.stdout.readlines()
+    err = proc.stderr.readlines()
+
+    #print(err)
+
+    for line in out:
+        line = line.decode('utf-8').strip('\n')
+        #print(line)
+
+    return True
 
 
 def genSystemProfileMac(db_store):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8.4"
+__version__ = "1.8.5-Dev1-system-profile-dpkg"
 
 import sys
 
