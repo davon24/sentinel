@@ -1683,19 +1683,31 @@ def genSystemProfileLinux(db_store):
 
     # check if dpkg command exists...  just run the command...
 
-    cmd = 'dpkg --list'
-    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+
+    try:
+        cmd = 'dpkg --list'
+        proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+    except FileNotFoundError:
+        cmd = 'rpm -qa'
+        proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+
     #out = proc.stdout.read()
     out = proc.stdout.readlines()
     err = proc.stderr.readlines()
 
     #print(err)
 
-    for line in out:
-        line = line.decode('utf-8').strip('\n')
+    #for line in out:
+    #    line = line.decode('utf-8').strip('\n')
         #print(line)
 
-    return True
+    #print(out)
+    #print(b2checksum(str(out)))
+    name = b2checksum(str(out))
+    print(name)
+    #update = store.replaceINTOducedate('system_profile', name, out.decode('utf-8'), db_store)
+
+    return 'MayBe'
 
 
 def genSystemProfileMac(db_store):
