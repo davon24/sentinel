@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8.5-Dev1-system-profile-dpkg"
+__version__ = "1.8.5-Dev2-rpm-based1"
 
 import sys
 
 if sys.version_info < (3, 8, 1):
-    raise RuntimeError('Requires Python version 3.8.1 or higher. This version: ' + str(sys.version_info))
+    python_version = '.'.join(map(str, sys.version_info[:3]))
+    raise RuntimeError('Requires Python version 3.8.1 or higher. This version: ' + str(python_version))
 
 if sys.platform not in ('linux','linux2','darwin','cygwin'):
     raise RuntimeError('Platform not supported. This platform: ' + str(sys.platform))
