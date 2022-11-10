@@ -59,4 +59,15 @@ groups:
         summary: Instance {{ $labels.instance }} - sentinel_watch_syslog_rule_engine
         description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_watch_syslog_rule_engine \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
 
+    # check-ntp
+    - alert: Check_NTP
+      expr: sentinel_job_output{sentinel_job="ntp-check"} > 0
+      for: 0m
+      labels:
+        severity: warning
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - Check_NTP
+        description: "{{ $labels.instance }} of job {{ $labels.job }} Check_NTP \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
 
