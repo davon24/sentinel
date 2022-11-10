@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8.5-Dev2-rpm-based2"
+__version__ = "1.8.5-Dev4-2022-11-10"
 
 import sys
 
@@ -205,6 +205,7 @@ def usage():
         logstream-keys
         run-create-db
         run-ps
+        check-ntp
 
         ---
 
@@ -913,7 +914,7 @@ def main():
             print(str(run))
             sys.exit(0)
 
-        if sys.argv[1] == 'ntp-check':
+        if sys.argv[1] == 'check-ntp':
             run = tools.ntpCheck('ntp-check-cli', db_store, {}, 'ntp-check-cli', verbose=True)
             print(run)
             sys.exit(0)
@@ -1385,7 +1386,7 @@ def main():
             print(delete)
             sys.exit(0)
 
-        if sys.argv[1] == 'clear-system-profile':
+        if sys.argv[1] == 'clear-system-profiles':
             clear = store.clearAll('system_profile', db_store)
             print(clear)
             sys.exit(0)

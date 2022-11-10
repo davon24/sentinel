@@ -706,6 +706,9 @@ def replaceINTOduce(tbl, name, data, db_file):
         return False
     return True
 
+def replaceINTOtable(tbl, name, data, db_file):
+    return replaceINTOducedate(tbl, name, data, db_file)
+
 def replaceINTOducedate(tbl, name, data, db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
