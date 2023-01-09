@@ -1663,9 +1663,7 @@ def genSystemProfile(db_store):
 
 
 def genSystemProfileLinux(db_store):
-    #print('TODO genSystemProfile Linux')
-    print('WORKING ON...')
-    print(sys.platform)
+    #print(sys.platform)
 
     # rpm or dpkg?
     # dpkg -l
@@ -1682,7 +1680,6 @@ def genSystemProfileLinux(db_store):
 
     # check if dpkg command exists...  just run the command...
 
-
     try:
         cmd = 'dpkg --list'
         proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
@@ -1690,13 +1687,8 @@ def genSystemProfileLinux(db_store):
         cmd = 'rpm -qa'
         proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
 
-    #out = proc.stdout.read()
     out = proc.stdout.readlines()
     err = proc.stderr.readlines()
-
-    #name = str(b2checksum(out.decode('utf-8')))
-    #name = b2checksum(str(out))
-    #print(name)
 
     outDict = {}
     count = 0
@@ -1707,20 +1699,15 @@ def genSystemProfileLinux(db_store):
         outDict[count] = line
 
     name = b2checksum(str(outDict))
-    print(name)
 
-    #print(out)
-    #print(b2checksum(str(out)))
-    #name = b2checksum(str(outDict))
-    #print(name)
-    #update = store.replaceINTOducedate('system_profile', name, out.decode('utf-8'), db_store)
-    #update = store.replaceINTOtable('system_profile', name, str(outDict), db_store)
-    #update = store.replaceINTOtable('system_profile', name, json.dumps(out.decode('utf-8')), db_store)
+    get = store.getByName('system_profile', name, db_store)
 
-    #update = store.replaceINTOtable('system_profile', name, out.decode('utf-8'), db_store)
-    update = store.replaceINTOtable('system_profile', name, json.dumps(outDict, sort_keys=True), db_store)
+    if get:
+        return str(name) + ' preexisting'
+    else:
+        update = store.replaceINTOtable('system_profile', name, json.dumps(outDict, sort_keys=True), db_store)
 
-    return 'MayBe.Perhaps.OK.utf-8.outDict'
+    return str(name)
 
 
 def genSystemProfileMac(db_store):
@@ -1787,48 +1774,27 @@ def diffSystemProfileIDs(rowid1, rowid2, db_store):
 def diffSystemProfileIDsLinux(rowid1, rowid2, db_store):
     row1 = store.getByID('system_profile', rowid1, db_store)
     dta1 = row1[3]
-    #print(str(type(dta1)))
     jsn1 = json.loads(dta1)
-    #print(str(dta1))
-    #print(str(type(dta1)))
-    print(str(type(jsn1)))
 
     row2 = store.getByID('system_profile', rowid2, db_store)
     dta2 = row2[3]
-    #print(str(type(dta2)))
     jsn2 = json.loads(dta2)
-    #print(str(dta2))
-    print(str(type(jsn2)))
 
-    #print('burrp')
-    #a, b = json.dumps(jsn1, sort_keys=True), json.dumps(jsn2, sort_keys=True)
-    #print(sorted(jsn1.items()) == sorted(jsn2.items()))
+    #for key in jsn2.keys():
+    #    if not key in jsn1:
+    #        print(jsn2[key])
 
-    #print(cmp(jsn1, jsn2)
-    #value = { k : second_dict[k] for k in set(second_dict) - set(first_dict) }
-    #value = { k : jsn2[k] for k in set(jsn2) - set(jsn1) }
-    #print(value)
 
-    #set_1 = set(jsn1.items())
-    #set_2 = set(jsn2.items())
-    #print(set_1 - set_2)
+    for val in jsn1.values():
+        if not val in jsn2.values():
+            print(rowid1 + ' < ', val)
 
-    #print(dta1)
-    #print(jsn1)
-    #print(dta2)
-
-    #diff = set(jsn1) - set(jsn2)
-    #diff = set(dta1) - set(dta2)
-    #print(diff)
-
-    #print(jsn1)
-
-    for key in jsn2.keys():
-        if not key in jsn1:
-            print(key)
-            print(jsn2[key])
+    for val in jsn2.values():
+        if not val in jsn1.values():
+            print(rowid2 + ' > ', val)
 
     return True
+
 
 def diffSystemProfileIDsMacOS(rowid1, rowid2, db_store):
     #print('dict.differ.time')

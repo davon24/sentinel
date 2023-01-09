@@ -11,7 +11,7 @@ setup(
     entry_points = {
         "console_scripts": ['sentinel = sentinel_server.sentinel:main']
         },
-    version = '1.8.5',
+    version = '1.8.6',
     description = "sentinel command and daemon",
     long_description = "Python command line tool for administration of sentinel.",
     author = "Karl Rink",

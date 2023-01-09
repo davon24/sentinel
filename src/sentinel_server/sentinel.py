@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8.5 🍗"
+__version__ = "1.8.6 🎉"
 
 import sys
 
@@ -187,14 +187,14 @@ def usage():
         # ? mark-training tag
         # ? mark-training-on name
 
-        list-system-profile
+        list-system-profiles
           list-system-profile-full
           gen-system-profile
           get-system-profile-name name
           get-system-profile-rowid rowid
           del-system-profile-name name
           del-system-profile-rowid rowid
-          clear-system-profile
+          clear-system-profiles
 
         diff-system-profile-rowid rowid rowid
         get-system-profile-data rowid data
@@ -1357,11 +1357,14 @@ def main():
 
         if sys.argv[1] == 'list-system-profile-full':
             rows = store.getAll('system_profile', db_store)
+            #print(str(type(rows)))
             for row in rows:
-                print(row)
+                print(row) 
+                #print(row[2]) 
+                #print(row[0],row[1],row[2])
             sys.exit(0)
 
-        if sys.argv[1] == 'list-system-profile':
+        if sys.argv[1] == 'list-system-profiles':
             #name = sys.argv[2]
             #rows = store.selectAll('system_profile', db_store)
             rows = store.getAll('system_profile', db_store)
