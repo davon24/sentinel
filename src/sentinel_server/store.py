@@ -250,7 +250,8 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name):
             m = mf.get_manuf(mac, manuf_file)
             #print(m)
             #data = '{"created":"' + t + '","manuf":"' + m + '"}'
-            data = 'created:"' + t + '",manuf:"' + m + '"'
+            data = 'created="' + t + '",manuf="' + m + '"'
+            # text format parsing error in line 11: expected '=' after label name, found ':'"
             cur.execute("INSERT INTO arp VALUES (?, ?, ?)", (mac, ip, data))
             con.commit()
             #print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
