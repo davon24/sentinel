@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.9.0-dev1.a1"
+__version__ = "1.9.0-dev1.a2"
 
 import sys
 

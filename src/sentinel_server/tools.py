@@ -4777,7 +4777,14 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
             t = time.strftime("%Y-%m-%dT%H:%M:%SZ")
             m = mf.get_manuf(mac, manuf_file)
             #data = '{"created":"' + t + '","manuf":"' + m + '"}'
-            data = '"created":"' + t + '","manuf":"' + m + '"'
+            data = 'created:"' + t + '",manuf:"' + m + '"'
+
+### output error needs {}
+# ('b0:be:76:a4:98:2e', '(192.168.0.4)', 'created:"2023-02-27T19:02:13Z",manuf:"Tp-LinkT (Tp-Link Technologies Co.,Ltd.)"')
+#
+# should be
+#
+# ('b8:27:eb:2c:19:1e', '(192.168.0.254)', '{"created": "2023-02-27T15:38:45Z", "manuf": "Raspberr (Raspberry Pi Foundation)"}')
 
 
             # update/insert into arp table
@@ -4785,14 +4792,19 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
             insert = store.insertINTOArpTable(ip, mac, data, db_store)
             #print(insert)
 
-            #Dct['mac'] = ip
+            #Dct[mac] = [ip, data]
             key = 'sentinel_job_output-arp-' + str(mac)
-            prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
+            prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'",'
             prom += data
             val = 1
             gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
     #Dct = {'mac_check':'True'}
+
+    #if Dct:
+    #    key = 'sentinel_job_output-arp-' + str(Dct['mac'][0])
+    #    print(key)
+
 
 
     if verbose:
@@ -4801,6 +4813,7 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
         for v in gDict.values():
             #print(v)
             #print('this ... ' + v[0])
+
             print(v[0])
 
     return True
