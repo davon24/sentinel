@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.8.6 🎉"
+__version__ = "1.9.0-dev1"
 
 import sys
 
@@ -68,7 +68,9 @@ def usage():
         tcp ip port
 
         list-macs
-          update-manuf mac
+          delete-mac mac
+          clear-macs
+          update-manuf mac|ALL
           update-dns mac ip
 
         listening
@@ -205,7 +207,9 @@ def usage():
         logstream-keys
         run-create-db
         run-ps
+        run-arp
         check-ntp
+        check-macs
 
         ---
 
@@ -236,14 +240,15 @@ def usage():
 Version: {} '''.format(__version__))
 
 
-def printArps():
-    arpTbl = tools.getArps()
-    for k,v in arpTbl.items():
-        if (v == '(incomplete)') or (v == '<incomplete>'):
-            continue
-        print(v,k)
-    return True
+#def printArps():
+#    arpTbl = tools.getArps()
+#    for k,v in arpTbl.items():
+#        if (v == '(incomplete)') or (v == '<incomplete>'):
+#            continue
+#        print(v,k)
+#    return True
 
+#db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
 
 def main():
 
@@ -275,15 +280,26 @@ def main():
             sys.exit(0)
 
         if sys.argv[1] == 'arps':
-            printArps()
+            arps = tools.printArps()
             sys.exit(0)
 
         if sys.argv[1] == 'list-macs':
-            store.print_all(db_store)
+            store.print_all(db_store, 'arp')
             sys.exit(0)
 
         if sys.argv[1] == 'update-manuf':
             mac = sys.argv[2]
+
+            if mac == 'ALL':
+                #print('UPDATE ALL')
+                macs = select_all_arp(db_store)
+                for m in macs:
+                    print(m[0])
+                    mfname = store.get_manuf(m[0], db_manuf)
+                    update = store.update_data_manuf(m[0], mfname, db_store)
+                    print(update)
+                sys.exit(0)
+
             mfname = store.get_manuf(mac, db_manuf)
             update = store.update_data_manuf(mac, mfname, db_store)
             print(update)
@@ -919,6 +935,16 @@ def main():
             print(run)
             sys.exit(0)
 
+        if sys.argv[1] == 'check-macs':
+            run = tools.macsCheck('macs-check-cli', db_store, {}, 'macs-check-cli', verbose=True)
+            print(run)
+            sys.exit(0)
+
+        if sys.argv[1] == 'clear-macs':
+            clear = store.clearAll('arp', db_store)
+            print(clear)
+            sys.exit(0)
+
         if sys.argv[1] == 'run-ps':
             #import modules.ps.ps
             #run = modules.ps.ps.get_ps()
@@ -927,6 +953,14 @@ def main():
             run = ps.get_ps()
             print(run)
             sys.exit(0)
+
+        if sys.argv[1] == 'run-arp':
+            arpDct = tools.getArps()
+            #print(arpDct)
+            for k,v in arpDct.items():
+                print(k,v)
+            sys.exit(0)
+
 
         if sys.argv[1] == 'list-jobs-available':
             for k,v in tools.options.items():
@@ -1291,6 +1325,12 @@ def main():
         if sys.argv[1] == 'delete-occurrence':
             name = sys.argv[2]
             delete = store.deleteFrom('occurrence', name, db_store)
+            print(delete)
+            sys.exit(0)
+
+        if sys.argv[1] == 'delete-mac':
+            mac = sys.argv[2]
+            delete = store.deleteFromArp(mac, db_store)
             print(delete)
             sys.exit(0)
 

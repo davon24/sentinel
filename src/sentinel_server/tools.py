@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from sentinel import __version__
+#from sentinel import db_manuf
 
 import sqlite3
 
@@ -4731,6 +4732,79 @@ def delFimFile(name, _file, db_store):
     else:
         return False
 
+
+def printArps():
+    arpTbl = getArps()
+    for k,v in arpTbl.items():
+        if (v == '(incomplete)') or (v == '<incomplete>'):
+            continue
+        print(v,k)
+    return True
+
+
+
+#def macsCheck_T(name, db_store, gDict, _name, verbose=False):
+#    #update_arp_data(db_file, arpDict, manuf_file)
+#    arpTbl = getArps()
+#    #db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
+#    #update = store.update_arp_data(db_store, arpTbl, db_manuf)
+#    print(update)
+#
+#
+#def macsCheck_Standard(name, db_store, gDict, _name, verbose=False):
+#    #update_arp_data(db_file, arpDict, manuf_file)
+#    arpTbl = getArps()
+#    #db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
+#    update = store.update_arp_data(db_store, arpTbl, db_manuf)
+#    print(update)
+
+def macsCheck(name, db_store, gDict, _name, verbose=False):
+
+    # get current arps
+    arpDct = getArps()
+    #print(arpDct)
+    #print(str(type(arpDct)))
+    print('----------------')
+
+    # get arps in sql (list-macs)
+    stoTbl = store.get_all(db_store, 'arp')
+
+    stoDct={}
+    for line in stoTbl:
+        _mac = line[0]
+        stoDct[_mac] = line[1]
+        
+
+    for ip,mac in arpDct.items():
+
+        if (mac == '(incomplete)') or (mac == '<incomplete>'):
+            #print('skip incomplete')
+            continue
+
+        if not mac in stoDct.keys():
+            print('new ' + mac, ip) # this exists in arpTbl, but not in sql store
+
+            # update/insert into arp table
+            insert = store.insertINTOArpTable(ip, mac, '{}', db_store)
+            print(insert)
+
+        #print(ip,mac)
+
+
+    #print(stoTbl)
+    #print(str(type(stoTbl)))
+
+    #for line in stoTbl:
+    #    #print(line[0])
+
+
+    #for ip,mac in arpDict.items():
+
+    #update = store.update_arp_data(db_store, arpTbl, db_manuf)
+
+    return True
+
+
 #WORKING
 def ntpCheck(name, db_store, gDict, _name, verbose=False):
     #print('ntpCheck.run')
@@ -4809,7 +4883,7 @@ def ntpCheck(name, db_store, gDict, _name, verbose=False):
 
 
 def psCheck(name, db_store, gDict, _name):
-    #print('psCheck.run')
+    #update = store.update_arp_data(db_store, arpTbl, db_manuf)print('psCheck.run')
     import modules.ps.ps
     psDct = modules.ps.ps.get_ps()
 
@@ -5512,6 +5586,7 @@ options = {
  'kvm-check' : kvmCheck,
  'remote-client' : RemoteClient,
  'ntp-check' : ntpCheck,
+ 'macs-check' : macsCheck,
  #'rclnt-run' : rclntRun,
 }
 #options[sys.argv[2]](sys.argv[3:])

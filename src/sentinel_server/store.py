@@ -193,7 +193,7 @@ class DNSUpDateTask:
             return False
         return True
 
-
+# need to depricate this method...
 def update_arp_data(db_file, arpDict, manuf_file):
 
     con = sqlConnection(db_file)
@@ -244,10 +244,10 @@ def update_arp_data(db_file, arpDict, manuf_file):
             con.commit()
             print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
             # launch dns thread update async
-            dns = DNSUpDateTask()
-            t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
+            #dns = DNSUpDateTask()
+            #t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
             #print('t.start')
-            t.start()
+            #t.start()
         else:
             #print(ip, _result[0]) #tuple _result
             if ip not in _result[0]:
@@ -268,7 +268,27 @@ def update_arp_data(db_file, arpDict, manuf_file):
     return True
 
 
-def select_all(db_file):
+def select_all(db_file, tbl):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT * FROM ' + tbl)
+    rows = cur.fetchall()
+    return rows
+
+
+def get_all(db_file, tbl):
+    rows = select_all(db_file, tbl)
+    return rows
+
+
+def print_all(db_file, tbl):
+    rows = select_all(db_file, tbl)
+    for row in rows:
+        print(row)
+    return True
+
+
+def select_all_arp(db_file):
     con = sqlConnection(db_file)
     cur = con.cursor()
     cur.execute('SELECT * FROM arp')
@@ -276,8 +296,8 @@ def select_all(db_file):
     return rows
 
 
-def print_all(db_file):
-    rows = select_all(db_file)
+def print_all_arp(db_file):
+    rows = select_all_arp(db_file)
     for row in rows:
         print(row)
     return True
@@ -473,6 +493,19 @@ def replaceIPs(ip, data, db_file):
 #    cur.execute("REINDEX ips;")
 #    con.commit()
 #    return True
+
+def deleteFromArp(mac, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute("DELETE FROM arp WHERE mac=? ;", (mac,))
+    #rowid = cur.lastrowid
+    #rowcount = cur.rowcount
+    con.commit()
+    if cur.rowcount == 0:
+        return None
+    #return cur.lastrowid
+    return cur.rowcount
+
 
 def deleteIPs(ip, db_file):
     con = sqlConnection(db_file)
@@ -749,6 +782,32 @@ def updateTable(tag, data, tbl, db_file):
         return None
     #return True
     return rowid
+
+
+def insertINTOArpTable(ip, mac, data, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    #cur.execute("INSERT OR IGNORE INTO arp VALUES (?, ?, ?)", (mac, ip, data))
+    cur.execute("INSERT OR REPLACE INTO arp VALUES (?, ?, ?)", (mac, ip, data))
+    rowid = cur.lastrowid
+    con.commit()
+    if cur.rowcount == 0:
+        return None
+    return rowid
+
+
+def updateArpTable(ip, mac, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('UPDATE arp SET ip=? WHERE mac=?', (ip, mac))
+    rowid = cur.lastrowid
+    con.commit()
+    if cur.rowcount == 0:
+        return None
+    #return True
+    return rowid
+
+
 
 def updateTableTag(_id, tag, tbl, db_file):
     con = sqlConnection(db_file)
