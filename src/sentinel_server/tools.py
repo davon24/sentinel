@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from sentinel import __version__
-#from sentinel import db_manuf
+from sentinel import db_manuf as manuf_file
+import manuf as mf
 
 import sqlite3
 
@@ -76,6 +77,8 @@ else:
 
 from urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
+
 
 #import smtplib
 #import ssl
@@ -4743,28 +4746,13 @@ def printArps():
 
 
 
-#def macsCheck_T(name, db_store, gDict, _name, verbose=False):
-#    #update_arp_data(db_file, arpDict, manuf_file)
-#    arpTbl = getArps()
-#    #db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
-#    #update = store.update_arp_data(db_store, arpTbl, db_manuf)
-#    print(update)
-#
-#
-#def macsCheck_Standard(name, db_store, gDict, _name, verbose=False):
-#    #update_arp_data(db_file, arpDict, manuf_file)
-#    arpTbl = getArps()
-#    #db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
-#    update = store.update_arp_data(db_store, arpTbl, db_manuf)
-#    print(update)
-
 def macsCheck(name, db_store, gDict, _name, verbose=False):
 
     # get current arps
     arpDct = getArps()
     #print(arpDct)
     #print(str(type(arpDct)))
-    print('----------------')
+    #print('----------------')
 
     # get arps in sql (list-macs)
     stoTbl = store.get_all(db_store, 'arp')
@@ -4773,7 +4761,8 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
     for line in stoTbl:
         _mac = line[0]
         stoDct[_mac] = line[1]
-        
+
+    Dct = {}
 
     for ip,mac in arpDct.items():
 
@@ -4782,27 +4771,40 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
             continue
 
         if not mac in stoDct.keys():
-            print('new ' + mac, ip) # this exists in arpTbl, but not in sql store
+            #print('new ' + mac, ip) # this exists in arpTbl, but not in sql store
+
+            # get data manuf
+            t = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+            m = mf.get_manuf(mac, manuf_file)
+            #data = '{"created":"' + t + '","manuf":"' + m + '"}'
+            data = '"created":"' + t + '","manuf":"' + m + '"'
+
 
             # update/insert into arp table
-            insert = store.insertINTOArpTable(ip, mac, '{}', db_store)
-            print(insert)
+            #insert = store.insertINTOArpTable(ip, mac, '{}', db_store)
+            insert = store.insertINTOArpTable(ip, mac, data, db_store)
+            #print(insert)
 
-        #print(ip,mac)
+            #Dct['mac'] = ip
+            key = 'sentinel_job_output-arp-' + str(mac)
+            prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
+            prom += data
+            val = 1
+            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+    #Dct = {'mac_check':'True'}
 
 
-    #print(stoTbl)
-    #print(str(type(stoTbl)))
-
-    #for line in stoTbl:
-    #    #print(line[0])
-
-
-    #for ip,mac in arpDict.items():
-
-    #update = store.update_arp_data(db_store, arpTbl, db_manuf)
+    if verbose:
+        #print(gDict)
+        #print(gDict.values())
+        for v in gDict.values():
+            #print(v)
+            #print('this ... ' + v[0])
+            print(v[0])
 
     return True
+    
 
 
 #WORKING

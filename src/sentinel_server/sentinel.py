@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.9.0-dev1"
+__version__ = "1.9.0-dev1.a1"
 
 import sys
 
@@ -248,12 +248,12 @@ Version: {} '''.format(__version__))
 #        print(v,k)
 #    return True
 
-#db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
+db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
 
 def main():
 
     db_store = 'sentinel.db'
-    db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
+    #db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
 
     if sys.argv[1:]:
 
