@@ -4745,9 +4745,19 @@ def printArps():
     return True
 
 
-
+#def macsCheck_V2prom(name, db_store, gDict, _name, verbose=False):
 def macsCheck(name, db_store, gDict, _name, verbose=False):
 
+    arpDct = getArps()
+
+    update = store.update_arp_data_prom(db_store, arpDct, manuf_file, gDict, name)
+
+    return True
+
+
+
+#def macsCheck_V1(name, db_store, gDict, _name, verbose=False):
+def macsCheck_LOCAL1(name, db_store, gDict, _name, verbose=False):
     # get current arps
     arpDct = getArps()
     #print(arpDct)
@@ -4775,7 +4785,7 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
         m = mf.get_manuf(mac, manuf_file)
         data = 'created:"' + t + '",manuf:"' + m + '"'
 
-        if not mac in stoDct.keys():
+        if mac not in stoDct.keys():
             val = 1
             #print('new ' + mac, ip) # this exists in arpTbl, but not in sql store
 
@@ -4807,19 +4817,44 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
             gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
 
+        # check if ip has updated
+        # cur.execute("SELECT ip FROM arp WHERE mac='" + mac + "'")
+        # result = cur.fetchone()
+        #if ip not in result[0]:
 
-    #Dct = {'mac_check':'True'}
-    #if Dct:
-    #    key = 'sentinel_job_output-arp-' + str(Dct['mac'][0])
-    #    print(key)
+        #if ip not in stoDct[mac][0]:
+        #if ip not in stoDct[mac][0]: #KeyError: '70:8b:cd:d0:67:10'
+
+        #cur.execute("SELECT ip,mac,data FROM arp WHERE mac='" + mac + "'")
+        #result = cur.fetchone()
+
+        result = store.getArpData(mac, db_store)
+
+        if result:
+
+            if ip not in result[0]:
+                val = 2
+
+                if len(result[0]) == 0:
+                    _ip = ip + result[0]
+                else:
+                    _ip = ip + ',' + result[0] #csv
+
+                #cur.execute("UPDATE arp SET ip=? WHERE mac=?", (_ip, mac))
+                update = store.updateArpTable(_ip, mac, db_store)
+
+                da = result[2]
+
+                key = 'sentinel_job_output-arp-' + str(mac)
+                prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+_ip+'",'
+                prom += ',' + da
+
+                gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+
 
     if verbose:
-        #print(gDict)
-        #print(gDict.values())
         for v in gDict.values():
-            #print(v)
-            #print('this ... ' + v[0])
-
             print(v[0])
 
     return True

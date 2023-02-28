@@ -193,7 +193,119 @@ class DNSUpDateTask:
             return False
         return True
 
-# need to depricate this method...
+
+#
+def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name):
+    #print('update_arp_data_prom')
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+
+    for ip,mac in arpDict.items():
+
+        key = 'sentinel_job_output-arp-' + str(mac)
+
+        if (mac == '(incomplete)') or (mac == '<incomplete>'):
+            #print('SKIP (incomplete) ' + ip)
+            #check if leftover ip,
+            cur.execute("SELECT mac,ip,data FROM arp WHERE ip LIKE '%" + ip + "%'")
+            rows = cur.fetchall()
+            for row in rows:
+                _mac = row[0]
+                line = row[1].split(',')
+                dta = row[2]
+                #print('Match.This.Row ' + str(line))
+                line.remove(ip) #remove doesn't return anything, it modifies existing list in place
+                #print('new list ', line)
+
+                l = ''
+                c = len(line)
+                for i in line:
+                    #print(c, i)
+                    if c == 1:
+                        l = l + i
+                    else:
+                        l =  i + ',' + l
+                    c -= 1
+
+                #print(l)
+                cur.execute("UPDATE arp SET ip=? WHERE mac=?", (l, _mac))
+                con.commit()
+                #print('updated.2 ' + str(_mac) + ' ' + str(l))
+
+                val = 2.2 #updated
+                prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
+                prom += ',' + dta
+
+                gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+            #continue #print('SKIP (incomplete)')
+
+        cur.execute("SELECT ip,mac,data FROM arp WHERE mac='" + mac + "'")
+        #_mac, _ip = cur.fetchone()
+        _result = cur.fetchone()
+        #print(_mac, _ip, _data)
+        if not _result:
+            t = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+            #m = mf.get_manuf(mac, 'db/manuf')
+            m = mf.get_manuf(mac, manuf_file)
+            #print(m)
+            #data = '{"created":"' + t + '","manuf":"' + m + '"}'
+            data = 'created:"' + t + '",manuf:"' + m + '"'
+            cur.execute("INSERT INTO arp VALUES (?, ?, ?)", (mac, ip, data))
+            con.commit()
+            #print('new ' + str(mac) + ' ' + str(ip) + ' ' + str(data))
+            # launch dns thread update async
+            #dns = DNSUpDateTask()
+            #t = threading.Thread(target=dns.run, args=(mac,ip,db_file,))
+            #print('t.start')
+            #t.start()
+
+            val = 1
+            prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
+            prom += ',' + data
+
+            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+
+        else:
+            #print(ip, _result[0]) #tuple _result
+            val = 0
+            prom = 'sentinel_job="'+name+'",mac="'+_result[1]+'",ip="'+_result[0]+'"'
+            prom += ',' + _result[2]
+            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+            if ip not in _result[0]:
+                #print(len(_result[0]))
+                if len(_result[0]) == 0:
+                    _ip = ip + _result[0]
+                else:
+                    _ip = ip + ',' + _result[0] #csv
+
+                #if len(_result[0]) > 0:
+                #    _ip = ip + ',' + _result[0] #csv
+                #else:
+                #    _ip = ip + _result[0]
+
+                cur.execute("UPDATE arp SET ip=? WHERE mac=?", (_ip, mac))
+                con.commit()
+                #print('updated.1 ' + str(mac) + ' ' + str(_ip))
+
+                val = 2.1 #updated
+                prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+_ip+'"'
+                prom += ',' + _result[2]
+
+                gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+
+
+
+    for v in gDict.values():
+        print(v[0])
+
+    return True
+
+
+#
 def update_arp_data(db_file, arpDict, manuf_file):
 
     con = sqlConnection(db_file)
@@ -783,6 +895,13 @@ def updateTable(tag, data, tbl, db_file):
         return None
     #return True
     return rowid
+
+def getArpData(mac, db_file):
+    con = sqlConnection(db_file)
+    cur = con.cursor()
+    cur.execute('SELECT ip,mac,data FROM arp WHERE mac=? ;', (mac,))
+    row = cur.fetchone()
+    return row
 
 
 def insertINTOArpTable(ip, mac, data, db_file):
