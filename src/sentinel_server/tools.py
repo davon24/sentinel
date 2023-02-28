@@ -4760,7 +4760,7 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
     stoDct={}
     for line in stoTbl:
         _mac = line[0]
-        stoDct[_mac] = line[1]
+        stoDct[_mac] = [ line[1], line[2] ]
 
     Dct = {}
 
@@ -4770,22 +4770,14 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
             #print('skip incomplete')
             continue
 
+        # get data manuf
+        t = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        m = mf.get_manuf(mac, manuf_file)
+        data = 'created:"' + t + '",manuf:"' + m + '"'
+
         if not mac in stoDct.keys():
+            val = 1
             #print('new ' + mac, ip) # this exists in arpTbl, but not in sql store
-
-            # get data manuf
-            t = time.strftime("%Y-%m-%dT%H:%M:%SZ")
-            m = mf.get_manuf(mac, manuf_file)
-            #data = '{"created":"' + t + '","manuf":"' + m + '"}'
-            data = 'created:"' + t + '",manuf:"' + m + '"'
-
-### output error needs {}
-# ('b0:be:76:a4:98:2e', '(192.168.0.4)', 'created:"2023-02-27T19:02:13Z",manuf:"Tp-LinkT (Tp-Link Technologies Co.,Ltd.)"')
-#
-# should be
-#
-# ('b8:27:eb:2c:19:1e', '(192.168.0.254)', '{"created": "2023-02-27T15:38:45Z", "manuf": "Raspberr (Raspberry Pi Foundation)"}')
-
 
             # update/insert into arp table
             #insert = store.insertINTOArpTable(ip, mac, '{}', db_store)
@@ -4796,16 +4788,30 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
             key = 'sentinel_job_output-arp-' + str(mac)
             prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'",'
             prom += data
-            val = 1
+
             gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
-    #Dct = {'mac_check':'True'}
+        else:
+            val = 0
 
+            key = 'sentinel_job_output-arp-' + str(mac)
+            #prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'",'
+            #print(stoDct)
+            #print(stoDct[mac])
+            ip = stoDct[mac][0]
+            da = stoDct[mac][1]
+
+            prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
+            prom += ',' + da
+
+            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+
+
+
+    #Dct = {'mac_check':'True'}
     #if Dct:
     #    key = 'sentinel_job_output-arp-' + str(Dct['mac'][0])
     #    print(key)
-
-
 
     if verbose:
         #print(gDict)
@@ -4818,6 +4824,12 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
 
     return True
     
+### output error needs {}
+# ('b0:be:76:a4:98:2e', '(192.168.0.4)', 'created:"2023-02-27T19:02:13Z",manuf:"Tp-LinkT (Tp-Link Technologies Co.,Ltd.)"')
+#
+# should be
+#
+# ('b8:27:eb:2c:19:1e', '(192.168.0.254)', '{"created": "2023-02-27T15:38:45Z", "manuf": "Raspberr (Raspberry Pi Foundation)"}')
 
 
 #WORKING

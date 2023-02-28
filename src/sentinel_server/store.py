@@ -271,6 +271,7 @@ def update_arp_data(db_file, arpDict, manuf_file):
 def select_all(db_file, tbl):
     con = sqlConnection(db_file)
     cur = con.cursor()
+    #cur.execute('SELECT rowid,* FROM ' + tbl)
     cur.execute('SELECT * FROM ' + tbl)
     rows = cur.fetchall()
     return rows
