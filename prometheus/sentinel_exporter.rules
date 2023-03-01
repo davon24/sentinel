@@ -70,4 +70,17 @@ groups:
         summary: Instance {{ $labels.instance }} - Check_NTP
         description: "{{ $labels.instance }} of job {{ $labels.job }} Check_NTP \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
 
+    # check-macs
+    - alert: Check_Macs_New
+      expr: sentinel_job_output{sentinel_job="macs-check"} == 1
+      for: 0m
+      labels:
+        severity: info
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - Check_Macs_New
+        description: "{{ $labels.instance }} of job {{ $labels.job }} Check_Macs \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+        
+
+
 

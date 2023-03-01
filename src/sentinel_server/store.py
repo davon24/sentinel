@@ -238,7 +238,7 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name):
 
                 gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
 
-            #continue #print('SKIP (incomplete)')
+            continue #print('SKIP (incomplete)')
 
         cur.execute("SELECT ip,mac,data FROM arp WHERE mac='" + mac + "'")
         #_mac, _ip = cur.fetchone()
