@@ -195,7 +195,7 @@ class DNSUpDateTask:
 
 
 #
-def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name):
+def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=False):
     #print('update_arp_data_prom')
     con = sqlConnection(db_file)
     cur = con.cursor()
@@ -300,8 +300,13 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name):
 
 
 
-    for v in gDict.values():
-        print(v[0])
+    #for v in gDict.values():
+    #    print(v[0])
+
+    if verbose:
+        for v in gDict.values():
+            print(v[0])
+
 
     return True
 
