@@ -16,7 +16,7 @@ alert icmp any any -> any any (msg:"ICMP Packet"; classtype:icmp-event; sid:477;
 
 sentinel update-config watch-syslog '{"config":"logstream","logfile":"stream","rules":["MESSAGE","SYSLOG_IDENTIFIER","PRIORITY","_CMDLINE","_EXE"]}'
 
-sentinel update-rule rule-1-sort '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"snort"}],"expire":"300"}'
+sentinel update-rule rule-1-sort '{"config":"watch-syslog","match":[{"SYSLOG_IDENTIFIER":"snort"}],"expire":"180"}'
 
 
 

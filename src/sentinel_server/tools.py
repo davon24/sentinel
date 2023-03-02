@@ -4750,7 +4750,7 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
 
     arpDct = getArps()
 
-    update = store.update_arp_data_prom(db_store, arpDct, manuf_file, gDict, name, verbose=False)
+    update = store.update_arp_data_prom(db_store, arpDct, manuf_file, gDict, name, verbose)
 
     return True
 
