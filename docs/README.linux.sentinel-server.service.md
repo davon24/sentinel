@@ -1,3 +1,6 @@
+
+
+```
 #file:/etc/systemd/system/sentinel-server.service
 #pip3 install sentinel-server
 
@@ -14,4 +17,5 @@ ExecStart=/usr/bin/python3 -m sentinel_server sentry
 
 [Install]
 WantedBy=multi-user.target
+```
 

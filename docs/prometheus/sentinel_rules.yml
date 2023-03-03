@@ -60,27 +60,77 @@ groups:
         description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_watch_syslog_rule_engine \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
 
     # check-ntp
-    - alert: Check_NTP
+    - alert: NTP_Check
       expr: sentinel_job_output{sentinel_job="ntp-check"} > 0
       for: 0m
       labels:
         severity: warning
         owner: sentinel
       annotations:
-        summary: Instance {{ $labels.instance }} - Check_NTP
-        description: "{{ $labels.instance }} of job {{ $labels.job }} Check_NTP \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+        summary: Instance {{ $labels.instance }} - NTP_Check
+        description: "{{ $labels.instance }} of job {{ $labels.job }} NTP_Check \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
 
     # check-macs
-    - alert: Check_Macs_New
+    - alert: Detect_MAC_Address
       expr: sentinel_job_output{sentinel_job="macs-check"} == 1
       for: 0m
       labels:
         severity: info
         owner: sentinel
       annotations:
-        summary: Instance {{ $labels.instance }} - Check_Macs_New
-        description: "{{ $labels.instance }} of job {{ $labels.job }} Check_Macs \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+        summary: Instance {{ $labels.instance }} - Detect_MAC_Address
+        description: "{{ $labels.instance }} of job {{ $labels.job }} Detect_MAC_Address \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
         
+
+
+
+    # sentinel_job_not_done
+    - alert: sentinel_job_not_done
+      expr: sentinel_job{start=~".+",done=""}
+      for: 5m 
+      labels:
+        severity: warning
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - sentinel_job_not_done
+        description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_job_not_done \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+    # sentinel_job_no_success
+    - alert: sentinel_job_no_success
+      expr: sentinel_job{start=~".+",success!="True"}
+      for: 5m
+      labels:
+        severity: warning
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - sentinel_job_no_success
+        description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_job_no_success \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+
+# sum by (instance) (sentinel_job{}) < 1
+
+    # sentinel_watch_syslog_rule_engine_gt_100
+    - alert: sentinel_watch_syslog_rule_engine_gt_100
+      expr: count by(instance) (sentinel_watch_syslog_rule_engine{}) > 100
+      for: 0m
+      labels:
+        severity: warning
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - sentinel_watch_syslog_rule_engine_gt_100
+        description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_watch_syslog_rule_engine_gt_100 \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+    # sentinel_job_output_gt_100
+    - alert: sentinel_job_output_gt_100
+      expr: count by(instance) (sentinel_job_output{}) > 100
+      for: 0m
+      labels:
+        severity: warning
+        owner: sentinel
+      annotations:
+        summary: Instance {{ $labels.instance }} - sentinel_job_output_gt_100
+        description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_job_output_gt_100 \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
 
 
 
