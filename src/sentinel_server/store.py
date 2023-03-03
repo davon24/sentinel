@@ -155,46 +155,46 @@ def createDB(db_file):
 
 ###############################################################################################################################################
 
-class DNSUpDateTask:
-    def __init__(self):
-        self._running = True
-
-    def terminate(self):
-        self._running = False
-
-    def sqlConnection(self, db_file):
-        con = sqlite3.connect(db_file)
-        return con
-
-    def run(self, mac, ip, db_file):
-        #print(mac, ip, db_file)
-        ip = ip.strip('(')
-        ip = ip.strip(')')
-        #print('IP: ' + ip)
-
-        #dnsname = tools.getDNSName(ip)
-        dnsname = str(tools.getNSlookup(ip))
-
-        #print('DNS: ' + dnsname)
-        con = self.sqlConnection(db_file)
-        cur = con.cursor()
-        cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
-        record = cur.fetchone()
-        if record is None:
-            return False
-        #print(record[0])
-        jdata = json.loads(record[0])
-        jdata['dns'] = dnsname
-        update = json.dumps(jdata)
-        cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
-        con.commit()
-        print('updated dns ' + str(mac) + ' ' + str(update))
-        if cur.rowcount == 0:
-            return False
-        return True
-
-
+#class DNSUpDateTask:
+#    def __init__(self):
+#        self._running = True
 #
+#    def terminate(self):
+#        self._running = False
+#
+#    def sqlConnection(self, db_file):
+#        con = sqlite3.connect(db_file)
+#        return con
+#
+#    def run(self, mac, ip, db_file):
+#        #print(mac, ip, db_file)
+#        ip = ip.strip('(')
+#        ip = ip.strip(')')
+#        #print('IP: ' + ip)
+#
+#        #dnsname = tools.getDNSName(ip)
+#        dnsname = str(tools.getNSlookup(ip))
+#
+#        #print('DNS: ' + dnsname)
+#        con = self.sqlConnection(db_file)
+#        cur = con.cursor()
+#        cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
+#        record = cur.fetchone()
+#        if record is None:
+#            return False
+#        #print(record[0])
+#        jdata = json.loads(record[0])
+#        jdata['dns'] = dnsname
+#        update = json.dumps(jdata)
+#        cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
+#        con.commit()
+#        print('updated dns ' + str(mac) + ' ' + str(update))
+#        if cur.rowcount == 0:
+#            return False
+#        return True
+#
+
+
 def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=False):
     #print('update_arp_data_prom')
     con = sqlConnection(db_file)
@@ -236,7 +236,7 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
                 prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
                 prom += ',' + dta
 
-                gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+                gDict[key] = [ 'sentinel_job_output_arp_data{' + prom + '} ' + str(val) ]
 
             continue #print('SKIP (incomplete)')
 
@@ -265,7 +265,7 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
             prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
             prom += ',' + data
 
-            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+            gDict[key] = [ 'sentinel_job_output_arp_data{' + prom + '} ' + str(val) ]
 
 
         else:
@@ -273,7 +273,7 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
             val = 0
             prom = 'sentinel_job="'+name+'",mac="'+_result[1]+'",ip="'+_result[0]+'"'
             prom += ',' + _result[2]
-            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+            gDict[key] = [ 'sentinel_job_output_arp_data{' + prom + '} ' + str(val) ]
 
             if ip not in _result[0]:
                 #print(len(_result[0]))
@@ -295,7 +295,7 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
                 prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+_ip+'"'
                 prom += ',' + _result[2]
 
-                gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+                gDict[key] = [ 'sentinel_job_output_arp_data{' + prom + '} ' + str(val) ]
 
 
 

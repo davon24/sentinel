@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.9.4"
+__version__ = "1.9.5"
 
 import sys
 
@@ -239,22 +239,10 @@ def usage():
 
 Version: {} '''.format(__version__))
 
-
-#def printArps():
-#    arpTbl = tools.getArps()
-#    for k,v in arpTbl.items():
-#        if (v == '(incomplete)') or (v == '<incomplete>'):
-#            continue
-#        print(v,k)
-#    return True
-
 db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
 db_store = 'sentinel.db'
 
 def main():
-
-    #db_store = 'sentinel.db'
-    #db_manuf = str(os.path.dirname(__file__)) + '/db/manuf'
 
     if sys.argv[1:]:
 
@@ -1164,17 +1152,6 @@ def main():
             print(clear)
             sys.exit(0)
 
-        #if sys.argv[1] == 'list-sshwatch':
-        #    rows = store.selectAll('sshwatch', db_store)
-        #    for row in rows:
-        #        print(row)
-        #    sys.exit(0)
-
-        #if sys.argv[1] == 'clear-sshwatch':
-        #    clear = store.clearAll('sshwatch', db_store)
-        #    print(clear)
-        #    sys.exit(0)
-
         if sys.argv[1] == 'clear-training':
             clear = store.clearAll('training', db_store)
             print(clear)
@@ -1461,22 +1438,6 @@ def main():
             print(get)
             sys.exit(0)
 
-        #if sys.argv[1] == 'expire-key':
-        #    _key = sys.argv[2]
-        #    expire = tools.setExpiregDictKeyFile(_key, db_store)
-        #    print(expire)
-        #    sys.exit(0)
-
-        #if sys.argv[1] == 'expire-key':
-        #    _key = sys.argv[2:]
-        #    from multiprocessing import shared_memory
-        #    l = shared_memory.ShareableList([_key], name='sentinel')
-        #    import time
-        #    time.sleep(5)
-        #    l.shm.close()
-        #    l.shm.unlink()
-        #    sys.exit(0)
-
         if sys.argv[1] == 'expire-keys':
             Keys = sys.argv[2:]
             #for _key in Keys:
@@ -1558,25 +1519,9 @@ def main():
                 n = next(il)
                 print(item, n.split()[-1])
 
-
             l.shm.close()
             l.shm.unlink()
             sys.exit(0)
-
-
-
-
-        #if sys.argv[1] == 'get-shm':
-        #    from multiprocessing import shared_memory
-        #    l = shared_memory.ShareableList(name='sentinel-update')
-        #    #print(l)
-        #    for item in l:
-        #        print(item)
-        #    l.shm.close()
-        #    l.shm.unlink()
-        #    sys.exit(0)
-
-
 
         else:
             usage()

@@ -1,0 +1,57 @@
+
+
+there is a diff from original and node-exporter parsed
+
+because job_output is generalized.
+needs/should/must be in form of:
+
+sentinel_job_output_<name>
+
+root@ubuntu:~# sentinel list-proms
+sentinel_up{version="1.9.4",threads="5",procs="2",cpu="0.88",rss="32144",uptime="8813"} 1
+sentinel_python_info{arch="arm-linux-gnueabihf",implementation="cpython",major="3",minor="10",micro="6",version="3.10.6"} 1.0
+sentinel_python_sqlite_info{sqlite3="2.6.0",library="3.37.2"} 1.0
+sentinel_watch_syslog_rule_engine_info{rules_loaded="10",rules_b2sum="ac9b12eae2924b1b4587969687cb0e12857f234c",load_time="2023-03-03 15:55:51"} 1.0
+sentinel_job{repeat="1min",job="macs-check",start="2023-03-03 18:22:29",name="macs-check",done="2023-03-03 18:22:29",success="True"} 1
+sentinel_job_output{sentinel_job="macs-check",mac="28:b2:bd:19:e1:c3",ip="(192.168.3.56)",created="2023-03-01T02:09:01Z",manuf="IntelCor (Intel Corporate)"} 0
+sentinel_job_output{sentinel_job="macs-check",mac="38:f9:d3:c4:b5:f9",ip="(192.168.3.4)",created="2023-03-01T01:56:09Z",manuf="Apple (Apple, Inc.)"} 0
+sentinel_job_output{sentinel_job="macs-check",mac="70:8b:cd:d0:67:10",ip="(192.168.3.1)",created="2023-03-01T01:56:11Z",manuf="ASUSTekC (ASUSTek COMPUTER INC.)"} 0
+sentinel_job{time="2020-09-20 00:00:00",job="port-scan",ips="['192.168.3.1/24']",start="2023-03-03 16:01:32",name="port-scan-1",done="2023-03-03 16:01:37",success="True"} 1
+sentinel_job{repeat="5min",job="established-check",start="2023-03-03 18:19:39",name="established-monitor",done="2023-03-03 18:19:40",success="True"} 1
+sentinel_job{repeat="5min",job="ps-check",start="2023-03-03 18:19:40",name="proc-monitor",done="2023-03-03 18:19:40",success="True"} 1
+sentinel_job_output{procs="167",defunct="0",sentinel_job="proc-monitor"} 1
+sentinel_job_output{name="port-scan-192.168.3.1/24",sentinel_job="port-scan",level="1",ip="192.168.3.100",done="2023-03-03 18:22:07",report="22/tcp,9100/tcp"} 2
+sentinel_job_output{name="port-scan-192.168.3.1/24",sentinel_job="port-scan",level="1",ip="192.168.3.1",done="2023-03-03 18:22:09",report="22/tcp,53/tcp,80/tcp,515/tcp,8443/tcp"} 5
+sentinel_job{repeat="5min",job="port-scan",ips="['192.168.3.1/24']",start="2023-03-03 18:22:04",name="port-scan-192.168.3.1/24",done="2023-03-03 18:22:09",success="True"} 1
+sentinel_job{repeat="12hour",job="fim-check",config="fim-1",start="2023-03-03 17:33:52",name="fim-job-1",done="2023-03-03 17:33:52",success="True"} 1
+sentinel_job_output{changed1="/etc/passwd",changed2="/etc/shadow",changed3="/etc/group",config="fim-1",job="fim-job-1",done="2023-03-03 17:33:52"} 3
+sentinel_job_output{name="port-scan-192.168.3.1/24",sentinel_job="port-scan",level="1",ip="192.168.3.174",done="2023-03-03 18:16:58",report="-"} -1
+sentinel_job_output{sentinel_job="macs-check",mac="0e:e9:05:4c:4c:48",ip="(192.168.3.174)",created="2023-03-03T18:07:27Z",manuf="NoMatch"} 0
+sentinel_job_output{name="established-monitor",sentinel_job="established-check",proto="tcp",laddr="192.168.3.100",lport="22",faddr="192.168.0.123",fport="64794",prog1="sshd",user1="root",user2="ubuntu",done="2023-03-03 18:19:39"} 1
+sentinel_job_output{name="established-monitor",sentinel_job="established-check",proto="tcp",laddr="192.168.3.100",lport="22",faddr="192.168.3.4",fport="64579",prog1="sshd",user1="root",user2="ubuntu",done="2023-03-03 18:19:39"} 1
+sentinel_job_output{name="established-monitor",sentinel_job="established-check",proto="tcp",laddr="192.168.3.100",lport="22",faddr="192.168.0.123",fport="65016",prog1="sshd",user1="root",user2="ubuntu",done="2023-03-03 18:19:39"} 1
+sentinel_job_output{name="established-monitor",sentinel_job="established-check",proto="tcp",laddr="192.168.3.100",lport="22",faddr="192.168.0.4",fport="65018",prog1="sshd",user1="root",user2="ubuntu",done="2023-03-03 18:19:39"} 1
+sentinel_job_output{name="established-monitor",sentinel_job="established-check",proto="tcp",laddr="192.168.3.100",lport="22",faddr="192.168.0.8",fport="65038",prog1="sshd",user1="root",user2="ubuntu",done="2023-03-03 18:19:40"} 1
+
+#--- 
+
+after parse:  
+
+# HELP sentinel_job_output Metric read from /var/lib/prometheus/node-exporter/sentinel.db.prom
+# TYPE sentinel_job_output untyped
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="",defunct="",done="2023-03-03 18:01:34",faddr="",fport="",ip="192.168.3.100",job="",laddr="",level="1",lport="",mac="",manuf="",name="port-scan-192.168.3.1/24",procs="",prog1="",proto="",report="22/tcp,9100/tcp",sentinel_job="port-scan",user1="",user2=""} 2
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="",defunct="",done="2023-03-03 18:01:36",faddr="",fport="",ip="192.168.3.1",job="",laddr="",level="1",lport="",mac="",manuf="",name="port-scan-192.168.3.1/24",procs="",prog1="",proto="",report="22/tcp,53/tcp,80/tcp",sentinel_job="port-scan",user1="",user2=""} 3
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="",defunct="",done="2023-03-03 18:04:21",faddr="192.168.0.123",fport="64794",ip="",job="",laddr="192.168.3.100",level="",lport="22",mac="",manuf="",name="established-monitor",procs="",prog1="sshd",proto="tcp",report="",sentinel_job="established-check",user1="root",user2="ubuntu"} 1
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="",defunct="",done="2023-03-03 18:04:22",faddr="192.168.0.123",fport="65016",ip="",job="",laddr="192.168.3.100",level="",lport="22",mac="",manuf="",name="established-monitor",procs="",prog1="sshd",proto="tcp",report="",sentinel_job="established-check",user1="root",user2="ubuntu"} 1
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="",defunct="",done="2023-03-03 18:04:22",faddr="192.168.0.4",fport="65018",ip="",job="",laddr="192.168.3.100",level="",lport="22",mac="",manuf="",name="established-monitor",procs="",prog1="sshd",proto="tcp",report="",sentinel_job="established-check",user1="root",user2="ubuntu"} 1
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="",defunct="",done="2023-03-03 18:04:22",faddr="192.168.0.8",fport="65038",ip="",job="",laddr="192.168.3.100",level="",lport="22",mac="",manuf="",name="established-monitor",procs="",prog1="sshd",proto="tcp",report="",sentinel_job="established-check",user1="root",user2="ubuntu"} 1
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="",defunct="",done="2023-03-03 18:04:22",faddr="192.168.3.4",fport="64579",ip="",job="",laddr="192.168.3.100",level="",lport="22",mac="",manuf="",name="established-monitor",procs="",prog1="sshd",proto="tcp",report="",sentinel_job="established-check",user1="root",user2="ubuntu"} 1
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="",defunct="0",done="",faddr="",fport="",ip="",job="",laddr="",level="",lport="",mac="",manuf="",name="",procs="166",prog1="",proto="",report="",sentinel_job="proc-monitor",user1="",user2=""} 1
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="2023-03-01T01:56:09Z",defunct="",done="",faddr="",fport="",ip="(192.168.3.4)",job="",laddr="",level="",lport="",mac="38:f9:d3:c4:b5:f9",manuf="Apple (Apple, Inc.)",name="",procs="",prog1="",proto="",report="",sentinel_job="macs-check",user1="",user2=""} 0
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="2023-03-01T01:56:11Z",defunct="",done="",faddr="",fport="",ip="(192.168.3.1)",job="",laddr="",level="",lport="",mac="70:8b:cd:d0:67:10",manuf="ASUSTekC (ASUSTek COMPUTER INC.)",name="",procs="",prog1="",proto="",report="",sentinel_job="macs-check",user1="",user2=""} 0
+sentinel_job_output{changed1="",changed2="",changed3="",config="",created="2023-03-01T02:09:01Z",defunct="",done="",faddr="",fport="",ip="(192.168.3.56)",job="",laddr="",level="",lport="",mac="28:b2:bd:19:e1:c3",manuf="IntelCor (Intel Corporate)",name="",procs="",prog1="",proto="",report="",sentinel_job="macs-check",user1="",user2=""} 0
+sentinel_job_output{changed1="/etc/passwd",changed2="/etc/shadow",changed3="/etc/group",config="fim-1",created="",defunct="",done="2023-03-03 17:33:52",faddr="",fport="",ip="",job="fim-job-1",laddr="",level="",lport="",mac="",manuf="",name="",procs="",prog1="",proto="",report="",sentinel_job="",user1="",user2=""} 3
+
+
+
+

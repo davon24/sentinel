@@ -1631,20 +1631,20 @@ def markTrainingRe(_search, db_store):
     return True
 
 
-def markTrainingRe__v1__(_search, db_store):
-
-    rows = store.getAll('training', db_store)
-    for rowid,tag,data in rows:
-        #print(data)
-        #jdata = json.loads(data)
-        #print(jdata.get('eventMessage', None))
-
-        if re.search(_search, data, re.IGNORECASE):
-            print('mark ', rowid, ' ', data)
-            mark = store.updateTrainingTag(rowid, '1', db_store)
-            print(mark)
-
-    return True
+#def markTrainingRe__v1__(_search, db_store):
+#
+#    rows = store.getAll('training', db_store)
+#    for rowid,tag,data in rows:
+#        #print(data)
+#        #jdata = json.loads(data)
+#        #print(jdata.get('eventMessage', None))
+#
+#        if re.search(_search, data, re.IGNORECASE):
+#            print('mark ', rowid, ' ', data)
+#            mark = store.updateTrainingTag(rowid, '1', db_store)
+#            print(mark)
+#
+#    return True
 
 def sentryTailFile(db_store, gDict, _file):
     for line in tail(_file):
@@ -2641,138 +2641,138 @@ def sentryTailMariaDBAuditLog(db_store, gDict, _file):
 ##############################################################################################3
 ##############################################################################################3
 
-thresh = 60
-attempts = 3
-clear = 600
-ssh_port = 22
-
-iplist = [0]*attempts
-tmlist = [0]*attempts
-blocklist = []
-blocktime = []
-
-def sentryIPSLinuxSSH(db_store, gDict, _file):
-    logging.info('Sentry IPS ssh.watch ' + str(_file))
-
-    ip = None
-
-    re_sshd = re.compile(r'sshd')
-    re_invalid_user = re.compile(r'Invalid user',re.I)
-    re_failed_password = re.compile(r'Failed password',re.I)
-    re_preauth = re.compile(r'preauth',re.I)
-
-    for line in tail(_file):
-        line = line.decode('utf-8').strip('\n')
-        #print(line)
-
-        if re_sshd.search(line) and re_failed_password.search(line) and re_invalid_user.search(line):
-            ip = line.split()[12]
-            logging.info("IPS ssh.watch match 12: %s", ip)
-            tm = time.time()
-            recordip(ip,tm)
-        elif re_sshd.search(line) and re_failed_password.search(line) and not re_invalid_user.search(line):
-            ip = line.split()[10]
-            logging.info("IPS ssh.watch match 10: %s", ip)
-            tm = time.time()
-            recordip(ip,tm)
-        #else:
-        #    continue
-
-        if re_sshd.search(line) and re_invalid_user.search(line) and not re_preauth.search(line):
-            ip = line.split()[9]
-            logging.info("IPS ssh.watch match 9: %s", ip)
-            tm = time.time()
-            recordip(ip,tm)
-
-        if ip is None:
-            continue
-
-        if compare() >= len(iplist):
-            elapsed = (tmlist[0] - tmlist[2])
-            if thresh > elapsed:
-                logging.info("IPS ssh.watch THRESH: %s %s", ip, elapsed)
-                tm = time.time()
-                ipblock(ip,tm, _file, gDict, db_store)
-                logging.info("IPS ssh.watch ip: %s will clear in %s", ip, clear)
-
-        #print('loop')
-
-    return True
-
-def recordip(ip,tm):
-  logging.info("IPS ssh.watch listed: %s", ip)
-  iplist.insert(0,ip)
-  tmlist.insert(0,tm)
-  iplist.pop()
-  tmlist.pop()
-
-def recordblock(ip,tm, _file, gDict, db_store):
-  logging.info("IPS ssh.watch blocked ip: %s", ip)
-  blocklist.insert(0,ip)
-  blocktime.insert(0,tm)
-
-  tmstr = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(tm))
-
-  # get existing count,
-  ipcount = store.getData('sshwatch', ip, db_store)
-  if ipcount:
-      _config = json.loads(ipcount[0])
-      _c = _config['count']
-      #print('existing _c ' + str(_c))
-      _c += 1
-  else:
-      _c = 1
-
-  #prom
-  #_c=1
-  _key  = 'sentry-sshwatch-' + str(ip)
-  _prom = 'prog="sshwatch",logfile="' + str(_file) + '",block="' + str(ip) + '",time="' + str(tmstr) + '"'
-  gDict[_key] = [ 'sentinel_ssh_watch{' + _prom + '} ' + str(_c) ]
-
-  #sqlite
-  jdata = { "logfile": str(_file), "time": str(tmstr), "count": _c }
-  _json = json.dumps(jdata)
-  #replace_sql = store.replaceINTO2('sshwatch', ip, _json, db_store)
-  replace_sql = store.replaceINTOduce('sshwatch', ip, _json, db_store)
-
-def compare():
-  count = 0
-  for index, item in enumerate(iplist):
-    if item == iplist[0]:
-      count += 1
-  return count
-
-def ipblock(ip,tm, _file, gDict, db_store):
-  cmd = "iptables -I INPUT -s %s -p tcp --dport %s -j DROP" % (ip, ssh_port)
-  os.system(cmd)
-  logging.info("%s", cmd)
-  recordblock(ip,tm, _file, gDict, db_store)
-
-def ipremove(ip, gDict):
-  cmd = "iptables -D INPUT -s %s -p tcp --dport %s -j DROP" % (ip, ssh_port)
-  os.system(cmd)
-  logging.info("%s", cmd)
-  _key  = 'sentry-sshwatch-' + str(ip)
-  gDict.pop(_key, None)
-
-def checkblocklist():
-  if len(blocklist) > 0:
-    now = time.time()
-    for index, item in enumerate(blocktime):
-      diff = (now - item)
-      logging.debug("diff: %s clear: %s", diff, clear)
-      if diff > clear:
-        ip = blocklist[index]
-        ipremove(ip, gDict)
-        del blocklist[index]
-        del blocktime[index]
-
-def cleanup():
-  if len(blocklist) > 0:
-    for ip in blocklist:
-      ipremove(ip, gDict)
-
-
+#thresh = 60
+#attempts = 3
+#clear = 600
+#ssh_port = 22
+#
+#iplist = [0]*attempts
+#tmlist = [0]*attempts
+#blocklist = []
+#blocktime = []
+#
+#def sentryIPSLinuxSSH(db_store, gDict, _file):
+#    logging.info('Sentry IPS ssh.watch ' + str(_file))
+#
+#    ip = None
+#
+#    re_sshd = re.compile(r'sshd')
+#    re_invalid_user = re.compile(r'Invalid user',re.I)
+#    re_failed_password = re.compile(r'Failed password',re.I)
+#    re_preauth = re.compile(r'preauth',re.I)
+#
+#    for line in tail(_file):
+#        line = line.decode('utf-8').strip('\n')
+#        #print(line)
+#
+#        if re_sshd.search(line) and re_failed_password.search(line) and re_invalid_user.search(line):
+#            ip = line.split()[12]
+#            logging.info("IPS ssh.watch match 12: %s", ip)
+#            tm = time.time()
+#            recordip(ip,tm)
+#        elif re_sshd.search(line) and re_failed_password.search(line) and not re_invalid_user.search(line):
+#            ip = line.split()[10]
+#            logging.info("IPS ssh.watch match 10: %s", ip)
+#            tm = time.time()
+#            recordip(ip,tm)
+#        #else:
+#        #    continue
+#
+#        if re_sshd.search(line) and re_invalid_user.search(line) and not re_preauth.search(line):
+#            ip = line.split()[9]
+#            logging.info("IPS ssh.watch match 9: %s", ip)
+#            tm = time.time()
+#            recordip(ip,tm)
+#
+#        if ip is None:
+#            continue
+#
+#        if compare() >= len(iplist):
+#            elapsed = (tmlist[0] - tmlist[2])
+#            if thresh > elapsed:
+#                logging.info("IPS ssh.watch THRESH: %s %s", ip, elapsed)
+#                tm = time.time()
+#                ipblock(ip,tm, _file, gDict, db_store)
+#                logging.info("IPS ssh.watch ip: %s will clear in %s", ip, clear)
+#
+#        #print('loop')
+#
+#    return True
+#
+#def recordip(ip,tm):
+#  logging.info("IPS ssh.watch listed: %s", ip)
+#  iplist.insert(0,ip)
+#  tmlist.insert(0,tm)
+#  iplist.pop()
+#  tmlist.pop()
+#
+#def recordblock(ip,tm, _file, gDict, db_store):
+#  logging.info("IPS ssh.watch blocked ip: %s", ip)
+#  blocklist.insert(0,ip)
+#  blocktime.insert(0,tm)
+#
+#  tmstr = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(tm))
+#
+#  # get existing count,
+#  ipcount = store.getData('sshwatch', ip, db_store)
+#  if ipcount:
+#      _config = json.loads(ipcount[0])
+#      _c = _config['count']
+#      #print('existing _c ' + str(_c))
+#      _c += 1
+#  else:
+#      _c = 1
+#
+#  #prom
+#  #_c=1
+#  _key  = 'sentry-sshwatch-' + str(ip)
+#  _prom = 'prog="sshwatch",logfile="' + str(_file) + '",block="' + str(ip) + '",time="' + str(tmstr) + '"'
+#  gDict[_key] = [ 'sentinel_ssh_watch{' + _prom + '} ' + str(_c) ]
+#
+#  #sqlite
+#  jdata = { "logfile": str(_file), "time": str(tmstr), "count": _c }
+#  _json = json.dumps(jdata)
+#  #replace_sql = store.replaceINTO2('sshwatch', ip, _json, db_store)
+#  replace_sql = store.replaceINTOduce('sshwatch', ip, _json, db_store)
+#
+#def compare():
+#  count = 0
+#  for index, item in enumerate(iplist):
+#    if item == iplist[0]:
+#      count += 1
+#  return count
+#
+#def ipblock(ip,tm, _file, gDict, db_store):
+#  cmd = "iptables -I INPUT -s %s -p tcp --dport %s -j DROP" % (ip, ssh_port)
+#  os.system(cmd)
+#  logging.info("%s", cmd)
+#  recordblock(ip,tm, _file, gDict, db_store)
+#
+#def ipremove(ip, gDict):
+#  cmd = "iptables -D INPUT -s %s -p tcp --dport %s -j DROP" % (ip, ssh_port)
+#  os.system(cmd)
+#  logging.info("%s", cmd)
+#  _key  = 'sentry-sshwatch-' + str(ip)
+#  gDict.pop(_key, None)
+#
+#def checkblocklist():
+#  if len(blocklist) > 0:
+#    now = time.time()
+#    for index, item in enumerate(blocktime):
+#      diff = (now - item)
+#      logging.debug("diff: %s clear: %s", diff, clear)
+#      if diff > clear:
+#        ip = blocklist[index]
+#        ipremove(ip, gDict)
+#        del blocklist[index]
+#        del blocktime[index]
+#
+#def cleanup():
+#  if len(blocklist) > 0:
+#    for ip in blocklist:
+#      ipremove(ip, gDict)
+#
+#
 ##############################################################################################3
 ##############################################################################################3
 
@@ -2900,7 +2900,7 @@ def nmapVulnScanStoreDict(ip, db_store, gDict, name):
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     _key = 'vuln-scan-' + str(ip)
     prom = 'name="' + str(name) + '",sentinel_job="vuln-scan",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str(report) + '"'
-    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+    gDict[_key] = [ 'sentinel_job_output_vuln_scan{' + prom + '} ' + str(val) ]
 
     return insert
 
@@ -2946,8 +2946,10 @@ def nmapScanStore(ip, level, db_store):
 
 
 def nmapScanStoreDict(ip, level, db_store, gDict, name):
+
     data = nmapScan(ip, level)
-    print('(' + ip + ') ' + data)
+
+    #print('(' + ip + ') ' + data)
     #(192.168.0.156) 1 22/tcp,548/tcp
 
     replace = store.replaceNmaps(ip, data, db_store)
@@ -2972,17 +2974,18 @@ def nmapScanStoreDict(ip, level, db_store, gDict, name):
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     _key = 'port-scan-' + str(ip)
     prom = 'name="' + str(name) + '",sentinel_job="port-scan",level="' + str(level) + '",ip="' + str(ip) + '",done="' + str(now) + '",report="' + str(report) + '"'
-    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+    gDict[_key] = [ 'sentinel_job_output_port_scan{' + prom + '} ' + str(val) ]
 
     return True
 
 
 def nmapScan(ip, level):
 
+    nmapDct = getNmapScanDct(ip, level)
+
     up = 0
     c = 0
     openLst = []
-    nmapDct = getNmapScanDct(ip, level)
 
     for k,v in nmapDct.items():
         line = v.split()
@@ -3018,7 +3021,7 @@ def getNmapScanDct(ip, level):
 
     else:
         cmd = 'nmap ' + ip
-        print('level: ' + str(level) + ' ' + str(cmd))
+        #print('level: ' + str(level) + ' ' + str(cmd))
 
     rtnDct = {}
     c = 0
@@ -4402,142 +4405,142 @@ def netScan(ips, db_store, gDict, name):
     scan = True
     return scan
 
-def netScan_v1(ips, db_store, gDict, name):
-
-    #scan = runNmapScanMultiProcessDict(ips, db_store, gDict, name)
-
-    #read all ips from db
-    ipDict={}
-    rows = store.selectAll('ips', db_store)
-    #for row in rows:
-    #    print(row)
-        #dbDict[ ] = 1
-    for _ip, _date, _json in rows:
-        #print(_ip)
-        #print(_date)
-        #print(_json)
-        ipDict[_ip] = _date
-
-    seen = -1
-
-
-    #sys.exit(99)
-
-    if isinstance(ips, list):
-        #ips = ips[0]
-        #listToStr = ' '.join([str(elem) for elem in l])
-        ips = ' '.join([str(elem) for elem in ips])
-
-    cmd = 'nmap -n -sn ' + str(ips)
-
-    #print(cmd)
-    #print(name)
-
-    now = time.strftime("%Y-%m-%d %H:%M:%S")
-
-    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
-    out = proc.stdout.readlines()
-
-    #print('out is type ' + str(type(out))) #list
-
-    #for line in out:
-    #for i in range(0, len(out), 2):
-    #for (a,b) in out:
-    #for item in out:
-
-    #l = len(out)
-    ipList=[]
-    for index, item in enumerate(out):
-
-        line = item.decode('utf-8').strip('\n')
-
-        if line.startswith('Nmap scan report for'):
-            ip = line.split()[-1]
-            ipList.append(ip)
-            #print(ip)
-
-            nextline = out[index + 1]
-            nline = nextline.decode('utf-8').strip('\n')
-
-            if nline.startswith('Host is up'):
-                try:
-                    latency = nline.split('(')[1].split()[0]
-                except IndexError:
-                    latency = None
-            else:
-                latency = None
-
-            #print(latency)
-
-            #check if ip is _ip
-            if ip in ipDict.keys():
-                seen = 3
-            else:
-                #print('insert+add ipDict ' + str(ip))
-                replace = store.replaceINTO('ips', str(ip), json.dumps('{}'), db_store)
-                #print(replace)
-                ipDict[ip] = now
-                seen = 1
-
-            #else:
-            #    seen = 2
-
-            _key = 'net-scan-' + ip
-
-            if _key in gDict.keys():
-                seen = 2
-            #else:
-            #    seen = 0
-
-            #if not ip _key not in gDict.keys():
-            #    seen = 0
-
-            # if in gDict but not in scanIP, host went away seen=0
-
-            prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip)+'",latency="'+str(latency)+'",done="'+str(now)+'",seen="'+str(seen)+'"'
-            #gDict[_key] = [ 'sentinel_net_scan{' + prom + '} ' + str('1') ]
-            gDict[_key] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str(seen) ]
-
-
-        if line.startswith('Nmap done: '):
-            addrs = line.split(':')[1].split()[0]
-            #print(addrs)
-            hosts_up = line.split('(')[1].split()[0]
-            #print(hosts_up)
-            scan_time = line.split()[-2]
-
-            #_key = 'net-scan-info-' + b2checksum(ips)
-            _key = 'net-scan-info-' + b2checksum(ips)
-
-            prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",b2sum="' + str(b2checksum(ips)) + '"'
-            prom += ',addresses="'+str(addrs)+'",hosts_up="'+str(hosts_up)+'",scan_time="'+str(scan_time)+'"'
-            gDict[_key] = [ 'sentinel_net_scan_info{' + prom + '} ' + str('1') ]
-
-    #PROM INTEGRATION
-    #val=1
-    #now = time.strftime("%Y-%m-%d %H:%M:%S")
-    #_key = 'net-scan-' + b2checksum(ips)
-    #prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",report="' + str('report') + '"'
-    #gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-
-    #seen=0 seen, but gone now
-    #seen=1 first time seen
-    #seen=2 second time
-    #seen=3 from the sql db
-
-    for ip_ in ipDict.keys():
-        if not ip_ in ipList:
-            #print('Not ip ' + ip_)
-            k_ = 'net-scan-' + ip_
-
-            if k_ in gDict.keys():
-                #print('Yes.Yes ' + k_)
-                prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip_)+'",latency="'+str('None')+'",done="'+str(now)+'",seen="'+str('0')+'"'
-                gDict[k_] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str('0') ]
-
-
-    scan = True
-    return scan
+#def netScan_v1(ips, db_store, gDict, name):
+#
+#    #scan = runNmapScanMultiProcessDict(ips, db_store, gDict, name)
+#
+#    #read all ips from db
+#    ipDict={}
+#    rows = store.selectAll('ips', db_store)
+#    #for row in rows:
+#    #    print(row)
+#        #dbDict[ ] = 1
+#    for _ip, _date, _json in rows:
+#        #print(_ip)
+#        #print(_date)
+#        #print(_json)
+#        ipDict[_ip] = _date
+#
+#    seen = -1
+#
+#
+#    #sys.exit(99)
+#
+#    if isinstance(ips, list):
+#        #ips = ips[0]
+#        #listToStr = ' '.join([str(elem) for elem in l])
+#        ips = ' '.join([str(elem) for elem in ips])
+#
+#    cmd = 'nmap -n -sn ' + str(ips)
+#
+#    #print(cmd)
+#    #print(name)
+#
+#    now = time.strftime("%Y-%m-%d %H:%M:%S")
+#
+#    proc = Popen(cmd.split(), stdout=PIPE, stderr=PIPE)
+#    out = proc.stdout.readlines()
+#
+#    #print('out is type ' + str(type(out))) #list
+#
+#    #for line in out:
+#    #for i in range(0, len(out), 2):
+#    #for (a,b) in out:
+#    #for item in out:
+#
+#    #l = len(out)
+#    ipList=[]
+#    for index, item in enumerate(out):
+#
+#        line = item.decode('utf-8').strip('\n')
+#
+#        if line.startswith('Nmap scan report for'):
+#            ip = line.split()[-1]
+#            ipList.append(ip)
+#            #print(ip)
+#
+#            nextline = out[index + 1]
+#            nline = nextline.decode('utf-8').strip('\n')
+#
+#            if nline.startswith('Host is up'):
+#                try:
+#                    latency = nline.split('(')[1].split()[0]
+#                except IndexError:
+#                    latency = None
+#            else:
+#                latency = None
+#
+#            #print(latency)
+#
+#            #check if ip is _ip
+#            if ip in ipDict.keys():
+#                seen = 3
+#            else:
+#                #print('insert+add ipDict ' + str(ip))
+#                replace = store.replaceINTO('ips', str(ip), json.dumps('{}'), db_store)
+#                #print(replace)
+#                ipDict[ip] = now
+#                seen = 1
+#
+#            #else:
+#            #    seen = 2
+#
+#            _key = 'net-scan-' + ip
+#
+#            if _key in gDict.keys():
+#                seen = 2
+#            #else:
+#            #    seen = 0
+#
+#            #if not ip _key not in gDict.keys():
+#            #    seen = 0
+#
+#            # if in gDict but not in scanIP, host went away seen=0
+#
+#            prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip)+'",latency="'+str(latency)+'",done="'+str(now)+'",seen="'+str(seen)+'"'
+#            #gDict[_key] = [ 'sentinel_net_scan{' + prom + '} ' + str('1') ]
+#            gDict[_key] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str(seen) ]
+#
+#
+#        if line.startswith('Nmap done: '):
+#            addrs = line.split(':')[1].split()[0]
+#            #print(addrs)
+#            hosts_up = line.split('(')[1].split()[0]
+#            #print(hosts_up)
+#            scan_time = line.split()[-2]
+#
+#            #_key = 'net-scan-info-' + b2checksum(ips)
+#            _key = 'net-scan-info-' + b2checksum(ips)
+#
+#            prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",b2sum="' + str(b2checksum(ips)) + '"'
+#            prom += ',addresses="'+str(addrs)+'",hosts_up="'+str(hosts_up)+'",scan_time="'+str(scan_time)+'"'
+#            gDict[_key] = [ 'sentinel_net_scan_info{' + prom + '} ' + str('1') ]
+#
+#    #PROM INTEGRATION
+#    #val=1
+#    #now = time.strftime("%Y-%m-%d %H:%M:%S")
+#    #_key = 'net-scan-' + b2checksum(ips)
+#    #prom = 'name="' + str(name) + '",sentinel_job="net-scan",ips="' + str(ips) + '",done="' + str(now) + '",report="' + str('report') + '"'
+#    #gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+#
+#    #seen=0 seen, but gone now
+#    #seen=1 first time seen
+#    #seen=2 second time
+#    #seen=3 from the sql db
+#
+#    for ip_ in ipDict.keys():
+#        if not ip_ in ipList:
+#            #print('Not ip ' + ip_)
+#            k_ = 'net-scan-' + ip_
+#
+#            if k_ in gDict.keys():
+#                #print('Yes.Yes ' + k_)
+#                prom = 'name="'+str(name)+'",sentinel_job="net-scan",ip="'+str(ip_)+'",latency="'+str('None')+'",done="'+str(now)+'",seen="'+str('0')+'"'
+#                gDict[k_] = [ 'sentinel_net_scan_ip{' + prom + '} ' + str('0') ]
+#
+#
+#    scan = True
+#    return scan
 
 #Nmap scan report for 192.168.0.253
 #Host is up (0.0041s latency).
@@ -4577,19 +4580,19 @@ def discoverHostLst(ips):
         else:
             hostLst.append(ip)
 
-    print('ipnet is ' + str(ipnet_))
+    #print('ipnet is ' + str(ipnet_))
 
     for net in ipnet_:
         discoveryLst =  nmapNet(net)
         hostLst.extend(discoveryLst)
 
     if len(hostLst) == 0:
-        print('try self discovery...')
+        #print('try self discovery...')
         ipnet = getIfconfigIPv4()
         ipn = getIpNet(ipnet)
         hostLst = nmapNet(ipn)
 
-    print('discovered: ' + str(hostLst))
+    #print('discovered: ' + str(hostLst))
     return hostLst
 
 
@@ -4661,7 +4664,7 @@ def fimCheck(name, db_store, gDict, _name):
 
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     prom += ',done="' + str(now) + '"'
-    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+    gDict[_key] = [ 'sentinel_job_output_fim{' + prom + '} ' + str(val) ]
 
     return True
 
@@ -4745,7 +4748,6 @@ def printArps():
     return True
 
 
-#def macsCheck_V2prom(name, db_store, gDict, _name, verbose=False):
 def macsCheck(name, db_store, gDict, _name, verbose=False):
 
     arpDct = getArps()
@@ -4756,109 +4758,110 @@ def macsCheck(name, db_store, gDict, _name, verbose=False):
 
 
 
+#def macsCheck_V2prom(name, db_store, gDict, _name, verbose=False):
 #def macsCheck_V1(name, db_store, gDict, _name, verbose=False):
-def macsCheck_LOCAL1(name, db_store, gDict, _name, verbose=False):
-    # get current arps
-    arpDct = getArps()
-    #print(arpDct)
-    #print(str(type(arpDct)))
-    #print('----------------')
-
-    # get arps in sql (list-macs)
-    stoTbl = store.get_all(db_store, 'arp')
-
-    stoDct={}
-    for line in stoTbl:
-        _mac = line[0]
-        stoDct[_mac] = [ line[1], line[2] ]
-
-    Dct = {}
-
-    for ip,mac in arpDct.items():
-
-        if (mac == '(incomplete)') or (mac == '<incomplete>'):
-            #print('skip incomplete')
-            continue
-
-        # get data manuf
-        t = time.strftime("%Y-%m-%dT%H:%M:%SZ")
-        m = mf.get_manuf(mac, manuf_file)
-        data = 'created:"' + t + '",manuf:"' + m + '"'
-
-        if mac not in stoDct.keys():
-            val = 1
-            #print('new ' + mac, ip) # this exists in arpTbl, but not in sql store
-
-            # update/insert into arp table
-            #insert = store.insertINTOArpTable(ip, mac, '{}', db_store)
-            insert = store.insertINTOArpTable(ip, mac, data, db_store)
-            #print(insert)
-
-            #Dct[mac] = [ip, data]
-            key = 'sentinel_job_output-arp-' + str(mac)
-            prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'",'
-            prom += data
-
-            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-
-        else:
-            val = 0
-
-            key = 'sentinel_job_output-arp-' + str(mac)
-            #prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'",'
-            #print(stoDct)
-            #print(stoDct[mac])
-            ip = stoDct[mac][0]
-            da = stoDct[mac][1]
-
-            prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
-            prom += ',' + da
-
-            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-
-
-        # check if ip has updated
-        # cur.execute("SELECT ip FROM arp WHERE mac='" + mac + "'")
-        # result = cur.fetchone()
-        #if ip not in result[0]:
-
-        #if ip not in stoDct[mac][0]:
-        #if ip not in stoDct[mac][0]: #KeyError: '70:8b:cd:d0:67:10'
-
-        #cur.execute("SELECT ip,mac,data FROM arp WHERE mac='" + mac + "'")
-        #result = cur.fetchone()
-
-        result = store.getArpData(mac, db_store)
-
-        if result:
-
-            if ip not in result[0]:
-                val = 2
-
-                if len(result[0]) == 0:
-                    _ip = ip + result[0]
-                else:
-                    _ip = ip + ',' + result[0] #csv
-
-                #cur.execute("UPDATE arp SET ip=? WHERE mac=?", (_ip, mac))
-                update = store.updateArpTable(_ip, mac, db_store)
-
-                da = result[2]
-
-                key = 'sentinel_job_output-arp-' + str(mac)
-                prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+_ip+'",'
-                prom += ',' + da
-
-                gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-
-
-
-    if verbose:
-        for v in gDict.values():
-            print(v[0])
-
-    return True
-    
+#def macsCheck_LOCAL1(name, db_store, gDict, _name, verbose=False):
+#    # get current arps
+#    arpDct = getArps()
+#    #print(arpDct)
+#    #print(str(type(arpDct)))
+#    #print('----------------')
+#
+#    # get arps in sql (list-macs)
+#    stoTbl = store.get_all(db_store, 'arp')
+#
+#    stoDct={}
+#    for line in stoTbl:
+#        _mac = line[0]
+#        stoDct[_mac] = [ line[1], line[2] ]
+#
+#    Dct = {}
+#
+#    for ip,mac in arpDct.items():
+#
+#        if (mac == '(incomplete)') or (mac == '<incomplete>'):
+#            #print('skip incomplete')
+#            continue
+#
+#        # get data manuf
+#        t = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+#        m = mf.get_manuf(mac, manuf_file)
+#        data = 'created:"' + t + '",manuf:"' + m + '"'
+#
+#        if mac not in stoDct.keys():
+#            val = 1
+#            #print('new ' + mac, ip) # this exists in arpTbl, but not in sql store
+#
+#            # update/insert into arp table
+#            #insert = store.insertINTOArpTable(ip, mac, '{}', db_store)
+#            insert = store.insertINTOArpTable(ip, mac, data, db_store)
+#            #print(insert)
+#
+#            #Dct[mac] = [ip, data]
+#            key = 'sentinel_job_output-arp-' + str(mac)
+#            prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'",'
+#            prom += data
+#
+#            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+#
+#        else:
+#            val = 0
+#
+#            key = 'sentinel_job_output-arp-' + str(mac)
+#            #prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'",'
+#            #print(stoDct)
+#            #print(stoDct[mac])
+#            ip = stoDct[mac][0]
+#            da = stoDct[mac][1]
+#
+#            prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
+#            prom += ',' + da
+#
+#            gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+#
+#
+#        # check if ip has updated
+#        # cur.execute("SELECT ip FROM arp WHERE mac='" + mac + "'")
+#        # result = cur.fetchone()
+#        #if ip not in result[0]:
+#
+#        #if ip not in stoDct[mac][0]:
+#        #if ip not in stoDct[mac][0]: #KeyError: '70:8b:cd:d0:67:10'
+#
+#        #cur.execute("SELECT ip,mac,data FROM arp WHERE mac='" + mac + "'")
+#        #result = cur.fetchone()
+#
+#        result = store.getArpData(mac, db_store)
+#
+#        if result:
+#
+#            if ip not in result[0]:
+#                val = 2
+#
+#                if len(result[0]) == 0:
+#                    _ip = ip + result[0]
+#                else:
+#                    _ip = ip + ',' + result[0] #csv
+#
+#                #cur.execute("UPDATE arp SET ip=? WHERE mac=?", (_ip, mac))
+#                update = store.updateArpTable(_ip, mac, db_store)
+#
+#                da = result[2]
+#
+#                key = 'sentinel_job_output-arp-' + str(mac)
+#                prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+_ip+'",'
+#                prom += ',' + da
+#
+#                gDict[key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+#
+#
+#
+#    if verbose:
+#        for v in gDict.values():
+#            print(v[0])
+#
+#    return True
+#    
 ### output error needs {}
 # ('b0:be:76:a4:98:2e', '(192.168.0.4)', 'created:"2023-02-27T19:02:13Z",manuf:"Tp-LinkT (Tp-Link Technologies Co.,Ltd.)"')
 #
@@ -4867,7 +4870,7 @@ def macsCheck_LOCAL1(name, db_store, gDict, _name, verbose=False):
 # ('b8:27:eb:2c:19:1e', '(192.168.0.254)', '{"created": "2023-02-27T15:38:45Z", "manuf": "Raspberr (Raspberry Pi Foundation)"}')
 
 
-#WORKING
+#WORKING-COMPLETE
 def ntpCheck(name, db_store, gDict, _name, verbose=False):
     #print('ntpCheck.run')
     #import modules.ps.ps
@@ -4932,7 +4935,7 @@ def ntpCheck(name, db_store, gDict, _name, verbose=False):
         else:
             prom += str(k) + '="' + str(v) + '",'
 
-    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+    gDict[_key] = [ 'sentinel_job_output_ntp{' + prom + '} ' + str(val) ]
 
     if verbose:
         #print(gDict)
@@ -4963,7 +4966,7 @@ def psCheck(name, db_store, gDict, _name):
         else:
             prom += str(k) + '="' + str(v) + '",'
 
-    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+    gDict[_key] = [ 'sentinel_job_output_ps{' + prom + '} ' + str(val) ]
     return True
 
 def establishedCheck(name, db_store, gDict, _name):
@@ -5027,36 +5030,36 @@ def establishedCheck(name, db_store, gDict, _name):
         data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"' + pdata
         prom = 'name="' + str(_name) + '",sentinel_job="established-check",' + data + ',done="' + str(now) + '"'
 
-        gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+        gDict[_key] = [ 'sentinel_job_output_established{' + prom + '} ' + str(val) ]
 
     return True
 
 
-def establishedCheck__v1__(name, db_store, gDict, _name):
-    eaDct = getEstablishedAlertsDct(db_store)
-
-    for key in gDict.keys():
-        if key.startswith('est-established-check-'):
-            del gDict[key]
-
-    c = 0
-    for k,v in eaDct.items():
-        val = 1
-        c += 1
-        proto = v[0]
-        laddr = v[1]
-        lport = v[2]
-        faddr = v[3]
-        fport = v[4]
-
-        now = time.strftime("%Y-%m-%d %H:%M:%S")
-        _key = 'est-established-check-' + str(_name) + '-' + str(c)
-
-        data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"'
-        prom = 'name="' + str(_name) + '",sentinel_job="established-check",' + data + ',done="' + str(now) + '"'
-        gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
-
-    return True
+#def establishedCheck__v1__(name, db_store, gDict, _name):
+#    eaDct = getEstablishedAlertsDct(db_store)
+#
+#    for key in gDict.keys():
+#        if key.startswith('est-established-check-'):
+#            del gDict[key]
+#
+#    c = 0
+#    for k,v in eaDct.items():
+#        val = 1
+#        c += 1
+#        proto = v[0]
+#        laddr = v[1]
+#        lport = v[2]
+#        faddr = v[3]
+#        fport = v[4]
+#
+#        now = time.strftime("%Y-%m-%d %H:%M:%S")
+#        _key = 'est-established-check-' + str(_name) + '-' + str(c)
+#
+#        data = 'proto="'+str(proto)+'",laddr="'+str(laddr)+'",lport="'+str(lport)+'",faddr="'+str(faddr)+'",fport="'+str(fport)+'"'
+#        prom = 'name="' + str(_name) + '",sentinel_job="established-check",' + data + ',done="' + str(now) + '"'
+#        gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+#
+#    return True
 
 
 def printEstablishedAlerts(db_store):
@@ -5301,7 +5304,7 @@ def kvmCheck(name, db_store, gDict, _name):
         prom += 'cpu_idle="'+str(cpu_idle)+'",cpu_iowait="'+str(cpu_iowait)+'",cpu_user="'+str(cpu_user)+'",cpu_kernel="'+str(cpu_kernel)+'",'
         prom += 'mem_total="'+str(mem_total)+'",mem_free="'+str(mem_free)+'",mem_used="'+str(mem_used)+'"'
 
-        gDict[_key] = [ 'sentinel_job_kvm_hypervisor{' + prom + '} ' + str('1') ]
+        gDict[_key] = [ 'sentinel_job_output_kvm_hypervisor{' + prom + '} ' + str('1') ]
 
     if domains:
         val=0
@@ -5472,7 +5475,7 @@ def kvmCheck(name, db_store, gDict, _name):
                     prom += str(k) + '="' + str(v) + '",'
 
             _key = 'virshcheck-domain-' + str(domain)
-            gDict[_key] = [ 'sentinel_job_kvm_domain{' + prom + '} ' + str(val) ]
+            gDict[_key] = [ 'sentinel_job_output_kvm_domain{' + prom + '} ' + str(val) ]
 
     return True
 
@@ -5632,7 +5635,7 @@ def RemoteClient(name, db_store, gDict, _name, verbose=False):
     if verbose:
         print(prom)
 
-    gDict[_key] = [ 'sentinel_job_output{' + prom + '} ' + str(val) ]
+    gDict[_key] = [ 'sentinel_job_output_remoteclient{' + prom + '} ' + str(val) ]
     return True
 
 
