@@ -17,7 +17,7 @@ groups:
 
     # defunct processes
     - alert: Detect_Defunct_Processes
-      expr: sentinel_job_output{defunct!="0",sentinel_job="proc-monitor"}
+      expr: sentinel_job_output_ps{defunct!="0",sentinel_job="proc-monitor"}
       for: 1m
       labels:
         severity: warning
@@ -28,7 +28,7 @@ groups:
 
     # root ssh
     - alert: Detect_Root_SSH
-      expr: sentinel_job_output{prog="ssh",user="root",sentinel_job="established-check"}
+      expr: sentinel_job_output_established{prog="ssh",user="root",sentinel_job="established-check"}
       for: 0m
       labels:
         severity: info
@@ -39,7 +39,7 @@ groups:
 
     # detect file change
     - alert: Detect_FIM_Changed
-      expr: sentinel_job_output{changed1=~".+"}
+      expr: sentinel_job_output_fim{changed1=~".+"}
       for: 0m
       labels:
         severity: info
@@ -61,7 +61,7 @@ groups:
 
     # check-ntp
     - alert: NTP_Check
-      expr: sentinel_job_output{sentinel_job="ntp-check"} > 0
+      expr: sentinel_job_output_ntp{sentinel_job="ntp-check"} > 0
       for: 0m
       labels:
         severity: warning
@@ -72,7 +72,7 @@ groups:
 
     # check-macs
     - alert: Detect_MAC_Address
-      expr: sentinel_job_output{sentinel_job="macs-check"} == 1
+      expr: sentinel_job_output_arp_data{sentinel_job="macs-check"} == 1
       for: 0m
       labels:
         severity: info
@@ -121,16 +121,18 @@ groups:
         description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_watch_syslog_rule_engine_gt_100 \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
 
     # sentinel_job_output_gt_100
-    - alert: sentinel_job_output_gt_100
-      expr: count by(instance) (sentinel_job_output{}) > 100
-      for: 0m
-      labels:
-        severity: warning
-        owner: sentinel
-      annotations:
-        summary: Instance {{ $labels.instance }} - sentinel_job_output_gt_100
-        description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_job_output_gt_100 \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+    #- alert: sentinel_job_output_gt_100
+    #  expr: count by(instance) (sentinel_job_output{}) > 100
+    #  for: 0m
+    #  labels:
+    #    severity: warning
+    #    owner: sentinel
+    #  annotations:
+    #    summary: Instance {{ $labels.instance }} - sentinel_job_output_gt_100
+    #    description: "{{ $labels.instance }} of job {{ $labels.job }} sentinel_job_output_gt_100 \n VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
 
 
+
+# sentinel_job_output_vuln_scan{} > 0
 
 

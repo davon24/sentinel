@@ -1,0 +1,20 @@
+
+🍀 krink@MacStudio src % python3.10 -m sentinel_server
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/runpy.py", line 187, in _run_module_as_main
+    mod_name, mod_spec, code = _get_module_details(mod_name, _Error)
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/runpy.py", line 146, in _get_module_details
+    return _get_module_details(pkg_main_name, error)
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/runpy.py", line 110, in _get_module_details
+    __import__(pkg_name)
+  File "/Users/krink/git/sentinel/src/sentinel_server/__init__.py", line 6, in <module>
+    from .sentinel import usage
+  File "/Users/krink/git/sentinel/src/sentinel_server/sentinel.py", line 25, in <module>
+    from tools import *
+  File "/Users/krink/git/sentinel/src/sentinel_server/tools.py", line 5, in <module>
+    from sentinel import db_manuf as manuf_file
+ImportError: cannot import name 'db_manuf' from 'sentinel' (/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/sentinel.py)
+
+
+
+
