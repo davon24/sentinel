@@ -155,44 +155,48 @@ def createDB(db_file):
 
 ###############################################################################################################################################
 
-#class DNSUpDateTask:
-#    def __init__(self):
-#        self._running = True
-#
-#    def terminate(self):
-#        self._running = False
-#
-#    def sqlConnection(self, db_file):
-#        con = sqlite3.connect(db_file)
-#        return con
-#
-#    def run(self, mac, ip, db_file):
-#        #print(mac, ip, db_file)
-#        ip = ip.strip('(')
-#        ip = ip.strip(')')
-#        #print('IP: ' + ip)
-#
-#        #dnsname = tools.getDNSName(ip)
-#        dnsname = str(tools.getNSlookup(ip))
-#
-#        #print('DNS: ' + dnsname)
-#        con = self.sqlConnection(db_file)
-#        cur = con.cursor()
-#        cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
-#        record = cur.fetchone()
-#        if record is None:
-#            return False
-#        #print(record[0])
-#        jdata = json.loads(record[0])
-#        jdata['dns'] = dnsname
-#        update = json.dumps(jdata)
-#        cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
-#        con.commit()
-#        print('updated dns ' + str(mac) + ' ' + str(update))
-#        if cur.rowcount == 0:
-#            return False
-#        return True
-#
+
+class DNSUpDateTask:
+    def __init__(self):
+        self._running = True
+
+    def terminate(self):
+        self._running = False
+
+    def sqlConnection(self, db_file):
+        con = sqlite3.connect(db_file)
+        return con
+
+    def run(self, mac, ip, db_file):
+        #print(mac, ip, db_file)
+        ip = ip.strip('(')
+        ip = ip.strip(')')
+        #print('IP: ' + ip)
+
+        #dnsname = tools.getDNSName(ip)
+        dnsname = str(tools.getNSlookup(ip))
+
+        #print('DNS: ' + dnsname)
+        con = self.sqlConnection(db_file)
+        cur = con.cursor()
+        cur.execute("SELECT data FROM arp WHERE mac=?", (mac,))
+        record = cur.fetchone()
+        if record is None:
+            return False
+        #print(record[0])
+        jdata = json.loads(record[0])
+        jdata['dns'] = dnsname
+        update = json.dumps(jdata)
+        cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
+        con.commit()
+        print('updated dns ' + str(mac) + ' ' + str(update))
+        if cur.rowcount == 0:
+            return False
+        return True
+
+
+
+###############################################################################################################################################
 
 
 def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=False):
@@ -212,7 +216,9 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
             for row in rows:
                 _mac = row[0]
                 line = row[1].split(',')
+
                 dta = row[2]
+
                 #print('Match.This.Row ' + str(line))
                 line.remove(ip) #remove doesn't return anything, it modifies existing list in place
                 #print('new list ', line)
@@ -234,7 +240,18 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
 
                 val = 2.2 #updated
                 prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
-                prom += ',' + dta
+
+                #prom += ',' + dta
+
+                #for k,v in json.loads(dta):
+                #    print(k,v)
+
+                #print(dta)
+
+                jdata = json.loads(dta)
+                for k,v in jdata.items():
+                    #print(k,v)
+                    prom += ',' + str(k) + '="' + str(v) + '"'
 
                 gDict[key] = [ 'sentinel_job_output_arp_data{' + prom + '} ' + str(val) ]
 
@@ -249,8 +266,10 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
             #m = mf.get_manuf(mac, 'db/manuf')
             m = mf.get_manuf(mac, manuf_file)
             #print(m)
-            #data = '{"created":"' + t + '","manuf":"' + m + '"}'
-            data = 'created="' + t + '",manuf="' + m + '"'
+
+            data = '{"created":"' + t + '","manuf":"' + m + '"}' # JSON format
+            #data = 'created="' + t + '",manuf="' + m + '"'
+
             # text format parsing error in line 11: expected '=' after label name, found ':'"
             cur.execute("INSERT INTO arp VALUES (?, ?, ?)", (mac, ip, data))
             con.commit()
@@ -263,7 +282,18 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
 
             val = 1
             prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+ip+'"'
-            prom += ',' + data
+
+            #prom += ',' + data
+
+            #for k,v in json.loads(data):
+            #    print(k,v)
+
+            #print(data)
+
+            jdata = json.loads(data)
+            for k,v in jdata.items():
+                #print(k,v)
+                prom += ',' + str(k) + '="' + str(v) + '"'
 
             gDict[key] = [ 'sentinel_job_output_arp_data{' + prom + '} ' + str(val) ]
 
@@ -272,7 +302,20 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
             #print(ip, _result[0]) #tuple _result
             val = 0
             prom = 'sentinel_job="'+name+'",mac="'+_result[1]+'",ip="'+_result[0]+'"'
-            prom += ',' + _result[2]
+            #prom += ',' + _result[2]
+
+            #print(_result[2])
+            #print(type(_result[2]))
+
+            #for k,v in json.dumps(_result[2]):
+            #    print(k,v)
+            #print('result2 ' + _result[2])
+
+            jdata = json.loads(_result[2])
+            for k,v in jdata.items():
+                #print(k,v)
+                prom += ',' + str(k) + '="' + str(v) + '"'
+
             gDict[key] = [ 'sentinel_job_output_arp_data{' + prom + '} ' + str(val) ]
 
             if ip not in _result[0]:
@@ -293,7 +336,14 @@ def update_arp_data_prom(db_file, arpDict, manuf_file, gDict, name, verbose=Fals
 
                 val = 2.1 #updated
                 prom = 'sentinel_job="'+name+'",mac="'+mac+'",ip="'+_ip+'"'
-                prom += ',' + _result[2]
+
+                #prom += ',' + _result[2]
+                #print(_result[2])
+
+                jdata = json.loads(_result[2])
+                for k,v in jdata.items():
+                    #print(k,v)
+                    prom += ',' + str(k) + '="' + str(v) + '"'
 
                 gDict[key] = [ 'sentinel_job_output_arp_data{' + prom + '} ' + str(val) ]
 
