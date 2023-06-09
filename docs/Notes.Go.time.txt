@@ -1,0 +1,24 @@
+
+
+
+currentTime := time.Now()
+timestamp := currentTime.Format("2006-01-02 15:04:05")
+
+The format "2006-01-02 15:04:05" might seem a bit unusual, but it has a specific significance in Go. In Go's time package, the reference time used for formatting and parsing dates is January 2, 2006, at 15:04:05 UTC (represented as "2006-01-02 15:04:05").
+
+The reason behind this specific reference time is to demonstrate the pattern for formatting and parsing dates in Go. The time package in Go uses a fixed format for representing dates and times, and this specific reference time serves as a mnemonic to help remember the layout of the format string. It aligns the values of the date and time components with the corresponding digits in the layout.
+
+So, when you use the format "2006-01-02 15:04:05" to parse or format a date, Go will interpret the various components correctly based on their positions in the layout string. It ensures consistency and reduces ambiguity when working with dates and times in Go.
+
+However, it's important to note that you can use other date and time formats as well, based on your specific needs. The "2006-01-02 15:04:05" format is just a convention to make it easier to work with the time package in Go.
+
+
+If you change the format string to currentTime.Format("2000-01-01 10:00:00"), the resulting timestamp will be formatted using the provided format string, but the values for year, month, day, hour, minute, and second will not reflect the actual current time.
+
+In this case, the resulting timestamp will always be "2000-01-01 10:00:00" because the format string specifies fixed values for each component. The year is set to "2000", the month is set to "01" (January), the day is set to "01", and the time is set to "10:00:00".
+
+Since the format string provides specific values for each component of the timestamp, the resulting formatted timestamp will not represent the actual current time but will be a static string representing "January 1, 2000, 10:00:00".
+
+It's important to note that the purpose of using time.Now() and Format is to obtain the current time and format it according to a desired pattern. If you want to display a fixed timestamp, you can directly assign the desired timestamp string to a variable without using time.Now() and Format.
+
+

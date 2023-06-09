@@ -1,4 +1,3 @@
-
 package db
 
 import (
@@ -8,76 +7,81 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type Config struct {
+    Name      string
+    Data      string
+    Timestamp string
+}
+
 
 func CreateTables(db *sql.DB) {
 
-    users_table := `CREATE TABLE users (
-        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-        "FirstName" TEXT,
-        "LastName" TEXT,
-	"Desc" TEXT,
-        "Number" INT);`
-    query, err := db.Prepare(users_table)
+    configs_table := `CREATE TABLE configs (
+        "Name" TEXT PRIMARY KEY NOT NULL,
+        "Data" JSON,
+        "Timestamp" TEXT);`
+    query, err := db.Prepare(configs_table)
     if err != nil {
         log.Fatal(err)
     }
     query.Exec()
-    log.Println("Table 'users' created successfully!")
-
-    configs_table := `CREATE TABLE configs (
-        "name" TEXT PRIMARY KEY NOT NULL,
-        "timestamp" TEXT,
-        "data" JSON);`
-    query2, err := db.Prepare(configs_table)
-    if err != nil {
-        log.Fatal(err)
-    }
-    query2.Exec()
     log.Println("Table 'configs' created successfully!")
 
 }
 
-func AddUsers(db *sql.DB, FirstName string, LastName string, Desc string, Number int) {
-    records := `INSERT INTO users(FirstName, LastName, Desc, Number) VALUES (?, ?, ?, ?)`
+func AddConfigs(db *sql.DB, Name string,Data string, Timestamp string) error {
+
+    records := `INSERT INTO configs (Name, Data, Timestamp) VALUES (?, ?, ?)`
     query, err := db.Prepare(records)
     if err != nil {
-        log.Fatal(err)
+        //log.Fatal(err)
+	return err
     }
-    _, err = query.Exec(FirstName, LastName, Desc, Number)
+    _, err = query.Exec(Name, Data, Timestamp)
     if err != nil {
-        log.Fatal(err)
+        //log.Fatal(err)
+	return err
     }
+    return nil
 }
 
-func FetchRecords(db *sql.DB) {
-    record, err := db.Query("SELECT * FROM users")
+
+func FetchConfigs(db *sql.DB) ([]Config, error) {
+    rows, err := db.Query("SELECT * FROM configs")
     if err != nil {
-        log.Fatal(err)
+        return nil, err
     }
-    defer record.Close()
-    for record.Next() {
-        var id int
-        var FirstName string
-        var LastName string
-        var Desc string
-        var Number int
-        record.Scan(&id, &FirstName, &LastName, &Desc, &Number)
-        log.Printf("User: %d %s %s %s %d", id, FirstName, LastName, Desc, Number)
+    defer rows.Close()
+
+    var configs []Config
+    for rows.Next() {
+        var config Config
+        if err := rows.Scan(&config.Name, &config.Data, &config.Timestamp); err != nil {
+            return nil, err
+        }
+        configs = append(configs, config)
     }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return configs, nil
 }
 
-func ReadConfigs(db *sql.DB) {
+
+func PrintConfigs(db *sql.DB) {
     record, err := db.Query("SELECT * FROM configs")
     if err != nil {
         log.Fatal(err)
     }
     defer record.Close()
     for record.Next() {
-        var name string
-        var timestamp string
-        var data string
-        record.Scan(&name, &timestamp, &data)
-        log.Printf("Config: %s %s %s", name, timestamp, data)
+        var Name string
+        var Data string
+        var Timestamp string
+        record.Scan(&Name, &Data, &Timestamp)
+        log.Printf("Config: %s %s %s", Name, Data, Timestamp)
     }
 }
 
