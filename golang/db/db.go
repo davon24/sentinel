@@ -2,6 +2,7 @@ package db
 
 import (
 	"log"
+    "errors"
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -14,7 +15,18 @@ type Config struct {
 }
 
 
-func CreateTables(db *sql.DB) {
+func Version(db *sql.DB) (string, error) {
+    
+    var version string
+    err := db.QueryRow("SELECT SQLITE_VERSION()").Scan(&version)
+    if err != nil {
+        return "", err
+    }
+    return version, nil
+}
+
+
+func CreateTables(db *sql.DB) error {
 
     configs_table := `CREATE TABLE configs (
         "Name" TEXT PRIMARY KEY NOT NULL,
@@ -22,28 +34,52 @@ func CreateTables(db *sql.DB) {
         "Timestamp" TEXT);`
     query, err := db.Prepare(configs_table)
     if err != nil {
-        log.Fatal(err)
+        //log.Fatal(err)
+        return err
     }
-    query.Exec()
-    log.Println("Table 'configs' created successfully!")
+    //query.Exec()
+    //log.Println("Table 'configs' created successfully!")
+    _, err = query.Exec()
+    if err != nil {
+        return err
+    }
 
+    return nil
 }
 
-func AddConfigs(db *sql.DB, Name string,Data string, Timestamp string) error {
-
+func AddConfig(db *sql.DB, Name string, Data string, Timestamp string) error {
     records := `INSERT INTO configs (Name, Data, Timestamp) VALUES (?, ?, ?)`
     query, err := db.Prepare(records)
     if err != nil {
-        //log.Fatal(err)
-	return err
+        return err
     }
     _, err = query.Exec(Name, Data, Timestamp)
     if err != nil {
-        //log.Fatal(err)
-	return err
+        return err
     }
     return nil
 }
+
+
+func DeleteConfig(db *sql.DB, Name string) error {
+
+    query, err := db.Exec("DELETE FROM configs WHERE Name = ?", Name)
+    if err != nil {
+        return err
+    }
+
+    rowsAffected, err := query.RowsAffected()
+    if err != nil {
+        return err
+    }
+
+    if rowsAffected == 0 {
+        return errors.New("delete failed")
+    }
+
+    return err
+}
+
 
 
 func FetchConfigs(db *sql.DB) ([]Config, error) {

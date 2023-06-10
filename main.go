@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
+//	"log"
 	"os"
 	"time"
+    "encoding/json"
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -12,7 +13,7 @@ import (
 	"sentinel/golang/db"
 )
 
-var version = "1.0.0"
+var version = "2.0.0-dev-pre-0"
 
 func main() {
 
@@ -28,37 +29,24 @@ func main() {
 
     if len(os.Args) > 1 {
 
-	switch os.Args[1] {
-	case "--help", "-help", "help":
-		printUsage()
-	case "--version", "-version", "version":
-		fmt.Println("Version: ", version)
-	case "list-configs":
-		listConfigs(configs)
-	case "update-config":
+	    switch os.Args[1] {
 
-		if len(os.Args) != 4 {
-			fmt.Println("Invalid arguments. Usage: update-config name data")
-			return
-		}
-		//err := addConfig(os.Args[2], os.Args[3], os.Args[4])
+	    case "--help", "-help", "help":
+		    printUsage()
+	    case "--version", "-version", "version":
+		    fmt.Println("Version:", version)
+            printSqlite3Version()
+	    case "list-configs":
+		    listConfigs(configs)
+	    case "add-config":
+            addConfig(configs)
+	    case "delete-config":
+            deleteConfig(configs)
 
-		//currentTime := time.Now()
-		//timestamp := currentTime.Format("2006-01-02 15:04:05")
-
-
-                now := time.Now()
-		//err := addConfig(os.Args[2], os.Args[3], timestamp)
-		err := addConfig(os.Args[2], os.Args[3], now.Format(time.RFC822))
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println("Config added successfully!")
-
-	default:
-		fmt.Println("Invalid argument ", os.Args[1])
+	    default:
+		    fmt.Println("Invalid argument ", os.Args[1])
 	
-	}
+        }
 
     }
 
@@ -73,33 +61,89 @@ Options:
   --version|-version|version  Display version
 
   list-configs
-    update-config name data
-      - Add a new config with the specified name, data
-      - Example: add-config config-1 "{}"
-    delete-config name
-    clear-configs
+  add-config name json
+      - Add a new config with the specified name, json
+      - Example: add-config config-1 '{"key":1}'
+  delete-config name
 
 `
     fmt.Println(usage)
 }
 
-//func addConfig() {
-//	db.AddConfigs(database, "config-1", "{}", "2023-06-09")
-//}
 
+func printSqlite3Version() {
 
-func addConfig(name, data, timestamp string) error {
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        return
+    }
+    defer database.Close()
+
+    version, err := db.Version(database)
+    if err != nil {
+        return
+    }
+
+    fmt.Println("Sqlite:", version)
+}
+
+func addConfig(configs []db.Config) {
+
+	if len(os.Args) != 4 {
+		fmt.Println("Invalid arguments. Usage: add-config name json")
+		return
+	}
+
+	// Timestamp
+	now := time.Now()
+	timestamp := now.Format("2006-01-02T15:04:05")
+
+	// Validate data as JSON
+	isJSON := json.Valid([]byte(os.Args[3]))
+	if !isJSON {
+		fmt.Println("Invalid JSON!")
+		return
+	}
+
+    //open database connect
 	database, err := sql.Open("sqlite3", "sentinel.db")
 	if err != nil {
-		return err
+		fmt.Println(err)
+		return
 	}
 	defer database.Close()
 
-	if err = db.AddConfigs(database, name, data, timestamp); err != nil {
-		return err
+    //add config data
+	if err = db.AddConfig(database, os.Args[2], os.Args[3], timestamp); err != nil {
+		fmt.Println(err)
+		return
 	}
 
-	return nil
+	fmt.Println("Config added successfully!")
+}
+
+func deleteConfig(configs []db.Config) {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: delete-config name")
+        return
+    }
+
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+		fmt.Println(err)
+        return
+    }
+    defer database.Close()
+
+    //delete config data
+    if err = db.DeleteConfig(database, os.Args[2]); err != nil {
+		fmt.Println(err)
+        return
+    }
+
+    fmt.Println("Config deleted successfully!")
 }
 
 
@@ -110,7 +154,7 @@ func listConfigs(configs []db.Config) {
 	//	log.Fatal(err)
 	//}
 
-	fmt.Println("Configs:")
+	//fmt.Println("Configs:")
 	for _, config := range configs {
 		fmt.Printf("%s %s %s\n", config.Name, config.Data, config.Timestamp)
 	}
@@ -164,4 +208,5 @@ func getConfigs() ([]db.Config, error) {
 	return configs, nil
 }
 
+//db, err := sql.Open("sqlite3", ":memory:")
 
