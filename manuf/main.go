@@ -22,17 +22,15 @@ func main() {
         }
 
         parts := strings.Split(mac, ":")
-
         for i := len(parts); i > 0; i-- {
             subMac := strings.Join(parts[:i], ":")
-            //fmt.Fprintln(os.Stdout, subMac)
             manufacturer := manuf.SearchManufacturer(subMac, string(content))
-            if manufacturer != "Manufacturer not found" {
-                fmt.Printf("Manufacturer for MAC address %s is %s\n", mac, manufacturer)
+            if manufacturer != "Manufacturer Not Found" {
+                fmt.Printf("%s\n", manufacturer)
                 return
             }
         }
-	    fmt.Printf("Manufacturer not found for MAC address %s\n", mac)
+	    fmt.Printf("Manufacturer Not Found %s\n", mac)
 
     } else {
         fmt.Fprintln(os.Stderr, "Usage: " + os.Args[0] + " 00:00:00:00:00:00")
@@ -40,5 +38,3 @@ func main() {
     }
 
 }
-
-

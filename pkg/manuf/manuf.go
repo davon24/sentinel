@@ -26,6 +26,6 @@ func SearchManufacturer(mac string, content string) string {
 		log.Println("Error reading embedded file:", err)
 	}
 
-	return "Manufacturer not found"
+	return "Manufacturer Not Found"
 }
 

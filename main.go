@@ -16,7 +16,7 @@ import (
 
 )
 
-var version = "2.0.0-dev-pre-000"
+var version = "2.0.0-dev-pre-0000"
 
 func main() {
 
@@ -27,34 +27,33 @@ func main() {
 
     if len(os.Args) > 1 {
 
-	    switch os.Args[1] {
+        switch os.Args[1] {
 
-	    case "--help", "-help", "help":
-		    printUsage()
-	    case "--version", "-version", "version":
-		    fmt.Println("Version:", version)
+        case "--help", "-help", "help":
+            printUsage()
+        case "--version", "-version", "version":
+            fmt.Println("Version:", version)
             printSqlite3Version()
 
-	    case "list-configs", "configs":
-		    listConfigs()
-	    case "add-config":
+        case "list-configs", "configs":
+            listConfigs()
+        case "add-config":
             addConfig()
-	    case "del-config":
+        case "del-config":
             delConfig()
 
-	    case "list-manuf":
+        case "list-manuf":
             listManuf()
-
-	    case "manuf":
+        case "manuf":
             runManuf()
 
-	    case "arps":
+        case "arps":
             runArps()
-	    case "list-macs", "macs":
+        case "list-macs", "macs":
             listMacs()
-	    case "del-mac":
+        case "del-mac":
             //delMacs()
-		    fmt.Println("Del macs... ")
+            fmt.Println("Del macs... ")
 
         case "nmap-scan", "nmap":
             //nmapScan()
@@ -66,9 +65,9 @@ func main() {
             //delNmap()
             fmt.Println("Del namp... ")
 
-	    default:
-		    fmt.Println("Invalid argument ", os.Args[1])
-	
+        default:
+            fmt.Println("Invalid argument ", os.Args[1])
+
         }
 
     }
@@ -108,14 +107,14 @@ func printSqlite3Version() {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-		fmt.Println(err)
+        fmt.Println(err)
         os.Exit(1)
     }
     defer database.Close()
 
     version, err := db.Version(database)
     if err != nil {
-		fmt.Println(err)
+        fmt.Println(err)
         os.Exit(1)
     }
 
@@ -158,9 +157,9 @@ func runManuf() {
         //fmt.Fprintln(os.Stdout, subMac)
         manufacturer := manuf.SearchManufacturer(subMac, string(content))
 
-        if manufacturer != "Manufacturer not found" {
+        if manufacturer != "Manufacturer Not Found" {
             fmt.Printf("Manufacturer for MAC address %s is %s\n", mac, manufacturer)
-            return
+            break
         }
 
     }
@@ -169,17 +168,24 @@ func runManuf() {
 
 }
 
+
 func runArps() {
 
     output, err := tools.RunCommand("arp", "-an") // Pass any desired command arguments here
     if err != nil {
-		fmt.Println(err)
+        fmt.Println(err)
         os.Exit(1)
     }
 
-    //save output to db
+    // Manuf content
+    content, err := manuf.EmbedFS.ReadFile("resources/manuf")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
 
-    //open database connect
+    //Save output to db
+    //Open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
         fmt.Println(err)
@@ -190,75 +196,82 @@ func runArps() {
 
     lines := strings.Split(output, "\n")
     for _, line := range lines {
-        fmt.Println(line)
+        //fmt.Println(line)
 
         fields := strings.Fields(line)
         if len(fields) >= 4 {
             ip := strings.Trim(fields[1], "()")
             mac := fields[3]
 
-            fmt.Println("IP:", ip)
-            fmt.Println("MAC:", mac)
+            // Manuf lookup
+            mac = strings.ToUpper(mac) // Convert mac address to UPPERCASE for matching
+            parts := strings.Split(mac, ":")
+            var manufact string  = "NoManuf"
+            for i := len(parts); i > 0; i-- {
+                subMac := strings.Join(parts[:i], ":")
+                manufacturer := manuf.SearchManufacturer(subMac, string(content))
+                if manufacturer != "Manufacturer Not Found" {
+                    manufact = manufacturer
+                    break
+                }
+            }
 
             // Timestamp
             now := time.Now()
             timestamp := now.Format("2006-01-02T15:04:05")
 
-            //save record data // FIX ME db.AddMac(database, mac, ip, manuf, timestamp)
-            //if err = db.AddMac(database, mac, ip, ip, timestamp); err != nil {
-            if err = db.UpdateMac(database, mac, ip, ip, timestamp); err != nil {
+            //save record data 
+            if err = db.UpdateMac(database, mac, ip, manufact, timestamp); err != nil {
                 fmt.Println(err)
                 return
             }
+
+            fmt.Printf("%s %s %s\n", ip, mac, manufact)
 
         }
 
     }
 
-    //mac,ip,manuf
-
-
 }
 
 
 
-//func addConfig(configs []db.Config) {
 func addConfig() {
 
-	if len(os.Args) != 4 {
-		fmt.Println("Invalid arguments. Usage: add-config name json")
-		os.Exit(1)
-	}
+    if len(os.Args) != 4 {
+        fmt.Println("Invalid arguments. Usage: add-config name json")
+        os.Exit(1)
+    }
 
-	// Timestamp
-	now := time.Now()
-	timestamp := now.Format("2006-01-02T15:04:05")
+    // Timestamp
+    now := time.Now()
+    timestamp := now.Format("2006-01-02T15:04:05")
 
-	// Validate data as JSON
-	isJSON := json.Valid([]byte(os.Args[3]))
-	if !isJSON {
-		fmt.Println("Invalid JSON!")
-		os.Exit(1)
-	}
+    // Validate data as JSON
+    isJSON := json.Valid([]byte(os.Args[3]))
+    if !isJSON {
+        fmt.Println("Invalid JSON!")
+        os.Exit(1)
+    }
 
     //open database connect
-	database, err := sql.Open("sqlite3", "sentinel.db")
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer database.Close()
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
 
     //add config data
-	if err = db.AddConfig(database, os.Args[2], os.Args[3], timestamp); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+    if err = db.AddConfig(database, os.Args[2], os.Args[3], timestamp); err != nil {
+	    fmt.Println(err)
+	    os.Exit(1)
+    }
 
-	fmt.Println("Config added successfully!")
+    fmt.Println("Config added successfully!")
 }
 
-//func delConfig(configs []db.Config) {
+
 func delConfig() {
 
     if len(os.Args) != 3 {
@@ -269,14 +282,14 @@ func delConfig() {
     //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-		fmt.Println(err)
+        fmt.Println(err)
         os.Exit(1)
     }
     defer database.Close()
 
     //delete config data
     if err = db.DeleteConfig(database, os.Args[2]); err != nil {
-		fmt.Println(err)
+        fmt.Println(err)
         os.Exit(1)
     }
 
@@ -315,22 +328,16 @@ func listConfigs() {
     }
     defer database.Close()
 
-//	configs, err := getConfigs()
-//	if err != nil {
-//		fmt.Println(err)
-//        os.Exit(1)
-//	}
-
     configs, err := db.FetchConfigs(database)
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
-	//fmt.Println("Configs:")
-	for _, config := range configs {
-		fmt.Printf("%s %s %s\n", config.Name, config.Data, config.Timestamp)
-	}
+    //fmt.Println("Configs:")
+    for _, config := range configs {
+        fmt.Printf("%s %s %s\n", config.Name, config.Data, config.Timestamp)
+    }
 }
 
 
@@ -352,7 +359,7 @@ func createDb() error {
 
         db.CreateTables(database)
 
-        fmt.Printf("Created DB \n")
+        fmt.Printf("Created sentinel.db \n")
     }
     //fmt.Printf("File exists\n")
     return nil
