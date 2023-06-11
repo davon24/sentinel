@@ -1,6 +1,0 @@
-
-metric types Gauge, Counter, Summary, and Histogram
-
-https://godoc.org/github.com/prometheus/client_golang/prometheus
-
-

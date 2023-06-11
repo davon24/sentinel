@@ -1,6 +1,0 @@
-
-pip install pyinstaller
-
-pyinstaller yourprogram.py
-
-

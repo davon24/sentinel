@@ -1,6 +1,0 @@
-
-auto expire sentinel_watch_syslog_rule_engine gData keys (these can collect on a long running busy system)
-
-reload rules w/o restarting daemon?
-
-

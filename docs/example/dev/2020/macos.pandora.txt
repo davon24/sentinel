@@ -1,7 +1,0 @@
-
-🎃 karl.rink@Karl-MacBook-Pro python % ps -ef |grep sentry
-  503   708     1   0  9:06AM ??         0:00.02 /Applications/Pandora.app/Contents/Frameworks/Electron Framework.framework/Resources/crashpad_handler --no-rate-limit --no-upload-gzip --database=/var/folders/7x/srvz0zv173ndvw60tbjtfdsh0000gq/T/desktop-app Crashes --metrics-dir=/var/folders/7x/srvz0zv173ndvw60tbjtfdsh0000gq/T/desktop-app Crashes --url=https://sentry.io/api/1776058/minidump/?sentry_key=a534d55aca094a85904627a95f2084bc --handshake-fd=94
-  503  1176  1145   0  9:53AM ttys004    0:00.00 grep sent
-
-
-

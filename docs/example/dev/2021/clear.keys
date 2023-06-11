@@ -1,6 +1,0 @@
-
-#list=`sentinel get-keys | grep rule-t`
-list=`sentinel list-keys | grep rule-t`
-
-sentinel expire-keys `echo $list`
-

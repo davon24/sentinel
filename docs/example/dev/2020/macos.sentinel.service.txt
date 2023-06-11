@@ -1,7 +1,0 @@
-
-sudo cp sentry.sentinel.plist /Library/LaunchDaemons/
-
-sudo launchctl load -w /Library/LaunchDaemons/sentry.sentinel.plist
-
-
-

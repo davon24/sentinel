@@ -1,6 +1,0 @@
-
-this was interesting back then...
-#sentinel get-system-profile-data 1 "['SPPowerDataType'][1]['AC Power']['Display Sleep Timer']"
-
-
-

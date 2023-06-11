@@ -1,4 +1,0 @@
-
-https://www.kaggle.com/uciml/sms-spam-collection-dataset?select=spam.csv
-
-

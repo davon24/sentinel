@@ -1,6 +1,0 @@
-
-ARGS=" --collector.textfile.directory="/var/lib/prometheus/node-exporter   "
-
-cd /var/lib/prometheus/node-exporter && ln -s /usr/libexec/sentinel/db/sentinel.db.prom
-
-
