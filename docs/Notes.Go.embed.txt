@@ -1,0 +1,10 @@
+
+
+In Go, the go:embed directive is recognized by the Go compiler when it is associated with a comment. The comment must be placed directly before a variable declaration, and it should start with //go:embed followed by the file or directory path you want to embed.
+
+By including the comment //go:embed resources/manuf.txt directly above the embedFS variable declaration, you are instructing the Go compiler to embed the specified file (resources/manuf.txt) into the variable embedFS. This way, the embedFS variable will hold the content of the embedded file, and you can access it using functions like embedFS.ReadFile().
+
+Without the //go:embed comment, the Go compiler won't recognize the directive, and the file won't be embedded into the variable. Therefore, it is necessary to include the comment to specify which file or directory should be embedded.
+
+
+

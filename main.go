@@ -3,29 +3,30 @@ package main
 import (
 	"fmt"
 //	"log"
+	"strings"
 	"os"
 	"time"
+    "embed"
     "encoding/json"
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
 
 	"sentinel/golang/db"
+	"sentinel/golang/tools"
 )
 
-var version = "2.0.0-dev-pre-0"
+var version = "2.0.0-dev-pre-00"
+
+//go:embed manuf/resources/manuf
+var embedFS embed.FS
 
 func main() {
 
-    configs, err := getConfigs()
+    err := createDb()
     if err != nil {
         panic(err)
     }
-
-    // Use the retrieved configs as needed
-    //for _, config := range configs {
-    //		fmt.Printf("Retrieved Config: %s %s %s\n", config.Name, config.Data, config.Timestamp)
-    //}
 
     if len(os.Args) > 1 {
 
@@ -36,12 +37,37 @@ func main() {
 	    case "--version", "-version", "version":
 		    fmt.Println("Version:", version)
             printSqlite3Version()
-	    case "list-configs":
-		    listConfigs(configs)
+
+	    case "list-configs", "configs":
+		    listConfigs()
 	    case "add-config":
-            addConfig(configs)
-	    case "delete-config":
-            deleteConfig(configs)
+            addConfig()
+	    case "del-config":
+            delConfig()
+
+	    case "list-manuf":
+            listManuf()
+
+	    case "manuf":
+            runManuf()
+
+	    case "arps":
+            runArps()
+	    case "list-macs", "macs":
+            listMacs()
+	    case "del-mac":
+            //delMacs()
+		    fmt.Println("Del macs... ")
+
+        case "nmap-scan", "nmap":
+            //nmapScan()
+            fmt.Println("Nmap Scan... ")
+        case "list-nmaps":
+            //listNmaps()
+            fmt.Println("List nmaps... ")
+        case "del-nmap":
+            //delNmap()
+            fmt.Println("Del namp... ")
 
 	    default:
 		    fmt.Println("Invalid argument ", os.Args[1])
@@ -52,6 +78,7 @@ func main() {
 
 }
 
+
 func printUsage() {
 
     usage := `Usage: sentinel [options]
@@ -60,11 +87,20 @@ Options:
   --help|-help|help           Display this help message
   --version|-version|version  Display version
 
-  list-configs
+  configs|list-configs
   add-config name json
-      - Add a new config with the specified name, json
-      - Example: add-config config-1 '{"key":1}'
-  delete-config name
+  del-config name
+
+  arps
+  macs|list-macs
+  del-mac mac
+
+  manuf mac
+  list-manuf
+
+  nmap-scan [ip/net] [level]
+  list-nmaps
+  del-nmap ip
 
 `
     fmt.Println(usage)
@@ -75,23 +111,123 @@ func printSqlite3Version() {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        return
+		fmt.Println(err)
+        os.Exit(1)
     }
     defer database.Close()
 
     version, err := db.Version(database)
     if err != nil {
-        return
+		fmt.Println(err)
+        os.Exit(1)
     }
 
-    fmt.Println("Sqlite:", version)
+    fmt.Println("Sqlite3:", version)
 }
 
-func addConfig(configs []db.Config) {
+func listManuf() {
+
+    fmt.Println("List Manuf...")
+
+    manuf, err := embedFS.ReadFile("resources/manuf")
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Println(string(manuf))
+
+}
+
+func runManuf() {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: manuf mac")
+        os.Exit(1)
+    }
+
+    /*
+
+    manuf, err := embedFS.ReadFile("resources/manuf")
+    if err != nil {
+        panic(err)
+    }
+
+    lines := strings.Split(string(manuf), "\n")
+
+    for _, line := range lines {
+
+        fields := strings.Fields(line)
+
+
+    }
+    */
+
+
+    fmt.Println("runManuf NOT DONE")
+
+
+
+}
+
+func runArps() {
+
+    output, err := tools.RunCommand("arp", "-an") // Pass any desired command arguments here
+    if err != nil {
+		fmt.Println(err)
+        os.Exit(1)
+    }
+
+    //save output to db
+
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+
+    lines := strings.Split(output, "\n")
+    for _, line := range lines {
+        fmt.Println(line)
+
+        fields := strings.Fields(line)
+        if len(fields) >= 4 {
+            ip := strings.Trim(fields[1], "()")
+            mac := fields[3]
+
+            fmt.Println("IP:", ip)
+            fmt.Println("MAC:", mac)
+
+            // Timestamp
+            now := time.Now()
+            timestamp := now.Format("2006-01-02T15:04:05")
+
+            //save record data // FIX ME db.AddMac(database, mac, ip, manuf, timestamp)
+            //if err = db.AddMac(database, mac, ip, ip, timestamp); err != nil {
+            if err = db.UpdateMac(database, mac, ip, ip, timestamp); err != nil {
+                fmt.Println(err)
+                return
+            }
+
+        }
+
+    }
+
+    //mac,ip,manuf
+
+
+}
+
+
+
+//func addConfig(configs []db.Config) {
+func addConfig() {
 
 	if len(os.Args) != 4 {
 		fmt.Println("Invalid arguments. Usage: add-config name json")
-		return
+		os.Exit(1)
 	}
 
 	// Timestamp
@@ -102,57 +238,94 @@ func addConfig(configs []db.Config) {
 	isJSON := json.Valid([]byte(os.Args[3]))
 	if !isJSON {
 		fmt.Println("Invalid JSON!")
-		return
+		os.Exit(1)
 	}
 
     //open database connect
 	database, err := sql.Open("sqlite3", "sentinel.db")
 	if err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 	defer database.Close()
 
     //add config data
 	if err = db.AddConfig(database, os.Args[2], os.Args[3], timestamp); err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	fmt.Println("Config added successfully!")
 }
 
-func deleteConfig(configs []db.Config) {
+//func delConfig(configs []db.Config) {
+func delConfig() {
 
     if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: delete-config name")
-        return
+        fmt.Println("Invalid arguments. Usage: del-config name")
+        os.Exit(1)
     }
 
     //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
 		fmt.Println(err)
-        return
+        os.Exit(1)
     }
     defer database.Close()
 
     //delete config data
     if err = db.DeleteConfig(database, os.Args[2]); err != nil {
 		fmt.Println(err)
-        return
+        os.Exit(1)
     }
 
     fmt.Println("Config deleted successfully!")
 }
 
+func listMacs() {
 
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
 
-func listConfigs(configs []db.Config) {
-	//configs, err := getConfigs()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+    arps, err := db.FetchArps(database)
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    //fmt.Println("Configs:")
+    for _, arp := range arps {
+        fmt.Printf("%s %s %s %s\n", arp.Mac, arp.Ip, arp.Data, arp.Timestamp)
+    }
+
+}
+
+//func listConfigs(configs []db.Config) {
+func listConfigs() {
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+//	configs, err := getConfigs()
+//	if err != nil {
+//		fmt.Println(err)
+//        os.Exit(1)
+//	}
+
+    configs, err := db.FetchConfigs(database)
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
 
 	//fmt.Println("Configs:")
 	for _, config := range configs {
@@ -161,52 +334,32 @@ func listConfigs(configs []db.Config) {
 }
 
 
-func getConfigs() ([]db.Config, error) {
+func createDb() error {
 
-	var configs []db.Config
+    if _, err := os.Stat("sentinel.db"); os.IsNotExist(err) {
+        //return fmt.Errorf("File does not exist")
+        file, err := os.Create("sentinel.db")
+        if err != nil {
+            return err
+        }
+        file.Close()
 
-	if _, err := os.Stat("sentinel.db"); err == nil {
-		//fmt.Printf("File exists\n")
-		database, err := sql.Open("sqlite3", "sentinel.db")
-		if err != nil {
-			return nil, err
-		}
-		defer database.Close()
+        database, err := sql.Open("sqlite3", "sentinel.db")
+        if err != nil {
+            return err
+        }
+        defer database.Close()
 
-		configs, err = db.FetchConfigs(database)
-		if err != nil {
-			return nil, err
-		}
+        db.CreateTables(database)
 
-		//for _, config := range configs {
-		//	fmt.Printf("Config: %s %s %s\n", config.Name, config.Data, config.Timestamp)
-		//}
-
-	} else {
-		//fmt.Printf("Create db file\n")
-		file, err := os.Create("sentinel.db")
-		if err != nil {
-			return nil, err
-		}
-		file.Close()
-
-		database, err := sql.Open("sqlite3", "sentinel.db")
-		if err != nil {
-			return nil, err
-		}
-		defer database.Close()
-
-		db.CreateTables(database)
-
-		// db.AddUsers(database, "Karl", "Rink", "Golang Developer", 2023)
-		configs, err = db.FetchConfigs(database)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return configs, nil
+        fmt.Printf("Created DB \n")
+    }
+    //fmt.Printf("File exists\n")
+    return nil
 }
 
+
 //db, err := sql.Open("sqlite3", ":memory:")
+
+// Without the //go:embed comment, the Go compiler won't recognize the directive, and the file won't be embedded into the variable.
 

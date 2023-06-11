@@ -14,6 +14,14 @@ type Config struct {
     Timestamp string
 }
 
+type Arp struct {
+    Mac       string
+    Ip        string
+    Data      string
+    Timestamp string
+}
+
+
 
 func Version(db *sql.DB) (string, error) {
     
@@ -34,16 +42,54 @@ func CreateTables(db *sql.DB) error {
         "Timestamp" TEXT);`
     query, err := db.Prepare(configs_table)
     if err != nil {
-        //log.Fatal(err)
         return err
     }
-    //query.Exec()
-    //log.Println("Table 'configs' created successfully!")
     _, err = query.Exec()
     if err != nil {
         return err
     }
 
+    arps_table := `CREATE TABLE arps (
+        "Mac" TEXT PRIMARY KEY NOT NULL,
+        "Ip" TEXT,
+        "Data" TEXT,
+        "Timestamp" TEXT);`
+    query2, err := db.Prepare(arps_table)
+    if err != nil {
+        return err
+    }
+    _, err = query2.Exec()
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+func UpdateMac(db *sql.DB, Mac string, Ip string, Data string, Timestamp string) error {
+    records := `INSERT OR REPLACE INTO arps (Mac, Ip, Data, Timestamp) VALUES (?, ?, ?, ?)`
+    query, err := db.Prepare(records)
+    if err != nil {
+        return err
+    }
+    _, err = query.Exec(Mac, Ip, Data, Timestamp)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+
+func AddMac(db *sql.DB, Mac string, Ip string, Data string, Timestamp string) error {
+    records := `INSERT INTO arps (Mac, Ip, Data, Timestamp) VALUES (?, ?, ?, ?)`
+    query, err := db.Prepare(records)
+    if err != nil {
+        return err
+    }
+    _, err = query.Exec(Mac, Ip, Data, Timestamp)
+    if err != nil {
+        return err
+    }
     return nil
 }
 
@@ -104,6 +150,30 @@ func FetchConfigs(db *sql.DB) ([]Config, error) {
 
     return configs, nil
 }
+
+func FetchArps(db *sql.DB) ([]Arp, error) {
+    rows, err := db.Query("SELECT * FROM arps")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var arps []Arp
+    for rows.Next() {
+        var arp Arp
+        if err := rows.Scan(&arp.Mac, &arp.Ip, &arp.Data, &arp.Timestamp); err != nil {
+            return nil, err
+        }
+        arps = append(arps, arp)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return arps, nil
+}
+
 
 
 func PrintConfigs(db *sql.DB) {
