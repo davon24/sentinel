@@ -1,5 +1,5 @@
 
-sentinel:
+manuf:
 	go build
 
 clean:

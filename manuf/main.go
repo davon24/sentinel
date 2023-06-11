@@ -5,7 +5,7 @@ import (
     "os"
     "strings"
 
-    "manuf/pkg/manuf"
+    "sentinel/pkg/manuf"
 )
 
 
@@ -16,7 +16,7 @@ func main() {
         mac := os.Args[1]
         mac = strings.ToUpper(mac) // Convert mac address to UPPERCASE for matching
 
-        content, err := manuf.EmbedFS.ReadFile("pkg/manuf/resources/manuf")
+        content, err := manuf.EmbedFS.ReadFile("resources/manuf")
         if err != nil {
             fmt.Fprintln(os.Stderr, "Error reading embedded file:", err)
         }

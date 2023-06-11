@@ -1,25 +1,22 @@
 package main
 
 import (
-	"fmt"
-//	"log"
-	"strings"
-	"os"
-	"time"
-    "embed"
+    "fmt"
+    "strings"
+    "os"
+    "time"
     "encoding/json"
-	"database/sql"
+    "database/sql"
 
-	_ "github.com/mattn/go-sqlite3"
+    _ "github.com/mattn/go-sqlite3"
 
-	"sentinel/golang/db"
-	"sentinel/golang/tools"
+    "sentinel/pkg/db"
+    "sentinel/pkg/tools"
+    "sentinel/pkg/manuf"
+
 )
 
-var version = "2.0.0-dev-pre-00"
-
-//go:embed manuf/resources/manuf
-var embedFS embed.FS
+var version = "2.0.0-dev-pre-000"
 
 func main() {
 
@@ -129,7 +126,7 @@ func listManuf() {
 
     fmt.Println("List Manuf...")
 
-    manuf, err := embedFS.ReadFile("resources/manuf")
+    manuf, err := manuf.EmbedFS.ReadFile("resources/manuf")
     if err != nil {
         panic(err)
     }
@@ -145,27 +142,30 @@ func runManuf() {
         os.Exit(1)
     }
 
-    /*
+    mac := os.Args[2]
+    mac = strings.ToUpper(mac) // Convert mac address to UPPERCASE for matching
 
-    manuf, err := embedFS.ReadFile("resources/manuf")
+    parts := strings.Split(mac, ":")
+
+    content, err := manuf.EmbedFS.ReadFile("resources/manuf")
     if err != nil {
         panic(err)
     }
 
-    lines := strings.Split(string(manuf), "\n")
+    for i := len(parts); i > 0; i-- {
+        
+        subMac := strings.Join(parts[:i], ":")
+        //fmt.Fprintln(os.Stdout, subMac)
+        manufacturer := manuf.SearchManufacturer(subMac, string(content))
 
-    for _, line := range lines {
-
-        fields := strings.Fields(line)
-
+        if manufacturer != "Manufacturer not found" {
+            fmt.Printf("Manufacturer for MAC address %s is %s\n", mac, manufacturer)
+            return
+        }
 
     }
-    */
 
-
-    fmt.Println("runManuf NOT DONE")
-
-
+    fmt.Println("runManuf DONE")
 
 }
 
