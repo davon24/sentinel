@@ -42,6 +42,16 @@ func main() {
         case "del-config":
             delConfig()
 
+        case "list-jobs", "jobs":
+            listJobs()
+            //fmt.Println("TODO List Jobs... ")
+        case "add-job":
+            //addJob()
+            fmt.Println("TODO Add Jobs... ")
+        case "del-job":
+            //delJob()
+            fmt.Println("TODO Del Jobs... ")
+
         case "list-manuf":
             listManuf()
         case "manuf":
@@ -53,17 +63,17 @@ func main() {
             listMacs()
         case "del-mac":
             //delMacs()
-            fmt.Println("Del macs... ")
+            fmt.Println("TODO Del macs... ")
 
         case "nmap-scan", "nmap":
             //nmapScan()
-            fmt.Println("Nmap Scan... ")
+            fmt.Println("TODO Nmap Scan... ")
         case "list-nmaps":
             //listNmaps()
-            fmt.Println("List nmaps... ")
+            fmt.Println("TODO List nmaps... ")
         case "del-nmap":
             //delNmap()
-            fmt.Println("Del namp... ")
+            fmt.Println("TODO Del namp... ")
 
         default:
             fmt.Println("Invalid argument ", os.Args[1])
@@ -86,6 +96,10 @@ Options:
   configs|list-configs
   add-config name json
   del-config name
+
+  jobs|list-jobs
+  add-job name json
+  del-job name
 
   arps
   macs|list-macs
@@ -151,6 +165,7 @@ func runManuf() {
         panic(err)
     }
 
+    var manufact string = "NoManufacturer"
     for i := len(parts); i > 0; i-- {
         
         subMac := strings.Join(parts[:i], ":")
@@ -158,13 +173,14 @@ func runManuf() {
         manufacturer := manuf.SearchManufacturer(subMac, string(content))
 
         if manufacturer != "Manufacturer Not Found" {
-            fmt.Printf("Manufacturer for MAC address %s is %s\n", mac, manufacturer)
+            //fmt.Printf("Manufacturer for MAC address %s is %s\n", mac, manufacturer)
+            manufact = manufacturer
             break
         }
 
     }
 
-    fmt.Println("runManuf DONE")
+    fmt.Println(manufact)
 
 }
 
@@ -263,7 +279,7 @@ func addConfig() {
     defer database.Close()
 
     //add config data
-    if err = db.AddConfig(database, os.Args[2], os.Args[3], timestamp); err != nil {
+    if err = db.AddRecord(database, "configs", os.Args[2], os.Args[3], timestamp); err != nil {
 	    fmt.Println(err)
 	    os.Exit(1)
     }
@@ -288,7 +304,7 @@ func delConfig() {
     defer database.Close()
 
     //delete config data
-    if err = db.DeleteConfig(database, os.Args[2]); err != nil {
+    if err = db.DeleteRecord(database, "configs", os.Args[2]); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
@@ -311,14 +327,13 @@ func listMacs() {
         os.Exit(1)
     }
 
-    //fmt.Println("Configs:")
     for _, arp := range arps {
         fmt.Printf("%s %s %s %s\n", arp.Mac, arp.Ip, arp.Data, arp.Timestamp)
     }
 
 }
 
-//func listConfigs(configs []db.Config) {
+
 func listConfigs() {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
@@ -328,17 +343,39 @@ func listConfigs() {
     }
     defer database.Close()
 
-    configs, err := db.FetchConfigs(database)
+    configs, err := db.FetchRecords(database, "configs")
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
-    //fmt.Println("Configs:")
     for _, config := range configs {
         fmt.Printf("%s %s %s\n", config.Name, config.Data, config.Timestamp)
     }
 }
+
+
+func listJobs() {
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    jobs, err := db.FetchRecords(database, "jobs")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    for _, job := range jobs {
+        fmt.Printf("%s %s %s %s\n", job.Name, job.Data, job.Timestamp)
+    }
+
+}
+
 
 
 func createDb() error {
@@ -365,8 +402,4 @@ func createDb() error {
     return nil
 }
 
-
-//db, err := sql.Open("sqlite3", ":memory:")
-
-// Without the //go:embed comment, the Go compiler won't recognize the directive, and the file won't be embedded into the variable.
 
