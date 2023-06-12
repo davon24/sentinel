@@ -73,6 +73,9 @@ func main() {
             //delNmap()
             fmt.Println("TODO Del namp... ")
 
+        case "sentry":
+            runSentry()
+
         default:
             fmt.Println("Invalid argument ", os.Args[1])
 
@@ -110,6 +113,8 @@ Options:
   list-nmaps
   del-nmap ip
 
+  sentry
+
 `
     fmt.Println(usage)
 }
@@ -131,6 +136,55 @@ func printSqlite3Version() {
     }
 
     fmt.Println("Sqlite3:", version)
+}
+
+func runSentry() {
+
+    fmt.Println("runSentry")
+
+    // read jobs
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    jobs, err := db.FetchRecordRows(database, "jobs")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    for _, job := range jobs {
+        //fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
+        fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
+
+        // Parse job.Data JSON
+        var jobData struct {
+            Job     string `json:"job"`
+            Repeat  string `json:"repeat"`
+            Time    string `json:"time"`
+            Start   string `json:"start"`
+            Done    string `json:"done"`
+            Success string `json:"success"`
+            Message string `json:"message"`
+        }
+
+        err := json.Unmarshal([]byte(job.Data), &jobData)
+        if err != nil {
+            fmt.Println("Error parsing job.Data:", err)
+            continue // Skip to the next job if parsing fails
+        }
+
+        // Access the "job" "repeat" value
+        fmt.Println("Job value:", jobData.Job)
+        fmt.Println("Repeat value:", jobData.Repeat)
+
+
+    }
+
 }
 
 func listManuf() {
