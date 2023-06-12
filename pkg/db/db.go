@@ -1,20 +1,22 @@
 package db
 
 import (
-	"log"
+    "log"
     "errors"
-	"database/sql"
+    "database/sql"
 
-	_ "github.com/mattn/go-sqlite3"
+    _ "github.com/mattn/go-sqlite3"
 )
 
 type Record struct {
+    Id        int
     Name      string
     Data      string
     Timestamp string
 }
 
 type Arp struct {
+    Id        int
     Mac       string
     Ip        string
     Data      string
@@ -24,7 +26,6 @@ type Arp struct {
 
 
 func Version(db *sql.DB) (string, error) {
-    
     var version string
     err := db.QueryRow("SELECT SQLITE_VERSION()").Scan(&version)
     if err != nil {
@@ -162,6 +163,29 @@ func FetchRecords(db *sql.DB, table string) ([]Record, error) {
     return records, nil
 }
 
+func FetchRecordRows(db *sql.DB, table string) ([]Record, error) {
+    rows, err := db.Query("SELECT rowid,* FROM " + table)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var records []Record
+    for rows.Next() {
+        var record Record
+        if err := rows.Scan(&record.Id, &record.Name, &record.Data, &record.Timestamp); err != nil {
+            return nil, err
+        }
+        records = append(records, record)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return records, nil
+}
+
 
 func FetchArps(db *sql.DB) ([]Arp, error) {
     rows, err := db.Query("SELECT * FROM arps")
@@ -187,7 +211,6 @@ func FetchArps(db *sql.DB) ([]Arp, error) {
 }
 
 
-
 func PrintRecords(db *sql.DB, table string) {
     record, err := db.Query("SELECT * FROM " + table)
     if err != nil {
@@ -202,5 +225,7 @@ func PrintRecords(db *sql.DB, table string) {
         log.Printf("Record: %s %s %s", Name, Data, Timestamp)
     }
 }
+
+
 
 

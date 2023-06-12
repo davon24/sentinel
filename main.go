@@ -44,10 +44,8 @@ func main() {
 
         case "list-jobs", "jobs":
             listJobs()
-            //fmt.Println("TODO List Jobs... ")
         case "add-job":
-            //addJob()
-            fmt.Println("TODO Add Jobs... ")
+            addJob()
         case "del-job":
             //delJob()
             fmt.Println("TODO Del Jobs... ")
@@ -251,6 +249,41 @@ func runArps() {
 }
 
 
+func addJob() {
+
+    if len(os.Args) != 4 {
+        fmt.Println("Invalid arguments. Usage: add-job name json")
+        os.Exit(1)
+    }
+
+    // Timestamp
+    now := time.Now()
+    timestamp := now.Format("2006-01-02T15:04:05")
+
+    // Validate data as JSON
+    isJSON := json.Valid([]byte(os.Args[3]))
+    if !isJSON {
+        fmt.Println("Invalid JSON!")
+        os.Exit(1)
+    }
+
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //add job data
+    if err = db.AddRecord(database, "jobs", os.Args[2], os.Args[3], timestamp); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    fmt.Println("Job added successfully!")
+}
+
 
 func addConfig() {
 
@@ -343,13 +376,15 @@ func listConfigs() {
     }
     defer database.Close()
 
-    configs, err := db.FetchRecords(database, "configs")
+    //configs, err := db.FetchRecords(database, "configs")
+    configs, err := db.FetchRecordRows(database, "configs")
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
     for _, config := range configs {
+        //fmt.Printf("%d %s %s %s\n", config.Id, config.Name, config.Data, config.Timestamp)
         fmt.Printf("%s %s %s\n", config.Name, config.Data, config.Timestamp)
     }
 }
@@ -364,14 +399,15 @@ func listJobs() {
     }
     defer database.Close()
 
-    jobs, err := db.FetchRecords(database, "jobs")
+    jobs, err := db.FetchRecordRows(database, "jobs")
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
     for _, job := range jobs {
-        fmt.Printf("%s %s %s %s\n", job.Name, job.Data, job.Timestamp)
+        //fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
+        fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
 
 }
