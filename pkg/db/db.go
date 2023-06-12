@@ -40,7 +40,7 @@ func CreateTables(db *sql.DB) error {
     configs_table := `CREATE TABLE configs (
         "Name" TEXT PRIMARY KEY NOT NULL,
         "Data" JSON,
-        "Timestamp" TEXT);`
+        "Timestamp" DATETIME DEFAULT CURRENT_TIMESTAMP);`
     query, err := db.Prepare(configs_table)
     if err != nil {
         return err
@@ -53,7 +53,7 @@ func CreateTables(db *sql.DB) error {
     jobs_table := `CREATE TABLE jobs (
         "Name" TEXT PRIMARY KEY NOT NULL,
         "Data" JSON,
-        "Timestamp" TEXT);`
+        "Timestamp" DATETIME DEFAULT CURRENT_TIMESTAMP);`
     query2, err := db.Prepare(jobs_table)
     if err != nil {
         return err
@@ -67,7 +67,7 @@ func CreateTables(db *sql.DB) error {
         "Mac" TEXT PRIMARY KEY NOT NULL,
         "Ip" TEXT,
         "Data" TEXT,
-        "Timestamp" TEXT);`
+        "Timestamp" DATETIME DEFAULT CURRENT_TIMESTAMP);`
     query3, err := db.Prepare(arps_table)
     if err != nil {
         return err
@@ -80,7 +80,22 @@ func CreateTables(db *sql.DB) error {
     return nil
 }
 
-func UpdateMac(db *sql.DB, Mac string, Ip string, Data string, Timestamp string) error {
+    // Udate Mac Record with auto sqlite timestamp (no Timestamp)
+func UpdateMac(db *sql.DB, Mac string, Ip string, Data string) error {
+    records := `INSERT OR REPLACE INTO arps (Mac, Ip, Data) VALUES (?, ?, ?)`
+    query, err := db.Prepare(records)
+    if err != nil {
+        return err
+    }
+    _, err = query.Exec(Mac, Ip, Data)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+
+func UpdateMacRecord(db *sql.DB, Mac string, Ip string, Data string, Timestamp string) error {
     records := `INSERT OR REPLACE INTO arps (Mac, Ip, Data, Timestamp) VALUES (?, ?, ?, ?)`
     query, err := db.Prepare(records)
     if err != nil {
@@ -94,7 +109,21 @@ func UpdateMac(db *sql.DB, Mac string, Ip string, Data string, Timestamp string)
 }
 
 
-func AddMac(db *sql.DB, Mac string, Ip string, Data string, Timestamp string) error {
+    // Add Mac Record with auto sqlite timestamp (no Timestamp)
+func AddMac(db *sql.DB, Mac string, Ip string, Data string) error {
+    records := `INSERT INTO arps (Mac, Ip, Data) VALUES (?, ?, ?)`
+    query, err := db.Prepare(records)
+    if err != nil {
+        return err
+    }
+    _, err = query.Exec(Mac, Ip, Data)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+func AddMacRecord(db *sql.DB, Mac string, Ip string, Data string, Timestamp string) error {
     records := `INSERT INTO arps (Mac, Ip, Data, Timestamp) VALUES (?, ?, ?, ?)`
     query, err := db.Prepare(records)
     if err != nil {
@@ -107,7 +136,22 @@ func AddMac(db *sql.DB, Mac string, Ip string, Data string, Timestamp string) er
     return nil
 }
 
-func AddRecord(db *sql.DB, table string, Name string, Data string, Timestamp string) error {
+    // Add Record with auto sqlite timestamp
+func AddRecord(db *sql.DB, table string, Name string, Data string) error {
+    records := `INSERT INTO ` + table + ` (Name, Data) VALUES (?, ?)`
+    query, err := db.Prepare(records)
+    if err != nil {
+        return err
+    }
+    _, err = query.Exec(Name, Data)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+
+func AddRecordRecord(db *sql.DB, table string, Name string, Data string, Timestamp string) error {
     records := `INSERT INTO ` + table + ` (Name, Data, Timestamp) VALUES (?, ?, ?)`
     query, err := db.Prepare(records)
     if err != nil {

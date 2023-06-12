@@ -4,7 +4,7 @@ import (
     "fmt"
     "strings"
     "os"
-    "time"
+    //"time"
     "encoding/json"
     "database/sql"
 
@@ -285,11 +285,15 @@ func runArps() {
             }
 
             // Timestamp
-            now := time.Now()
-            timestamp := now.Format("2006-01-02T15:04:05")
+            //now := time.Now()
+            //timestamp := now.Format("2006-01-02T15:04:05")
+
+	    //timestamp := time.Time{} // set timestamp to null value
+	    //timestamp := "" // initialize as empty string for null value
 
             //save record data 
-            if err = db.UpdateMac(database, mac, ip, manufact, timestamp); err != nil {
+            //if err = db.UpdateMacRecord(database, mac, ip, manufact, timestamp); err != nil {
+            if err = db.UpdateMac(database, mac, ip, manufact); err != nil {
                 fmt.Println(err)
                 return
             }
@@ -311,8 +315,8 @@ func addJob() {
     }
 
     // Timestamp
-    now := time.Now()
-    timestamp := now.Format("2006-01-02T15:04:05")
+    //now := time.Now()
+    //timestamp := now.Format("2006-01-02T15:04:05")
 
     // Validate data as JSON
     isJSON := json.Valid([]byte(os.Args[3]))
@@ -330,7 +334,8 @@ func addJob() {
     defer database.Close()
 
     //add job data
-    if err = db.AddRecord(database, "jobs", os.Args[2], os.Args[3], timestamp); err != nil {
+    //if err = db.AddRecord(database, "jobs", os.Args[2], os.Args[3], timestamp); err != nil {
+    if err = db.AddRecord(database, "jobs", os.Args[2], os.Args[3]); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
@@ -347,8 +352,8 @@ func addConfig() {
     }
 
     // Timestamp
-    now := time.Now()
-    timestamp := now.Format("2006-01-02T15:04:05")
+    //now := time.Now()
+    //timestamp := now.Format("2006-01-02T15:04:05")
 
     // Validate data as JSON
     isJSON := json.Valid([]byte(os.Args[3]))
@@ -366,7 +371,8 @@ func addConfig() {
     defer database.Close()
 
     //add config data
-    if err = db.AddRecord(database, "configs", os.Args[2], os.Args[3], timestamp); err != nil {
+    //if err = db.AddRecord(database, "configs", os.Args[2], os.Args[3], timestamp); err != nil {
+    if err = db.AddRecord(database, "configs", os.Args[2], os.Args[3]); err != nil {
 	    fmt.Println(err)
 	    os.Exit(1)
     }
