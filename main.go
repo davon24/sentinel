@@ -414,14 +414,54 @@ func listMacs() {
     }
     defer database.Close()
 
-    arps, err := db.FetchArps(database)
+    //arps, err := db.FetchArpsRows(database)
+    //arps, err := db.FetchTableRows(database, "arps")
+    rows, err := db.FetchTableRows(database, "arps")
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
-    for _, arp := range arps {
-        fmt.Printf("%s %s %s %s\n", arp.Mac, arp.Ip, arp.Data, arp.Timestamp)
+    for _, row := range rows {
+        //fmt.Printf("%d %s %s %s %s\n", arp.Id, arp.Mac, arp.Ip, arp.Data, arp.Timestamp)
+        //fmt.Printf("%s %s %s %s\n", arp.Mac, arp.Ip, arp.Data, arp.Timestamp)
+        //fmt.Printf("%s %s %s %s\n", row.column1, row.column2, row.column3, row.column4)
+
+
+		fmt.Print("this is a row of data: ")
+		for _, value := range row {
+			fmt.Printf("%v ", value)
+		}
+		fmt.Println()
+
+        /*
+        for column, value := range row {
+            fmt.Printf("%s: %v\n", column, value)
+        }
+        */
+
+        /*
+        for i, value := range row {
+            if i > 0 {
+                fmt.Print(" ")
+            }
+            fmt.Print(value)
+        }
+        */
+       
+       /*
+        isFirstValue := true
+        for _, value := range row {
+            if !isFirstValue {
+                fmt.Print(" ")
+            }
+            fmt.Print(value)
+            isFirstValue = false
+        }
+        fmt.Println()
+        */
+
+
     }
 
 }

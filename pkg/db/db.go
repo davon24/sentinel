@@ -254,6 +254,30 @@ func FetchArps(db *sql.DB) ([]Arp, error) {
     return arps, nil
 }
 
+func FetchArpsRows(db *sql.DB) ([]Arp, error) {
+    rows, err := db.Query("SELECT rowid,* FROM arps")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var arps []Arp
+    for rows.Next() {
+        var arp Arp
+        if err := rows.Scan(&arp.Id, &arp.Mac, &arp.Ip, &arp.Data, &arp.Timestamp); err != nil {
+            return nil, err
+        }
+        arps = append(arps, arp)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return arps, nil
+}
+
+
 
 func PrintRecords(db *sql.DB, table string) {
     record, err := db.Query("SELECT * FROM " + table)
@@ -268,6 +292,49 @@ func PrintRecords(db *sql.DB, table string) {
         record.Scan(&Name, &Data, &Timestamp)
         log.Printf("Record: %s %s %s", Name, Data, Timestamp)
     }
+}
+
+
+func FetchTableRows(db *sql.DB, table string) ([]map[string]interface{}, error) {
+    query := "SELECT rowid,* FROM " + table
+    rows, err := db.Query(query)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    columns, err := rows.Columns()
+    if err != nil {
+        return nil, err
+    }
+
+    var result []map[string]interface{}
+    values := make([]interface{}, len(columns))
+    scanArgs := make([]interface{}, len(values))
+    for i := range values {
+        scanArgs[i] = &values[i]
+    }
+
+    for rows.Next() {
+        err = rows.Scan(scanArgs...)
+        if err != nil {
+            return nil, err
+        }
+
+        row := make(map[string]interface{})
+        for i, col := range values {
+            if col != nil {
+                row[columns[i]] = col
+            }
+        }
+        result = append(result, row)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return result, nil
 }
 
 
