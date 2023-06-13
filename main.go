@@ -4,7 +4,8 @@ import (
     "fmt"
     "strings"
     "os"
-    //"time"
+    "time"
+    "sync"
     "encoding/json"
     "database/sql"
 
@@ -56,7 +57,14 @@ func main() {
             runManuf()
 
         case "arps":
-            runArps()
+            //runArps()
+            //fmt.Println("FIX runArps") // have () want (*sync.WaitGroup)
+
+            var wg sync.WaitGroup
+            wg.Add(1)
+            go runArps(&wg) // Run runArps() as a goroutine
+            wg.Wait() // Wait for runArps() to complete
+
         case "list-macs", "macs":
             listMacs()
         case "del-mac":
@@ -179,8 +187,59 @@ func runSentry() {
         }
 
         // Access the "job" "repeat" value
-        fmt.Println("Job value:", jobData.Job)
-        fmt.Println("Repeat value:", jobData.Repeat)
+        //fmt.Println("Job value:", jobData.Job)
+        //fmt.Println("Repeat value:", jobData.Repeat)
+
+        if jobData.Time != "" {
+            fmt.Println("Yes, Time Present", jobData.Time)
+            // evalute time to run
+
+            now := time.Now()
+            //timestamp := now.Format("2006-01-02T15:04:05")
+
+            // Parse jobData.Time into a time.Time object
+            //jobTime, err := time.Parse("2006-01-02T15:04:05", jobData.Time)
+
+            jobTime, err := time.Parse("2006-01-02 15:04:05", jobData.Time)
+            if err != nil {
+                fmt.Println("Error parsing job time:", err)
+                return
+            }
+
+            /*
+             // Convert jobTime to the local time zone
+             loc, err := time.LoadLocation("Local")
+             if err != nil {
+                 fmt.Println("Error loading local time zone:", err)
+                 return
+             }
+             jobTime = jobTime.In(loc)
+            */
+
+            //fmt.Println("Current Time:", now)
+            //fmt.Println("Job Time:", jobTime)
+
+            // Compare the times
+            if now.After(jobTime) {
+                fmt.Println("Current time is After the job time.")
+                // Run job now
+
+                //go runArps() // Run runArps() as a goroutine
+
+                var wg sync.WaitGroup
+                wg.Add(1)
+                go runArps(&wg) // Run runArps() as a goroutine
+                wg.Wait() // Wait for runArps() to complete
+
+
+            } else if now.Before(jobTime) {
+                fmt.Println("Current time is Before the job time.")
+            } else {
+                fmt.Println("Current time is the Same as the job time.")
+            }
+
+
+        }
 
 
     }
@@ -237,7 +296,11 @@ func runManuf() {
 }
 
 
-func runArps() {
+func runArps(wg *sync.WaitGroup) {
+
+    defer wg.Done()
+
+    fmt.Println("runArps!")
 
     output, err := tools.RunCommand("arp", "-an") // Pass any desired command arguments here
     if err != nil {
@@ -414,25 +477,27 @@ func listMacs() {
     }
     defer database.Close()
 
-    //arps, err := db.FetchArpsRows(database)
-    //arps, err := db.FetchTableRows(database, "arps")
-    rows, err := db.FetchTableRows(database, "arps")
+    rows, err := db.FetchArpsRows(database)
+    //rows, err := db.FetchTableRows(database, "arps")
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
     for _, row := range rows {
+    //for _, arp := range arps {
         //fmt.Printf("%d %s %s %s %s\n", arp.Id, arp.Mac, arp.Ip, arp.Data, arp.Timestamp)
-        //fmt.Printf("%s %s %s %s\n", arp.Mac, arp.Ip, arp.Data, arp.Timestamp)
-        //fmt.Printf("%s %s %s %s\n", row.column1, row.column2, row.column3, row.column4)
+        fmt.Printf("%d %s %s %s %s\n", row.Id, row.Mac, row.Ip, row.Data, row.Timestamp)
 
+        //fmt.Printf("%v %v %v %v \n", row["Mac"], row["Ip"], row["Data"], row["Timestamp"])
 
-		fmt.Print("this is a row of data: ")
+        /*
+		fmt.Print("row data: ")
 		for _, value := range row {
 			fmt.Printf("%v ", value)
 		}
 		fmt.Println()
+        */
 
         /*
         for column, value := range row {

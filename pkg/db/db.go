@@ -80,7 +80,7 @@ func CreateTables(db *sql.DB) error {
     return nil
 }
 
-    // Udate Mac Record with auto sqlite timestamp (no Timestamp)
+    // Update Mac Record with auto sqlite timestamp (no Timestamp)
 func UpdateMac(db *sql.DB, Mac string, Ip string, Data string) error {
     records := `INSERT OR REPLACE INTO arps (Mac, Ip, Data) VALUES (?, ?, ?)`
     query, err := db.Prepare(records)
@@ -338,5 +338,23 @@ func FetchTableRows(db *sql.DB, table string) ([]map[string]interface{}, error) 
 }
 
 
+func RunSQLStatement(db *sql.DB, query string, args ...interface{}) error {
+    records := query
+    preparedQuery, err := db.Prepare(records)
+    if err != nil {
+        return err
+    }
+    _, err = preparedQuery.Exec(args...)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+// Usage:
+// err := RunSQLStatement(db, "INSERT OR REPLACE INTO arps (Mac, Ip, Data, Timestamp) VALUES (?, ?, ?, ?)", Mac, Ip, Data, Timestamp)
+// if err != nil {
+// // handle error
+// }
 
 

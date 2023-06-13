@@ -1,3 +1,11 @@
 
-sentinel add-job arps1 '{"repeat": "5min", "job": "arps"}'
+
+./sentinel add-job job-1 '{"time": "2020-09-20 00:00:00", "job": "arps"}'
+
+./sentinel add-job job-2 '{"time": "2099-12-31 00:00:00", "job": "arps"}'
+
+./sentinel add-job job-3 '{"repeat": "5min", "job": "arps"}'
+
+./sentinel add-config config-1 '{"key":1}'
+
 
