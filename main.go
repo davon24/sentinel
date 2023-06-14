@@ -325,8 +325,10 @@ func runJobs() {
                                 fmt.Println("Error tools.RunCmd:", err)
                             }
 
+
                             fmt.Println(output)
 
+                            // Save output...  WORK
 
                             // job done
                             done := time.Now()
