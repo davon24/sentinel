@@ -17,7 +17,7 @@ import (
 
 )
 
-var version = "2.0.0-dev-pre-0000"
+var version = "2.0.0-dev-pre-0000-0"
 
 func main() {
 
@@ -48,8 +48,10 @@ func main() {
         case "add-job":
             addJob()
         case "del-job":
-            //delJob()
-            fmt.Println("TODO Del Jobs... ")
+            delJob()
+            //fmt.Println("TODO Del Jobs... ")
+        case "run-jobs":
+            runJobs()
 
         case "list-manuf":
             listManuf()
@@ -80,7 +82,8 @@ func main() {
             fmt.Println("TODO Del namp... ")
 
         case "sentry":
-            runSentry()
+            //runSentry()
+            fmt.Println("TODO runSentry... ")
 
         default:
             fmt.Println("Invalid argument ", os.Args[1])
@@ -107,6 +110,8 @@ Options:
   jobs|list-jobs
   add-job name json
   del-job name
+
+  run-jobs
 
   arps
   macs|list-macs
@@ -144,9 +149,9 @@ func printSqlite3Version() {
     fmt.Println("Sqlite3:", version)
 }
 
-func runSentry() {
+func runJobs() {
 
-    fmt.Println("runSentry")
+    fmt.Println("runJobs")
 
     // read jobs
 
@@ -170,12 +175,21 @@ func runSentry() {
         // Parse job.Data JSON
         var jsonData struct {
             Job     string `json:"job,omitempty"` //omitempty
-            Repeat  string `json:"repeat,omitempty"`
+            Config  string `json:"config,omitempty"`
             Time    string `json:"time,omitempty"`
+            Repeat  string `json:"repeat,omitempty"`
             Start   string `json:"start,omitempty"`
             Done    string `json:"done,omitempty"`
-            Success string `json:"success,omitempty"`
+            Output  string `json:"output,omitempty"`
             Message string `json:"message,omitempty"`
+            Success string `json:"success,omitempty"`
+            Error   string `json:"error,omitempty"`
+        }
+
+        type Config struct {
+            Name      string
+            Data      string
+            Timestamp string
         }
 
         err := json.Unmarshal([]byte(job.Data), &jsonData)
@@ -210,55 +224,99 @@ func runSentry() {
                 fmt.Println("Current time is After the job time.")
                 // Run job now
 
-                // Check if Start empty
+                // if empty Start
                 if jsonData.Start == "" {
 
-                    fmt.Println("Start Job time.")
+                    fmt.Println("jsonData.Start Job time.")
 
-                    // update jsonData.start jobTime
-                    //jsonData.Start = jobTime.Format("2006-01-02 15:04:05")
-                    jsonData.Start = now.Format("2006-01-02 15:04:05")
 
-                    // Marshal the updated jsonData back to JSON
-                    updatedData, err := json.Marshal(jsonData)
+                    fmt.Println("Read configs for Job ")
+                    // read job config
+                    configs, err := db.FetchRecordRows(database, "configs")
                     if err != nil {
-                        fmt.Println("Error marshaling updated data:", err)
-                        continue // Skip to the next job if marshaling fails
+                        fmt.Println(err)
+                        return
                     }
 
-                    // Update the job.Data in the database with the updated JSON
-                    err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData))
-                    if err != nil {
-                        fmt.Println("Error updating job:", err)
-                        continue // Skip to the next job if updating fails
+                    var config Config // Declare the config variable outside the loop
+                    for _, conf := range configs {
+
+                        config = Config{
+                            Name:      conf.Name,
+                            Data:      conf.Data,
+                            Timestamp: conf.Timestamp,
+                        }
+
+                        fmt.Printf("Config: %s %s %s\n", config.Name, config.Data, config.Timestamp)
                     }
 
+                    fmt.Println("This is config.Name ", config.Name)
+                    fmt.Println("This is config.Data ", config.Data)
 
-                    //go runArps() as a goroutine
-                    var wg sync.WaitGroup
-                    wg.Add(1)
-                    go runArps(&wg) // Run runArps() as a goroutine
-                    wg.Wait() // Wait for runArps() to complete
+                    // print job job-2 {"time": "2099-12-31 00:00:00", "config": "config-1"}
+                    // print config config-1 {"cmd": "arp -an"}
 
-                    // job done
-                    done := time.Now()
-                    jsonData.Done = done.Format("2006-01-02 15:04:05")
+                    fmt.Println("job jsonData.Config ", jsonData.Config) //config-1
 
-                    // Marshal the updated jsonData back to JSON
-                    updatedData2, err := json.Marshal(jsonData)
-                    if err != nil {
-                        fmt.Println("Error marshaling updated data:", err)
-                        continue // Skip to the next job if marshaling fails
-                    }
+                    fmt.Println("config config.Name ", config.Name) //config-1
 
-                    // Update the job.Data in the database with the updated JSON
-                    err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData2))
-                    if err != nil {
-                        fmt.Println("Error updating job:", err)
-                        continue // Skip to the next job if updating fails
-                    }
+                    fmt.Println("Done Read configs Job ")
+
+                    if jsonData.Config == config.Name {
+
+                        fmt.Println("Job is Job ", config.Name, jsonData.Config)
+
+                        // update jsonData.start jobTime
+                        //jsonData.Start = jobTime.Format("2006-01-02 15:04:05")
+                        jsonData.Start = now.Format("2006-01-02 15:04:05")
+
+                        // Marshal the updated jsonData back to JSON
+                        updatedData, err := json.Marshal(jsonData)
+                        if err != nil {
+                            fmt.Println("Error marshaling updated data:", err)
+                            continue // Skip to the next job if marshaling fails
+                        }
+
+                        // Update the job.Data in the database with the updated JSON
+                        err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData))
+                        if err != nil {
+                            fmt.Println("Error updating job:", err)
+                            continue // Skip to the next job if updating fails
+                        }
+
+
+                        //go runArps() as a goroutine
+                        var wg sync.WaitGroup
+                        wg.Add(1)
+                        go runArps(&wg) // Run runArps() as a goroutine
+                        wg.Wait() // Wait for runArps() to complete
+
+                        // job done
+                        done := time.Now()
+                        jsonData.Done = done.Format("2006-01-02 15:04:05")
+
+                        // Marshal the updated jsonData back to JSON
+                        updatedData2, err := json.Marshal(jsonData)
+                        if err != nil {
+                            fmt.Println("Error marshaling updated data:", err)
+                            continue // Skip to the next job if marshaling fails
+                        }
+
+                        // Update the job.Data in the database with the updated JSON
+                        err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData2))
+                        if err != nil {
+                            fmt.Println("Error updating job:", err)
+                            continue // Skip to the next job if updating fails
+                        }
+
+
+                    } // end-if job is job match
+
+
 
                 }
+
+                fmt.Println("NoRun: jsonData.Start exist on ", job.Name)
                 //done.done
 
 
@@ -471,6 +529,30 @@ func addConfig() {
     }
 
     fmt.Println("Config added successfully!")
+}
+
+func delJob() {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: del-job name")
+        os.Exit(1)
+    }
+
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //delete config data
+    if err = db.DeleteRecord(database, "jobs", os.Args[2]); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    fmt.Println("Job deleted successfully!")
 }
 
 
