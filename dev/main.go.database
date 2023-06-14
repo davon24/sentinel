@@ -1,0 +1,83 @@
+
+package main
+
+import (
+	"log"
+	"os"
+	"fmt"
+	"database/sql"
+
+	_ "github.com/mattn/go-sqlite3"
+)
+
+
+func main() {
+
+    file, err := os.Create("database.db")
+    if err != nil {
+        log.Fatal(err)
+    }
+    file.Close()
+
+    database, _ := sql.Open("sqlite3", "database.db")
+
+    createTable(database)
+
+    addUsers(database, "Ankita", "Maudie", "Game Developer", 140000)
+    defer database.Close()
+
+    fetchRecords(database)
+
+}
+
+
+
+func createTable(db *sql.DB) {
+    users_table := `CREATE TABLE users (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        "FirstName" TEXT,
+        "LastName" TEXT,
+        "Dept" TEXT,
+        "Salary" INT);`
+        query, err := db.Prepare(users_table)
+        if err != nil {
+            log.Fatal(err)
+        }
+        query.Exec()
+        fmt.Println("Table created successfully!")
+}
+
+func addUsers(db *sql.DB, FirstName string, LastName string, Dept string, Salary int) {
+    records := `INSERT INTO users(FirstName, LastName, Dept, Salary) VALUES (?, ?, ?, ?)`
+    query, err := db.Prepare(records)
+    if err != nil {
+        log.Fatal(err)
+    }
+    _, err = query.Exec(FirstName, LastName, Dept, Salary)
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+func fetchRecords(db *sql.DB) {
+    record, err := db.Query("SELECT * FROM users")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer record.Close()
+    for record.Next() {
+        var id int
+        var FirstName string
+        var LastName string
+        var Dept string
+        var Salary int
+        record.Scan(&id, &FirstName, &LastName, &Dept, &Salary)
+        fmt.Printf("User: %d %s %s %s %d", id, FirstName, LastName, Dept, Salary)
+    }
+}
+
+
+
+
+
+

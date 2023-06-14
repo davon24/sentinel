@@ -1,0 +1,57 @@
+
+package main
+
+import (
+	"fmt"
+	"os/exec"
+	"time"
+)
+
+type Command struct {
+	Name string
+	Args []string
+}
+
+func main() {
+	commands := []Command{
+		{
+			Name: "ping",
+			Args: []string{"-c", "4", "example.com"},
+		},
+		{
+			Name: "ls",
+			Args: []string{"-l", "-a"},
+		},
+	}
+
+	interval := 5 * time.Minute
+
+	for {
+		runCommands(commands)
+		time.Sleep(interval)
+	}
+}
+
+func runCommands(commands []Command) {
+	results := make(chan string)
+
+	for _, cmd := range commands {
+		go runCommand(cmd.Name, cmd.Args, results)
+	}
+
+	for range commands {
+		fmt.Println(<-results)
+	}
+}
+
+func runCommand(name string, args []string, results chan<- string) {
+	output, err := exec.Command(name, args...).CombinedOutput()
+	if err != nil {
+		results <- fmt.Sprintf("Error running %s command: %s", name, err)
+		return
+	}
+
+	results <- fmt.Sprintf("Command: %s\n%s", name, string(output))
+}
+
+
