@@ -58,8 +58,6 @@ func main() {
 
         case "arps":
             //runArps()
-            //fmt.Println("FIX runArps") // have () want (*sync.WaitGroup)
-
             var wg sync.WaitGroup
             wg.Add(1)
             go runArps(&wg) // Run runArps() as a goroutine
@@ -170,51 +168,39 @@ func runSentry() {
         fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
 
         // Parse job.Data JSON
-        var jobData struct {
-            Job     string `json:"job"`
-            Repeat  string `json:"repeat"`
-            Time    string `json:"time"`
-            Start   string `json:"start"`
-            Done    string `json:"done"`
-            Success string `json:"success"`
-            Message string `json:"message"`
+        var jsonData struct {
+            Job     string `json:"job,omitempty"` //omitempty
+            Repeat  string `json:"repeat,omitempty"`
+            Time    string `json:"time,omitempty"`
+            Start   string `json:"start,omitempty"`
+            Done    string `json:"done,omitempty"`
+            Success string `json:"success,omitempty"`
+            Message string `json:"message,omitempty"`
         }
 
-        err := json.Unmarshal([]byte(job.Data), &jobData)
+        err := json.Unmarshal([]byte(job.Data), &jsonData)
         if err != nil {
             fmt.Println("Error parsing job.Data:", err)
             continue // Skip to the next job if parsing fails
         }
 
         // Access the "job" "repeat" value
-        //fmt.Println("Job value:", jobData.Job)
-        //fmt.Println("Repeat value:", jobData.Repeat)
+        //fmt.Println("Job value:", jsonData.Job)
+        //fmt.Println("Repeat value:", jsonData.Repeat)
 
-        if jobData.Time != "" {
-            fmt.Println("Yes, Time Present", jobData.Time)
+        if jsonData.Time != "" {
+            fmt.Println("Yes, Time Present", jsonData.Time)
             // evalute time to run
 
             now := time.Now()
             //timestamp := now.Format("2006-01-02T15:04:05")
 
-            // Parse jobData.Time into a time.Time object
-            //jobTime, err := time.Parse("2006-01-02T15:04:05", jobData.Time)
-
-            jobTime, err := time.Parse("2006-01-02 15:04:05", jobData.Time)
+            // Parse jsonData.Time into a time.Time object
+            jobTime, err := time.Parse("2006-01-02 15:04:05", jsonData.Time)
             if err != nil {
                 fmt.Println("Error parsing job time:", err)
                 return
             }
-
-            /*
-             // Convert jobTime to the local time zone
-             loc, err := time.LoadLocation("Local")
-             if err != nil {
-                 fmt.Println("Error loading local time zone:", err)
-                 return
-             }
-             jobTime = jobTime.In(loc)
-            */
 
             //fmt.Println("Current Time:", now)
             //fmt.Println("Job Time:", jobTime)
@@ -224,12 +210,56 @@ func runSentry() {
                 fmt.Println("Current time is After the job time.")
                 // Run job now
 
-                //go runArps() // Run runArps() as a goroutine
+                // Check if Start empty
+                if jsonData.Start == "" {
 
-                var wg sync.WaitGroup
-                wg.Add(1)
-                go runArps(&wg) // Run runArps() as a goroutine
-                wg.Wait() // Wait for runArps() to complete
+                    fmt.Println("Start Job time.")
+
+                    // update jsonData.start jobTime
+                    //jsonData.Start = jobTime.Format("2006-01-02 15:04:05")
+                    jsonData.Start = now.Format("2006-01-02 15:04:05")
+
+                    // Marshal the updated jsonData back to JSON
+                    updatedData, err := json.Marshal(jsonData)
+                    if err != nil {
+                        fmt.Println("Error marshaling updated data:", err)
+                        continue // Skip to the next job if marshaling fails
+                    }
+
+                    // Update the job.Data in the database with the updated JSON
+                    err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData))
+                    if err != nil {
+                        fmt.Println("Error updating job:", err)
+                        continue // Skip to the next job if updating fails
+                    }
+
+
+                    //go runArps() as a goroutine
+                    var wg sync.WaitGroup
+                    wg.Add(1)
+                    go runArps(&wg) // Run runArps() as a goroutine
+                    wg.Wait() // Wait for runArps() to complete
+
+                    // job done
+                    done := time.Now()
+                    jsonData.Done = done.Format("2006-01-02 15:04:05")
+
+                    // Marshal the updated jsonData back to JSON
+                    updatedData2, err := json.Marshal(jsonData)
+                    if err != nil {
+                        fmt.Println("Error marshaling updated data:", err)
+                        continue // Skip to the next job if marshaling fails
+                    }
+
+                    // Update the job.Data in the database with the updated JSON
+                    err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData2))
+                    if err != nil {
+                        fmt.Println("Error updating job:", err)
+                        continue // Skip to the next job if updating fails
+                    }
+
+                }
+                //done.done
 
 
             } else if now.Before(jobTime) {
@@ -571,8 +601,8 @@ func listJobs() {
     }
 
     for _, job := range jobs {
-        //fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
-        fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
+        fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
+        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
 
 }

@@ -1,6 +1,7 @@
 package db
 
 import (
+    //"fmt"
     "log"
     "errors"
     "database/sql"
@@ -149,6 +150,26 @@ func AddRecord(db *sql.DB, table string, Name string, Data string) error {
     }
     return nil
 }
+
+
+func UpdateRecord(database *sql.DB, table string, Name string, Data string) error {
+    // Prepare the SQL statement
+    //statement, err := database.Prepare(fmt.Sprintf("UPDATE %s SET Data = ? WHERE Name = ?", table))
+    statement, err := database.Prepare("UPDATE " + table + " SET Data = ? WHERE Name = ?")
+    if err != nil {
+        return err
+    }
+    defer statement.Close()
+
+    // Execute the SQL statement
+    _, err = statement.Exec(Data, Name)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
 
 
 func AddRecordRecord(db *sql.DB, table string, Name string, Data string, Timestamp string) error {
