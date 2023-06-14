@@ -307,11 +307,26 @@ func runJobs() {
                             }
 
 
+                            /*
                             //go runArps() as a goroutine
                             var wg sync.WaitGroup
                             wg.Add(1)
                             go runArps(&wg) // Run runArps() as a goroutine
                             wg.Wait() // Wait for runArps() to complete
+                            */
+
+                            // Run Command...
+                            //output, err := runCmd("arp -an")
+                            //output, err := tools.RunCommand("arp", "-an")
+
+                            //output, err := runCmd("arp -an")
+                            output, err := tools.RunCmd(configData.Cmd)
+                            if err != nil {
+                                fmt.Println("Error tools.RunCmd:", err)
+                            }
+
+                            fmt.Println(output)
+
 
                             // job done
                             done := time.Now()
