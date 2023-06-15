@@ -17,7 +17,7 @@ import (
 
 )
 
-var version = "2.0.0-dev-pre-0000-0"
+var version = "2.0.0-dev-pre-0000-00"
 
 func main() {
 
@@ -51,6 +51,13 @@ func main() {
             delJob()
         case "run-jobs":
             runJobs()
+
+        case "run-sql":
+            //runSql()
+            fmt.Println("TODO runSql... ")
+
+        case "list-tables":
+            listTables()
 
         case "list-manuf":
             listManuf()
@@ -122,6 +129,8 @@ Options:
   nmap-scan [ip/net] [level]
   list-nmaps
   del-nmap ip
+
+  list-tables
 
   sentry
 
@@ -328,7 +337,8 @@ func runJobs() {
 
                             fmt.Println(output)
 
-                            // Save output...  WORK
+                            // Save output...  WORK 
+                            // ... output table :-)
 
                             // job done
                             done := time.Now()
@@ -684,6 +694,89 @@ func listJobs() {
         fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
         //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
+
+}
+
+func listTables() {
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //tables, err := db.SQLStatement(database, "SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name;")
+    //tables, err := db.SQLStatement(database, "SELECT * FROM configs;")
+    tables, err := db.SQLStatement(database, "SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name;")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    //defer tables.Close()
+
+    // Iterate over the rows returned by the SQL statement
+    for _, rows := range tables {
+        for rows.Next() {
+            var tableName string
+            if err := rows.Scan(&tableName); err != nil {
+                fmt.Println(err)
+                continue
+            }
+            // Process each table name as needed
+            fmt.Println(tableName)
+        }
+    }
+
+
+
+/*
+    // Iterate over the rows returned by the SQL statement
+    for _, row := range tables {
+        var tableName string
+        if err := row.Scan(&tableName); err != nil {
+            fmt.Println(err)
+            continue
+        }
+        // Process each table name as needed
+        fmt.Println(tableName)
+    }
+*/
+
+
+    /*
+    var resultRows []*sql.Row
+    for tables.Next() {
+        //var row *sql.Row
+        //row = tables
+        row := new(sql.Row)
+        resultRows = append(resultRows, row)
+    }
+    */
+
+    // Iterate over the rows returned by the SQL statement
+
+
+
+    /*
+    for _, table := range tables {
+        fmt.Printf("%d %s %s %s\n", table.Id, table.Name, table.Data, table.Timestamp)
+        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
+    }
+    */
+
+    //for _, row := range tables {
+    /*
+    for _, row := range resultRows {
+        var tableName string
+        if err := row.Scan(&tableName); err != nil {
+            fmt.Println(err)
+            continue
+        }
+        // Process each table name as needed
+        fmt.Println(tableName)
+    }
+    */
 
 }
 

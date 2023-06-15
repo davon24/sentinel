@@ -42,11 +42,11 @@ func CreateTables(db *sql.DB) error {
         "Name" TEXT PRIMARY KEY NOT NULL,
         "Data" JSON,
         "Timestamp" DATETIME DEFAULT CURRENT_TIMESTAMP);`
-    query, err := db.Prepare(configs_table)
+    query1, err := db.Prepare(configs_table)
     if err != nil {
         return err
     }
-    _, err = query.Exec()
+    _, err = query1.Exec()
     if err != nil {
         return err
     }
@@ -74,6 +74,19 @@ func CreateTables(db *sql.DB) error {
         return err
     }
     _, err = query3.Exec()
+    if err != nil {
+        return err
+    }
+
+    outputs_table := `CREATE TABLE outputs (
+        "Name" TEXT PRIMARY KEY NOT NULL,
+        "Data" TEXT,
+        "Timestamp" DATETIME DEFAULT CURRENT_TIMESTAMP);`
+    query4, err := db.Prepare(outputs_table)
+    if err != nil {
+        return err
+    }
+    _, err = query4.Exec()
     if err != nil {
         return err
     }
@@ -377,5 +390,112 @@ func RunSQLStatement(db *sql.DB, query string, args ...interface{}) error {
 // if err != nil {
 // // handle error
 // }
+
+/*
+func SQLStatement(db *sql.DB, query string, args ...interface{}) ([]*sql.Row, error) {
+    rows, err := db.Query(query, args...)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var resultRows []*sql.Row
+    for rows.Next() {
+        var row *sql.Row
+        if err := rows.Scan(); err != nil {
+            return nil, err
+        }
+
+        resultRows = append(resultRows, row)
+
+        //row = new(sql.Row)
+        //resultRows = append(resultRows, row.Scan)
+        //row := rows // Assign rows (type *sql.Rows) to row (type *sql.Row)
+    }
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+    return resultRows, nil
+}
+*/
+
+/*
+func SQLStatement(db *sql.DB, query string, args ...interface{}) ([]*sql.Row, error) {
+    rows, err := db.Query(query, args...)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var resultRows []*sql.Row
+    columns, _ := rows.Columns()
+    scanArgs := make([]interface{}, len(columns))
+    values := make([]sql.RawBytes, len(columns))
+
+    for i := range values {
+        scanArgs[i] = &values[i]
+    }
+
+    for rows.Next() {
+        // Create a new instance of *sql.Row
+        row := new(sql.Row)
+
+        if err := rows.Scan(scanArgs...); err != nil {
+            return nil, err
+        }
+
+        // Append the row to the resultRows slice
+        resultRows = append(resultRows, row)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return resultRows, nil
+}
+*/
+
+/*
+func SQLStatement(db *sql.DB, query string, args ...interface{}) ([]*sql.Row, error) {
+    rows, err := db.QueryRow(query, args...)
+    if err != nil {
+        return nil, err
+    }
+
+    resultRows := []*sql.Row{rows} // Append the initial row to the slice
+
+    return resultRows, nil
+}
+*/
+
+/*
+func SQLStatement(db *sql.DB, query string, args ...interface{}) (*sql.Row, error) {
+    row := db.QueryRow(query, args...)
+
+    return row, nil
+}
+*/
+
+func SQLStatement(db *sql.DB, query string, args ...interface{}) ([]*sql.Rows, error) {
+    rows, err := db.Query(query, args...)
+    if err != nil {
+        return nil, err
+    }
+
+    var resultRows []*sql.Rows
+    resultRows = append(resultRows, rows)
+
+    return resultRows, nil
+}
+
+
+
+
+
+
+
+
+
 
 
