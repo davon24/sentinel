@@ -13,17 +13,11 @@ type Record struct {
     Id        int
     Name      string
     Data      string
+    Mac       string //arps
+    Ip        string //arps 
+    Exit      int    //outputs
     Timestamp string
 }
-
-type Arp struct {
-    Id        int
-    Mac       string
-    Ip        string
-    Data      string
-    Timestamp string
-}
-
 
 
 func Version(db *sql.DB) (string, error) {
@@ -65,8 +59,8 @@ func CreateTables(db *sql.DB) error {
     }
 
     arps_table := `CREATE TABLE arps (
-        "Mac" TEXT PRIMARY KEY NOT NULL,
-        "Ip" TEXT,
+        "Mac"  TEXT PRIMARY KEY NOT NULL,
+        "Ip"   TEXT,
         "Data" TEXT,
         "Timestamp" DATETIME DEFAULT CURRENT_TIMESTAMP);`
     query3, err := db.Prepare(arps_table)
@@ -81,6 +75,7 @@ func CreateTables(db *sql.DB) error {
     outputs_table := `CREATE TABLE outputs (
         "Name" TEXT PRIMARY KEY NOT NULL,
         "Data" TEXT,
+        "Exit" INT,
         "Timestamp" DATETIME DEFAULT CURRENT_TIMESTAMP);`
     query4, err := db.Prepare(outputs_table)
     if err != nil {
@@ -95,7 +90,7 @@ func CreateTables(db *sql.DB) error {
 }
 
     // Update Mac Record with auto sqlite timestamp (no Timestamp)
-func UpdateMac(db *sql.DB, Mac string, Ip string, Data string) error {
+func ReplaceMac(db *sql.DB, Mac string, Ip string, Data string) error {
     records := `INSERT OR REPLACE INTO arps (Mac, Ip, Data) VALUES (?, ?, ?)`
     query, err := db.Prepare(records)
     if err != nil {
@@ -109,7 +104,7 @@ func UpdateMac(db *sql.DB, Mac string, Ip string, Data string) error {
 }
 
 
-func UpdateMacRecord(db *sql.DB, Mac string, Ip string, Data string, Timestamp string) error {
+func ReplaceMacRecord(db *sql.DB, Mac string, Ip string, Data string, Timestamp string) error {
     records := `INSERT OR REPLACE INTO arps (Mac, Ip, Data, Timestamp) VALUES (?, ?, ?, ?)`
     query, err := db.Prepare(records)
     if err != nil {
@@ -217,6 +212,29 @@ func DeleteRecord(db *sql.DB, table string, Name string) error {
     return err
 }
 
+func FetchOutputs(db *sql.DB) ([]Record, error) {
+    rows, err := db.Query("SELECT rowid,* FROM outputs")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var records []Record
+    for rows.Next() {
+        var record Record
+        if err := rows.Scan(&record.Id, &record.Name, &record.Data, &record.Exit, &record.Timestamp); err != nil {
+            return nil, err
+        }
+        records = append(records, record)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return records, nil
+}
+
 
 func FetchRecords(db *sql.DB, table string) ([]Record, error) {
     rows, err := db.Query("SELECT * FROM " + table)
@@ -265,50 +283,53 @@ func FetchRecordRows(db *sql.DB, table string) ([]Record, error) {
 }
 
 
-func FetchArps(db *sql.DB) ([]Arp, error) {
+//func FetchArps(db *sql.DB) ([]Arp, error) {
+func FetchArps(db *sql.DB) ([]Record, error) {
     rows, err := db.Query("SELECT * FROM arps")
     if err != nil {
         return nil, err
     }
     defer rows.Close()
 
-    var arps []Arp
+    //var arps []Arp
+    var records []Record
     for rows.Next() {
-        var arp Arp
-        if err := rows.Scan(&arp.Mac, &arp.Ip, &arp.Data, &arp.Timestamp); err != nil {
+        var record Record
+        //if err := rows.Scan(&arp.Mac, &arp.Ip, &arp.Data, &arp.Timestamp); err != nil {
+        if err := rows.Scan(&record.Mac, &record.Ip, &record.Data, &record.Timestamp); err != nil {
             return nil, err
         }
-        arps = append(arps, arp)
+        records = append(records, record)
     }
 
     if err := rows.Err(); err != nil {
         return nil, err
     }
 
-    return arps, nil
+    return records, nil
 }
 
-func FetchArpsRows(db *sql.DB) ([]Arp, error) {
+func FetchArpsRows(db *sql.DB) ([]Record, error) {
     rows, err := db.Query("SELECT rowid,* FROM arps")
     if err != nil {
         return nil, err
     }
     defer rows.Close()
 
-    var arps []Arp
+    var records []Record
     for rows.Next() {
-        var arp Arp
-        if err := rows.Scan(&arp.Id, &arp.Mac, &arp.Ip, &arp.Data, &arp.Timestamp); err != nil {
+        var record Record
+        if err := rows.Scan(&record.Id, &record.Mac, &record.Ip, &record.Data, &record.Timestamp); err != nil {
             return nil, err
         }
-        arps = append(arps, arp)
+        records = append(records, record)
     }
 
     if err := rows.Err(); err != nil {
         return nil, err
     }
 
-    return arps, nil
+    return records, nil
 }
 
 
@@ -489,6 +510,19 @@ func SQLStatement(db *sql.DB, query string, args ...interface{}) ([]*sql.Rows, e
     return resultRows, nil
 }
 
+
+func ReplaceOutput(db *sql.DB, table string, Name string, Data string, Exit int) error {
+    records := `INSERT OR REPLACE INTO ` + table + ` (Name, Data, Exit) VALUES (?, ?, ?)`
+    query, err := db.Prepare(records)
+    if err != nil {
+        return err
+    }
+    _, err = query.Exec(Name, Data, Exit)
+    if err != nil {
+        return err
+    }
+    return nil
+}
 
 
 

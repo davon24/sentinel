@@ -17,7 +17,7 @@ import (
 
 )
 
-var version = "2.0.0-dev-pre-0000-000"
+var version = "2.0.0-dev-pre-0000-0000"
 
 func main() {
 
@@ -353,7 +353,8 @@ func runJobs() {
                             // Save output...  WORK.WORK 
                             // ... output table :-)
 
-                            if err = db.AddRecord(database, "outputs", job.Name, output); err != nil {
+                            //if err = db.AddRecord(database, "outputs", job.Name, output); err != nil {
+                            if err = db.ReplaceOutput(database, "outputs", job.Name, output, exit); err != nil {
                                 fmt.Println(err)
                             }
 
@@ -365,14 +366,14 @@ func runJobs() {
                             updatedData2, err := json.Marshal(jobData)
                             if err != nil {
                                 fmt.Println("Error marshaling updated data:", err)
-                                continue // Skip to the next job if marshaling fails
+                                continue // Skip to the next if marshaling fails
                             }
 
                             // Update the job.Data in the database with the updated JSON
                             err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData2))
                             if err != nil {
                                 fmt.Println("Error updating job:", err)
-                                continue // Skip to the next job if updating fails
+                                continue // Skip to the next if updating fails
                             }
 
                         } // end-if configData.Cmd
@@ -509,7 +510,7 @@ func runArps(wg *sync.WaitGroup) {
 
             //save record data 
             //if err = db.UpdateMacRecord(database, mac, ip, manufact, timestamp); err != nil {
-            if err = db.UpdateMac(database, mac, ip, manufact); err != nil {
+            if err = db.ReplaceMac(database, mac, ip, manufact); err != nil {
                 fmt.Println(err)
                 return
             }
@@ -748,14 +749,16 @@ func listOutputs() {
     }
     defer database.Close()
 
-    records, err := db.FetchRecordRows(database, "outputs")
+    records, err := db.FetchOutputs(database)
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
     for _, record := range records {
-        fmt.Printf("%d %s %s %s\n", record.Id, record.Name, record.Data, record.Timestamp)
+        fmt.Println(record.Id, record.Name, record.Exit, record.Timestamp)
+        fmt.Println(record.Data)
+        //fmt.Printf("%d %s %s %d %s\n",record.Id, record.Name, record.Data, record.Exit, record.Timestamp)
         //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
 
