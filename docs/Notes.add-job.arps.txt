@@ -1,5 +1,6 @@
+# add-job arp
 
-
+#./sentinel add-config config-1 '{"cmd": "/usr/sbin/arp -an"}'
 ./sentinel add-config config-1 '{"cmd": "arp -an"}'
 
 ./sentinel add-job job-1 '{"time": "2020-09-20 00:00:00", "config": "config-1"}'
@@ -8,4 +9,6 @@
 
 ./sentinel add-job job-3 '{"repeat": "5min", "config": "config-1"}'
 
+#./sentinel add-config config-2 '{"cmd": "arp -an", "save": false}'
+#./sentinel add-job job-4 '{"time": "2020-09-20 00:00:00", "config": "config-2"}'
 

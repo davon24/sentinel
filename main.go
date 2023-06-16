@@ -17,7 +17,7 @@ import (
 
 )
 
-var version = "2.0.0-dev-pre-0000-00"
+var version = "2.0.0-dev-pre-0000-000"
 
 func main() {
 
@@ -49,8 +49,13 @@ func main() {
             addJob()
         case "del-job":
             delJob()
+
         case "run-jobs":
             runJobs()
+        case "list-outputs":
+            listOutputs()
+        case "del-output":
+            delOutput()
 
         case "run-sql":
             //runSql()
@@ -118,6 +123,8 @@ Options:
   del-job name
 
   run-jobs
+  list-outputs
+  del-output
 
   arps
   macs|list-macs
@@ -329,16 +336,26 @@ func runJobs() {
                             //output, err := tools.RunCommand("arp", "-an")
 
                             //output, err := runCmd("arp -an")
-                            output, err := tools.RunCmd(configData.Cmd)
+                            //output, err := tools.RunCmd(configData.Cmd)
+                            //output, err := tools.CommandOutput(configData.Cmd)
+
+                            //output, exit, err := tools.CommandOutput(configData.Cmd)
+                            //output, exit, err := tools.ShellCmd(configData.Cmd)
+
+                            output, exit, err := tools.RunCommand(configData.Cmd)
                             if err != nil {
-                                fmt.Println("Error tools.RunCmd:", err)
+                                fmt.Println("Error tools.RunCommand:", err)
                             }
 
 
-                            fmt.Println(output)
+                            fmt.Println(output, exit)
 
-                            // Save output...  WORK 
+                            // Save output...  WORK.WORK 
                             // ... output table :-)
+
+                            if err = db.AddRecord(database, "outputs", job.Name, output); err != nil {
+                                fmt.Println(err)
+                            }
 
                             // job done
                             done := time.Now()
@@ -438,7 +455,7 @@ func runArps(wg *sync.WaitGroup) {
 
     fmt.Println("runArps!")
 
-    output, err := tools.RunCommand("arp", "-an") // Pass any desired command arguments here
+    output, err := tools.RunCommandv1("arp", "-an") // Pass any desired command arguments here
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
@@ -628,6 +645,31 @@ func delConfig() {
     fmt.Println("Config deleted successfully!")
 }
 
+func delOutput() {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: del-output name")
+        os.Exit(1)
+    }
+
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //delete config data
+    if err = db.DeleteRecord(database, "outputs", os.Args[2]); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    fmt.Println("Output deleted successfully!")
+}
+
+
 func listMacs() {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
@@ -692,6 +734,28 @@ func listJobs() {
 
     for _, job := range jobs {
         fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
+        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
+    }
+
+}
+
+func listOutputs() {
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    records, err := db.FetchRecordRows(database, "outputs")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    for _, record := range records {
+        fmt.Printf("%d %s %s %s\n", record.Id, record.Name, record.Data, record.Timestamp)
         //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
 
