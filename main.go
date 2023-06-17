@@ -278,10 +278,12 @@ func runJobs() {
                     // print config config-1 {"cmd": "arp -an"}
 
                     fmt.Println("job jobData.Config ", jobData.Config) //config-1
-
                     fmt.Println("config config.Name ", config.Name) //config-1
 
                     fmt.Println("Done Read configs Job ")
+
+                    // Add the declaration of runCommandError
+                    var runCommandError bool
 
                     // Config exists for job
                     if jobData.Config == config.Name {
@@ -315,46 +317,34 @@ func runJobs() {
                                 continue // Skip to the next job if marshaling fails
                             }
 
+                            fmt.Println("Lets Update Record...")
                             // Update the job.Data in the database with the updated JSON
                             err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData))
+                            //err = db.ReplaceRecord(database, "jobs", job.Name, string(updatedData))
                             if err != nil {
                                 fmt.Println("Error updating job:", err)
                                 continue // Skip to the next job if updating fails
                             }
 
 
-                            /*
-                            //go runArps() as a goroutine
-                            var wg sync.WaitGroup
-                            wg.Add(1)
-                            go runArps(&wg) // Run runArps() as a goroutine
-                            wg.Wait() // Wait for runArps() to complete
-                            */
-
                             // Run Command...
-                            //output, err := runCmd("arp -an")
-                            //output, err := tools.RunCommand("arp", "-an")
 
-                            //output, err := runCmd("arp -an")
-                            //output, err := tools.RunCmd(configData.Cmd)
-                            //output, err := tools.CommandOutput(configData.Cmd)
-
-                            //output, exit, err := tools.CommandOutput(configData.Cmd)
-                            //output, exit, err := tools.ShellCmd(configData.Cmd)
+                            fmt.Println("Run Command...")
 
                             output, exit, err := tools.RunCommand(configData.Cmd)
                             if err != nil {
                                 fmt.Println("Error tools.RunCommand:", err)
+                                // Set an error flag but continue to the next iteration
+                                runCommandError = true
+                                continue
                             }
 
 
+                            fmt.Println("We have output....")
                             fmt.Println(output, exit)
 
-                            // Save output...  WORK.WORK 
-                            // ... output table :-)
-
-                            //if err = db.AddRecord(database, "outputs", job.Name, output); err != nil {
-                            if err = db.ReplaceOutput(database, "outputs", job.Name, output, exit); err != nil {
+                            // Save output (replace)...
+                            if err = db.SaveOutput(database, job.Name, output, exit); err != nil {
                                 fmt.Println(err)
                             }
 
@@ -377,8 +367,14 @@ func runJobs() {
                             }
 
                         } // end-if configData.Cmd
+                        fmt.Println("end-if configData.Cmd ", job.Name)
 
                     } // end-if job is job match
+
+                    if runCommandError {
+                        runCommandError = false // Reset the error flag
+                        continue
+                    }
 
                 } // end-if jobData.Start
 

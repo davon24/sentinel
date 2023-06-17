@@ -103,6 +103,8 @@ func RunCommand(command string) (string, int, error) {
 		exitErr, ok := err.(*exec.ExitError)
 		if !ok {
 			return "", -1, err
+            //exitCode := cmd.ProcessState.ExitCode()
+			//return "", exitCode, err
 		}
 
 		// Get the exit status

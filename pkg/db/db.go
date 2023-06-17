@@ -178,6 +178,24 @@ func UpdateRecord(database *sql.DB, table string, Name string, Data string) erro
     return nil
 }
 
+func ReplaceRecord(database *sql.DB, table string, Name string, Data string) error {
+    // Prepare the SQL statement
+    statement, err := database.Prepare("INSERT OR REPLACE " + table + " SET Data = ? WHERE Name = ?")
+    if err != nil {
+        return err
+    }
+    defer statement.Close()
+
+    // Execute the SQL statement
+    _, err = statement.Exec(Data, Name)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
+
 
 
 func AddRecordRecord(db *sql.DB, table string, Name string, Data string, Timestamp string) error {
@@ -511,8 +529,8 @@ func SQLStatement(db *sql.DB, query string, args ...interface{}) ([]*sql.Rows, e
 }
 
 
-func ReplaceOutput(db *sql.DB, table string, Name string, Data string, Exit int) error {
-    records := `INSERT OR REPLACE INTO ` + table + ` (Name, Data, Exit) VALUES (?, ?, ?)`
+func SaveOutput(db *sql.DB, Name string, Data string, Exit int) error {
+    records := `INSERT OR REPLACE INTO outputs (Name, Data, Exit) VALUES (?, ?, ?)`
     query, err := db.Prepare(records)
     if err != nil {
         return err
