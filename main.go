@@ -17,7 +17,7 @@ import (
 
 )
 
-var version = "2.0.0-dev-pre-0000-0000"
+var version = "2.0.0-dev-pre-0000-0000-0"
 
 func main() {
 
@@ -164,12 +164,11 @@ func printSqlite3Version() {
     fmt.Println("Sqlite3:", version)
 }
 
-func runJobs() {
 
+func runJobs() {
     fmt.Println("runJobs")
 
     // read jobs
-
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
         fmt.Println(err)
@@ -177,17 +176,17 @@ func runJobs() {
     }
     defer database.Close()
 
+    fmt.Println("db.FetchRecordRows 1")
     jobs, err := db.FetchRecordRows(database, "jobs")
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
+    fmt.Println("db.FetchRecordRows 2")
 
     for _, job := range jobs {
-        //fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
         fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
 
-        // Parse job.Data JSON omitempty
         var jobData struct {
             Job     string `json:"job,omitempty"`
             Config  string `json:"config,omitempty"`
@@ -201,200 +200,124 @@ func runJobs() {
             Error   string `json:"error,omitempty"`
         }
 
-        // Parse config.Data JSON omitempty
-        var configData struct {
-            Cmd     string `json:"cmd,omitempty"`
-        }
-
-
-        type Config struct {
-            Name      string
-            Data      string
-            Timestamp string
-        }
-
         err := json.Unmarshal([]byte(job.Data), &jobData)
         if err != nil {
             fmt.Println("Error parsing job.Data:", err)
             continue // Skip to the next job if parsing fails
         }
 
-        // Access the "job" "repeat" value
-        //fmt.Println("Job value:", jobData.Job)
-        //fmt.Println("Repeat value:", jobData.Repeat)
-
         if jobData.Time != "" {
             fmt.Println("Yes, Time Present", jobData.Time)
-            // evalute time to run
 
             now := time.Now()
-            //timestamp := now.Format("2006-01-02T15:04:05")
-
-            // Parse jobData.Time into a time.Time object
             jobTime, err := time.Parse("2006-01-02 15:04:05", jobData.Time)
             if err != nil {
                 fmt.Println("Error parsing job time:", err)
-                return
+                continue
             }
 
-            //fmt.Println("Current Time:", now)
-            //fmt.Println("Job Time:", jobTime)
-
-            // Compare the times
             if now.After(jobTime) {
                 fmt.Println("Current time is After the job time.")
-                // Run job now
 
-                // if empty Start
                 if jobData.Start == "" {
-
                     fmt.Println("jobData.Start Job time.")
 
-
                     fmt.Println("Read configs for Job ")
-                    // read job config
                     configs, err := db.FetchRecordRows(database, "configs")
                     if err != nil {
                         fmt.Println(err)
-                        return
-                    }
-
-                    var config Config // Declare the config variable outside the loop
-                    for _, conf := range configs {
-
-                        config = Config{
-                            Name:      conf.Name,
-                            Data:      conf.Data,
-                            Timestamp: conf.Timestamp,
-                        }
-
-                        fmt.Printf("Config: %s %s %s\n", config.Name, config.Data, config.Timestamp)
-                    }
-
-                    fmt.Println("This is config.Name ", config.Name)
-                    fmt.Println("This is config.Data ", config.Data)
-
-                    // print job job-2 {"time": "2099-12-31 00:00:00", "config": "config-1"}
-                    // print config config-1 {"cmd": "arp -an"}
-
-                    fmt.Println("job jobData.Config ", jobData.Config) //config-1
-                    fmt.Println("config config.Name ", config.Name) //config-1
-
-                    fmt.Println("Done Read configs Job ")
-
-                    // Add the declaration of runCommandError
-                    var runCommandError bool
-
-                    // Config exists for job
-                    if jobData.Config == config.Name {
-
-                        fmt.Println("Job is Job ", config.Name, jobData.Config)
-
-                        // Read config json config.Data
-                        err := json.Unmarshal([]byte(config.Data), &configData)
-                        if err != nil {
-                            fmt.Println("Error parsing config.Data:", err)
-                            continue // Skip to the next if parsing fails
-                        }
-
-                        // Access the "cmd"
-                        fmt.Println("Config cmd ", configData.Cmd)
-
-                        // if cmd
-                        if configData.Cmd != "" {
-
-                            // command to run
-                            fmt.Println("RUN THIS COMMAND: ", configData.Cmd)
-
-                            // update jobData.start jobTime
-                            //jobData.Start = jobTime.Format("2006-01-02 15:04:05")
-                            jobData.Start = now.Format("2006-01-02 15:04:05")
-
-                            // Marshal the updated jobData back to JSON
-                            updatedData, err := json.Marshal(jobData)
-                            if err != nil {
-                                fmt.Println("Error marshaling updated data:", err)
-                                continue // Skip to the next job if marshaling fails
-                            }
-
-                            fmt.Println("Lets Update Record...")
-                            // Update the job.Data in the database with the updated JSON
-                            err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData))
-                            //err = db.ReplaceRecord(database, "jobs", job.Name, string(updatedData))
-                            if err != nil {
-                                fmt.Println("Error updating job:", err)
-                                continue // Skip to the next job if updating fails
-                            }
-
-
-                            // Run Command...
-
-                            fmt.Println("Run Command...")
-
-                            output, exit, err := tools.RunCommand(configData.Cmd)
-                            if err != nil {
-                                fmt.Println("Error tools.RunCommand:", err)
-                                // Set an error flag but continue to the next iteration
-                                runCommandError = true
-                                continue
-                            }
-
-
-                            fmt.Println("We have output....")
-                            fmt.Println(output, exit)
-
-                            // Save output (replace)...
-                            if err = db.SaveOutput(database, job.Name, output, exit); err != nil {
-                                fmt.Println(err)
-                            }
-
-                            // job done
-                            done := time.Now()
-                            jobData.Done = done.Format("2006-01-02 15:04:05")
-
-                            // Marshal the updated jobData back to JSON
-                            updatedData2, err := json.Marshal(jobData)
-                            if err != nil {
-                                fmt.Println("Error marshaling updated data:", err)
-                                continue // Skip to the next if marshaling fails
-                            }
-
-                            // Update the job.Data in the database with the updated JSON
-                            err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData2))
-                            if err != nil {
-                                fmt.Println("Error updating job:", err)
-                                continue // Skip to the next if updating fails
-                            }
-
-                        } // end-if configData.Cmd
-                        fmt.Println("end-if configData.Cmd ", job.Name)
-
-                    } // end-if job is job match
-
-                    if runCommandError {
-                        runCommandError = false // Reset the error flag
                         continue
                     }
 
-                } // end-if jobData.Start
+                    for _, config := range configs {
+                        fmt.Printf("Config: %s %s %s\n", config.Name, config.Data, config.Timestamp)
 
-                fmt.Println("NoRun: jobData.Start exist on ", job.Name)
-                //done.done
+                        if jobData.Config == config.Name {
+                            fmt.Println("Job is Job ", config.Name, jobData.Config)
 
+                            var configData struct {
+                                Cmd string `json:"cmd,omitempty"`
+                            }
 
+                            err := json.Unmarshal([]byte(config.Data), &configData)
+                            if err != nil {
+                                fmt.Println("Error parsing config.Data:", err)
+                                continue
+                            }
+
+                            fmt.Println("Config cmd ", configData.Cmd)
+
+                            if configData.Cmd != "" {
+                                fmt.Println("RUN THIS COMMAND: ", configData.Cmd)
+
+                                jobData.Start = now.Format("2006-01-02 15:04:05")
+                                updatedData, err := json.Marshal(jobData)
+                                if err != nil {
+                                    fmt.Println("Error marshaling updated data:", err)
+                                    continue
+                                }
+
+                                fmt.Println("Lets Update Record...")
+                                err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData))
+                                if err != nil {
+                                    fmt.Println("Error updating job:", err)
+                                    continue
+                                }
+
+                                fmt.Println("Run Command...")
+
+                                output, exit, err := tools.RunCommand(configData.Cmd)
+                                if err != nil {
+                                    fmt.Println("Error tools.RunCommand:", err)
+                                    continue
+                                }
+
+                                fmt.Println("We have output....")
+                                fmt.Println(output, exit)
+
+                                if err = db.SaveOutput(database, job.Name, output, exit); err != nil {
+                                    fmt.Println(err)
+                                    continue
+                                }
+
+                                fmt.Println("We are done....")
+
+                                done := time.Now()
+                                jobData.Done = done.Format("2006-01-02 15:04:05")
+                                updatedData2, err := json.Marshal(jobData)
+                                if err != nil {
+                                    fmt.Println("Error marshaling updated data:", err)
+                                    continue
+                                }
+
+                                fmt.Println("db.UpdateRecord.1 ", job.Name)
+                                err = db.UpdateRecord(database, "jobs", job.Name, string(updatedData2))
+                                if err != nil {
+                                    fmt.Println("Error updating job:", err)
+                                    continue
+                                }
+
+                                fmt.Println("db.UpdateRecord.2 ", job.Name)
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                fmt.Println("NoRun: jobData.Start exists on ", job.Name)
             } else if now.Before(jobTime) {
                 fmt.Println("Current time is Before the job time.")
             } else {
                 fmt.Println("Current time is the Same as the job time.")
             }
-
-
         }
-
-
     }
-
 }
+
+
+
 
 func listManuf() {
 
