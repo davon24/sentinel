@@ -253,6 +253,31 @@ func FetchOutputs(db *sql.DB) ([]Record, error) {
     return records, nil
 }
 
+func FetchOutput(db *sql.DB, name string) ([]Record, error) {
+    rows, err := db.Query("SELECT rowid,* FROM outputs WHERE Name = ?", name)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var records []Record
+    for rows.Next() {
+        var record Record
+        if err := rows.Scan(&record.Id, &record.Name, &record.Data, &record.Exit, &record.Timestamp); err != nil {
+            return nil, err
+        }
+        records = append(records, record)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return records, nil
+}
+
+
+
 
 func FetchRecords(db *sql.DB, table string) ([]Record, error) {
     rows, err := db.Query("SELECT * FROM " + table)
@@ -276,6 +301,32 @@ func FetchRecords(db *sql.DB, table string) ([]Record, error) {
 
     return records, nil
 }
+
+
+func FetchRecord(db *sql.DB, table string, name string) ([]Record, error) {
+    rows, err := db.Query("SELECT * FROM " + table + " WHERE Name = ?", name)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var records []Record
+    for rows.Next() {
+        var record Record
+        if err := rows.Scan(&record.Name, &record.Data, &record.Timestamp); err != nil {
+            return nil, err
+        }
+        records = append(records, record)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return records, nil
+}
+
+
 
 func FetchRecordRows(db *sql.DB, table string) ([]Record, error) {
     rows, err := db.Query("SELECT rowid,* FROM " + table)

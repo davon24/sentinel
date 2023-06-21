@@ -45,6 +45,8 @@ func main() {
 
         case "list-jobs", "jobs":
             listJobs()
+        case "list-job":
+            listJob()
         case "add-job":
             addJob()
         case "del-job":
@@ -54,6 +56,8 @@ func main() {
             runJobs()
         case "list-outputs":
             listOutputs()
+        case "list-output":
+            listOutput()
         case "del-output":
             delOutput()
 
@@ -119,11 +123,13 @@ Options:
   del-config name
 
   jobs|list-jobs
+  list-job name
   add-job name json
   del-job name
 
   run-jobs
   list-outputs
+  list-output name
   del-output
 
   arps
@@ -691,6 +697,37 @@ func listJobs() {
 
 }
 
+func listJob() {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: list-job name")
+        os.Exit(1)
+    }
+    //os.Args[2]
+
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    jobs, err := db.FetchRecord(database, "jobs", os.Args[2])
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    for _, job := range jobs {
+        fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
+        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
+    }
+
+}
+
+
+
 func listOutputs() {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
@@ -714,6 +751,36 @@ func listOutputs() {
     }
 
 }
+
+func listOutput() {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: list-output name")
+        os.Exit(1)
+    }
+    //os.Args[2]
+
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    records, err := db.FetchOutput(database, os.Args[2])
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    for _, record := range records {
+        fmt.Printf("%d %s %s %s\n", record.Id, record.Name, record.Data, record.Timestamp)
+        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
+    }
+
+}
+
 
 func listTables() {
 
@@ -745,56 +812,6 @@ func listTables() {
             fmt.Println(tableName)
         }
     }
-
-
-
-/*
-    // Iterate over the rows returned by the SQL statement
-    for _, row := range tables {
-        var tableName string
-        if err := row.Scan(&tableName); err != nil {
-            fmt.Println(err)
-            continue
-        }
-        // Process each table name as needed
-        fmt.Println(tableName)
-    }
-*/
-
-
-    /*
-    var resultRows []*sql.Row
-    for tables.Next() {
-        //var row *sql.Row
-        //row = tables
-        row := new(sql.Row)
-        resultRows = append(resultRows, row)
-    }
-    */
-
-    // Iterate over the rows returned by the SQL statement
-
-
-
-    /*
-    for _, table := range tables {
-        fmt.Printf("%d %s %s %s\n", table.Id, table.Name, table.Data, table.Timestamp)
-        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
-    }
-    */
-
-    //for _, row := range tables {
-    /*
-    for _, row := range resultRows {
-        var tableName string
-        if err := row.Scan(&tableName); err != nil {
-            fmt.Println(err)
-            continue
-        }
-        // Process each table name as needed
-        fmt.Println(tableName)
-    }
-    */
 
 }
 
