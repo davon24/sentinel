@@ -276,7 +276,15 @@ func runJobs() {
 
                                     outPut = fmt.Sprintf("Error: %v", err)
                                     exitCode = -1
+                                    //exitCode = 1
                                 }
+
+                                /*
+                                if exitCode == 1 {
+                                    exitCode = 1
+                                }
+                                */
+                                // WORK
 
                                 fmt.Println("We have output....")
                                 fmt.Println(outPut, exitCode)
