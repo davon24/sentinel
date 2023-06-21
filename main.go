@@ -198,6 +198,7 @@ func runJobs() {
             Message string `json:"message,omitempty"`
             Success string `json:"success,omitempty"`
             Error   string `json:"error,omitempty"`
+            Exit    string `json:"exit,omitempty"`
         }
 
         err := json.Unmarshal([]byte(job.Data), &jobData)
@@ -272,11 +273,25 @@ func runJobs() {
                                 if err != nil {
                                     fmt.Println("Error tools.RunCommand:", err)
                                     //continue
+
+                                    outPut = fmt.Sprintf("Error: %v", err)
                                     exitCode = -1
                                 }
 
                                 fmt.Println("We have output....")
                                 fmt.Println(outPut, exitCode)
+
+                                // update json with exitCode
+                                //jobData.Exit := exitCode
+
+                                // Update the jobData.Exit field
+                                jobData.Exit = fmt.Sprintf("%d", exitCode)
+
+                                updatedData, err = json.Marshal(jobData)
+                                if err != nil {
+                                    fmt.Println("Error marshaling updated data:", err)
+                                    continue
+                                }
 
                                 if err = db.SaveOutput(database, job.Name, outPut, exitCode); err != nil {
                                     fmt.Println(err)
