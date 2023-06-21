@@ -266,16 +266,19 @@ func runJobs() {
 
                                 fmt.Println("Run Command...")
 
-                                output, exit, err := tools.RunCommand(configData.Cmd)
+                                //var exitCode = -1
+
+                                outPut, exitCode, err := tools.RunCommand(configData.Cmd)
                                 if err != nil {
                                     fmt.Println("Error tools.RunCommand:", err)
-                                    continue
+                                    //continue
+                                    exitCode = -1
                                 }
 
                                 fmt.Println("We have output....")
-                                fmt.Println(output, exit)
+                                fmt.Println(outPut, exitCode)
 
-                                if err = db.SaveOutput(database, job.Name, output, exit); err != nil {
+                                if err = db.SaveOutput(database, job.Name, outPut, exitCode); err != nil {
                                     fmt.Println(err)
                                     continue
                                 }
