@@ -269,25 +269,31 @@ func runJobs() {
 
                                 //var exitCode = -1
 
-                                outPut, exitCode, err := tools.RunCommand(configData.Cmd)
+                                //var outPut = ""
+
+                                //outPut, exitCode, err := tools.RunCommand(configData.Cmd)
+                                stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
                                 if err != nil {
                                     fmt.Println("Error tools.RunCommand:", err)
                                     //continue
 
-                                    outPut = fmt.Sprintf("Error: %v", err)
-                                    exitCode = -1
+                                    stdOut = fmt.Sprintf("Error: %v", err)
+                                    //exitCode = -1
                                     //exitCode = 1
+                                    //outPut = stdOut
                                 }
-
-                                /*
-                                if exitCode == 1 {
-                                    exitCode = 1
-                                }
-                                */
-                                // WORK
 
                                 fmt.Println("We have output....")
-                                fmt.Println(outPut, exitCode)
+                                fmt.Println(stdOut, stdErr, exitCode)
+
+                                if exitCode == 1 {
+                                    //exitCode = 1
+                                    //outPut = stdErr
+                                    stdOut = stdErr
+                                }
+                                // WORK
+
+
 
                                 // update json with exitCode
                                 //jobData.Exit := exitCode
@@ -301,7 +307,7 @@ func runJobs() {
                                     continue
                                 }
 
-                                if err = db.SaveOutput(database, job.Name, outPut, exitCode); err != nil {
+                                if err = db.SaveOutput(database, job.Name, stdOut, exitCode); err != nil {
                                     fmt.Println(err)
                                     continue
                                 }
@@ -401,7 +407,7 @@ func runArps(wg *sync.WaitGroup) {
 
     fmt.Println("runArps!")
 
-    output, err := tools.RunCommandv1("arp", "-an") // Pass any desired command arguments here
+    output, err := tools.RunCommand_v1("arp", "-an") // Pass any desired command arguments here
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
