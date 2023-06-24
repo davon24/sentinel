@@ -22,6 +22,11 @@
 ./sentinel add-job job-8 '{"time": "2020-09-20 00:00:00", "config": "config-4"}'
 
 
+#
+./sentinel add-config config-prometheus '{"prometheus": true}'
+#./sentinel add-config config-prometheus '{"prometheus": true, "port": 2024}'
+#./sentinel add-config config-prometheus '{"prometheus": true, "file": "sentinel.prom"}'
+
 
 
 #./sentinel add-config config-1 '{"cmd": "/usr/sbin/arp -an"}'

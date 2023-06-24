@@ -17,7 +17,7 @@ import (
 
 )
 
-var version = "2.0.0-dev-pre-0000-0000-0"
+var version = "2.0.0.dev-pre-0000-0000-00"
 
 func main() {
 
@@ -170,7 +170,6 @@ func printSqlite3Version() {
     fmt.Println("Sqlite3:", version)
 }
 
-
 func runJobs() {
     fmt.Println("runJobs")
 
@@ -182,13 +181,190 @@ func runJobs() {
     }
     defer database.Close()
 
-    fmt.Println("db.FetchRecordRows 1")
     jobs, err := db.FetchRecordRows(database, "jobs")
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
-    fmt.Println("db.FetchRecordRows 2")
+
+    for _, job := range jobs {
+        fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
+
+        var jobData struct {
+            Job     string `json:"job,omitempty"`
+            Config  string `json:"config,omitempty"`
+            Time    string `json:"time,omitempty"`
+            Repeat  string `json:"repeat,omitempty"`
+            Start   string `json:"start,omitempty"`
+            Done    string `json:"done,omitempty"`
+            Output  string `json:"output,omitempty"`
+            Message string `json:"message,omitempty"`
+            Success string `json:"success,omitempty"`
+            Error   string `json:"error,omitempty"`
+            Exit    string `json:"exit,omitempty"`
+        }
+
+        err := json.Unmarshal([]byte(job.Data), &jobData)
+        if err != nil {
+            fmt.Println("Error parsing job.Data:", err)
+            continue
+        }
+
+        fmt.Println("Run JOB: ", job.Name, " Start ", jobData.Start, " Repeat ", jobData.Repeat )
+
+        if jobData.Start != "" || jobData.Repeat != "" {
+            
+            fmt.Println("Run this job now...")
+
+            runJob(job.Name, jobData)
+
+        } else {
+
+            fmt.Println("Skip job, " , job.Name)
+
+        }
+    }
+}
+
+
+func runJob(jobName string, jobData struct {
+    Job     string `json:"job,omitempty"`
+    Config  string `json:"config,omitempty"`
+    Time    string `json:"time,omitempty"`
+    Repeat  string `json:"repeat,omitempty"`
+    Start   string `json:"start,omitempty"`
+    Done    string `json:"done,omitempty"`
+    Output  string `json:"output,omitempty"`
+    Message string `json:"message,omitempty"`
+    Success string `json:"success,omitempty"`
+    Error   string `json:"error,omitempty"`
+    Exit    string `json:"exit,omitempty"`
+}) {
+
+    now := time.Now()
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    fmt.Println("Read configs for Job ") 
+    configs, err := db.FetchRecordRows(database, "configs")
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    for _, config := range configs {
+
+        fmt.Printf("Config: %s %s %s\n", config.Name, config.Data, config.Timestamp)
+
+        if jobData.Config == config.Name {
+            fmt.Println("Job is Job ", config.Name, jobData.Config)
+
+            var configData struct {
+                Cmd string `json:"cmd,omitempty"`
+            }
+
+            err := json.Unmarshal([]byte(config.Data), &configData)
+            if err != nil {
+                fmt.Println("Error parsing config.Data:", err)
+                return
+            }
+
+            fmt.Println("Config cmd ", configData.Cmd)
+
+            if configData.Cmd != "" {
+                fmt.Println("RUN THIS COMMAND: ", configData.Cmd)
+
+                jobData.Start = now.Format("2006-01-02 15:04:05")
+                updatedData, err := json.Marshal(jobData)
+                if err != nil {
+                    fmt.Println("Error marshaling updated data:", err)
+                    return
+                }
+
+                fmt.Println("Lets Update Record...")
+                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
+                if err != nil {
+                    fmt.Println("Error updating job:", err)
+                    return
+                }
+
+                fmt.Println("Run Command...")
+
+                stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
+                if err != nil {
+                    fmt.Println("Error tools.RunCommand:", err)
+                    stdOut = fmt.Sprintf("Error: %v", err)
+                }
+
+                fmt.Println("We have output....")
+                fmt.Println(stdOut, stdErr, exitCode)
+
+                if exitCode == 1 {
+                    stdOut = stdErr
+                }
+
+                jobData.Exit = fmt.Sprintf("%d", exitCode)
+
+                updatedData, err = json.Marshal(jobData)
+                if err != nil {
+                    fmt.Println("Error marshaling updated data:", err)
+                    return
+                }
+
+                if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
+                    fmt.Println(err)
+                    return
+                }
+
+                fmt.Println("We are done....")
+
+                done := time.Now()
+                jobData.Done = done.Format("2006-01-02 15:04:05")
+                updatedData2, err := json.Marshal(jobData)
+                if err != nil {
+                    fmt.Println("Error marshaling updated data:", err)
+                    return
+                }
+
+                fmt.Println("db.UpdateRecord.1 ", jobName)
+                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
+                if err != nil {
+                    fmt.Println("Error updating job:", err)
+                    return
+                }
+
+                fmt.Println("db.UpdateRecord.2 ", jobName)
+            }
+        } //end-if
+    } //end-for
+}
+
+
+
+
+
+
+func runJobs_v1() {
+    fmt.Println("runJobs")
+
+    // read jobs
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //fmt.Println("db.FetchRecordRows 1")
+    jobs, err := db.FetchRecordRows(database, "jobs")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    //fmt.Println("db.FetchRecordRows 2")
 
     for _, job := range jobs {
         fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
@@ -297,13 +473,9 @@ func runJobs() {
                                     //outPut = stdErr
                                     stdOut = stdErr
                                 }
-                                // WORK
-
-
 
                                 // update json with exitCode
                                 //jobData.Exit := exitCode
-
                                 // Update the jobData.Exit field
                                 jobData.Exit = fmt.Sprintf("%d", exitCode)
 
