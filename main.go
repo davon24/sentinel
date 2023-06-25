@@ -54,6 +54,8 @@ func main() {
 
         case "run-jobs":
             runJobs()
+        case "run-job":
+            runJobName()
         case "list-outputs":
             listOutputs()
         case "list-output":
@@ -128,6 +130,7 @@ Options:
   del-job name
 
   run-jobs
+  run-job name
   list-outputs
   list-output name
   del-output
@@ -214,24 +217,121 @@ func runJobs() {
             continue
         }
 
-        fmt.Println("Run JOB: ", job.Name, " Start ", jobData.Start, " Repeat ", jobData.Repeat )
+        fmt.Println("Run JOB: ", job.Name, " Start ", jobData.Start, " Repeat ", jobData.Repeat, " Time ", jobData.Time, " Done ", jobData.Done)
 
-        if jobData.Start != "" || jobData.Repeat != "" {
-            
-            fmt.Println("Run this job now...")
 
-            err := runJob(job.Name, jobData)
-            if err != nil {
-                fmt.Println("Error parsing job.Data:", err)
-                continue
+        // Time || Repeat
+
+        switch {
+
+        case jobData.Time != "":
+
+            fmt.Println("Time job...")
+
+            if jobData.Start == "" {
+
+                fmt.Println("Run Time job...")
+
+                err := runJob(job.Name, jobData)
+                if err != nil {
+                    fmt.Println("Error running job.Data:", err)
+                    continue
+                }
+
+            } else {
+
+                fmt.Println("Time job Start exists")
+
             }
 
-        } else {
+        case jobData.Repeat != "":
 
-            fmt.Println("Skip job, " , job.Name)
+            fmt.Println("Repeat job...")
 
+            if jobData.Start == "" {
+
+                fmt.Println("Run Repeat job...")
+
+                err := runJob(job.Name, jobData)
+                if err != nil {
+                    fmt.Println("Error running job.Data:", err)
+                    continue
+                }
+
+            } else {
+
+                fmt.Println("Repeat job Start exists, check if Done...")
+
+                if jobData.Done != "" { // done not empty, so done
+
+                    fmt.Println("OK to Repeat job Start Done is ", jobData.Done)
+
+
+                }
+
+            }
+
+        default:
+            fmt.Println("Skip job:", job.Name)
         }
+
+
     }
+}
+
+func runJobName() {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: run-job name")
+        os.Exit(1)
+    }
+
+    fmt.Println("Job Name:", os.Args[2])
+
+    // open db
+    database, dberr := sql.Open("sqlite3", "sentinel.db")
+    if dberr != nil {
+        fmt.Println(dberr)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+//WORK
+
+    // lookup/get job data
+    job, joberr := db.FetchRecord(database, "jobs", os.Args[2])
+    if joberr != nil {
+        fmt.Println(joberr)
+        os.Exit(1)
+    }
+
+    fmt.Println(job)
+
+    var jobRecord db.Record
+    for _, record := range job {
+            fmt.Println("Name:", record.Name)
+            fmt.Println("Data:", record.Data)
+            fmt.Println("Timestamp:", record.Timestamp)
+
+            jobRecord = record
+    }
+
+    fmt.Println("Data.2:", jobRecord.Data)
+
+
+    var jobData JobData
+
+    merr := json.Unmarshal([]byte(jobRecord.Data), &jobData)
+    if merr != nil {
+        fmt.Println("Error parsing job.Data:", merr)
+
+    }
+
+    err := runJob(os.Args[2], jobData)
+    if err != nil {
+        fmt.Println("Error running job.Data:", err)
+    }
+
 }
 
 func runJob(jobName string, jobData JobData) error {
@@ -250,7 +350,7 @@ func runJob(jobName string, jobData JobData) error {
     }
 
     fmt.Println("Fetch Job config ", jobData.Config)
-    config, err := db.FetchRecord(database, "configs", jobData.Config) //WORK
+    config, err := db.FetchRecord(database, "configs", jobData.Config)
     if err != nil {
         //fmt.Println(err)
         //os.Exit(1)
