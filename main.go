@@ -157,7 +157,7 @@ Options:
 
 type JobData struct {
 	Job     string `json:"job,omitempty"`
-	//Name    string `json:"name,omitempty"`
+	Name    string `json:"name,omitempty"`
 	Config  string `json:"config,omitempty"`
 	Time    string `json:"time,omitempty"`
 	Repeat  string `json:"repeat,omitempty"`
@@ -281,8 +281,8 @@ func runJobs() {
 
 func runJobName() {
 
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: run-job name")
+    if len(os.Args) < 3 {
+        fmt.Println("Invalid arguments. Usage: run-job name [--force]")
         os.Exit(1)
     }
 
@@ -296,8 +296,6 @@ func runJobName() {
     }
     defer database.Close()
 
-//WORK
-
     // lookup/get job data
     job, joberr := db.FetchRecord(database, "jobs", os.Args[2])
     if joberr != nil {
@@ -309,9 +307,9 @@ func runJobName() {
 
     var jobRecord db.Record
     for _, record := range job {
-            fmt.Println("Name:", record.Name)
-            fmt.Println("Data:", record.Data)
-            fmt.Println("Timestamp:", record.Timestamp)
+            //fmt.Println("Name:", record.Name)
+            //fmt.Println("Data:", record.Data)
+            //fmt.Println("Timestamp:", record.Timestamp)
 
             jobRecord = record
     }
@@ -321,15 +319,78 @@ func runJobName() {
 
     var jobData JobData
 
-    merr := json.Unmarshal([]byte(jobRecord.Data), &jobData)
-    if merr != nil {
-        fmt.Println("Error parsing job.Data:", merr)
+    umerr := json.Unmarshal([]byte(jobRecord.Data), &jobData)
+    if umerr != nil {
+        fmt.Println("Error parsing job.Data:", umerr)
 
     }
 
-    err := runJob(os.Args[2], jobData)
-    if err != nil {
-        fmt.Println("Error running job.Data:", err)
+    if len(os.Args) > 3 && os.Args[3] == "--force" {
+
+        err := runJob(os.Args[2], jobData)
+        if err != nil {
+            fmt.Println("Error running job.Data:", err)
+        }
+
+    } else {
+
+        fmt.Println("Run jobData Run logic...")
+
+
+
+        // Time || Repeat
+
+        switch {
+
+        case jobData.Time != "":
+
+            fmt.Println("Time job...")
+
+            if jobData.Start == "" {
+
+                fmt.Println("Run Time job...")
+
+                err := runJob(os.Args[2], jobData)
+                if err != nil {
+                    fmt.Println("Error running job.Data:", err)
+                }
+
+            } else {
+
+                fmt.Println("Time job Start exists")
+
+            }
+
+        case jobData.Repeat != "":
+
+            fmt.Println("Repeat job...")
+
+            if jobData.Start == "" {
+
+                fmt.Println("Run Repeat job...")
+
+                err := runJob(os.Args[2], jobData)
+                if err != nil {
+                    fmt.Println("Error running job.Data:", err)
+                }
+
+            } else {
+
+                fmt.Println("Repeat job Start exists, check if Done...")
+
+                if jobData.Done != "" { // done not empty, so done
+
+                    fmt.Println("OK to Repeat job Start Done is ", jobData.Done)
+
+
+                }
+
+            }
+
+        default:
+            fmt.Println("Skip job:", jobData.Name)
+        } //end-switch-case
+
     }
 
 }
