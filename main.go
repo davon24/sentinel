@@ -17,7 +17,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-pre-0000-0000-00"
+var version = "2.0.0.dev-pre-0000-0000-000"
 
 func main() {
 
@@ -152,6 +152,22 @@ Options:
 }
 
 
+type JobData struct {
+	Job     string `json:"job,omitempty"`
+	//Name    string `json:"name,omitempty"`
+	Config  string `json:"config,omitempty"`
+	Time    string `json:"time,omitempty"`
+	Repeat  string `json:"repeat,omitempty"`
+	Start   string `json:"start,omitempty"`
+	Done    string `json:"done,omitempty"`
+	Output  string `json:"output,omitempty"`
+	Message string `json:"message,omitempty"`
+	Success string `json:"success,omitempty"`
+	Error   string `json:"error,omitempty"`
+	Exit    string `json:"exit,omitempty"`
+}
+
+
 func printSqlite3Version() {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
@@ -190,19 +206,7 @@ func runJobs() {
     for _, job := range jobs {
         fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
 
-        var jobData struct {
-            Job     string `json:"job,omitempty"`
-            Config  string `json:"config,omitempty"`
-            Time    string `json:"time,omitempty"`
-            Repeat  string `json:"repeat,omitempty"`
-            Start   string `json:"start,omitempty"`
-            Done    string `json:"done,omitempty"`
-            Output  string `json:"output,omitempty"`
-            Message string `json:"message,omitempty"`
-            Success string `json:"success,omitempty"`
-            Error   string `json:"error,omitempty"`
-            Exit    string `json:"exit,omitempty"`
-        }
+        var jobData JobData
 
         err := json.Unmarshal([]byte(job.Data), &jobData)
         if err != nil {
@@ -230,19 +234,7 @@ func runJobs() {
     }
 }
 
-func runJob(jobName string, jobData struct {
-    Job     string `json:"job,omitempty"`
-    Config  string `json:"config,omitempty"`
-    Time    string `json:"time,omitempty"`
-    Repeat  string `json:"repeat,omitempty"`
-    Start   string `json:"start,omitempty"`
-    Done    string `json:"done,omitempty"`
-    Output  string `json:"output,omitempty"`
-    Message string `json:"message,omitempty"`
-    Success string `json:"success,omitempty"`
-    Error   string `json:"error,omitempty"`
-    Exit    string `json:"exit,omitempty"`
-}) error {
+func runJob(jobName string, jobData JobData) error {
 
     //now := time.Now()
 
