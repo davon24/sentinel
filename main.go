@@ -417,21 +417,25 @@ func runJobName() {
                     var unit string
 
                     switch {
-                    case strings.HasSuffix(jobData.Repeat, "h"), strings.HasSuffix(jobData.Repeat, "hr"), strings.HasSuffix(jobData.Repeat, "hour"):
+                    case strings.HasSuffix(jobData.Repeat, "hour"), strings.HasSuffix(jobData.Repeat, "hr"), strings.HasSuffix(jobData.Repeat, "h"):
                         value, unit = parseInterval(jobData.Repeat, "h", "hour")
-                    case strings.HasSuffix(jobData.Repeat, "m"), strings.HasSuffix(jobData.Repeat, "min"), strings.HasSuffix(jobData.Repeat, "minute"):
-                        value, unit = parseInterval(jobData.Repeat, "m", "minute")
-                    case strings.HasSuffix(jobData.Repeat, "s"), strings.HasSuffix(jobData.Repeat, "sec"), strings.HasSuffix(jobData.Repeat, "second"):
+                    case strings.HasSuffix(jobData.Repeat, "minute"), strings.HasSuffix(jobData.Repeat, "min"), strings.HasSuffix(jobData.Repeat, "m"):
+                        value, unit = parseInterval(jobData.Repeat, "min", "minute")
+                    case strings.HasSuffix(jobData.Repeat, "second"), strings.HasSuffix(jobData.Repeat, "sec"), strings.HasSuffix(jobData.Repeat, "s"):
                         value, unit = parseInterval(jobData.Repeat, "s", "second")
                     default:
                         fmt.Println("Unknown interval string:", unit)
                         os.Exit(1)
+                        //return
                     } //end-switch-case jobData.Repeat
 
                     // Calculate the new time by adding the parsed duration
                     duration := calculateDuration(value, unit)
                     newRepeatTime := now.Add(duration)
-                    fmt.Printf("New Time (After adding duration): %s\n\n", newRepeatTime)
+                    //fmt.Printf("New Time (After adding duration): %s\n\n", newRepeatTime)
+                    fmt.Printf("NewTime: %s\n", newRepeatTime)
+
+                    // logic if duration diff from newTime and last jobDone time is greater or smaller...
 
 
 //WORK
@@ -451,7 +455,8 @@ func runJobName() {
 
 
 func parseInterval(intervalString, suffix, unit string) (int64, string) {
-	if len(intervalString) < len(suffix) || intervalString[len(intervalString)-len(suffix):] != suffix {
+	//if len(intervalString) < len(suffix) || intervalString[len(intervalString)-len(suffix):] != suffix {
+    if len(intervalString) < len(suffix) || !strings.HasSuffix(intervalString, suffix) {
 		fmt.Printf("Invalid interval format: %s\n", intervalString)
 		return 0, ""
 	}
