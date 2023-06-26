@@ -23,6 +23,9 @@
 
 ./sentinel add-job job-9 '{"repeat": "30s", "config": "config-1"}'
 
+./sentinel add-config arp-task '{"task": "arps"}'
+./sentinel add-job job-00-arps '{"repeat": "30s", "config": "arp-task"}'
+
 
 #
 ./sentinel add-config config-prometheus '{"prometheus": true}'

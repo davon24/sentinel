@@ -8,6 +8,7 @@ import (
     "sync"
     "os/signal"
     "syscall"
+    "errors"
     "encoding/json"
     "database/sql"
 
@@ -135,12 +136,13 @@ Options:
   del-job name
 
   run-jobs
-  run-job name
+  run-job name [--force]
   list-outputs
   list-output name
   del-output
 
-  arps
+  # task: arps (arp + manuf)
+  run-arps|arps
   macs|list-macs
   del-mac mac
 
@@ -162,7 +164,8 @@ Options:
 
 type JobData struct {
 	Job     string `json:"job,omitempty"`
-	Name    string `json:"name,omitempty"`
+	//Name    string `json:"name,omitempty"`
+	//Task    string `json:"task,omitempty"`
 	Config  string `json:"config,omitempty"`
 	Time    string `json:"time,omitempty"`
 	Repeat  string `json:"repeat,omitempty"`
@@ -543,7 +546,7 @@ func runJobName() {
             } //end-if-else  jobData.Start == "" 
 
         default:
-            PrintDebug("Skip job:"+ jobData.Name)
+            PrintDebug("Skip job:"+ jobData.Job)
 
         } //end-switch-case Time || Repeat
 
@@ -619,7 +622,8 @@ func runJob(jobName string, jobData JobData) error {
     PrintDebug("Data.2:"+ configRecord.Data)
 
     var configData struct {
-        Cmd string `json:"cmd,omitempty"`
+        Cmd  string `json:"cmd,omitempty"`
+        Task string `json:"task,omitempty"`
     }
 
     //err = json.Unmarshal([]byte(config.Data), &configData)
@@ -630,8 +634,26 @@ func runJob(jobName string, jobData JobData) error {
 
     PrintDebug("Config cmd "+ configData.Cmd)
 
+    switch {
+    case configData.Cmd != "" && configData.Task != "":
+        // Both configData.Cmd and configData.Task are not empty
+        // Execute code for this case
+        //performAction(configData.Cmd, configData.Task)
+        return errors.New("Both configData.Cmd and configData.Task are not empty")
 
-            if configData.Cmd != "" {
+    case configData.Cmd != "":
+        // Only configData.Cmd is not empty
+        // Execute code for this case
+        //performCmdAction(configData.Cmd)
+        /*
+        rerr := runCmd(jobData, configData)
+        if rerr != nil {
+            fmt.Println("Error:", rerr)
+        }
+        */
+
+
+                //configData.Cmd != ""
 
                 //now := time.Now()
                 now := time.Now().UTC()
@@ -696,11 +718,101 @@ func runJob(jobName string, jobData JobData) error {
                 PrintDebug("db.UpdateRecord.2 "+ jobName)
 
                 fmt.Println("Run "+ jobName + " Done")
+                //end configData.Cmd
 
-            } //end-if configData.Cmd
+    case configData.Task != "":
+        // Only configData.Task is not empty
+        // Execute code for this case
+        //performTaskAction(configData.Task)
+        fmt.Println("Run Task!")
+
+    default:
+        // Neither configData.Cmd nor configData.Task are not empty
+        // Execute code for this case or handle the default scenario
+        //handleDefault()
+        return errors.New("Neither configData.Cmd nor configData.Task are not empty")
+    }
+
+
 
     return nil
 }
+
+/*
+func runCmd(jobData *JobData, configData *ConfigData) error {
+
+                //configData.Cmd != ""
+
+                //now := time.Now()
+                now := time.Now().UTC()
+
+                PrintDebug("RUN THIS COMMAND: "+ configData.Cmd)
+
+                jobData.Start = now.Format("2006-01-02 15:04:05")
+                updatedData, err := json.Marshal(jobData)
+                if err != nil {
+                    return err
+                }
+
+                PrintDebug("Lets Update Record...")
+                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
+                if err != nil {
+                    return err
+                }
+
+                PrintDebug("Run Command...")
+
+                stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
+                if err != nil {
+                    stdOut = fmt.Sprintf("Error: %v", err)
+                }
+
+                PrintDebug("We have output....")
+                PrintDebug(stdOut + " " + stdErr)
+
+                //import "strconv"
+                //PrintDebug(stdOut + " " + stdErr + " " + strconv.Itoa(exitCode))
+
+                if exitCode == 1 {
+                    stdOut = stdErr
+                }
+
+                jobData.Exit = fmt.Sprintf("%d", exitCode)
+
+                updatedData, err = json.Marshal(jobData)
+                if err != nil {
+                    return err
+                }
+
+                if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
+                    return err
+                }
+
+                PrintDebug("We are done....")
+
+                //done := time.Now()
+                done := time.Now().UTC()
+                jobData.Done = done.Format("2006-01-02 15:04:05")
+                updatedData2, err := json.Marshal(jobData)
+                if err != nil {
+                    return err
+                }
+
+                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
+                if err != nil {
+                    return err
+                }
+
+                PrintDebug("db.UpdateRecord.2 "+ jobName)
+
+                fmt.Println("Run "+ jobName + " Done")
+                //end configData.Cmd
+
+
+    return nil
+}
+*/
+
 
 
 func runSentry() {
@@ -720,7 +832,7 @@ func runSentry() {
 				return
 			default:
 				runJobs()
-				//time.Sleep(time.Minute) // Adjust the sleep duration as needed
+				//time.Sleep(500 * time.Millisecond)
 				time.Sleep(time.Second) // Adjust the sleep duration as needed
 			}
 		}
