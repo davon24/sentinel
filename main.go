@@ -405,33 +405,85 @@ func runJobName() {
                     now := time.Now().UTC()
                     elapsed := now.Sub(jobDone)
 
-                    //fmt.Println("jobDone:", jobDone)
-                    //fmt.Println("now:", now)
-                    //fmt.Println("Elapsed:", elapsed)
-
-                    // Convert the time to a specific time zone
-                    //timeZone := time.FixedZone("PDT", -7*60*60) // Pacific Daylight Time (UTC-7:00)
-                    //now = now.In(timeZone)
-                    //jobDone = jobDone.In(timeZone)
-
                     fmt.Println("jobDone:", jobDone)
-                    fmt.Println("now:", now)
+                    fmt.Println("nowTime:", now)
                     fmt.Println("Elapsed:", elapsed)
+
+                    // Parse Repeat value "1h", "5m", "30s", ...
+                    fmt.Println("Repeat Value:", jobData.Repeat)
+
+                    // Get the value and unit from the interval string
+                    var value int64
+                    var unit string
+
+                    switch {
+                    case strings.HasSuffix(jobData.Repeat, "h"), strings.HasSuffix(jobData.Repeat, "hr"), strings.HasSuffix(jobData.Repeat, "hour"):
+                        value, unit = parseInterval(jobData.Repeat, "h", "hour")
+                    case strings.HasSuffix(jobData.Repeat, "m"), strings.HasSuffix(jobData.Repeat, "min"), strings.HasSuffix(jobData.Repeat, "minute"):
+                        value, unit = parseInterval(jobData.Repeat, "m", "minute")
+                    case strings.HasSuffix(jobData.Repeat, "s"), strings.HasSuffix(jobData.Repeat, "sec"), strings.HasSuffix(jobData.Repeat, "second"):
+                        value, unit = parseInterval(jobData.Repeat, "s", "second")
+                    default:
+                        fmt.Println("Unknown interval string:", unit)
+                        os.Exit(1)
+                    } //end-switch-case jobData.Repeat
+
+                    // Calculate the new time by adding the parsed duration
+                    duration := calculateDuration(value, unit)
+                    newRepeatTime := now.Add(duration)
+                    fmt.Printf("New Time (After adding duration): %s\n\n", newRepeatTime)
 
 
 //WORK
 
-                }
+                } //end-if jobData.Done != ""
 
-            }
+            } //end-if-else  jobData.Start == "" 
 
         default:
             fmt.Println("Skip job:", jobData.Name)
-        } //end-switch-case
+
+        } //end-switch-case Time || Repeat
 
     }
 
 }
+
+
+func parseInterval(intervalString, suffix, unit string) (int64, string) {
+	if len(intervalString) < len(suffix) || intervalString[len(intervalString)-len(suffix):] != suffix {
+		fmt.Printf("Invalid interval format: %s\n", intervalString)
+		return 0, ""
+	}
+
+	valueStr := intervalString[:len(intervalString)-len(suffix)]
+	value := parseValue(valueStr)
+	return value, unit
+}
+
+func parseValue(valueStr string) int64 {
+	var value int64
+	_, err := fmt.Sscan(valueStr, &value)
+	if err != nil {
+		fmt.Printf("Error parsing value: %v\n", err)
+	}
+	return value
+}
+
+func calculateDuration(value int64, unit string) time.Duration {
+	switch unit {
+	case "hour":
+		return time.Duration(value) * time.Hour
+	case "minute":
+		return time.Duration(value) * time.Minute
+	case "second":
+		return time.Duration(value) * time.Second
+	default:
+		return 0
+	}
+}
+
+
 
 func runJob(jobName string, jobData JobData) error {
 
