@@ -367,7 +367,7 @@ func runJobName() {
         os.Exit(1)
     }
 
-    fmt.Println("Job Name:", os.Args[2])
+    PrintDebug("Job Name:"+ os.Args[2])
 
     // open db
     database, dberr := sql.Open("sqlite3", "sentinel.db")
@@ -384,18 +384,18 @@ func runJobName() {
         os.Exit(1)
     }
 
-    fmt.Println(job)
+    //PrintDebug(job.String())
 
     var jobRecord db.Record
     for _, record := range job {
-            //fmt.Println("Name:", record.Name)
-            //fmt.Println("Data:", record.Data)
-            //fmt.Println("Timestamp:", record.Timestamp)
+            PrintDebug("Name:"+ record.Name)
+            PrintDebug("Data:"+ record.Data)
+            PrintDebug("Timestamp:"+ record.Timestamp)
 
             jobRecord = record
     }
 
-    fmt.Println("Data.2:", jobRecord.Data)
+    PrintDebug("Data.2:"+ jobRecord.Data)
 
 
     var jobData JobData
@@ -415,7 +415,7 @@ func runJobName() {
 
     } else {
 
-        fmt.Println("Run jobData Run logic...")
+        PrintDebug("Run jobData Run logic...")
 
 
         // Time || Repeat
@@ -424,28 +424,11 @@ func runJobName() {
 
         case jobData.Time != "":
 
-            fmt.Println("Time job...")
+            PrintDebug("Time job...")
 
             if jobData.Start == "" {
 
-                fmt.Println("Run Time job...")
-
-                err := runJob(os.Args[2], jobData)
-                if err != nil {
-                    fmt.Println("Error running job.Data:", err)
-                    os.Exit(1)
-                }
-
-            }
-
-
-        case jobData.Repeat != "":
-
-            fmt.Println("Repeat job...")
-
-            if jobData.Start == "" {
-
-                fmt.Println("Run Repeat job...")
+                PrintDebug("Run Time job...")
 
                 err := runJob(os.Args[2], jobData)
                 if err != nil {
@@ -455,14 +438,35 @@ func runJobName() {
 
             } else {
 
-                fmt.Println("Repeat job Start exists, check if Done...")
+                fmt.Println("Finished Start:", jobData.Start, " Done:", jobData.Done)
+
+            }
+
+
+        case jobData.Repeat != "":
+
+            PrintDebug("Repeat job...")
+
+            if jobData.Start == "" {
+
+                PrintDebug("Run Repeat job...")
+
+                err := runJob(os.Args[2], jobData)
+                if err != nil {
+                    fmt.Println("Error running job.Data:", err)
+                    os.Exit(1)
+                }
+
+            } else {
+
+                PrintDebug("Repeat job Start exists, check if Done...")
 
                 if jobData.Done != "" { // done not empty, so done
 
-                    fmt.Println("OK to Repeat job Start is Done ", jobData.Done)
+                    PrintDebug("OK to Repeat job Start is Done "+ jobData.Done)
 
                     // get repeat time interval
-                    fmt.Println("Repeat this time interval: ", jobData.Repeat)
+                    PrintDebug("Repeat this time interval: "+ jobData.Repeat)
 
                     // Parse time strings into time.Time objects
                     jobDone, err := time.Parse("2006-01-02 15:04:05", jobData.Done)
@@ -477,12 +481,12 @@ func runJobName() {
                     now := time.Now().UTC()
                     elapsed := now.Sub(jobDone)
 
-                    fmt.Println("jobDone:", jobDone)
-                    fmt.Println("nowTime:", now)
-                    fmt.Println("Elapsed:", elapsed)
+                    PrintDebug("jobDone:"+ jobDone.String())
+                    PrintDebug("nowTime:"+ now.String())
+                    PrintDebug("Elapsed:"+ elapsed.String())
 
                     // Parse Repeat value "1h", "5m", "30s", ...
-                    fmt.Println("Repeat Value:", jobData.Repeat)
+                    PrintDebug("Repeat Value:"+ jobData.Repeat)
 
                     // Get the value and unit from the interval string
                     var value int64
@@ -515,14 +519,21 @@ func runJobName() {
                     // Calculate the next repeat time by adding the duration to the start time
 
                     nextRepeatTime := startTime.Add(duration)
-                    fmt.Printf("Next Repeat Time: %s\n", nextRepeatTime)
+                    PrintDebug("Next Repeat Time: "+ nextRepeatTime.String())
+
+                    // Calculate t-minus
+
+                    // calculate how many seconds util nextRepeatTime
+                    secondsUntilNextRepeat := int(nextRepeatTime.Sub(time.Now()).Seconds())
+                    //fmt.Println("Seconds until next repeat time:", secondsUntilNextRepeat)
+                    fmt.Println("Repeat t-minus:", secondsUntilNextRepeat)
 
 
                     // Compare nextRepeatTime with the current time
                     if nextRepeatTime.Before(now) || nextRepeatTime.Equal(now) {
 
                         //fmt.Println("Next repeat time has past or is equal to the current time.")
-                        fmt.Println("Run Repeat past due job...")
+                        PrintDebug("Run Repeat past due job...")
 
                         err := runJob(os.Args[2], jobData)
                         if err != nil {
@@ -537,7 +548,7 @@ func runJobName() {
             } //end-if-else  jobData.Start == "" 
 
         default:
-            fmt.Println("Skip job:", jobData.Name)
+            PrintDebug("Skip job:"+ jobData.Name)
 
         } //end-switch-case Time || Repeat
 
