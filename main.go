@@ -6,6 +6,8 @@ import (
     "os"
     "time"
     "sync"
+    "os/signal"
+    "syscall"
     "encoding/json"
     "database/sql"
 
@@ -20,13 +22,6 @@ import (
 var version = "2.0.0.dev-pre-0000-0000-0000-0"
 
 func main() {
-
-    //DEBUG=1 go run main.go
-    //debugMode := os.Getenv("DEBUG")
-    //if debugMode != "" {
-        //fmt.Println("Debug mode enabled")
-    //    PrintDebug("Debug mode enabled")
-    //}
 
     //DEBUG=1 go run main.go
     PrintDebug("Debug mode enabled")
@@ -109,8 +104,8 @@ func main() {
             fmt.Println("TODO Del namp... ")
 
         case "sentry":
-            //runSentry()
-            fmt.Println("TODO runSentry... ")
+            runSentry()
+            //fmt.Println("TODO runSentry... ")
 
         default:
             fmt.Println("Invalid argument ", os.Args[1])
@@ -708,7 +703,37 @@ func runJob(jobName string, jobData JobData) error {
 }
 
 
+func runSentry() {
 
+	// Create a channel to receive OS signals
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	// Create a channel to control the background process
+	done := make(chan struct{})
+
+	// Start the background process
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			default:
+				runJobs()
+				//time.Sleep(time.Minute) // Adjust the sleep duration as needed
+				time.Sleep(time.Second) // Adjust the sleep duration as needed
+			}
+		}
+	}()
+
+	// Wait for termination signal
+	<-signals
+
+	// Stop the background process
+	close(done)
+
+	fmt.Println("Program terminated")
+}
 
 
 
