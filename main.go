@@ -431,11 +431,46 @@ func runJobName() {
 
                     // Calculate the new time by adding the parsed duration
                     duration := calculateDuration(value, unit)
-                    newRepeatTime := now.Add(duration)
-                    //fmt.Printf("New Time (After adding duration): %s\n\n", newRepeatTime)
-                    fmt.Printf("NewTime: %s\n", newRepeatTime)
+
+
+                    newRepeatNowTime := now.Add(duration)
+                    fmt.Printf("NewRepeatNowTime: %s\n", newRepeatNowTime)
+
+                    //newRepeatTime := now.Add(duration)
 
                     // logic if duration diff from newTime and last jobDone time is greater or smaller...
+
+                    // if jobData.Start time is past due
+
+                    //nextRepeatTime := jobData.Start + intervalString
+
+                    // Calculate the next repeat time by adding the duration to the job start time
+                    //nextRepeatTime := jobData.Start.Add(duration)
+                    //fmt.Printf("Repeat Time: %s\n", nextRepeatTime)
+
+                    // Parse the start time as a time.Time value
+                    //startTime, err := time.Parse(time.RFC3339, jobData.Start)
+                    startTime, err := time.Parse("2006-01-02 15:04:05", jobData.Start)
+                    if err != nil {
+                        fmt.Printf("Error parsing start time: %v\n", err)
+                        os.Exit(1)
+                    }
+
+                    // Calculate the next repeat time by adding the duration to the start time
+
+                    nextRepeatTime := startTime.Add(duration)
+                    fmt.Printf("Next Repeat Time: %s\n", nextRepeatTime)
+
+
+                    // Compare nextRepeatTime with the current time
+                    if nextRepeatTime.Before(now) || nextRepeatTime.Equal(now) {
+
+                        fmt.Println("Next repeat time has past or is equal to the current time.")
+
+                    }
+
+
+
 
 
 //WORK

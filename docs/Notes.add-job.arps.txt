@@ -21,6 +21,8 @@
 ./sentinel add-config config-4 '{"cmd": "ping -c 3 google.com"}'
 ./sentinel add-job job-8 '{"time": "2020-09-20 00:00:00", "config": "config-4"}'
 
+./sentinel add-job job-9 '{"repeat": "30s", "config": "config-1"}'
+
 
 #
 ./sentinel add-config config-prometheus '{"prometheus": true}'
