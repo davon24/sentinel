@@ -85,7 +85,7 @@ func main() {
             //runArps()
             var wg sync.WaitGroup
             wg.Add(1)
-            go runArps(&wg) // Run runArps() as a goroutine
+            go runArps_v1(&wg) // Run runArps() as a goroutine
             wg.Wait() // Wait for runArps() to complete
 
         case "list-macs", "macs":
@@ -724,7 +724,86 @@ func runJob(jobName string, jobData JobData) error {
         // Only configData.Task is not empty
         // Execute code for this case
         //performTaskAction(configData.Task)
-        fmt.Println("Run Task!")
+        fmt.Println("Run Task!", configData.Task , " configData.Task")
+        //err = runTask(configData.Task)
+        //if err != nil {
+        //    return err
+        //}
+
+                now := time.Now().UTC()
+
+                PrintDebug("RUN THIS TASK: "+ configData.Task)
+
+                jobData.Start = now.Format("2006-01-02 15:04:05")
+                updatedData, err := json.Marshal(jobData)
+                if err != nil {
+                    return err
+                }
+
+                PrintDebug("db.1 Update Record...")
+                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
+                if err != nil {
+                    return err
+                }
+
+                PrintDebug("Run Task...")
+
+                //stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
+                //if err != nil {
+                //    stdOut = fmt.Sprintf("Error: %v", err)
+                //}
+
+                //var taskErr string
+
+                err = runTask(configData.Task)
+                if err != nil {
+                    //return err
+                    //taskErr = fmt.Sprintf("%s", err)
+                    jobData.Error = fmt.Sprintf("%s", err)
+                    updatedData, err = json.Marshal(jobData)
+                    if err != nil {
+                        return err
+                    }
+                        
+                }
+
+                PrintDebug("We are done Task....")
+
+                //import "strconv"
+                //PrintDebug(stdOut + " " + stdErr + " " + strconv.Itoa(exitCode))
+
+                /*
+                jobData.Exit = fmt.Sprintf("%d", exitCode)
+                updatedData, err = json.Marshal(jobData)
+                if err != nil {
+                    return err
+                }
+                */
+
+                /*
+                if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
+                    return err
+                }
+                */
+
+                PrintDebug("Now update done....")
+
+                //done := time.Now()
+                done := time.Now().UTC()
+                jobData.Done = done.Format("2006-01-02 15:04:05")
+                updatedData2, err := json.Marshal(jobData)
+                if err != nil {
+                    return err
+                }
+
+                PrintDebug("db.2 UpdateRecord "+ jobName)
+                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
+                if err != nil {
+                    return err
+                }
+
+                fmt.Println("Run "+ jobName + " Done")
+
 
     default:
         // Neither configData.Cmd nor configData.Task are not empty
@@ -734,6 +813,28 @@ func runJob(jobName string, jobData JobData) error {
     }
 
 
+
+    return nil
+}
+
+
+func runTask(task string) error {
+
+    switch {
+    case task == "arps":
+        fmt.Println("ARPS")
+
+        var wg sync.WaitGroup
+        wg.Add(1)
+        go runArps_v1(&wg) // Run runArps() as a goroutine
+        wg.Wait() // Wait for runArps() to complete
+
+
+    case task == "established":
+        fmt.Println("ESTABLISHED")
+    default:
+        return nil
+    }
 
     return nil
 }
@@ -902,7 +1003,7 @@ func runManuf() {
 }
 
 
-func runArps(wg *sync.WaitGroup) {
+func runArps_v1(wg *sync.WaitGroup) {
 
     defer wg.Done()
 
