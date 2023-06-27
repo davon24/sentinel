@@ -81,14 +81,17 @@ func main() {
         case "manuf":
             runManuf()
 
-        case "arps":
+        case "arps", "run-arps":
             //runArps()
             var wg sync.WaitGroup
             wg.Add(1)
             go runArps_v1(&wg) // Run runArps() as a goroutine
             wg.Wait() // Wait for runArps() to complete
 
-        case "list-macs", "macs":
+        case "run-task":
+            runTask(os.Args[2])
+
+        case "list-macs", "macs", "list-arps":
             listMacs()
         case "del-mac":
             //delMacs()
@@ -106,7 +109,6 @@ func main() {
 
         case "sentry":
             runSentry()
-            //fmt.Println("TODO runSentry... ")
 
         default:
             fmt.Println("Invalid argument ", os.Args[1])
@@ -142,8 +144,8 @@ Options:
   del-output
 
   # task: arps (arp + manuf)
-  run-arps|arps
-  macs|list-macs
+  arps|run-arps|run-task arps
+  macs|list-macs|list-arps
   del-mac mac
 
   manuf mac
