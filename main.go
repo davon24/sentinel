@@ -20,7 +20,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-pre-0000-0000-0000-0"
+var version = "2.0.0.dev-July7-🧨"
 
 func main() {
 
@@ -88,7 +88,7 @@ func main() {
             go runArps_v1(&wg) // Run runArps() as a goroutine
             wg.Wait() // Wait for runArps() to complete
 
-        case "run-task":
+        case "task", "run-task":
             runTask(os.Args[2])
 
         case "list-macs", "macs", "list-arps":
@@ -144,7 +144,7 @@ Options:
   del-output
 
   # task: arps (arp + manuf)
-  arps|run-arps|run-task arps
+  arps|run-arps|run-task arps|task arps
   macs|list-macs|list-arps
   del-mac mac
 
