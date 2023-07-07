@@ -9,6 +9,7 @@ import (
     "os/signal"
     "syscall"
     "errors"
+    "io/ioutil"
     "strconv"
     "encoding/json"
     "database/sql"
@@ -878,6 +879,25 @@ func getPrometheusConfig() PromData {
 	return PromData{}
 }
 
+func writePromFile(filename string) error {
+    PrintDebug("Write this prom file... " + filename)
+
+    promStr := "sentinel_up{version=\""+ version +"\"} 1\n"
+
+    secondLine := "another_metric{value=42} 2\n"
+
+
+    content := promStr + secondLine
+
+    //content := []byte(promStr)
+    err := ioutil.WriteFile(filename, []byte(content), 0644)
+    if err != nil {
+         return fmt.Errorf("failed to write prom file: %v", err)
+    }
+
+    return nil
+}
+
 
 func runSentry() {
 
@@ -916,7 +936,6 @@ func runSentry() {
 
 	// Create a channel to control the background process
 	jobDone := make(chan struct{})
-	promFileDone := make(chan struct{})
 
 	// Start the background process
 	go func() {
@@ -932,13 +951,20 @@ func runSentry() {
 		}
 	}()
 
+	// Create a channel to control the background process
+	promFileDone := make(chan struct{})
+
+	// Start the background process
     go func() {
         for {
             select {
             case <-promFileDone:
                 return
             default:
-                //time.Sleep(500 * time.Millisecond)
+                err := writePromFile(promFile)
+                if err != nil {
+                    fmt.Println(err)
+                }
                 time.Sleep(15 * time.Second) // Adjust the sleep duration as needed
             }
         }
@@ -951,6 +977,11 @@ func runSentry() {
 	// Stop the background process
 	close(jobDone)
 	close(promFileDone)
+
+    e := os.Remove(promFile)
+    if e != nil {
+	    fmt.Println(e)
+    }
 
 	fmt.Println("Program terminated")
 }
