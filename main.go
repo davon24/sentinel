@@ -9,6 +9,7 @@ import (
     "os/signal"
     "syscall"
     "errors"
+    "strconv"
     "encoding/json"
     "database/sql"
 
@@ -20,7 +21,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-July7-🧨"
+var version = "2.0.0.dev-🧨-1"
 
 func main() {
 
@@ -841,84 +842,115 @@ func runTask(task string) error {
     return nil
 }
 
-/*
-func runCmd(jobData *JobData, configData *ConfigData) error {
-
-                //configData.Cmd != ""
-
-                //now := time.Now()
-                now := time.Now().UTC()
-
-                PrintDebug("RUN THIS COMMAND: "+ configData.Cmd)
-
-                jobData.Start = now.Format("2006-01-02 15:04:05")
-                updatedData, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("Lets Update Record...")
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("Run Command...")
-
-                stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
-                if err != nil {
-                    stdOut = fmt.Sprintf("Error: %v", err)
-                }
-
-                PrintDebug("We have output....")
-                PrintDebug(stdOut + " " + stdErr)
-
-                //import "strconv"
-                //PrintDebug(stdOut + " " + stdErr + " " + strconv.Itoa(exitCode))
-
-                if exitCode == 1 {
-                    stdOut = stdErr
-                }
-
-                jobData.Exit = fmt.Sprintf("%d", exitCode)
-
-                updatedData, err = json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
-                    return err
-                }
-
-                PrintDebug("We are done....")
-
-                //done := time.Now()
-                done := time.Now().UTC()
-                jobData.Done = done.Format("2006-01-02 15:04:05")
-                updatedData2, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("db.UpdateRecord.2 "+ jobName)
-
-                fmt.Println("Run "+ jobName + " Done")
-                //end configData.Cmd
-
-
-    return nil
+type PromData struct {
+	Prometheus string `json:"prometheus,omitempty"`
+	Port       int    `json:"port,omitempty"`
 }
-*/
 
+func getPrometheusConfig() PromData {
+	database, err := sql.Open("sqlite3", "sentinel.db")
+	if err != nil {
+		return PromData{}
+	}
+	defer database.Close()
+
+	configs, err := db.FetchRecordRows(database, "configs")
+	if err != nil {
+		return PromData{}
+	}
+
+	for _, config := range configs {
+
+		var promData PromData
+
+		err = json.Unmarshal([]byte(config.Data), &promData)
+		if err != nil {
+			return PromData{}
+		}
+
+		if promData.Prometheus != "" {
+			//return configData.Prometheus, nil
+			return promData
+		}
+	}
+
+	//return PromData{}, fmt.Errorf("Prometheus not configured")
+	return PromData{}
+}
 
 
 func runSentry() {
+
+    // get promethues config
+
+    prom := getPrometheusConfig()
+
+    //fmt.Println(prom.Prometheus)
+    //fmt.Println(prom.Port)
+
+    var promFile string
+    var promPort int
+
+    if prom.Prometheus != "" || prom.Prometheus == "" {
+        PrintDebug("Yes we have prom config")
+
+        if prom.Prometheus == "" {
+            promFile = "sentinel.prom"
+        } else {
+            promFile = prom.Prometheus
+        }
+
+        if prom.Port != 0 {
+            promPort = prom.Port
+        }
+
+    }
+
+    PrintDebug(promFile)
+    PrintDebug(strconv.Itoa(promPort))
+
+    //promPortStr
+    //PrintDebug(fmt.Printf("%d", promPort))
+
+    /*
+    PrintDebug("Read configs for Sentry... ")
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        panic(err)
+    }
+    defer database.Close()
+
+    //PrintDebug("Fetch config ")
+    //config, err := db.FetchRecord(database, "configs", jobData.Config)
+
+    configs, err := db.FetchRecordRows(database, "configs")
+    if err != nil {
+         panic(err)
+    }
+
+    for _, config := range configs {
+        PrintDebug("Name:"+ config.Name)
+        PrintDebug("Data:"+ config.Data)
+        //PrintDebug("Timestamp:"+ config.Timestamp)
+
+        var configData struct {
+            Prometheus  string `json:"prometheus,omitempty"`
+
+        }
+
+        err = json.Unmarshal([]byte(config.Data), &configData)
+        if err != nil {
+            //panic(err)
+            PrintDebug(err.Error())
+        }
+
+        PrintDebug("Config prometheus "+ configData.Prometheus)
+
+    }
+    */
+
+
 
 	// Create a channel to receive OS signals
 	signals := make(chan os.Signal, 1)
@@ -1438,5 +1470,81 @@ func createDb() error {
     //fmt.Printf("File exists\n")
     return nil
 }
+
+
+/*
+func runCmd(jobData *JobData, configData *ConfigData) error {
+
+                //configData.Cmd != ""
+
+                //now := time.Now()
+                now := time.Now().UTC()
+
+                PrintDebug("RUN THIS COMMAND: "+ configData.Cmd)
+
+                jobData.Start = now.Format("2006-01-02 15:04:05")
+                updatedData, err := json.Marshal(jobData)
+                if err != nil {
+                    return err
+                }
+
+                PrintDebug("Lets Update Record...")
+                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
+                if err != nil {
+                    return err
+                }
+
+                PrintDebug("Run Command...")
+
+                stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
+                if err != nil {
+                    stdOut = fmt.Sprintf("Error: %v", err)
+                }
+
+                PrintDebug("We have output....")
+                PrintDebug(stdOut + " " + stdErr)
+
+                //import "strconv"
+                //PrintDebug(stdOut + " " + stdErr + " " + strconv.Itoa(exitCode))
+
+                if exitCode == 1 {
+                    stdOut = stdErr
+                }
+
+                jobData.Exit = fmt.Sprintf("%d", exitCode)
+
+                updatedData, err = json.Marshal(jobData)
+                if err != nil {
+                    return err
+                }
+
+                if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
+                    return err
+                }
+
+                PrintDebug("We are done....")
+
+                //done := time.Now()
+                done := time.Now().UTC()
+                jobData.Done = done.Format("2006-01-02 15:04:05")
+                updatedData2, err := json.Marshal(jobData)
+                if err != nil {
+                    return err
+                }
+
+                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
+                if err != nil {
+                    return err
+                }
+
+                PrintDebug("db.UpdateRecord.2 "+ jobName)
+
+                fmt.Println("Run "+ jobName + " Done")
+                //end configData.Cmd
+
+
+    return nil
+}
+*/
 
 

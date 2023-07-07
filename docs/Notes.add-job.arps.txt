@@ -28,10 +28,8 @@
 
 
 #
-./sentinel add-config config-prometheus '{"prometheus": true}'
-#./sentinel add-config config-prometheus '{"prometheus": true, "port": 2024}'
-#./sentinel add-config config-prometheus '{"prometheus": true, "file": "sentinel.prom"}'
-
+./sentinel add-config config-prometheus '{"prometheus": ""}'
+#./sentinel add-config config-prometheus '{"prometheus": "/tmp/sentinel.prom", "port": 2024}'
 
 
 #./sentinel add-config config-1 '{"cmd": "/usr/sbin/arp -an"}'
