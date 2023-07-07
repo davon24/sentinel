@@ -909,61 +909,20 @@ func runSentry() {
     PrintDebug(promFile)
     PrintDebug(strconv.Itoa(promPort))
 
-    //promPortStr
-    //PrintDebug(fmt.Printf("%d", promPort))
-
-    /*
-    PrintDebug("Read configs for Sentry... ")
-
-    database, err := sql.Open("sqlite3", "sentinel.db")
-    if err != nil {
-        panic(err)
-    }
-    defer database.Close()
-
-    //PrintDebug("Fetch config ")
-    //config, err := db.FetchRecord(database, "configs", jobData.Config)
-
-    configs, err := db.FetchRecordRows(database, "configs")
-    if err != nil {
-         panic(err)
-    }
-
-    for _, config := range configs {
-        PrintDebug("Name:"+ config.Name)
-        PrintDebug("Data:"+ config.Data)
-        //PrintDebug("Timestamp:"+ config.Timestamp)
-
-        var configData struct {
-            Prometheus  string `json:"prometheus,omitempty"`
-
-        }
-
-        err = json.Unmarshal([]byte(config.Data), &configData)
-        if err != nil {
-            //panic(err)
-            PrintDebug(err.Error())
-        }
-
-        PrintDebug("Config prometheus "+ configData.Prometheus)
-
-    }
-    */
-
-
 
 	// Create a channel to receive OS signals
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
 	// Create a channel to control the background process
-	done := make(chan struct{})
+	jobDone := make(chan struct{})
+	promFileDone := make(chan struct{})
 
 	// Start the background process
 	go func() {
 		for {
 			select {
-			case <-done:
+			case <-jobDone:
 				return
 			default:
 				runJobs()
@@ -973,11 +932,25 @@ func runSentry() {
 		}
 	}()
 
+    go func() {
+        for {
+            select {
+            case <-promFileDone:
+                return
+            default:
+                //time.Sleep(500 * time.Millisecond)
+                time.Sleep(15 * time.Second) // Adjust the sleep duration as needed
+            }
+        }
+    }()
+
+
 	// Wait for termination signal
 	<-signals
 
 	// Stop the background process
-	close(done)
+	close(jobDone)
+	close(promFileDone)
 
 	fmt.Println("Program terminated")
 }
