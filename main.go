@@ -22,7 +22,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-1-July-10"
+var version = "2.0.0.dev-🧨-1-July-10.1"
 
 func main() {
 
@@ -879,17 +879,42 @@ func getPrometheusConfig() PromData {
 	return PromData{}
 }
 
+
+func getPromArps() string {
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        //fmt.Println(err)
+        return ""
+    }
+    defer database.Close()
+
+    rows, err := db.FetchArpsRows(database)
+    if err != nil {
+        //fmt.Println(err)
+        return ""
+    }
+
+    var result string
+
+    for _, row := range rows {
+        //fmt.Printf("%d %s %s %s %s\n", row.Id, row.Mac, row.Ip, row.Data, row.Timestamp)
+        result += fmt.Sprintf(`sentinel_arp{mac="%s",ip="%s",manuf="%s"} 1` + "\n", row.Mac, row.Ip, row.Data)
+    }
+
+    return result
+}
+
+
 func writePromFile(filename string) error {
     PrintDebug("Write this prom file... " + filename)
 
-    //promStr := "sentinel_up{version=\""+ version +"\"} 1\n"
     promStr := `sentinel_up{version="`+ version +`"} 1` + "\n"
 
-    secondLine := "another_metric{value=42} 2\n"
+    promArps := getPromArps()
 
-    //WORK
 
-    content := promStr + secondLine
+    content := promStr + promArps
 
     //content := []byte(promStr)
     err := ioutil.WriteFile(filename, []byte(content), 0644)
