@@ -22,7 +22,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-1"
+var version = "2.0.0.dev-🧨-1-July-10"
 
 func main() {
 
@@ -882,10 +882,12 @@ func getPrometheusConfig() PromData {
 func writePromFile(filename string) error {
     PrintDebug("Write this prom file... " + filename)
 
-    promStr := "sentinel_up{version=\""+ version +"\"} 1\n"
+    //promStr := "sentinel_up{version=\""+ version +"\"} 1\n"
+    promStr := `sentinel_up{version="`+ version +`"} 1` + "\n"
 
     secondLine := "another_metric{value=42} 2\n"
 
+    //WORK
 
     content := promStr + secondLine
 
