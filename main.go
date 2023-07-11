@@ -147,17 +147,18 @@ Options:
   list-output name
   del-output
 
-  # task: arps (arp + manuf)
+  # task: arps                # (arp + manuf)
   arps|run-arps|run-task arps|task arps
   macs|list-macs|list-arps
   del-mac mac
 
+#  # task: nmap
+#  nmap-scan [ip/net] [level]
+#  list-nmaps
+#  del-nmap ip
+
   manuf mac
   list-manuf
-
-  nmap-scan [ip/net] [level]
-  list-nmaps
-  del-nmap ip
 
   list-tables
 
@@ -754,12 +755,7 @@ func runJob(jobName string, jobData JobData) error {
 
                 PrintDebug("Run Task...")
 
-                //stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
-                //if err != nil {
-                //    stdOut = fmt.Sprintf("Error: %v", err)
-                //}
-
-                //var taskErr string
+                //var taskErr = "0"
 
                 err = runTask(configData.Task)
                 if err != nil {
@@ -770,7 +766,14 @@ func runJob(jobName string, jobData JobData) error {
                     if err != nil {
                         return err
                     }
-                        
+                } else {
+                    //jobData.Exit = "0"
+                    jobData.Error = "0"
+                    updatedData, err = json.Marshal(jobData)
+                    if err != nil {
+                        return err
+                    }
+
                 }
 
                 PrintDebug("We are done Task....")
@@ -782,12 +785,6 @@ func runJob(jobName string, jobData JobData) error {
                 jobData.Exit = fmt.Sprintf("%d", exitCode)
                 updatedData, err = json.Marshal(jobData)
                 if err != nil {
-                    return err
-                }
-                */
-
-                /*
-                if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
                     return err
                 }
                 */
