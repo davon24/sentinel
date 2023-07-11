@@ -22,7 +22,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-1-July-10.1"
+var version = "2.0.0.dev-🧨-1-July-10.2"
 
 func main() {
 
@@ -906,15 +906,69 @@ func getPromArps() string {
 }
 
 
+func getPromConfigs() string {
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        //fmt.Println(err)
+        return ""
+    }
+    defer database.Close()
+
+    rows, err := db.FetchRecordRows(database, "configs")
+    if err != nil {
+        //fmt.Println(err)
+        return ""
+    }
+
+    var result string
+
+    for _, row := range rows {
+        //fmt.Printf("%d %s %s %s %s\n", row.Id, row.Mac, row.Ip, row.Data, row.Timestamp)
+        //result += fmt.Sprintf(`sentinel_config{name="%s",data="%s"} 1` + "\n", row.Name, row.Data)
+
+        // Parse JSON string into a map
+        var data map[string]interface{}
+        err := json.Unmarshal([]byte(row.Data), &data)
+        if err != nil {
+            fmt.Println("Error parsing JSON:", err)
+            return ""
+        }
+
+        //result += fmt.Sprintf(`sentinel_config{name="%s",%s} 1` + "\n", row.Name, row.Data)
+        //result += fmt.Sprintf(`sentinel_config{name="%s",task=%q} 1` + "\n", row.Name, row.Data)
+
+        var subrlt string
+        // Access the values using the keys
+        for key, value := range data {
+            switch v := value.(type) {
+            case string:
+                //fmt.Printf("%s=%q\n", key, v)
+                //subrlt += fmt.Sprintf(`%s=%q`, key, v)
+                subrlt += fmt.Sprintf("%s=%q", key, v)
+            }
+        }
+
+        result += fmt.Sprintf(`sentinel_config{name="%s",`+ subrlt +`} 1` + "\n", row.Name)
+    }
+
+    return result
+}
+
+//WORK
+
+
+
 func writePromFile(filename string) error {
     PrintDebug("Write this prom file... " + filename)
 
     promStr := `sentinel_up{version="`+ version +`"} 1` + "\n"
 
+    promConfigs := getPromConfigs()
     promArps := getPromArps()
 
 
-    content := promStr + promArps
+    content := promStr + promConfigs + promArps
 
     //content := []byte(promStr)
     err := ioutil.WriteFile(filename, []byte(content), 0644)
