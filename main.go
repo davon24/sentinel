@@ -24,7 +24,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-1-July-11.01"
+var version = "2.0.0.dev-🧨-1-July-11.011"
 
 func main() {
 
@@ -1169,7 +1169,8 @@ func runSentry() {
                     http.HandleFunc("/", httpRoot)
                     http.HandleFunc("/metrics", httpMetrics)
 
-                    err := http.ListenAndServe(":2023", nil)
+                    //err := http.ListenAndServe(":2023", nil)
+                    err := http.ListenAndServe(":"+strconv.Itoa(promPort), nil)
                     if err != nil {
                         fmt.Printf("error starting server: %s\n", err)
                     }
@@ -1205,6 +1206,38 @@ func httpRoot(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "sentinel "+ version +" \n")
 }
 
+
+var (
+	cacheMutex  sync.Mutex
+	cachedData  string
+	lastUpdated time.Time
+)
+
+func httpMetrics(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("got /metrics request")
+
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+
+	// Check if the cache is expired
+	if time.Since(lastUpdated) >= 30*time.Second {
+
+		promStr := `sentinel_up{version="` + version + `"} 1` + "\n"
+
+		promConfigs := getPromConfigs()
+		promJobs := getPromJobs()
+		promOutputs := getPromOutputs()
+		promArps := getPromArps()
+
+		cachedData = promStr + promConfigs + promJobs + promOutputs + promArps
+		lastUpdated = time.Now()
+	}
+
+	io.WriteString(w, cachedData)
+}
+
+
+/* No Cache
 func httpMetrics(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got /metrics request\n")
 
@@ -1218,10 +1251,11 @@ func httpMetrics(w http.ResponseWriter, r *http.Request) {
 
     content := promStr + promConfigs + promJobs + promOutputs + promArps
 
-	//io.WriteString(w, "This is sentinel /metrics\n")
 	io.WriteString(w, content)
 }
+*/
 
+//io.WriteString(w, "This is sentinel /metrics\n")
 
 
 
