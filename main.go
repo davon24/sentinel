@@ -1207,7 +1207,19 @@ func httpRoot(w http.ResponseWriter, r *http.Request) {
 
 func httpMetrics(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got /metrics request\n")
-	io.WriteString(w, "This is sentinel /metrics\n")
+
+    promStr := `sentinel_up{version="`+ version +`"} 1` + "\n"
+
+    promConfigs := getPromConfigs()
+    promJobs := getPromJobs()
+    promOutputs := getPromOutputs()
+    promArps := getPromArps()
+
+
+    content := promStr + promConfigs + promJobs + promOutputs + promArps
+
+	//io.WriteString(w, "This is sentinel /metrics\n")
+	io.WriteString(w, content)
 }
 
 
