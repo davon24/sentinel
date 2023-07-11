@@ -11,6 +11,8 @@ import (
     "errors"
     "io/ioutil"
     "strconv"
+    "io"
+    "net/http"
     "encoding/json"
     "database/sql"
 
@@ -1163,7 +1165,16 @@ func runSentry() {
                     return
                 default:
                     PrintDebug("Run HTTP Server GO")
-                    time.Sleep(3600 * time.Hour) // Adjust the sleep duration as needed
+
+                    http.HandleFunc("/", httpRoot)
+                    http.HandleFunc("/metrics", httpMetrics)
+
+                    err := http.ListenAndServe(":2023", nil)
+                    if err != nil {
+                        fmt.Printf("error starting server: %s\n", err)
+                    }
+
+                    //time.Sleep(3600 * time.Hour) // Adjust the sleep duration as needed
                 }
             }
         }()
@@ -1189,6 +1200,15 @@ func runSentry() {
 }
 
 
+func httpRoot(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("got / request\n")
+	io.WriteString(w, "This is sentinel website!\n")
+}
+
+func httpMetrics(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("got /metrics request\n")
+	io.WriteString(w, "This is sentinel /metrics\n")
+}
 
 
 
