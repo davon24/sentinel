@@ -24,7 +24,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-1-July-11.0"
+var version = "2.0.0.dev-🧨-1-July-11.01"
 
 func main() {
 
@@ -1202,7 +1202,7 @@ func runSentry() {
 
 func httpRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got / request\n")
-	io.WriteString(w, "This is sentinel website!\n")
+	io.WriteString(w, "sentinel "+ version +" \n")
 }
 
 func httpMetrics(w http.ResponseWriter, r *http.Request) {
@@ -1215,7 +1215,7 @@ func httpMetrics(w http.ResponseWriter, r *http.Request) {
 
 func listManuf() {
 
-    fmt.Println("List Manuf...")
+    PrintDebug("List Manuf...")
 
     manuf, err := manuf.EmbedFS.ReadFile("resources/manuf")
     if err != nil {
