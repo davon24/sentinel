@@ -22,7 +22,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-1-July-10.2"
+var version = "2.0.0.dev-🧨-1-July-10.3"
 
 func main() {
 
@@ -957,7 +957,6 @@ func getPromConfigs() string {
 
 
 
-//WORK
 
 
 func getPromJobs() string {
@@ -978,8 +977,6 @@ func getPromJobs() string {
     var result string
 
     for _, row := range rows {
-        //fmt.Printf("%d %s %s %s %s\n", row.Id, row.Mac, row.Ip, row.Data, row.Timestamp)
-        //result += fmt.Sprintf(`sentinel_config{name="%s",data="%s"} 1` + "\n", row.Name, row.Data)
 
         // Parse JSON string into a map
         var data map[string]interface{}
@@ -989,26 +986,74 @@ func getPromJobs() string {
             return ""
         }
 
-        //result += fmt.Sprintf(`sentinel_config{name="%s",%s} 1` + "\n", row.Name, row.Data)
-        //result += fmt.Sprintf(`sentinel_config{name="%s",task=%q} 1` + "\n", row.Name, row.Data)
-
+        var num = "2"
         var subrlt string
         // Access the values using the keys
         for key, value := range data {
+
+            if key == "exit" {
+                num = fmt.Sprintf("%s", value)
+            }
+
             switch v := value.(type) {
             case string:
-                //fmt.Printf("%s=%q\n", key, v)
-                //subrlt += fmt.Sprintf(`%s=%q`, key, v)
                 subrlt += fmt.Sprintf(",%s=%q", key, v)
             }
         }
 
-        result += fmt.Sprintf(`sentinel_job{name="%s"`+ subrlt +`} 1` + "\n", row.Name)
+        result += fmt.Sprintf(`sentinel_job{name="%s"`+ subrlt +`} `+ num + "\n", row.Name)
     }
 
     return result
 }
 
+
+func getPromOutputs() string {
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        //fmt.Println(err)
+        return ""
+    }
+    defer database.Close()
+
+    rows, err := db.FetchOutputs(database)
+    if err != nil {
+        //fmt.Println(err)
+        return ""
+    }
+
+    var result string
+
+    for _, row := range rows {
+        //fmt.Printf("%d %s %s %s %s\n", row.Id, row.Mac, row.Ip, row.Data, row.Timestamp)
+        //result += fmt.Sprintf(`sentinel_config{name="%s",data="%s"} 1` + "\n", row.Name, row.Data)
+
+        //result += fmt.Sprintf(`sentinel_config{name="%s",%s} 1` + "\n", row.Name, row.Data)
+        //result += fmt.Sprintf(`sentinel_config{name="%s",task=%q} 1` + "\n", row.Name, row.Data)
+
+        /*
+        var subrlt string
+        // Access the values using the keys
+        for key, value := range data {
+            switch v := value.(type) {
+            case string:
+                subrlt += fmt.Sprintf(",%s=%q", key, v)
+            }
+            case int:
+                subrlt += fmt.Sprintf(`,%s="%q"`, key, v)
+        }
+        */
+
+        //result += fmt.Sprintf(`sentinel_job{name="%s"`+ subrlt +`} 1` + "\n", row.Name)
+        //result += fmt.Sprintf(`sentinel_output{name="%s", exit="%d"} 1` + "\n", row.Name, row.Exit)
+
+        //result += fmt.Sprintf(`sentinel_output{name="%s"} 1` + "\n", row.Name)
+        result += fmt.Sprintf(`sentinel_output{name="%s"} %d` + "\n", row.Name, row.Exit)
+    }
+
+    return result
+}
 
 
 
@@ -1019,10 +1064,11 @@ func writePromFile(filename string) error {
 
     promConfigs := getPromConfigs()
     promJobs := getPromJobs()
+    promOutputs := getPromOutputs()
     promArps := getPromArps()
 
 
-    content := promStr + promJobs + promConfigs + promArps
+    content := promStr + promConfigs + promJobs + promOutputs + promArps
 
     //content := []byte(promStr)
     err := ioutil.WriteFile(filename, []byte(content), 0644)
