@@ -22,7 +22,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-1-July-10.3"
+var version = "2.0.0.dev-🧨-1-July-11.0"
 
 func main() {
 
@@ -1084,7 +1084,7 @@ func runSentry() {
 
     // get promethues config
 
-    prom := getPrometheusConfig()
+    promConf := getPrometheusConfig()
 
     //fmt.Println(prom.Prometheus)
     //fmt.Println(prom.Port)
@@ -1092,24 +1092,23 @@ func runSentry() {
     var promFile string
     var promPort int
 
-    if prom.Prometheus != "" || prom.Prometheus == "" {
+    if promConf.Prometheus != "" || promConf.Prometheus == "" {
         PrintDebug("Yes we have prom config")
 
-        if prom.Prometheus == "" {
+        if promConf.Prometheus == "" {
             promFile = "sentinel.prom"
         } else {
-            promFile = prom.Prometheus
+            promFile = promConf.Prometheus
         }
 
-        if prom.Port != 0 {
-            promPort = prom.Port
+        if promConf.Port != 0 {
+            promPort = promConf.Port
         }
 
     }
 
     PrintDebug(promFile)
     PrintDebug(strconv.Itoa(promPort))
-
 
 	// Create a channel to receive OS signals
 	signals := make(chan os.Signal, 1)
@@ -1151,6 +1150,26 @@ func runSentry() {
         }
     }()
 
+    promServer := make(chan struct{})
+    if promPort != 0 {
+
+        PrintDebug("Start HTTP Server " + strconv.Itoa(promPort))
+
+        // Start the background process
+        go func() {
+            for {
+                select {
+                case <-promServer:
+                    return
+                default:
+                    PrintDebug("Run HTTP Server GO")
+                    time.Sleep(3600 * time.Hour) // Adjust the sleep duration as needed
+                }
+            }
+        }()
+
+    }
+
 
 	// Wait for termination signal
 	<-signals
@@ -1158,6 +1177,8 @@ func runSentry() {
 	// Stop the background process
 	close(jobDone)
 	close(promFileDone)
+
+    close(promServer)
 
     e := os.Remove(promFile)
     if e != nil {
