@@ -1,2 +1,4 @@
 github.com/mattn/go-sqlite3 v1.14.17 h1:mCRHCLDUBXgpKAqIKsaAaAsrAlbkeomtRFKXh2L6YIM=
 github.com/mattn/go-sqlite3 v1.14.17/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
+gitlab.com/krink/logstream v1.0.0 h1:b+t6UJ24xd9Ux5iiZUZcZdHS6PsYOHbnGyZRYVKSBMk=
+gitlab.com/krink/logstream v1.0.0/go.mod h1:PhUms2D3zUNNihqI/PUs1l2je0+oB7q84gLGCAHTJmA=

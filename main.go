@@ -18,6 +18,8 @@ import (
 
     _ "github.com/mattn/go-sqlite3"
 
+    "gitlab.com/krink/logstream/golang/logstream"
+
     "sentinel/pkg/db"
     "sentinel/pkg/tools"
     "sentinel/pkg/manuf"
@@ -114,6 +116,9 @@ func main() {
         case "sentry":
             runSentry()
 
+        case "logstream":
+            runLogstream()
+
         default:
             fmt.Println("Invalid argument ", os.Args[1])
 
@@ -161,6 +166,8 @@ Options:
   list-manuf
 
   list-tables
+
+  logstream
 
   sentry
 
@@ -1303,6 +1310,13 @@ func runManuf() {
 
     fmt.Println(manufact)
 
+}
+
+func runLogstream() {
+    err := logstream.Stream()
+    if err != nil {
+        panic(err)
+    }
 }
 
 
