@@ -1313,10 +1313,21 @@ func runManuf() {
 }
 
 func runLogstream() {
-    err := logstream.Stream()
+
+    //err := logstream.Stream()
+
+    output, err := logstream.OutPut()
     if err != nil {
         panic(err)
     }
+
+    // Process the captured output
+	for line := range output {
+		//fmt.Println("Received output:", line)
+		fmt.Println(line)
+		// Add any desired logic or break condition here
+	}
+
 }
 
 
