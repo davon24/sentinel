@@ -885,6 +885,42 @@ func getPrometheusConfig() PromData {
 	return PromData{}
 }
 
+type RuleData struct {
+    Rule       string `json:"rule,omitempty"`
+    Search     string `json:"search,omitempty"`
+}
+
+func getRuleConfig() RuleData {
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        return RuleData{}
+    }
+    defer database.Close()
+
+    configs, err := db.FetchRecordRows(database, "configs")
+    if err != nil {
+        return RuleData{}
+    }
+
+    for _, config := range configs {
+
+        var ruleData RuleData
+
+        err = json.Unmarshal([]byte(config.Data), &ruleData)
+        if err != nil {
+            return RuleData{}
+        }
+
+        if ruleData.Rule != "" {
+            return ruleData
+        }
+    }
+
+    return RuleData{}
+}
+
+
+
 
 func getPromArps() string {
 
@@ -1092,9 +1128,6 @@ func runSentry() {
 
     promConf := getPrometheusConfig()
 
-    //fmt.Println(prom.Prometheus)
-    //fmt.Println(prom.Port)
-
     var promFile string
     var promPort int
 
@@ -1116,18 +1149,43 @@ func runSentry() {
     PrintDebug(promFile)
     PrintDebug(strconv.Itoa(promPort))
 
+    // get rule config
+    ruleConf := getRuleConfig()
+
 	// Create a channel to receive OS signals
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
+    // Create a channel to control the background process
+    ruleChan := make(chan struct{})
+
+    if ruleConf.Rule != "" {
+        PrintDebug("Start the Rules Engine")
+
+        // Start the background process
+        go func() {
+            for {
+                select {
+                case <-ruleChan:
+                    return
+                default:
+                    PrintDebug("Start Rule Engine Server GO")
+                    time.Sleep(3600 * time.Hour) // Adjust the sleep duration as needed
+                }
+            }
+        }()
+
+    }
+
+
 	// Create a channel to control the background process
-	jobDone := make(chan struct{})
+	jobChan := make(chan struct{})
 
 	// Start the background process
 	go func() {
 		for {
 			select {
-			case <-jobDone:
+			case <-jobChan:
 				return
 			default:
 				runJobs()
@@ -1138,13 +1196,13 @@ func runSentry() {
 	}()
 
 	// Create a channel to control the background process
-	promFileDone := make(chan struct{})
+	promFileChan := make(chan struct{})
 
 	// Start the background process
     go func() {
         for {
             select {
-            case <-promFileDone:
+            case <-promFileChan:
                 return
             default:
                 err := writePromFile(promFile)
@@ -1156,7 +1214,8 @@ func runSentry() {
         }
     }()
 
-    promServer := make(chan struct{})
+	// Create a channel to control the background process
+    promServerChan := make(chan struct{})
     if promPort != 0 {
 
         PrintDebug("Start HTTP Server " + strconv.Itoa(promPort))
@@ -1165,7 +1224,7 @@ func runSentry() {
         go func() {
             for {
                 select {
-                case <-promServer:
+                case <-promServerChan:
                     return
                 default:
                     PrintDebug("Run HTTP Server GO")
@@ -1191,10 +1250,10 @@ func runSentry() {
 	<-signals
 
 	// Stop the background process
-	close(jobDone)
-	close(promFileDone)
-
-    close(promServer)
+	close(jobChan)
+	close(promFileChan)
+    close(promServerChan)
+    close(ruleChan)
 
     e := os.Remove(promFile)
     if e != nil {
@@ -1210,7 +1269,7 @@ func httpRoot(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "sentinel "+ version +" \n")
 }
 
-
+// Cache http data
 var (
 	cacheMutex  sync.Mutex
 	cachedData  string

@@ -1,4 +1,4 @@
-# add-job arp
+# add-job
 
 #./sentinel add-config config-1 '{"cmd": "arp -an"}'
 #./sentinel add-job job-1 '{"time": "2020-09-20 00:00:00", "config": "config-1"}'
@@ -16,14 +16,14 @@
 #./sentinel add-config arp-task '{"task": "arps"}'
 #./sentinel add-job job-00-arps '{"repeat": "30s", "config": "arp-task"}'
 
-
-#
-#./sentinel add-config config-prometheus '{"prometheus": ""}'
-./sentinel add-config config-prometheus '{"prometheus": "sentinel.prom", "port": 2023}'
-
-
 # namp config and job
-./sentinel add-config nmap-cmd-192.168.0.1/24 '{"cmd": "nmap -n -sP 192.168.0.1/24"}'
-./sentinel add-job nmap-1 '{"time": "2020-09-20 00:00:00", "config": "nmap-cmd-192.168.0.1/24"}'
+#./sentinel add-config nmap-cmd-192.168.0.1/24 '{"cmd": "nmap -n -sP 192.168.0.1/24"}'
+#./sentinel add-job nmap-1 '{"time": "2020-09-20 00:00:00", "config": "nmap-cmd-192.168.0.1/24"}'
 
+# prometheus server
+./sentinel add-config config-prometheus '{"prometheus": ""}'
+#./sentinel add-config config-prometheus '{"prometheus": "sentinel.prom", "port": 2023}'
+
+# rules engine
+./sentinel add-config config-rules-1 '{"rule": "logstream", "search": "error"}'
 
