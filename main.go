@@ -12,6 +12,7 @@ import (
     "io/ioutil"
     "strconv"
     "io"
+    //"bufio"
     "net/http"
     "encoding/json"
     "database/sql"
@@ -26,7 +27,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-1-July-11.011"
+var version = "2.0.0.dev-🧨-July-14"
 
 func main() {
 
@@ -919,6 +920,52 @@ func getRuleConfig() RuleData {
     return RuleData{}
 }
 
+//WORK
+// func getRuleConfig() RuleData {
+// func runRule(RuleData) {
+
+func runRuleEngine(ruleData RuleData) error {
+
+    fmt.Println("Running rule:", ruleData.Rule)
+    fmt.Println("Searching for:", ruleData.Search)
+
+    output, err := logstream.OutPut()
+    if err != nil {
+        return err
+    }
+
+    for line := range output {
+        
+        if strings.Contains(line, ruleData.Search) {
+            fmt.Println(line)
+        }
+    }
+
+    /*
+    scanner := bufio.NewScanner(strings.NewReader(output))
+    for scanner.Scan() {
+        line := scanner.Text()
+        if strings.Contains(line, ruleData.Search) {
+            fmt.Println(line)
+        }
+    }
+    */
+
+    //for line := range output {
+    //    fmt.Println(line)
+    //}
+
+    // shouldn't get here.
+
+    fmt.Println("runRuleEngine Done")
+
+    return nil
+
+}
+
+
+
+
 
 
 
@@ -1160,7 +1207,7 @@ func runSentry() {
     ruleChan := make(chan struct{})
 
     if ruleConf.Rule != "" {
-        PrintDebug("Start the Rules Engine")
+        PrintDebug("Start the Rules Engine " + ruleConf.Rule)
 
         // Start the background process
         go func() {
@@ -1170,7 +1217,13 @@ func runSentry() {
                     return
                 default:
                     PrintDebug("Start Rule Engine Server GO")
-                    time.Sleep(3600 * time.Hour) // Adjust the sleep duration as needed
+
+                    err := runRuleEngine(ruleConf)
+                    if err != nil {
+                        fmt.Println(err)
+                    }
+
+                    //time.Sleep(3600 * time.Hour) // Adjust the sleep duration as needed
                 }
             }
         }()
