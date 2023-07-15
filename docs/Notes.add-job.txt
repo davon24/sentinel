@@ -25,5 +25,5 @@
 #./sentinel add-config config-prometheus '{"prometheus": "sentinel.prom", "port": 2023}'
 
 # rules engine
-./sentinel add-config config-rules-1 '{"rule": "logstream", "search": "error"}'
+./sentinel add-config config-rules-1 '{"rule": "logstream", "contains": "error"}'
 

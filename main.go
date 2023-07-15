@@ -19,6 +19,8 @@ import (
 
     _ "github.com/mattn/go-sqlite3"
 
+    "golang.org/x/crypto/blake2b"
+
     "gitlab.com/krink/logstream/golang/logstream"
 
     "sentinel/pkg/db"
@@ -789,13 +791,11 @@ func runJob(jobName string, jobData JobData) error {
                 //import "strconv"
                 //PrintDebug(stdOut + " " + stdErr + " " + strconv.Itoa(exitCode))
 
-                /*
-                jobData.Exit = fmt.Sprintf("%d", exitCode)
-                updatedData, err = json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-                */
+                //jobData.Exit = fmt.Sprintf("%d", exitCode)
+                //updatedData, err = json.Marshal(jobData)
+                //if err != nil {
+                //    return err
+                //}
 
                 PrintDebug("Now update done....")
 
@@ -888,7 +888,7 @@ func getPrometheusConfig() PromData {
 
 type RuleData struct {
     Rule       string `json:"rule,omitempty"`
-    Search     string `json:"search,omitempty"`
+    Contains   string `json:"contains,omitempty"`
 }
 
 func getRuleConfig() RuleData {
@@ -927,7 +927,7 @@ func getRuleConfig() RuleData {
 func runRuleEngine(ruleData RuleData) error {
 
     fmt.Println("Running rule:", ruleData.Rule)
-    fmt.Println("Searching for:", ruleData.Search)
+    fmt.Println("Searching for:", ruleData.Contains)
 
     output, err := logstream.OutPut()
     if err != nil {
@@ -936,10 +936,21 @@ func runRuleEngine(ruleData RuleData) error {
 
     for line := range output {
         
-        if strings.Contains(line, ruleData.Search) {
+        if strings.Contains(line, ruleData.Contains) {
             fmt.Println(line)
+
+            //get a finger print of the data
+
+            // Convert the string to []byte
+            byteLine := []byte(line)
+
+            hash := blake2b.Sum256(byteLine)
+            //fmt.Println(hash)
+            fmt.Printf("%x\n", hash)
         }
     }
+
+
 
     /*
     scanner := bufio.NewScanner(strings.NewReader(output))
@@ -950,10 +961,6 @@ func runRuleEngine(ruleData RuleData) error {
         }
     }
     */
-
-    //for line := range output {
-    //    fmt.Println(line)
-    //}
 
     // shouldn't get here.
 
@@ -1875,6 +1882,18 @@ func createDb() error {
     }
     //fmt.Printf("File exists\n")
     return nil
+}
+
+// NewBlake2b256 ...
+func NewBlake2b256(data []byte) []byte {
+	hash := blake2b.Sum256(data)
+	return hash[:]
+}
+
+// NewBlake2b512 ...
+func NewBlake2b512(data []byte) []byte {
+	hash := blake2b.Sum512(data)
+	return hash[:]
 }
 
 
