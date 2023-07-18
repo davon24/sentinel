@@ -25,5 +25,10 @@
 #./sentinel add-config config-prometheus '{"prometheus": "sentinel.prom", "port": 2023}'
 
 # rules engine
-./sentinel add-config config-rules-1 '{"rule": "logstream", "contains": "error"}'
+#./sentinel add-config config-rules-1 '{"rule": "logstream", "contains": "error"}'
+
+./sentinel add-config rule-1 '{"rule": "logstream", "keys":["eventMessage"], "contains": "error"}'
+
+./sentinel add-config rule-2 '{"rule": "logstream", "keys":["eventMessage", "subsystem", "category"], "match":[{"subsystem":"com.apple.apsd"},{"category":"connection"}]}'
+
 

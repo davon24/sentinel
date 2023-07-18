@@ -29,7 +29,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-July-14"
+var version = "2.0.0.dev-🧨-July-17"
 
 func main() {
 
@@ -1175,11 +1175,32 @@ func writePromFile(filename string) error {
     return nil
 }
 
+type ConfigData struct {
+    Rule       string `json:"rule,omitempty"`
+    Contains   string `json:"contains,omitempty"`
+    Prometheus string `json:"prometheus,omitempty"`
+    Port       int    `json:"port,omitempty"`
+}
+
 
 func runSentry() {
 
-    // get promethues config
+	// Create a channel to receive OS signals
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
+    // Create a channel to control the background process
+    //promFileChan := make(chan struct{})
+
+    // Create a channel to control the background process
+    //promServerChan := make(chan struct{})
+
+
+
+
+
+    // get promethues config
+    /*
     promConf := getPrometheusConfig()
 
     var promFile string
@@ -1199,22 +1220,77 @@ func runSentry() {
         }
 
     }
-
     PrintDebug(promFile)
     PrintDebug(strconv.Itoa(promPort))
+    */
+
+    // get rule configs
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        panic(err)
+    }
+    defer database.Close()
+
+    configs, err := db.FetchRecordRows(database, "configs")
+    if err != nil {
+        panic(err)
+    }
+
+
+    //var promFile string
+    //var promPort int
+
+    var promFile = "sentinel.prom"
+    var promPort = 0
+
+    for _, config := range configs {
+        
+        //fmt.Println(config)
+        //fmt.Println(config.Name)
+        //fmt.Println(config.Data)
+
+        var configData ConfigData
+
+        err = json.Unmarshal([]byte(config.Data), &configData)
+        if err != nil {
+            panic(err)
+        }
+
+        fmt.Println(config.Name)
+
+        if configData.Rule != "" {
+            fmt.Println("Rule " + config.Name)
+
+        }
+
+
+        //if configData.Prometheus != "" {
+        if configData.Prometheus != "" || configData.Prometheus == "" {
+            if configData.Prometheus != "" {
+                promFile = configData.Prometheus
+                fmt.Println("promFile " + promFile)
+            }
+        }
+
+        if configData.Port != 0 {
+            promPort = configData.Port
+            fmt.Println("promPort " + strconv.Itoa(promPort))
+        }
+
+    }
 
     // get rule config
-    ruleConf := getRuleConfig()
+    //ruleConf := getRuleConfig()
 
-	// Create a channel to receive OS signals
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
     // Create a channel to control the background process
-    ruleChan := make(chan struct{})
+    //ruleChan := make(chan struct{})
 
+    /*
     if ruleConf.Rule != "" {
-        PrintDebug("Start the Rules Engine " + ruleConf.Rule)
+
+        //fmt.Println("Start the Rules Engine " + ruleConf.Rule)
+        fmt.Println("Start the Rules Engine " + ruleConf.Rule)
 
         // Start the background process
         go func() {
@@ -1236,6 +1312,7 @@ func runSentry() {
         }()
 
     }
+    */
 
 
 	// Create a channel to control the background process
@@ -1305,7 +1382,6 @@ func runSentry() {
 
     }
 
-
 	// Wait for termination signal
 	<-signals
 
@@ -1313,7 +1389,7 @@ func runSentry() {
 	close(jobChan)
 	close(promFileChan)
     close(promServerChan)
-    close(ruleChan)
+    //close(ruleChan)
 
     e := os.Remove(promFile)
     if e != nil {
