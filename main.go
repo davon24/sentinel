@@ -29,7 +29,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-July-21"
+var version = "2.0.0.dev-🐕-1"
 
 func main() {
 
@@ -97,6 +97,9 @@ func main() {
             go runArps_v1(&wg) // Run runArps() as a goroutine
             wg.Wait() // Wait for runArps() to complete
 
+        //case "vuln-scan":
+        //    vulnScan(os.Args[2])
+
         case "task", "run-task":
             runTask(os.Args[2])
 
@@ -116,7 +119,7 @@ func main() {
             //delNmap()
             fmt.Println("TODO Del namp... ")
 
-        case "sentry":
+        case "run", "sentry":
             runSentry()
 
         case "logstream":
@@ -160,6 +163,13 @@ Options:
   macs|list-macs|list-arps
   del-mac mac
 
+#TODO speed up vuln-scan
+#  # task: vulns
+#  vuln-scan ip
+#  vuln-scan-subnet net
+#  list-vulns
+#  list-vuln id
+#
 #  # task: nmap
 #  nmap-scan [ip/net] [level]
 #  list-nmaps
@@ -172,7 +182,7 @@ Options:
 
   logstream
 
-  sentry
+  run|sentry
 
 `
     fmt.Println(usage)
@@ -1253,9 +1263,9 @@ type ConfigData struct {
 
 func runSentry() {
 
-	// Create a channel to receive OS signals
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+    // Create a channel to receive OS signals
+    signals := make(chan os.Signal, 1)
+    signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
     // get database handle
     database, err := sql.Open("sqlite3", "sentinel.db")
@@ -1353,22 +1363,22 @@ func runSentry() {
     }
 
 
-	// Create a channel to control the background process
-	jobChan := make(chan struct{})
+    // Create a channel to control the background process
+    jobChan := make(chan struct{})
 
-	// Start the background process
-	go func() {
-		for {
-			select {
-			case <-jobChan:
-				return
-			default:
-				runJobs()
-				//time.Sleep(500 * time.Millisecond)
-				time.Sleep(time.Second) // Adjust the sleep duration as needed
-			}
-		}
-	}()
+    // Start the background process
+    go func() {
+        for {
+            select {
+            case <-jobChan:
+                return
+            default:
+                runJobs()
+                //time.Sleep(500 * time.Millisecond)
+                time.Sleep(time.Second) // Adjust the sleep duration as needed
+            }
+        }
+    }()
 
     // Create a channel to control the background process
     promFileChan := make(chan struct{})
@@ -1391,7 +1401,7 @@ func runSentry() {
         }()
     }
 
-	// Create a channel to control the background process
+    // Create a channel to control the background process
     promServerChan := make(chan struct{})
     if promServer == true {
 
@@ -1422,12 +1432,12 @@ func runSentry() {
 
     }
 
-	// Wait for termination signal
-	<-signals
+    // Wait for termination signal
+    <-signals
 
-	// Stop the background process
-	close(jobChan)
-	close(promFileChan)
+    // Stop the background process
+    close(jobChan)
+    close(promFileChan)
     close(promServerChan)
     //close(ruleChan)
 
@@ -1436,7 +1446,7 @@ func runSentry() {
 	    fmt.Println(e)
     }
 
-	fmt.Println("Program terminated")
+    fmt.Println("Program terminated")
 }
 
 

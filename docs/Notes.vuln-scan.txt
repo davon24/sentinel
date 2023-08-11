@@ -1,0 +1,14 @@
+
+# vlun-scan
+
+# nmap --script=vuln 192.168.0.1/24
+
+# nmap -Pn --script=vuln 192.168.0.15
+
+# namp config and job
+#./sentinel add-config vuln-scan-192.168.0.1/24 '{"cmd": "nmap 192.168.0.1/24"}'
+#./sentinel add-job scan-1 '{"time": "2020-09-20 00:00:00", "config": "vuln-scan-192.168.0.1/24"}'
+#./sentinel sentry
+
+#./sentinel list-outputs
+
