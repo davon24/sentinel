@@ -29,7 +29,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🧨-July-17"
+var version = "2.0.0.dev-🧨-July-21"
 
 func main() {
 
@@ -891,7 +891,7 @@ type RuleData struct {
     Contains   string `json:"contains,omitempty"`
 }
 
-func getRuleConfig() RuleData {
+func getRuleConfigRuleData() RuleData {
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
         return RuleData{}
@@ -919,6 +919,37 @@ func getRuleConfig() RuleData {
 
     return RuleData{}
 }
+
+func getRuleConfig(rule string) RuleData {
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        return RuleData{}
+    }
+    defer database.Close()
+    
+    configs, err := db.FetchRecordRows(database, "configs")
+    if err != nil {
+        return RuleData{}
+    }
+        
+    for _, config := range configs {
+
+        var ruleData RuleData
+
+        err = json.Unmarshal([]byte(config.Data), &ruleData)
+        if err != nil {
+            return RuleData{}
+        }
+
+        if ruleData.Rule != "" {
+            return ruleData
+        }
+    }
+    
+    return RuleData{}
+}   
+
 
 //WORK
 // func getRuleConfig() RuleData {
@@ -950,28 +981,65 @@ func runRuleEngine(ruleData RuleData) error {
         }
     }
 
-
-
-    /*
-    scanner := bufio.NewScanner(strings.NewReader(output))
-    for scanner.Scan() {
-        line := scanner.Text()
-        if strings.Contains(line, ruleData.Search) {
-            fmt.Println(line)
-        }
-    }
-    */
-
     // shouldn't get here.
-
     fmt.Println("runRuleEngine Done")
 
     return nil
-
 }
 
 
 
+func runRuleName(rule string) error {
+
+    fmt.Println("--RuleName:", rule)
+
+    //fmt.Println("Running rule:", rule)
+    //fmt.Println("Searching for:", ruleData.Contains)
+
+    // get rule config
+
+
+    ruleConfig := getRuleConfig(rule)
+
+    fmt.Println("RuleRule:", ruleConfig.Rule)
+    //fmt.Println("RuleData:", ruleConfig.Data)
+
+    if ruleConfig.Rule != "" {
+
+        fmt.Println("Rule.Rule:", rule, "Rule.Contains:", ruleConfig.Contains)
+
+        output, err := logstream.OutPut()
+        if err != nil {
+            return err
+        }
+
+        for line := range output {
+            PrintDebug(line)
+
+            /*
+            if strings.Contains(line, ruleData.Contains) {
+                fmt.Println(line)
+
+                //get a finger print of the data
+
+                // Convert the string to []byte
+                byteLine := []byte(line)
+
+                hash := blake2b.Sum256(byteLine)
+                //fmt.Println(hash)
+                fmt.Printf("%x\n", hash)
+            }
+            */
+        }
+
+    }
+
+    // shouldn't get here.
+    fmt.Println("runRuleName Done")
+
+    return nil
+
+}
 
 
 
@@ -1189,42 +1257,7 @@ func runSentry() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-    // Create a channel to control the background process
-    //promFileChan := make(chan struct{})
-
-    // Create a channel to control the background process
-    //promServerChan := make(chan struct{})
-
-
-
-
-
-    // get promethues config
-    /*
-    promConf := getPrometheusConfig()
-
-    var promFile string
-    var promPort int
-
-    if promConf.Prometheus != "" || promConf.Prometheus == "" {
-        PrintDebug("Yes we have prom config")
-
-        if promConf.Prometheus == "" {
-            promFile = "sentinel.prom"
-        } else {
-            promFile = promConf.Prometheus
-        }
-
-        if promConf.Port != 0 {
-            promPort = promConf.Port
-        }
-
-    }
-    PrintDebug(promFile)
-    PrintDebug(strconv.Itoa(promPort))
-    */
-
-    // get rule configs
+    // get database handle
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
         panic(err)
@@ -1243,6 +1276,10 @@ func runSentry() {
     var promFile = "sentinel.prom"
     var promPort = 0
 
+    var rulesToRun []string
+    var promConfig = false
+    var promServer = false
+
     for _, config := range configs {
         
         //fmt.Println(config)
@@ -1259,13 +1296,13 @@ func runSentry() {
         fmt.Println(config.Name)
 
         if configData.Rule != "" {
-            fmt.Println("Rule " + config.Name)
-
+            fmt.Println("append Rule " + config.Name)
+            rulesToRun = append(rulesToRun, config.Name)
         }
 
 
-        //if configData.Prometheus != "" {
         if configData.Prometheus != "" || configData.Prometheus == "" {
+            promConfig = true
             if configData.Prometheus != "" {
                 promFile = configData.Prometheus
                 fmt.Println("promFile " + promFile)
@@ -1273,46 +1310,47 @@ func runSentry() {
         }
 
         if configData.Port != 0 {
+            promServer = true
             promPort = configData.Port
             fmt.Println("promPort " + strconv.Itoa(promPort))
         }
 
     }
 
-    // get rule config
-    //ruleConf := getRuleConfig()
-
-
     // Create a channel to control the background process
     //ruleChan := make(chan struct{})
+    if len(rulesToRun) > 0 {
 
-    /*
-    if ruleConf.Rule != "" {
+        fmt.Println("List of configData.Rule to run:")
+        for _, rule := range rulesToRun {
+            fmt.Println(rule)
 
-        //fmt.Println("Start the Rules Engine " + ruleConf.Rule)
-        fmt.Println("Start the Rules Engine " + ruleConf.Rule)
+            //fmt.Println("Start the Rules Engine " + ruleConf.Rule)
+            fmt.Println("Start Rules Engine " + rule)
 
-        // Start the background process
-        go func() {
-            for {
-                select {
-                case <-ruleChan:
-                    return
-                default:
-                    PrintDebug("Start Rule Engine Server GO")
+            /*
+            // Start the background process
+            go func() {
+                for {
+                    select {
+                    case <-ruleChan:
+                        return
+                    default:
+                        PrintDebug("Start Rule Engine Server GO")
 
-                    err := runRuleEngine(ruleConf)
-                    if err != nil {
-                        fmt.Println(err)
+                        //err := runRuleEngine(ruleConf)
+                        err := runRuleName(rule)
+                        if err != nil {
+                            fmt.Println(err)
+                        }
+                        //time.Sleep(3600 * time.Hour) // Adjust the sleep duration as needed
                     }
-
-                    //time.Sleep(3600 * time.Hour) // Adjust the sleep duration as needed
                 }
-            }
-        }()
+            }()
+            */
 
+        }
     }
-    */
 
 
 	// Create a channel to control the background process
@@ -1332,28 +1370,30 @@ func runSentry() {
 		}
 	}()
 
-	// Create a channel to control the background process
-	promFileChan := make(chan struct{})
+    // Create a channel to control the background process
+    promFileChan := make(chan struct{})
+    if promConfig == true {
 
-	// Start the background process
-    go func() {
-        for {
-            select {
-            case <-promFileChan:
-                return
-            default:
-                err := writePromFile(promFile)
-                if err != nil {
-                    fmt.Println(err)
+        // Start the background process
+        go func() {
+            for {
+                select {
+                case <-promFileChan:
+                    return
+                default:
+                    err := writePromFile(promFile)
+                    if err != nil {
+                        fmt.Println(err)
+                    }
+                    time.Sleep(15 * time.Second) // Adjust the sleep duration as needed
                 }
-                time.Sleep(15 * time.Second) // Adjust the sleep duration as needed
             }
-        }
-    }()
+        }()
+    }
 
 	// Create a channel to control the background process
     promServerChan := make(chan struct{})
-    if promPort != 0 {
+    if promServer == true {
 
         PrintDebug("Start HTTP Server " + strconv.Itoa(promPort))
 
