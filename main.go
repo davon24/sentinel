@@ -82,7 +82,7 @@ func main() {
         case "list-output":
             listOutput()
         case "del-output":
-            delOutput()
+            delOutput(os.Args[2])
 
         //case "run-sql":
         //    //runSql()
@@ -109,8 +109,10 @@ func main() {
         case "list-macs", "macs", "list-arps":
             listMacs()
         case "del-mac":
-            //delMacs()
+            //delMac()
             fmt.Println("TODO Del macs... ")
+        case "del-macs":
+            delMacs()
 
         case "ping":
             var wg sync.WaitGroup
@@ -141,6 +143,9 @@ func main() {
                 return
             }
             delVuln(rowid)
+
+        case "del-vulns":
+            delVulns()
 
         //case "vuln-scan":
         //    vulnScan(os.Args[2])
@@ -197,6 +202,7 @@ Options:
   arps|run-arps|run-task arps|task arps
   macs|list-macs|list-arps
   del-mac mac
+  del-macs
 
   ping ip
   ping-scan net
@@ -206,6 +212,7 @@ Options:
   list-vulns
   list-vuln id
   del-vuln id
+  del-vulns
 
 #TODO speed up vuln-scan
 #  # task: vulns
@@ -1786,12 +1793,7 @@ func delJob() {
     fmt.Println("Job deleted successfully!")
 }
 
-func delVuln(rowid int) {
-
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: del-vuln id")
-        os.Exit(1)
-    }
+func delVulns() {
 
     //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
@@ -1801,13 +1803,34 @@ func delVuln(rowid int) {
     }
     defer database.Close()
 
-    //delete config data
-    if err = db.DeleteId(database, "vulns", rowid); err != nil {
+    //truncate
+    if err = db.TruncateTable(database, "vulns"); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
-    fmt.Println("vuln deleted successfully!")
+    fmt.Println("truncate vulns successfully!")
+}
+
+
+
+func delMacs() {
+
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //truncate
+    if err = db.TruncateTable(database, "macs"); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    fmt.Println("truncate macs successfully!")
 }
 
 
@@ -1837,7 +1860,7 @@ func delConfig() {
     fmt.Println("Config deleted successfully!")
 }
 
-func delOutput() {
+func delOutput(name string) {
 
     if len(os.Args) != 3 {
         fmt.Println("Invalid arguments. Usage: del-output name")
@@ -1852,13 +1875,37 @@ func delOutput() {
     }
     defer database.Close()
 
-    //delete config data
-    if err = db.DeleteRecord(database, "outputs", os.Args[2]); err != nil {
+    //delete data
+    if err = db.DeleteRecord(database, "outputs", name); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
     fmt.Println("Output deleted successfully!")
+}
+
+func delVuln(rowid int) {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: del-vuln rowid")
+        os.Exit(1)
+    }
+
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //delete data
+    if err = db.DeleteId(database, "vulns", rowid); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    fmt.Println("Vuln deleted successfully!")
 }
 
 

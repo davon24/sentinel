@@ -263,6 +263,26 @@ func DeleteId(db *sql.DB, table string, rowid int) error {
     return err
 }
 
+func TruncateTable(db *sql.DB, table string) error {
+
+    query, err := db.Exec("DELETE FROM " + table)
+    if err != nil {
+        return err
+    }
+
+    rowsAffected, err := query.RowsAffected()
+    if err != nil {
+        return err
+    }
+
+    if rowsAffected == 0 {
+        return errors.New("truncate failed")
+    }
+
+    return err
+}
+
+
 
 func FetchOutputs(db *sql.DB) ([]Record, error) {
     rows, err := db.Query("SELECT rowid,* FROM outputs")
