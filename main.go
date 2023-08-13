@@ -35,7 +35,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🐕-1.0"
+var version = "2.0.0.dev-🐕-1.0.1"
 
 func main() {
 
@@ -133,6 +133,14 @@ func main() {
                 return
             }
             listVuln(rowid)
+        case "del-vuln":
+            rowidStr := os.Args[2]
+            rowid, err := strconv.Atoi(rowidStr)
+            if err != nil {
+                fmt.Printf("Error converting rowid to integer: %v\n", err)
+                return
+            }
+            delVuln(rowid)
 
         //case "vuln-scan":
         //    vulnScan(os.Args[2])
@@ -197,6 +205,7 @@ Options:
   vuln-scan-subnet net
   list-vulns
   list-vuln id
+  del-vuln id
 
 #TODO speed up vuln-scan
 #  # task: vulns
@@ -1776,6 +1785,32 @@ func delJob() {
 
     fmt.Println("Job deleted successfully!")
 }
+
+func delVuln(rowid int) {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: del-vuln id")
+        os.Exit(1)
+    }
+
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //delete config data
+    if err = db.DeleteId(database, "vulns", rowid); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    fmt.Println("vuln deleted successfully!")
+}
+
+
 
 
 func delConfig() {

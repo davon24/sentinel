@@ -244,6 +244,26 @@ func DeleteRecord(db *sql.DB, table string, Name string) error {
     return err
 }
 
+func DeleteId(db *sql.DB, table string, rowid int) error {
+
+    query, err := db.Exec("DELETE FROM " + table + " WHERE rowid = ?", rowid)
+    if err != nil {
+        return err
+    }
+
+    rowsAffected, err := query.RowsAffected()
+    if err != nil {
+        return err
+    }
+
+    if rowsAffected == 0 {
+        return errors.New("delete failed")
+    }
+
+    return err
+}
+
+
 func FetchOutputs(db *sql.DB) ([]Record, error) {
     rows, err := db.Query("SELECT rowid,* FROM outputs")
     if err != nil {
