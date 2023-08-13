@@ -3,19 +3,25 @@ package main
 import (
     "fmt"
     "strings"
-    "os"
     "time"
     "sync"
+    "os"
     "os/signal"
+    "os/exec"
+    "runtime"
+    "net"
     "syscall"
     "errors"
+    "io"
     "io/ioutil"
     "strconv"
-    "io"
     //"bufio"
+    //"bytes"
     "net/http"
     "encoding/json"
+    "encoding/hex"
     "database/sql"
+    "math/big"
 
     _ "github.com/mattn/go-sqlite3"
 
@@ -29,7 +35,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🐕-1"
+var version = "2.0.0.dev-🐕-1.0"
 
 func main() {
 
@@ -78,9 +84,9 @@ func main() {
         case "del-output":
             delOutput()
 
-        case "run-sql":
-            //runSql()
-            fmt.Println("TODO runSql... ")
+        //case "run-sql":
+        //    //runSql()
+        //    fmt.Println("TODO runSql... ")
 
         case "list-tables":
             listTables()
@@ -97,9 +103,6 @@ func main() {
             go runArps_v1(&wg) // Run runArps() as a goroutine
             wg.Wait() // Wait for runArps() to complete
 
-        //case "vuln-scan":
-        //    vulnScan(os.Args[2])
-
         case "task", "run-task":
             runTask(os.Args[2])
 
@@ -109,15 +112,39 @@ func main() {
             //delMacs()
             fmt.Println("TODO Del macs... ")
 
-        case "nmap-scan", "nmap":
-            //nmapScan()
-            fmt.Println("TODO Nmap Scan... ")
-        case "list-nmaps":
-            //listNmaps()
-            fmt.Println("TODO List nmaps... ")
-        case "del-nmap":
-            //delNmap()
-            fmt.Println("TODO Del namp... ")
+        case "ping":
+            var wg sync.WaitGroup
+            wg.Add(1)
+            go pingIP(os.Args[2], &wg)
+            wg.Wait()
+
+        case "ping-scan":
+            pingScan(os.Args[2])
+
+        case "vuln-scan":
+            runVulnScan()
+        case "list-vulns":
+            listVulns()
+        case "list-vuln":
+            rowidStr := os.Args[2]
+            rowid, err := strconv.Atoi(rowidStr)
+            if err != nil {
+                fmt.Printf("Error converting rowid to integer: %v\n", err)
+                return
+            }
+            listVuln(rowid)
+
+        //case "vuln-scan":
+        //    vulnScan(os.Args[2])
+        //case "nmap-scan", "nmap":
+        //    //nmapScan()
+        //    fmt.Println("TODO Nmap Scan... ")
+        //case "list-nmaps":
+        //    //listNmaps()
+        //    fmt.Println("TODO List nmaps... ")
+        //case "del-nmap":
+        //    //delNmap()
+        //    fmt.Println("TODO Del namp... ")
 
         case "run", "sentry":
             runSentry()
@@ -158,17 +185,23 @@ Options:
   list-output name
   del-output
 
-  # task: arps                # (arp + manuf)
+  # task: arps          # (arp + manuf)
   arps|run-arps|run-task arps|task arps
   macs|list-macs|list-arps
   del-mac mac
+
+  ping ip
+  ping-scan net
+
+  vuln-scan ip
+  vuln-scan-subnet net
+  list-vulns
+  list-vuln id
 
 #TODO speed up vuln-scan
 #  # task: vulns
 #  vuln-scan ip
 #  vuln-scan-subnet net
-#  list-vulns
-#  list-vuln id
 #
 #  # task: nmap
 #  nmap-scan [ip/net] [level]
@@ -702,9 +735,6 @@ func runJob(jobName string, jobData JobData) error {
                 PrintDebug("Run Command...")
 
                 stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
-                if err != nil {
-                    stdOut = fmt.Sprintf("Error: %v", err)
-                }
 
                 PrintDebug("We have output....")
                 PrintDebug(stdOut + " " + stdErr)
@@ -723,7 +753,8 @@ func runJob(jobName string, jobData JobData) error {
                     return err
                 }
 
-                if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
+                //if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
+                if err = db.InsertOutput(database, "outputs", jobName, stdOut, exitCode); err != nil {
                     return err
                 }
 
@@ -1503,7 +1534,6 @@ func httpMetrics(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, content)
 }
 */
-
 //io.WriteString(w, "This is sentinel /metrics\n")
 
 
@@ -1582,9 +1612,9 @@ func runArps_v1(wg *sync.WaitGroup) {
 
     fmt.Println("runArps!")
 
-    output, err := tools.RunCommand_v1("arp", "-an") // Pass any desired command arguments here
+    stdOut, stdErr, exitCode, err := tools.RunCommand("arp -an") // Pass any desired command arguments here
     if err != nil {
-        fmt.Println(err)
+        fmt.Println(err, stdErr, exitCode)
         os.Exit(1)
     }
 
@@ -1605,7 +1635,7 @@ func runArps_v1(wg *sync.WaitGroup) {
     defer database.Close()
 
 
-    lines := strings.Split(output, "\n")
+    lines := strings.Split(stdOut, "\n")
     for _, line := range lines {
         //fmt.Println(line)
 
@@ -1821,6 +1851,86 @@ func listMacs() {
 
 }
 
+func listVulns() {
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    columnNames, rows, err := db.GetColumnRows(database, "vulns")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    // Identify the positions of the desired columns
+    //var nameIndex, exitIndex, timestampIndex, idIndex int
+    var exitIndex, timestampIndex, idIndex int
+   	for i, col := range columnNames {
+		//if col == "Name" {
+	    //    nameIndex = i
+		//}
+		if col == "Id" || col == "rowid" { // Use "rowid" if that's the name of your ID column
+			idIndex = i
+		}
+		if col == "Exit" {
+			exitIndex = i
+		}
+		if col == "Timestamp" {
+			timestampIndex = i
+		}
+	}
+
+    for _, row := range rows {
+        //fmt.Println(row)
+        //fmt.Println(row[idIndex], "Name:", row[nameIndex], "ExitValue:", row[exitIndex], "TimeStamp:", row[timestampIndex])
+        fmt.Println(row[idIndex], "ExitValue:", row[exitIndex], "TimeStamp:", row[timestampIndex])
+    }
+}
+
+func listVuln(rowid int) {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: list-vuln id")
+        os.Exit(1)
+    }
+    //os.Args[2]
+
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //vulns, err := db.FetchRecord(database, "vulns", os.Args[2])
+
+    //rowidStr := os.Args[2]
+    //rowid, err := strconv.Atoi(rowidStr)
+    //if err != nil {
+    //    fmt.Printf("Error converting rowid to integer: %v\n", err)
+    //    return
+    //}
+
+    columnNames, row, err := db.GetRowId(database, "vulns", rowid)
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    for i, value := range row {
+        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
+        fmt.Println(columnNames[i], ":", value)
+    }
+
+}
+
+
+
 
 func listConfigs() {
 
@@ -2023,79 +2133,99 @@ func NewBlake2b512(data []byte) []byte {
 }
 
 
-/*
-func runCmd(jobData *JobData, configData *ConfigData) error {
+func pingIP(ip string, wg *sync.WaitGroup) {
+	defer wg.Done()
 
-                //configData.Cmd != ""
+    var cmd *exec.Cmd // Declare the cmd variable outside the switch statement
 
-                //now := time.Now()
-                now := time.Now().UTC()
+    switch runtime.GOOS {
+    //case "windows":
+    //    fmt.Println("TODO: Windows")
+    //    return nil
+    case "darwin":
+        cmd = exec.Command("ping", "-c", "3", "-t", "3", ip)
+    case "linux":
+        cmd = exec.Command("ping", "-c", "3", "-W", "3", ip)
+    }
 
-                PrintDebug("RUN THIS COMMAND: "+ configData.Cmd)
+    if cmd == nil {
+        fmt.Printf("Unsupported OS for host %s\n", ip)
+        return
+    }
 
-                jobData.Start = now.Format("2006-01-02 15:04:05")
-                updatedData, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("Lets Update Record...")
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("Run Command...")
-
-                stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
-                if err != nil {
-                    stdOut = fmt.Sprintf("Error: %v", err)
-                }
-
-                PrintDebug("We have output....")
-                PrintDebug(stdOut + " " + stdErr)
-
-                //import "strconv"
-                //PrintDebug(stdOut + " " + stdErr + " " + strconv.Itoa(exitCode))
-
-                if exitCode == 1 {
-                    stdOut = stdErr
-                }
-
-                jobData.Exit = fmt.Sprintf("%d", exitCode)
-
-                updatedData, err = json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
-                    return err
-                }
-
-                PrintDebug("We are done....")
-
-                //done := time.Now()
-                done := time.Now().UTC()
-                jobData.Done = done.Format("2006-01-02 15:04:05")
-                updatedData2, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("db.UpdateRecord.2 "+ jobName)
-
-                fmt.Println("Run "+ jobName + " Done")
-                //end configData.Cmd
-
-
-    return nil
+	err := cmd.Run()
+	if err == nil {
+		fmt.Printf("Host %s is up\n", ip)
+	}
 }
-*/
+
+func pingScan(netCIDR string) {
+	var wg sync.WaitGroup
+
+	ip, ipNet, err := net.ParseCIDR(netCIDR)
+	if err != nil {
+		fmt.Println("Error parsing CIDR:", err)
+		return
+	}
+
+	for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIP(ip) { // work for IPv4 and IPv6 addresses
+    //for ip := ipToUint32(ip.Mask(ipNet.Mask)); ipNet.Contains(uint32ToIP(ip)); ip++ {
+		wg.Add(1)
+		go pingIP(ip.String(), &wg)
+        //go pingIP(uint32ToIP(ip).String(), &wg)
+	}
+
+	wg.Wait()
+	fmt.Println("Ping scan completed")
+}
+
+// incrementIP function to step through IP addresses
+// work for both IPv4 and IPv6 addresses
+func incrementIP(ip net.IP) {
+	ipInt := big.NewInt(0)
+	ipInt.SetBytes(ip)
+	ipInt.Add(ipInt, big.NewInt(1))
+	ipBytes := ipInt.Bytes()
+	copy(ip[len(ip)-len(ipBytes):], ipBytes)
+}
+
+func ipToUint32(ip net.IP) uint32 {
+	ip = ip.To4()
+	return uint32(ip[0])<<24 | uint32(ip[1])<<16 | uint32(ip[2])<<8 | uint32(ip[3])
+}
+
+func uint32ToIP(ipUint32 uint32) net.IP {
+	return net.IPv4(byte(ipUint32>>24), byte(ipUint32>>16), byte(ipUint32>>8), byte(ipUint32))
+}
 
 
+func runVulnScan() {
+    command := "nmap -Pn --script=vuln " + os.Args[2]
+    stdOut, stdErr, exitCode, err := tools.RunCommand(command)
+    if err != nil {
+        fmt.Println(err, stdErr, exitCode)
+    } else {
+        fmt.Println(stdOut)
+    }
+
+    // save to db
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    hash := blake2b.Sum256([]byte(stdOut))
+    name := hex.EncodeToString(hash[:])
+
+    if err = db.InsertOutput(database, "vulns", name, stdOut, exitCode); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    fmt.Println("vuln added successfully!")
+}
+
+
+//EOF

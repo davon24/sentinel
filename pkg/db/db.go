@@ -86,6 +86,20 @@ func CreateTables(db *sql.DB) error {
         return err
     }
 
+    vulns_table := `CREATE TABLE vulns (
+        "Name" TEXT PRIMARY KEY NOT NULL,
+        "Data" TEXT,
+        "Exit" INT,
+        "Timestamp" DATETIME DEFAULT CURRENT_TIMESTAMP);`
+    query5, err := db.Prepare(vulns_table)
+    if err != nil {
+        return err
+    }
+    _, err = query5.Exec()
+    if err != nil {
+        return err
+    }
+
     return nil
 }
 
@@ -276,6 +290,145 @@ func FetchOutput(db *sql.DB, name string) ([]Record, error) {
     return records, nil
 }
 
+func Fetch5ColumnRecords(db *sql.DB, table string) ([]Record, error) {
+    rows, err := db.Query("SELECT rowid,* FROM " + table)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var records []Record
+    for rows.Next() {
+        var record Record
+        if err := rows.Scan(&record.Id, &record.Name, &record.Data, &record.Exit, &record.Timestamp); err != nil {
+            return nil, err
+        }
+        records = append(records, record)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+
+    return records, nil
+}
+
+func GetRowsFromTable_v1(db *sql.DB, table string) ([][]interface{}, error) {
+	// Prepare the query statement
+	query := "SELECT rowid,* FROM " + table
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Get the column types
+	columnTypes, err := rows.ColumnTypes()
+	if err != nil {
+		return nil, err
+	}
+
+	// Prepare a slice of interface{} to hold the values
+	values := make([]interface{}, len(columnTypes))
+	scanArgs := make([]interface{}, len(columnTypes))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	// Iterate through the rows and scan the values
+	var result [][]interface{}
+	for rows.Next() {
+		err := rows.Scan(scanArgs...)
+		if err != nil {
+			return nil, err
+		}
+
+		// Make a copy of the scanned row and append to result
+		row := make([]interface{}, len(values))
+		for i, value := range values {
+			row[i] = value
+		}
+		result = append(result, row)
+	}
+
+	return result, nil
+}
+
+func GetColumnRows(db *sql.DB, table string) ([]string, [][]interface{}, error) {
+	// Prepare the query statement
+	query := "SELECT rowid,* FROM " + table
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	// Get the column names
+	columnNames, err := rows.Columns()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Prepare a slice of interface{} to hold the values
+	values := make([]interface{}, len(columnNames))
+	scanArgs := make([]interface{}, len(columnNames))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	// Iterate through the rows and scan the values
+	var result [][]interface{}
+	for rows.Next() {
+		err := rows.Scan(scanArgs...)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		// Make a copy of the scanned row and append to result
+		row := make([]interface{}, len(values))
+		for i, value := range values {
+			row[i] = value
+		}
+		result = append(result, row)
+	}
+
+	return columnNames, result, nil
+}
+
+func GetRowId(db *sql.DB, table string, rowid int) ([]string, []interface{}, error) {
+	// Prepare the query statement
+	query := "SELECT rowid,* FROM " + table + " WHERE rowid = ?"
+	rows, err := db.Query(query, rowid)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	// Get the column names
+	columnNames, err := rows.Columns()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Prepare a slice of interface{} to hold the values
+	values := make([]interface{}, len(columnNames))
+	scanArgs := make([]interface{}, len(columnNames))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	// Iterate through the rows and scan the values
+	if rows.Next() {
+		err = rows.Scan(scanArgs...)
+		if err != nil {
+			return nil, nil, err
+		}
+	} else {
+		return nil, nil, sql.ErrNoRows
+	}
+
+	return columnNames, values, nil
+}
 
 
 
@@ -579,7 +732,7 @@ func SQLStatement(db *sql.DB, query string, args ...interface{}) ([]*sql.Rows, e
     return resultRows, nil
 }
 
-
+/*
 func SaveOutput(db *sql.DB, Name string, Data string, Exit int) error {
     records := `INSERT OR REPLACE INTO outputs (Name, Data, Exit) VALUES (?, ?, ?)`
     query, err := db.Prepare(records)
@@ -592,7 +745,20 @@ func SaveOutput(db *sql.DB, Name string, Data string, Exit int) error {
     }
     return nil
 }
+*/
 
+func InsertOutput(db *sql.DB, table string, Name string, Data string, Exit int) error {
+    records := `INSERT OR REPLACE INTO ` + table + ` (Name, Data, Exit) VALUES (?, ?, ?)`
+    query, err := db.Prepare(records)
+    if err != nil {
+        return err
+    }
+    _, err = query.Exec(Name, Data, Exit)
+    if err != nil {
+        return err
+    }
+    return nil
+}   
 
 
 
