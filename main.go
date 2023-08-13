@@ -35,7 +35,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🐕-1.0.1"
+var version = "2.0.0.dev-🐕-1.0.1a"
 
 func main() {
 
@@ -67,11 +67,11 @@ func main() {
         case "list-jobs", "jobs":
             listJobs()
         case "list-job":
-            listJob()
+            listJob(os.Args[2])
         case "add-job":
             addJob()
         case "del-job":
-            delJob()
+            delJob(os.Args[2])
 
         case "run-jobs":
             runJobs()
@@ -80,7 +80,7 @@ func main() {
         case "list-outputs":
             listOutputs()
         case "list-output":
-            listOutput()
+            listOutput(os.Args[2])
         case "del-output":
             delOutput(os.Args[2])
 
@@ -109,8 +109,7 @@ func main() {
         case "list-macs", "macs", "list-arps":
             listMacs()
         case "del-mac":
-            //delMac()
-            fmt.Println("TODO Del macs... ")
+            delMac(os.Args[2])
         case "del-macs":
             delMacs()
 
@@ -147,18 +146,6 @@ func main() {
         case "del-vulns":
             delVulns()
 
-        //case "vuln-scan":
-        //    vulnScan(os.Args[2])
-        //case "nmap-scan", "nmap":
-        //    //nmapScan()
-        //    fmt.Println("TODO Nmap Scan... ")
-        //case "list-nmaps":
-        //    //listNmaps()
-        //    fmt.Println("TODO List nmaps... ")
-        //case "del-nmap":
-        //    //delNmap()
-        //    fmt.Println("TODO Del namp... ")
-
         case "run", "sentry":
             runSentry()
 
@@ -169,9 +156,7 @@ func main() {
             fmt.Println("Invalid argument ", os.Args[1])
 
         }
-
     }
-
 }
 
 
@@ -196,7 +181,7 @@ Options:
   run-job name [--force]
   list-outputs
   list-output name
-  del-output
+  del-output name
 
   # task: arps          # (arp + manuf)
   arps|run-arps|run-task arps|task arps
@@ -215,14 +200,9 @@ Options:
   del-vulns
 
 #TODO speed up vuln-scan
-#  # task: vulns
+#  # task: vulns #pingsweep+vuln
 #  vuln-scan ip
 #  vuln-scan-subnet net
-#
-#  # task: nmap
-#  nmap-scan [ip/net] [level]
-#  list-nmaps
-#  del-nmap ip
 
   manuf mac
   list-manuf
@@ -1769,7 +1749,7 @@ func addConfig() {
     fmt.Println("Config added successfully!")
 }
 
-func delJob() {
+func delJob(name string) {
 
     if len(os.Args) != 3 {
         fmt.Println("Invalid arguments. Usage: del-job name")
@@ -1785,13 +1765,38 @@ func delJob() {
     defer database.Close()
 
     //delete config data
-    if err = db.DeleteRecord(database, "jobs", os.Args[2]); err != nil {
+    if err = db.DeleteRecord(database, "jobs", name); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
     fmt.Println("Job deleted successfully!")
 }
+
+func delMac(name string) {
+
+    if len(os.Args) != 3 {
+        fmt.Println("Invalid arguments. Usage: del-mac mac")
+        os.Exit(1)
+    }
+
+    //open database connect
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    //delete config data
+    if err = db.DeleteRecord(database, "macs", name); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    fmt.Println("deleted successfully!")
+}
+
 
 func delVulns() {
 
@@ -2058,7 +2063,7 @@ func listJobs() {
 
 }
 
-func listJob() {
+func listJob(name string) {
 
     if len(os.Args) != 3 {
         fmt.Println("Invalid arguments. Usage: list-job name")
@@ -2074,7 +2079,7 @@ func listJob() {
     }
     defer database.Close()
 
-    jobs, err := db.FetchRecord(database, "jobs", os.Args[2])
+    jobs, err := db.FetchRecord(database, "jobs", name)
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
@@ -2106,14 +2111,14 @@ func listOutputs() {
 
     for _, record := range records {
         fmt.Println(record.Id, record.Name, record.Exit, record.Timestamp)
-        fmt.Println(record.Data)
+        //fmt.Println(record.Data)
         //fmt.Printf("%d %s %s %d %s\n",record.Id, record.Name, record.Data, record.Exit, record.Timestamp)
         //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
 
 }
 
-func listOutput() {
+func listOutput(name string) {
 
     if len(os.Args) != 3 {
         fmt.Println("Invalid arguments. Usage: list-output name")
@@ -2129,14 +2134,15 @@ func listOutput() {
     }
     defer database.Close()
 
-    records, err := db.FetchOutput(database, os.Args[2])
+    records, err := db.FetchOutput(database, name)
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
 
     for _, record := range records {
-        fmt.Printf("%d %s %s %s\n", record.Id, record.Name, record.Data, record.Timestamp)
+        //fmt.Printf("%d %s %s %s\n", record.Id, record.Name, record.Timestamp)
+        fmt.Println(record.Data)
         //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
 
