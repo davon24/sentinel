@@ -119,7 +119,7 @@ func main() {
             go pingIP(os.Args[2], &wg)
             wg.Wait()
 
-        case "ping-scan":
+        case "ping-scan", "ping-sweep":
             pingScan(os.Args[2])
 
         case "vuln-scan":
@@ -1939,6 +1939,230 @@ func listMacs() {
 }
 
 func listVulns() {
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    columnNames, rows, err := db.GetColumnRows(database, "vulns")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    // Identify the positions of the desired columns
+    var idIndex, nameIndex, dataIndex int
+    for i, col := range columnNames {
+        if col == "Id" || col == "rowid" {
+            idIndex = i
+        }
+        if col == "Name" {
+            nameIndex = i
+        }
+        if col == "Data" {
+            dataIndex = i
+        }
+    }
+
+    for _, row := range rows {
+        rowName, ok := row[nameIndex].(string)
+        if !ok {
+            fmt.Println("Error converting name to string")
+            continue
+        }
+
+        if dataIndex >= 0 {
+            dataStr, ok := row[dataIndex].(string)
+            if !ok {
+                fmt.Println("Error converting data to string")
+                continue
+            }
+
+            rowId, ok := row[idIndex].(int64)
+            if !ok {
+                fmt.Println("Error converting id to int64")
+                continue
+            }
+
+            lines := strings.Split(dataStr, "\n")
+            var ports []string
+            var status string = "[OK]"
+            for i, line := range lines {
+                parts := strings.Fields(line)
+                if len(parts) > 0 && (strings.Contains(parts[0], "/tcp") || strings.Contains(parts[0], "/udp")) {
+                    port := parts[0]
+                    // Check for "VULNERABLE" in subsequent lines with "|" character
+                    for j := i + 1; j < len(lines); j++ {
+                        nextLine := lines[j]
+                        if strings.HasPrefix(nextLine, "|") && strings.Contains(nextLine, "VULNERABLE") {
+                            port += "-vuln"
+                            status = "[VULNERABLE]"
+                            break
+                        }
+                        if !strings.HasPrefix(nextLine, "|") {
+                            break
+                        }
+                    }
+                    ports = append(ports, port)
+                }
+            }
+            if len(ports) > 0 {
+                fmt.Printf("%d %s %s {%s}\n", rowId, rowName, status, strings.Join(ports, " "))
+            }
+        }
+    }
+}
+
+
+func listVulns00() {
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    columnNames, rows, err := db.GetColumnRows(database, "vulns")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    // Identify the positions of the desired columns
+    var idIndex, nameIndex, dataIndex int
+    for i, col := range columnNames {
+        if col == "Id" || col == "rowid" {
+            idIndex = i
+        }
+        if col == "Name" {
+            nameIndex = i
+        }
+        if col == "Data" {
+            dataIndex = i
+        }
+    }
+
+    for _, row := range rows {
+        rowName, ok := row[nameIndex].(string)
+        if !ok {
+            fmt.Println("Error converting name to string")
+            continue
+        }
+
+        if dataIndex >= 0 {
+            dataStr, ok := row[dataIndex].(string)
+            if !ok {
+                fmt.Println("Error converting data to string")
+                continue
+            }
+
+            rowId, ok := row[idIndex].(int64)
+            if !ok {
+                fmt.Println("Error converting id to int64")
+                continue
+            }
+
+            lines := strings.Split(dataStr, "\n")
+            var ports []string
+            for i, line := range lines {
+                parts := strings.Fields(line)
+                if len(parts) > 0 && (strings.Contains(parts[0], "/tcp") || strings.Contains(parts[0], "/udp")) {
+                    port := parts[0]
+                    // Check for "VULNERABLE" in subsequent lines with "|" character
+                    for j := i + 1; j < len(lines); j++ {
+                        nextLine := lines[j]
+                        if strings.HasPrefix(nextLine, "|") && strings.Contains(nextLine, "VULNERABLE") {
+                            port += "-vuln"
+                            break
+                        }
+                        if !strings.HasPrefix(nextLine, "|") {
+                            break
+                        }
+                    }
+                    ports = append(ports, port)
+                }
+            }
+            if len(ports) > 0 {
+                fmt.Printf("%d %s %s\n", rowId, rowName, strings.Join(ports, " "))
+            }
+        }
+    }
+}
+
+
+
+func listVulns0() {
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    defer database.Close()
+
+    columnNames, rows, err := db.GetColumnRows(database, "vulns")
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    // Identify the positions of the desired columns
+    var idIndex, nameIndex, dataIndex int
+    for i, col := range columnNames {
+		if col == "Id" || col == "rowid" { // Use "rowid" if that's the name of your ID column
+			idIndex = i
+		}
+        if col == "Name" {
+            nameIndex = i
+        }
+        if col == "Data" {
+            dataIndex = i
+        }
+    }
+
+    for _, row := range rows {
+
+        rowName, ok := row[nameIndex].(string)
+        if !ok {
+            fmt.Println("Error converting name to string")
+            continue
+        }
+
+        if dataIndex >= 0 {
+
+            dataStr, ok := row[dataIndex].(string) // Type assertion to convert to string
+            if !ok {
+                fmt.Println("Error converting data to string")
+                continue
+            }
+
+            rowId, ok := row[idIndex].(int64) // Type assertion to convert to int64
+            if !ok {
+                fmt.Println("Error converting id to int64")
+                continue
+            }
+
+            lines := strings.Split(dataStr, "\n")
+            var ports []string
+            for _, line := range lines {
+                parts := strings.Fields(line)
+                //if strings.Contains(line, "open") && strings.Contains(line, "/tcp") {
+                if len(parts) > 0 && (strings.Contains(parts[0], "/tcp") || strings.Contains(parts[0], "/udp")) {
+                    port := parts[0]
+                    ports = append(ports, port)
+                }
+            }
+            if len(ports) > 0 {
+                fmt.Printf("%d %s %s\n", rowId, rowName, strings.Join(ports, " "))
+            }
+
+        } //end-if dataIndex
+    } //end-for
+}
+
+
+func listVulns_V1() {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
@@ -1954,8 +2178,9 @@ func listVulns() {
     }
 
     // Identify the positions of the desired columns
-    var nameIndex, exitIndex, timestampIndex, idIndex int
+    //var nameIndex, exitIndex, timestampIndex, idIndex int
     //var exitIndex, timestampIndex, idIndex int
+    var dataIndex, nameIndex, idIndex int
    	for i, col := range columnNames {
 		if col == "Name" {
 	        nameIndex = i
@@ -1963,22 +2188,55 @@ func listVulns() {
 		if col == "Id" || col == "rowid" { // Use "rowid" if that's the name of your ID column
 			idIndex = i
 		}
+        /*
 		if col == "Exit" {
 			exitIndex = i
 		}
 		if col == "Timestamp" {
 			timestampIndex = i
 		}
-	//if col == "Data" {
-	//		dataIndex = i
-	//	}
+        */
+	    if col == "Data" {
+			dataIndex = i
+		}
 	}
 
-    for _, row := range rows {
+    //for _, row := range rows {
         //fmt.Println(row)
         //fmt.Println(row[idIndex], "ExitValue:", row[exitIndex], "TimeStamp:", row[timestampIndex])
-        fmt.Printf("%d %s exit:%d time:%s\n", row[idIndex], row[nameIndex], row[exitIndex], row[timestampIndex])
-    }
+        //fmt.Printf("%d %s exit:%d time:%s\n", row[idIndex], row[nameIndex], row[exitIndex], row[timestampIndex])
+    //}
+
+    for _, row := range rows {
+        fmt.Printf("%d %s\n", row[idIndex], row[nameIndex])
+
+        // Process data if "Data" column exists
+        if dataIndex >= 0 {
+            dataStr, ok := row[dataIndex].(string) // Type assertion to convert to string
+            if !ok {
+                fmt.Println("Error converting data to string")
+                continue
+            }
+
+            lines := strings.Split(dataStr, "\n")
+            var port, status string
+            for _, line := range lines {
+                if strings.Contains(line, "open") && strings.Contains(line, "/tcp") {
+                    parts := strings.Fields(line)
+                    port = parts[0]
+                    status = "-"
+                }
+                if strings.Contains(line, "VULNERABLE") {
+                    status = "VULNERABLE"
+                }
+                if port != "" {
+                    fmt.Printf("%s open %s\n", port, status)
+                    port = "" // Reset port after printing
+                }
+            }
+        }
+
+    } //end-for
 }
 
 func listVuln(rowid int) {
