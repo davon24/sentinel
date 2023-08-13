@@ -1830,7 +1830,7 @@ func delMacs() {
     defer database.Close()
 
     //truncate
-    if err = db.TruncateTable(database, "macs"); err != nil {
+    if err = db.TruncateTable(database, "arps"); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
