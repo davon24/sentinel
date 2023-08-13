@@ -19,7 +19,7 @@ import (
     //"bytes"
     "net/http"
     "encoding/json"
-    "encoding/hex"
+    //"encoding/hex"
     "database/sql"
     "math/big"
 
@@ -123,7 +123,7 @@ func main() {
             pingScan(os.Args[2])
 
         case "vuln-scan":
-            runVulnScan()
+            runVulnScan(os.Args[2])
         case "list-vulns":
             listVulns()
         case "list-vuln":
@@ -1773,7 +1773,7 @@ func delJob(name string) {
     fmt.Println("Job deleted successfully!")
 }
 
-func delMac(name string) {
+func delMac(mac string) {
 
     if len(os.Args) != 3 {
         fmt.Println("Invalid arguments. Usage: del-mac mac")
@@ -1789,7 +1789,7 @@ func delMac(name string) {
     defer database.Close()
 
     //delete config data
-    if err = db.DeleteRecord(database, "macs", name); err != nil {
+    if err = db.DeleteMac(database, mac); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
@@ -1954,12 +1954,12 @@ func listVulns() {
     }
 
     // Identify the positions of the desired columns
-    //var nameIndex, exitIndex, timestampIndex, idIndex int
-    var exitIndex, timestampIndex, idIndex int
+    var nameIndex, exitIndex, timestampIndex, idIndex int
+    //var exitIndex, timestampIndex, idIndex int
    	for i, col := range columnNames {
-		//if col == "Name" {
-	    //    nameIndex = i
-		//}
+		if col == "Name" {
+	        nameIndex = i
+		}
 		if col == "Id" || col == "rowid" { // Use "rowid" if that's the name of your ID column
 			idIndex = i
 		}
@@ -1969,12 +1969,15 @@ func listVulns() {
 		if col == "Timestamp" {
 			timestampIndex = i
 		}
+	//if col == "Data" {
+	//		dataIndex = i
+	//	}
 	}
 
     for _, row := range rows {
         //fmt.Println(row)
-        //fmt.Println(row[idIndex], "Name:", row[nameIndex], "ExitValue:", row[exitIndex], "TimeStamp:", row[timestampIndex])
-        fmt.Println(row[idIndex], "ExitValue:", row[exitIndex], "TimeStamp:", row[timestampIndex])
+        //fmt.Println(row[idIndex], "ExitValue:", row[exitIndex], "TimeStamp:", row[timestampIndex])
+        fmt.Printf("%d %s exit:%d time:%s\n", row[idIndex], row[nameIndex], row[exitIndex], row[timestampIndex])
     }
 }
 
@@ -1994,15 +1997,6 @@ func listVuln(rowid int) {
     }
     defer database.Close()
 
-    //vulns, err := db.FetchRecord(database, "vulns", os.Args[2])
-
-    //rowidStr := os.Args[2]
-    //rowid, err := strconv.Atoi(rowidStr)
-    //if err != nil {
-    //    fmt.Printf("Error converting rowid to integer: %v\n", err)
-    //    return
-    //}
-
     columnNames, row, err := db.GetRowId(database, "vulns", rowid)
     if err != nil {
         fmt.Println(err)
@@ -2010,8 +2004,11 @@ func listVuln(rowid int) {
     }
 
     for i, value := range row {
-        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
-        fmt.Println(columnNames[i], ":", value)
+        //fmt.Println(columnNames[i], ":", value)
+        if columnNames[i] == "Data" {
+            //fmt.Println(columnNames[i], ":", value)
+            fmt.Println(value)
+        }
     }
 
 }
@@ -2110,10 +2107,9 @@ func listOutputs() {
     }
 
     for _, record := range records {
-        fmt.Println(record.Id, record.Name, record.Exit, record.Timestamp)
+        //fmt.Println(record.Name, "(", record.Id, ")", record.Exit, record.Timestamp)
         //fmt.Println(record.Data)
-        //fmt.Printf("%d %s %s %d %s\n",record.Id, record.Name, record.Data, record.Exit, record.Timestamp)
-        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
+        fmt.Printf("%s id:%d exit:%d time:%s\n",record.Name, record.Id, record.Exit, record.Timestamp)
     }
 
 }
@@ -2287,8 +2283,10 @@ func uint32ToIP(ipUint32 uint32) net.IP {
 }
 
 
-func runVulnScan() {
-    command := "nmap -Pn --script=vuln " + os.Args[2]
+func runVulnScan(ip string) {
+
+    command := "nmap -Pn --script=vuln " + ip
+
     stdOut, stdErr, exitCode, err := tools.RunCommand(command)
     if err != nil {
         fmt.Println(err, stdErr, exitCode)
@@ -2305,8 +2303,17 @@ func runVulnScan() {
     }
     defer database.Close()
 
-    hash := blake2b.Sum256([]byte(stdOut))
-    name := hex.EncodeToString(hash[:])
+    //hash := blake2b.Sum256([]byte(stdOut))
+    //hashstr := hex.EncodeToString(hash[:])
+    //firstFive := hashstr[:5]
+
+    //name := ip + "-" + firstFive
+    //name := ip + "-" + hashstr
+
+    currentTime := time.Now()
+    timeStamp := currentTime.Format("2006-01-02T15:04:05")
+
+    name := ip + " " + timeStamp
 
     if err = db.InsertOutput(database, "vulns", name, stdOut, exitCode); err != nil {
         fmt.Println(err)
