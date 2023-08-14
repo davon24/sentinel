@@ -127,6 +127,8 @@ func main() {
         case "list-vulns":
             listVulns()
         case "list-vuln":
+            listVuln(os.Args[2])
+        /*
             rowidStr := os.Args[2]
             rowid, err := strconv.Atoi(rowidStr)
             if err != nil {
@@ -134,7 +136,10 @@ func main() {
                 return
             }
             listVuln(rowid)
+            */
         case "del-vuln":
+            delVuln(os.Args[2])
+        /*
             rowidStr := os.Args[2]
             rowid, err := strconv.Atoi(rowidStr)
             if err != nil {
@@ -142,6 +147,7 @@ func main() {
                 return
             }
             delVuln(rowid)
+            */
 
         case "del-vulns":
             delVulns()
@@ -1889,11 +1895,20 @@ func delOutput(name string) {
     fmt.Println("Output deleted successfully!")
 }
 
-func delVuln(rowid int) {
+//func delVuln(rowid int) {
+func delVuln(rowidStr string) {
 
     if len(os.Args) != 3 {
         fmt.Println("Invalid arguments. Usage: del-vuln rowid")
         os.Exit(1)
+    }
+
+    //rowidStr := os.Args[2]
+    rowid, err := strconv.Atoi(rowidStr)
+    if err != nil {
+        fmt.Printf("Error converting rowid to integer: %v\n", err)
+        os.Exit(1)
+        //return
     }
 
     //open database connect
@@ -2034,7 +2049,7 @@ func listVulns() {
 }
 
 
-func listVuln(rowid int) {
+func listVuln(rowidStr string) {
 
     if len(os.Args) != 3 {
         fmt.Println("Invalid arguments. Usage: list-vuln id")
@@ -2042,6 +2057,13 @@ func listVuln(rowid int) {
     }
     //os.Args[2]
 
+    //rowidStr := os.Args[2]
+    rowid, err := strconv.Atoi(rowidStr)
+    if err != nil {
+        fmt.Printf("Error converting rowid to integer: %v\n", err)
+        os.Exit(1)
+        //return
+    }
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
