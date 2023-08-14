@@ -2384,9 +2384,54 @@ func runVulnScan(ip string) {
     //name := ip + "-" + firstFive
     //name := ip + "-" + hashstr
 
-
-
 func getConfigJSONCmd(configName string) (string, bool) {
+    // Open your SQLite database
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println("Error opening database:", err)
+        return "", false
+    }
+    defer database.Close()
+
+    // Prepare a query to get the specific configuration record based on the taskName
+    query := `SELECT data FROM configs WHERE name = ?`
+    stmt, err := database.Prepare(query)
+    if err != nil {
+        fmt.Println("Error preparing statement:", err)
+        return "", false
+    }
+    defer stmt.Close()
+
+    // Query the database
+    var data string
+    err = stmt.QueryRow(configName).Scan(&data)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            // This means there was no row for the given configName, which we expect to happen sometimes.
+            return "", false
+        } else {
+            // Some other database error occurred
+            fmt.Println("Error querying database:", err)
+            return "", false
+        }
+    }
+
+    // Unmarshal the JSON data
+    var configData struct {
+        Cmd string `json:"cmd,omitempty"`
+    }
+    err = json.Unmarshal([]byte(data), &configData)
+    if err != nil {
+        fmt.Println("Error unmarshaling JSON:", err)
+        return "", false
+    }
+
+    return configData.Cmd, true
+}
+
+
+
+func getConfigJSONCmd_V1(configName string) (string, bool) { //prints Error querying database: sql: no rows in result set
 	// Open your SQLite database
 	database, err := sql.Open("sqlite3", "sentinel.db")
 	if err != nil {
