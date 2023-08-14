@@ -35,7 +35,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🐕-1.0.1b"
+var version = "2.0.0.dev-🐕-1.0.2"
 
 func main() {
 
@@ -62,7 +62,7 @@ func main() {
         case "add-config":
             addConfig()
         case "del-config":
-            delConfig()
+            delConfig(os.Args[2])
 
         case "list-jobs", "jobs":
             listJobs()
@@ -1831,7 +1831,7 @@ func delMacs() {
 
 
 
-func delConfig() {
+func delConfig(name string) {
 
     if len(os.Args) != 3 {
         fmt.Println("Invalid arguments. Usage: del-config name")
@@ -1847,7 +1847,8 @@ func delConfig() {
     defer database.Close()
 
     //delete config data
-    if err = db.DeleteRecord(database, "configs", os.Args[2]); err != nil {
+    //if err = db.DeleteRecord(database, "configs", os.Args[2]); err != nil {
+    if err = db.DeleteRecord(database, "configs", name); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
@@ -2273,7 +2274,6 @@ func NewBlake2b512(data []byte) []byte {
 }
 
 
-//func pingIP_V1(ip string, wg *sync.WaitGroup) {
 func pingIP(ip string, wg *sync.WaitGroup) bool {
 	if wg != nil {
         defer wg.Done()
@@ -2340,6 +2340,8 @@ func pingScan(netCIDR string) []string {
     return activeIPs
 }
 
+// incrementIP function to step through IP addresses
+// work for both IPv4 and IPv6 addresses
 func incrementIP(ip net.IP) net.IP {
     ipInt := big.NewInt(0)
     ipInt.SetBytes(ip)
@@ -2348,194 +2350,6 @@ func incrementIP(ip net.IP) net.IP {
     return nextIP
 }
 
-func pingScanBBBBBBBBBB(netCIDR string) []string {
-    var wg sync.WaitGroup
-    var activeIPs []string
-    var mu sync.Mutex // Mutex to synchronize access to the activeIPs slice
-
-    ip, ipNet, err := net.ParseCIDR(netCIDR)
-    if err != nil {
-        fmt.Println("Error parsing CIDR:", err)
-        return nil
-    }
-
-    for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIP(ip) {
-        wg.Add(1)
-        go func(ip net.IP) {
-            defer wg.Done() // Decrement the WaitGroup counter when the goroutine completes
-            ipStr := ip.String()
-            if pingIP(ipStr, nil) { // Call pingIP without passing the WaitGroup since it's handled here
-                mu.Lock()
-                activeIPs = append(activeIPs, ipStr) // Append string to activeIPs only if pingIP returns true
-                mu.Unlock()
-            }
-        }(ip)
-    }
-
-    wg.Wait()
-    fmt.Println("Ping scan completed")
-    return activeIPs
-}
-
-
-func pingScanLLLLLLL(netCIDR string) []string {
-    var wg sync.WaitGroup
-    var activeIPs []string
-
-    ip, ipNet, err := net.ParseCIDR(netCIDR)
-    if err != nil {
-        fmt.Println("Error parsing CIDR:", err)
-        return nil
-    }
-
-    for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIP(ip) {
-        ipStr := ip.String() // Convert IP to string
-        activeIPs = append(activeIPs, ipStr) // Append string to activeIPs
-
-        wg.Add(1)
-        go pingIP(ipStr, &wg) // Pass string to pingIP
-    }
-
-    wg.Wait()
-    fmt.Println("Ping scan completed")
-    return activeIPs
-}
-
-
-func pingScanXXXX(netCIDR string) []string {
-    var wg sync.WaitGroup
-    var activeIPs []string
-    var mu sync.Mutex
-
-    ip, ipNet, err := net.ParseCIDR(netCIDR)
-    if err != nil {
-        fmt.Println("Error parsing CIDR:", err)
-        return nil
-    }
-
-    for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIP(ip) {
-        wg.Add(1)
-        go func(ipCopy net.IP) {
-            ipStr := ipCopy.String()
-            if pingIP(ipStr, &wg) { // Assuming pingIP returns a boolean and handles wg.Done()
-                mu.Lock()
-                activeIPs = append(activeIPs, ipStr)
-                mu.Unlock()
-            }
-        }(ip.To16()) // Make a copy of ip
-    }
-
-    wg.Wait()
-    fmt.Println("Ping scan completed")
-    return activeIPs
-}
-
-/*
-func pingScan_NOTWORKING(netCIDR string) []string {
-    var wg sync.WaitGroup
-
-    var activeIPs []string
-
-    ip, ipNet, err := net.ParseCIDR(netCIDR)
-    if err != nil {
-        fmt.Println("Error parsing CIDR:", err)
-        return nil
-    }
-
-    for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIP(ip) { // work for IPv4 and IPv6 addresses
-    //for ip := ipToUint32(ip.Mask(ipNet.Mask)); ipNet.Contains(uint32ToIP(ip)); ip++ {
-
-        activeIPs = append(activeIPs, ip)
-
-        wg.Add(1)
-        go pingIP(ip.String(), &wg)
-        //go pingIP(uint32ToIP(ip).String(), &wg)
-    }
-    wg.Wait()
-
-    fmt.Println("Ping scan completed")
-    return activeIPs
-}
-*/
-
-
-func pingScan_V1(netCIDR string) {
-	var wg sync.WaitGroup
-
-	ip, ipNet, err := net.ParseCIDR(netCIDR)
-	if err != nil {
-		fmt.Println("Error parsing CIDR:", err)
-		return
-	}
-
-	for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIP(ip) { // work for IPv4 and IPv6 addresses
-    //for ip := ipToUint32(ip.Mask(ipNet.Mask)); ipNet.Contains(uint32ToIP(ip)); ip++ {
-		wg.Add(1)
-		go pingIP(ip.String(), &wg)
-        //go pingIP(uint32ToIP(ip).String(), &wg)
-	}
-
-	wg.Wait()
-	fmt.Println("Ping scan completed")
-}
-
-func pingScan_BROKEN(netCIDR string) []string {
-    var wg sync.WaitGroup
-    var activeIPs []string
-    var mu sync.Mutex
-
-    ip, ipNet, err := net.ParseCIDR(netCIDR)
-    if err != nil {
-        fmt.Println("Error parsing CIDR:", err)
-        return nil
-    }
-
-    for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIP(ip) {
-        wg.Add(1)
-        go func(ip net.IP) {
-            ipStr := ip.String()
-            if pingIP(ipStr, &wg) { // pingIP is now handling the wg.Done()
-                mu.Lock()
-                activeIPs = append(activeIPs, ipStr)
-                mu.Unlock()
-            }
-        }(ip)
-    }
-
-    wg.Wait()
-    fmt.Println("Ping scan completed")
-    return activeIPs
-}
-
-
-func pingScan_BROKEN1(netCIDR string) []string {
-    var wg sync.WaitGroup
-    var activeIPs []string
-    var mu sync.Mutex
-
-    ip, ipNet, err := net.ParseCIDR(netCIDR)
-    if err != nil {
-        fmt.Println("Error parsing CIDR:", err)
-        return nil
-    }
-
-    for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIP(ip) {
-        wg.Add(1)
-        go func(ip net.IP) {
-            defer wg.Done()
-            ipStr := ip.String()
-            if pingIP(ipStr, &wg) { // Assuming pingIP returns a boolean
-                mu.Lock()
-                activeIPs = append(activeIPs, ipStr)
-                mu.Unlock()
-            }
-        }(ip)
-    }
-
-    wg.Wait()
-    fmt.Println("Ping scan completed")
-    return activeIPs
-}
 
 func runVulnScanNet(netCIDR string) {
     activeIPs := pingScan(netCIDR)
@@ -2555,57 +2369,6 @@ func runVulnScanNet(netCIDR string) {
 }
 
 
-func runVulnScanNet_V1(netCIDR string) {
-    var wg sync.WaitGroup
-
-    ip, ipNet, err := net.ParseCIDR(netCIDR)
-    if err != nil {
-        fmt.Println("Error parsing CIDR:", err)
-        return
-    }
-
-    for ip := ip.Mask(ipNet.Mask); ipNet.Contains(ip); incrementIP(ip) { // work for IPv4 and IPv6 addresses
-        wg.Add(1)
-        go func(ipStr string) {
-            defer wg.Done()
-            //runVulnScan(ipStr)
-            fmt.Println("scan " + ipStr)
-        }(ip.String())
-    }
-
-    wg.Wait()
-    fmt.Println("Vulnerability scan completed")
-}
-
-// incrementIP function to step through IP addresses
-// work for both IPv4 and IPv6 addresses
-
-
-func incrementIP_BROKEN1(ip net.IP) {
-    for j := len(ip) - 1; j >= 0; j-- {
-        ip[j]++
-        if ip[j] > 0 {
-            break
-        }
-    }
-}
-
-func incrementIP_V1(ip net.IP) {
-	ipInt := big.NewInt(0)
-	ipInt.SetBytes(ip)
-	ipInt.Add(ipInt, big.NewInt(1))
-	ipBytes := ipInt.Bytes()
-	copy(ip[len(ip)-len(ipBytes):], ipBytes)
-}
-
-func incrementIP_V2(ip net.IP) {
-    for j := len(ip) - 1; j >= 0; j-- {
-        ip[j]++
-        if ip[j] > 0 {
-            break
-        }
-    }
-}
 
 func ipToUint32(ip net.IP) uint32 {
 	ip = ip.To4()
@@ -2711,47 +2474,6 @@ func getConfigJSONCmd(configName string) (string, bool) {
     }
 
     return configData.Cmd, true
-}
-
-
-
-func getConfigJSONCmd_V1(configName string) (string, bool) { //prints Error querying database: sql: no rows in result set
-	// Open your SQLite database
-	database, err := sql.Open("sqlite3", "sentinel.db")
-	if err != nil {
-		fmt.Println("Error opening database:", err)
-		return "", false
-	}
-	defer database.Close()
-
-	// Prepare a query to get the specific configuration record based on the taskName
-	query := `SELECT data FROM configs WHERE name = ?`
-	stmt, err := database.Prepare(query)
-	if err != nil {
-		fmt.Println("Error preparing statement:", err)
-		return "", false
-	}
-	defer stmt.Close()
-
-	// Query the database
-	var data string
-	err = stmt.QueryRow(configName).Scan(&data)
-	if err != nil {
-		fmt.Println("Error querying database:", err)
-		return "", false
-	}
-
-	// Unmarshal the JSON data
-	var configData struct {
-		Cmd string `json:"cmd,omitempty"`
-	}
-	err = json.Unmarshal([]byte(data), &configData)
-	if err != nil {
-		fmt.Println("Error unmarshaling JSON:", err)
-		return "", false
-	}
-
-	return configData.Cmd, true
 }
 
 
