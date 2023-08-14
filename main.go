@@ -35,7 +35,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🐕-1.0.2"
+var version = "2.0.0.dev-🐕-1.0.3"
 
 func main() {
 
@@ -52,15 +52,15 @@ func main() {
         switch os.Args[1] {
 
         case "--help", "-help", "help":
-            printUsage()
+            fmt.Println(usage())
         case "--version", "-version", "version":
             fmt.Println("Version:", version)
-            printSqlite3Version()
+            fmt.Println("Sqlite3:", sqlite3Version())
 
         case "list-configs", "configs":
             listConfigs()
         case "add-config":
-            addConfig()
+            addConfig(os.Args[2],os.Args[3])
         case "del-config":
             delConfig(os.Args[2])
 
@@ -69,14 +69,14 @@ func main() {
         case "list-job":
             listJob(os.Args[2])
         case "add-job":
-            addJob()
+            addJob(os.Args[2],os.Args[3])
         case "del-job":
             delJob(os.Args[2])
 
         case "run-jobs":
             runJobs()
         case "run-job":
-            runJobName()
+            runJobName_V1()
         case "list-outputs":
             listOutputs()
         case "list-output":
@@ -94,7 +94,7 @@ func main() {
         case "list-manuf":
             listManuf()
         case "manuf":
-            runManuf()
+            runManuf(os.Args[2])
 
         case "arps", "run-arps":
             //runArps()
@@ -150,7 +150,7 @@ func main() {
 }
 
 
-func printUsage() {
+func usage() string {
 
     usage := `Usage: sentinel [options]
 
@@ -189,11 +189,6 @@ Options:
   del-vuln id
   del-vulns
 
-#TODO speed up vuln-scan
-#  # task: vulns #pingsweep+vuln
-#  vuln-scan ip
-#  vuln-scan-subnet net
-
   manuf mac
   list-manuf
 
@@ -204,7 +199,7 @@ Options:
   run|sentry
 
 `
-    fmt.Println(usage)
+    return usage
 }
 
 
@@ -232,25 +227,35 @@ func PrintDebug(message string) {
 	}
 }
 
+func PrintDebugf(format string, a ...interface{}) {
+    debugMode := os.Getenv("DEBUG")
+    if debugMode != "" {
+        fmt.Printf(format, a...)
+        fmt.Println() // Adds a newline after the formatted message
+    }
+}
+//PrintDebugf("User %s logged in at %v", username, time.Now())
 
 
-func printSqlite3Version() {
+func sqlite3Version() string {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        //return fmt.Errorf("failed to open database: %w", err)
+        return ""
     }
     defer database.Close()
 
     version, err := db.Version(database)
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        //return fmt.Errorf("failed to retrieve version: %w", err)
+        return ""
     }
 
-    fmt.Println("Sqlite3:", version)
+    //return "Sqlite3: " + version, nil
+    return version
 }
+
 
 func runJobs() {
 
@@ -404,7 +409,48 @@ func runJobs() {
     }
 }
 
-func runJobName() {
+/*
+func runJobName_V2(name string, force bool) error {
+    PrintDebug("Job Name:" + name)
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        return err
+    }
+    defer database.Close()
+
+    jobRecord, jobData, err := getJobData(database, name)
+    if err != nil {
+        return err
+    }
+
+    PrintDebug("Data.2:" + jobRecord.Data)
+
+    if force {
+        return runJob(name, jobData)
+    }
+
+    PrintDebug("Run jobData Run logic...")
+
+    switch {
+    case jobData.Time != "":
+        return processTimeJob(jobData)
+
+    case jobData.Repeat != "":
+        return processRepeatJob(jobData)
+
+    default:
+        PrintDebug("Skip job:" + jobData.Job)
+    }
+
+    return nil
+}
+*/
+
+
+
+//func runJobName(name string) error {
+func runJobName_V1() {
 
     if len(os.Args) < 3 {
         fmt.Println("Invalid arguments. Usage: run-job name [--force]")
@@ -1063,12 +1109,8 @@ func runRuleName(rule string) error {
 
     // shouldn't get here.
     fmt.Println("runRuleName Done")
-
     return nil
-
 }
-
-
 
 
 func getPromArps() string {
@@ -1278,7 +1320,7 @@ type ConfigData struct {
 }
 
 
-func runSentry() {
+func runSentry() error {
 
     // Create a channel to receive OS signals
     signals := make(chan os.Signal, 1)
@@ -1464,6 +1506,7 @@ func runSentry() {
     }
 
     fmt.Println("Program terminated")
+    return nil
 }
 
 
@@ -1524,71 +1567,65 @@ func httpMetrics(w http.ResponseWriter, r *http.Request) {
 
 
 
-func listManuf() {
+func listManuf() (string, error) {
 
     PrintDebug("List Manuf...")
 
     manuf, err := manuf.EmbedFS.ReadFile("resources/manuf")
     if err != nil {
-        panic(err)
+        return "", fmt.Errorf("Failed to read manufacturer file: %v", err)
     }
 
-    fmt.Println(string(manuf))
+    content := string(manuf)
+    fmt.Println(content)
 
+    return content, nil
 }
 
-func runManuf() {
 
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: manuf mac")
-        os.Exit(1)
+func runManuf(mac string) (string, error) {
+    if len(mac) == 0 {
+        return "", fmt.Errorf("Invalid arguments. Usage: manuf mac")
     }
 
-    mac := os.Args[2]
-    mac = strings.ToUpper(mac) // Convert mac address to UPPERCASE for matching
-
+    mac = strings.ToUpper(mac) // Convert MAC address to UPPERCASE for matching
     parts := strings.Split(mac, ":")
 
     content, err := manuf.EmbedFS.ReadFile("resources/manuf")
     if err != nil {
-        panic(err)
+        return "", fmt.Errorf("Failed to read manufacturer file: %v", err)
     }
 
     var manufact string = "NoManufacturer"
     for i := len(parts); i > 0; i-- {
-        
         subMac := strings.Join(parts[:i], ":")
-        //fmt.Fprintln(os.Stdout, subMac)
         manufacturer := manuf.SearchManufacturer(subMac, string(content))
 
         if manufacturer != "Manufacturer Not Found" {
-            //fmt.Printf("Manufacturer for MAC address %s is %s\n", mac, manufacturer)
             manufact = manufacturer
             break
         }
-
     }
 
     fmt.Println(manufact)
-
+    return manufact, nil
 }
 
-func runLogstream() {
 
-    //err := logstream.Stream()
+func runLogstream() error {
 
     output, err := logstream.OutPut()
     if err != nil {
-        panic(err)
+        return fmt.Errorf("Failed to get output: %v", err)
     }
 
     // Process the captured output
-	for line := range output {
-		//fmt.Println("Received output:", line)
-		fmt.Println(line)
-		// Add any desired logic or break condition here
-	}
+    for line := range output {
+        fmt.Println(line)
+        // Add any desired logic or break condition here
+    }
 
+    return nil
 }
 
 
@@ -1666,268 +1703,217 @@ func runArps_v1(wg *sync.WaitGroup) {
 }
 
 
-func addJob() {
+func addJob(name string, jsonData string) error {
 
-    if len(os.Args) != 4 {
-        fmt.Println("Invalid arguments. Usage: add-job name json")
-        os.Exit(1)
+    if len(name) == 0 || len(jsonData) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: add-config name json")
     }
-
-    // Timestamp
-    //now := time.Now()
-    //timestamp := now.Format("2006-01-02T15:04:05")
 
     // Validate data as JSON
-    isJSON := json.Valid([]byte(os.Args[3]))
+    isJSON := json.Valid([]byte(jsonData))
     if !isJSON {
-        fmt.Println("Invalid JSON!")
-        os.Exit(1)
+        return fmt.Errorf("Invalid JSON!")
     }
 
-    //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to open database: %v", err)
     }
     defer database.Close()
 
-    //add job data
-    //if err = db.AddRecord(database, "jobs", os.Args[2], os.Args[3], timestamp); err != nil {
-    if err = db.AddRecord(database, "jobs", os.Args[2], os.Args[3]); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+    if err = db.AddRecord(database, "jobs", name, jsonData); err != nil {
+        return fmt.Errorf("Failed to add record: %v", err)
     }
 
     fmt.Println("Job added successfully!")
+    return nil
 }
-
-
-func addConfig() {
-
-    if len(os.Args) != 4 {
-        fmt.Println("Invalid arguments. Usage: add-config name json")
-        os.Exit(1)
-    }
 
     // Timestamp
     //now := time.Now()
     //timestamp := now.Format("2006-01-02T15:04:05")
 
-    // Validate data as JSON
-    isJSON := json.Valid([]byte(os.Args[3]))
-    if !isJSON {
-        fmt.Println("Invalid JSON!")
-        os.Exit(1)
+
+func addConfig(name string, jsonData string) error {
+
+    if len(name) == 0 || len(jsonData) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: add-config name json")
     }
 
-    //open database connect
+    // Validate data as JSON
+    isJSON := json.Valid([]byte(jsonData))
+    if !isJSON {
+        return fmt.Errorf("Invalid JSON!")
+    }
+
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to open database: %v", err)
     }
     defer database.Close()
 
-    //add config data
-    //if err = db.AddRecord(database, "configs", os.Args[2], os.Args[3], timestamp); err != nil {
-    if err = db.AddRecord(database, "configs", os.Args[2], os.Args[3]); err != nil {
-	    fmt.Println(err)
-	    os.Exit(1)
+    if err = db.AddRecord(database, "configs", name, jsonData); err != nil {
+        return fmt.Errorf("Failed to add record: %v", err)
     }
 
     fmt.Println("Config added successfully!")
+    return nil
 }
 
-func delJob(name string) {
 
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: del-job name")
-        os.Exit(1)
+func delJob(name string) error {
+
+    if len(name) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: del-job name")
     }
 
-    //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to open database: %v", err)
     }
     defer database.Close()
 
-    //delete config data
     if err = db.DeleteRecord(database, "jobs", name); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to delete job: %v", err)
     }
 
     fmt.Println("Job deleted successfully!")
+    return nil
 }
 
-func delMac(mac string) {
 
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: del-mac mac")
-        os.Exit(1)
+func delMac(mac string) error {
+
+    if len(mac) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: del-mac mac")
     }
 
-    //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to open database: %v", err)
     }
     defer database.Close()
 
-    //delete config data
     if err = db.DeleteMac(database, mac); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to delete MAC: %v", err)
     }
 
-    fmt.Println("deleted successfully!")
+    fmt.Println("Deleted successfully!")
+    return nil
 }
 
 
-func delVulns() {
+func delVulns() error {
 
-    //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to open database: %v", err)
     }
     defer database.Close()
 
-    //truncate
     if err = db.TruncateTable(database, "vulns"); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to truncate table: %v", err)
     }
 
     fmt.Println("truncate vulns successfully!")
+    return nil
 }
 
+func delMacs() error {
 
-
-func delMacs() {
-
-    //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to open database: %v", err)
     }
     defer database.Close()
 
-    //truncate
     if err = db.TruncateTable(database, "arps"); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to truncate table: %v", err)
     }
 
-    fmt.Println("truncate macs successfully!")
+    fmt.Println("Truncate macs successfully!")
+    return nil
 }
 
 
+func delConfig(name string) error {
 
-
-func delConfig(name string) {
-
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: del-config name")
-        os.Exit(1)
+    if len(name) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: del-config name")
     }
 
-    //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to open database: %v", err)
     }
     defer database.Close()
 
-    //delete config data
-    //if err = db.DeleteRecord(database, "configs", os.Args[2]); err != nil {
     if err = db.DeleteRecord(database, "configs", name); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to delete config: %v", err)
     }
 
     fmt.Println("Config deleted successfully!")
+    return nil
 }
 
-func delOutput(name string) {
+func delOutput(name string) error {
 
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: del-output name")
-        os.Exit(1)
+    if len(name) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: del-output name")
     }
 
-    //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to open database: %v", err)
     }
     defer database.Close()
 
-    //delete data
     if err = db.DeleteRecord(database, "outputs", name); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to delete output: %v", err)
     }
 
     fmt.Println("Output deleted successfully!")
+    return nil
 }
 
-//func delVuln(rowid int) {
-func delVuln(rowidStr string) {
 
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: del-vuln rowid")
-        os.Exit(1)
+func delVuln(rowidStr string) error {
+
+    if len(rowidStr) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: del-vuln rowid")
     }
 
-    //rowidStr := os.Args[2]
     rowid, err := strconv.Atoi(rowidStr)
     if err != nil {
-        fmt.Printf("Error converting rowid to integer: %v\n", err)
-        os.Exit(1)
-        //return
+        return fmt.Errorf("Error converting rowid to integer: %v", err)
     }
 
-    //open database connect
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to open database: %v", err)
     }
     defer database.Close()
 
-    //delete data
     if err = db.DeleteId(database, "vulns", rowid); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("Failed to delete vulnerability: %v", err)
     }
 
     fmt.Println("Vuln deleted successfully!")
+    return nil
 }
 
 
-func listMacs() {
+func listMacs() error {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("failed to open database: %v", err)
     }
     defer database.Close()
 
     rows, err := db.FetchArpsRows(database)
-    //rows, err := db.FetchTableRows(database, "arps")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return fmt.Errorf("failed to fetch rows: %v", err)
     }
 
     for _, row := range rows {
@@ -1936,6 +1922,7 @@ func listMacs() {
 
     }
 
+    return nil
 }
 
 func listVulns() {
