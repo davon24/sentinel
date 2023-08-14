@@ -1970,8 +1970,7 @@ func listVulns() {
     }
 
     for _, row := range rows {
-
-        fmt.Println(row)
+        //fmt.Println(row)
 
         rowName, ok := row[nameIndex].(string)
         if !ok {
@@ -1979,63 +1978,58 @@ func listVulns() {
             continue
         }
 
-        //if dataIndex >= 0 {
+        dataStr, ok := row[dataIndex].(string)
+        if !ok {
+            fmt.Println("Error converting data to string")
+            continue
+        }
 
-            dataStr, ok := row[dataIndex].(string)
-            if !ok {
-                fmt.Println("Error converting data to string")
-                continue
-            }
+        rowId, ok := row[idIndex].(int64)
+        if !ok {
+            fmt.Println("Error converting id to int64")
+            continue
+        }
 
-            rowId, ok := row[idIndex].(int64)
-            if !ok {
-                fmt.Println("Error converting id to int64")
-                continue
-            }
+        exitStatus, ok := row[exitIndex].(int64)
+        if !ok {
+            fmt.Println("Error converting exit to int")
+            continue
+        }
 
-            exitStatus, ok := row[exitIndex].(int64)
-            if !ok {
-                fmt.Println("Error converting exit to int")
-                continue
-            }
-
-            lines := strings.Split(dataStr, "\n")
-            var ports []string
-            var status string = "[]"
-            for i, line := range lines {
-                parts := strings.Fields(line)
-                if len(parts) > 0 && (strings.Contains(parts[0], "/tcp") || strings.Contains(parts[0], "/udp")) {
-                    port := parts[0]
-                    // Check for "VULNERABLE" in subsequent lines with "|" character
-                    for j := i + 1; j < len(lines); j++ {
-                        nextLine := lines[j]
-                        if strings.HasPrefix(nextLine, "|") && strings.Contains(nextLine, "VULNERABLE") {
-                            port += "-vuln"
-                            status = "[VULNERABLE]"
-                            break
-                        }
-                        if !strings.HasPrefix(nextLine, "|") {
-                            break
-                        }
+        lines := strings.Split(dataStr, "\n")
+        var ports []string
+        var status string = "[]"
+        for i, line := range lines {
+            parts := strings.Fields(line)
+            if len(parts) > 0 && (strings.Contains(parts[0], "/tcp") || strings.Contains(parts[0], "/udp")) {
+                port := parts[0]
+                // Check for "VULNERABLE" in subsequent lines with "|" character
+                for j := i + 1; j < len(lines); j++ {
+                    nextLine := lines[j]
+                    if strings.HasPrefix(nextLine, "|") && strings.Contains(nextLine, "VULNERABLE") {
+                        port += "-vuln"
+                        status = "[VULNERABLE]"
+                        break
                     }
-
-                    if status != "[VULNERABLE]" {
-                        status = "[OK]"
+                    if !strings.HasPrefix(nextLine, "|") {
+                        break
                     }
-
-                    ports = append(ports, port)
                 }
-            }
-            //if len(ports) > 0 {
-            //    fmt.Printf("%d %s %s {%s}\n", rowId, rowName, status, strings.Join(ports, " "))
-            //}
 
-            if status == "[]" {
-                fmt.Printf("%d %s %s {%s} (Failed Cmd Exit Status:%d)\n", rowId, rowName, status, strings.Join(ports, " "), exitStatus )
-            } else {
-                fmt.Printf("%d %s %s {%s}\n", rowId, rowName, status, strings.Join(ports, " "))
+                if status != "[VULNERABLE]" {
+                    status = "[OK]"
+                }
+
+                ports = append(ports, port)
             }
-        
+        }
+
+        if status == "[]" {
+            fmt.Printf("%d %s %s {%s} (Failed Cmd Exit_Status:%d)\n", rowId, rowName, status, strings.Join(ports, " "), exitStatus )
+        } else {
+            fmt.Printf("%d %s %s {%s}\n", rowId, rowName, status, strings.Join(ports, " "))
+        }
+    
     }
 }
 
@@ -2352,11 +2346,14 @@ func runVulnScan(ip string) {
         command = "nmap -Pn --script=vuln " + ip
     }
 
+    var output string
     stdOut, stdErr, exitCode, err := tools.RunCommand(command)
     if err != nil {
         fmt.Println(err, stdErr, exitCode)
+        output = stdOut + stdErr
     } else {
         fmt.Println(stdOut)
+        output = stdOut
     }
 
     // save to db
@@ -2373,7 +2370,7 @@ func runVulnScan(ip string) {
 
     name := ip + " " + timeStamp
 
-    if err = db.InsertOutput(database, "vulns", name, stdOut, exitCode); err != nil {
+    if err = db.InsertOutput(database, "vulns", name, output, exitCode); err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
