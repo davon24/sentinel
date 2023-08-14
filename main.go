@@ -76,7 +76,8 @@ func main() {
         case "run-jobs":
             runJobs_V1()
         case "run-job":
-            runJobName_V1()
+            //runJobName_V1()
+            runJobName(os.Args[2])
         case "list-outputs":
             listOutputs()
         case "list-output":
@@ -414,7 +415,6 @@ func runJobs_V1() {
 
 
 func runJobName(name string) error {
-    PrintDebug("Job Name:" + name)
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
@@ -430,7 +430,8 @@ func runJobName(name string) error {
     PrintfDebug("jobRecord %v \n", jobRecord)
     PrintfDebug("jobData %v \n", jobData)
 
-    err = runJobV1(name, jobData)
+    //err = runJobV1(name, jobData)
+    err = runJob(database, name)
     if err != nil {
         return err
     }
@@ -762,11 +763,9 @@ func runJob(database *sql.DB, jobName string) error {
 
     // Start running the job
 
-    // Other code to execute the command, update records, etc.
+                PrintDebug("RUN THIS COMMAND: "+ configData.Cmd)
 
                 now := time.Now().UTC()
-
-                PrintDebug("RUN THIS COMMAND: "+ configData.Cmd)
 
                 jobData.Start = now.Format("2006-01-02 15:04:05")
                 updatedData, err := json.Marshal(jobData)
@@ -781,6 +780,7 @@ func runJob(database *sql.DB, jobName string) error {
                 }
 
                 PrintDebug("Run Command...")
+                fmt.Println("Run "+ jobName +" ")
 
                 stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
 
@@ -818,48 +818,13 @@ func runJob(database *sql.DB, jobName string) error {
 
                 PrintDebug("db.UpdateRecord.2 "+ jobName)
 
-                fmt.Println("Run "+ jobName + " Done")
-
+                fmt.Println("Done")
 
     // End of function
     return nil
 }
 
 
-
-//func runJob(jobName string, jobData JobData) error {
-func runJob_JobData(jobName string, jobData JobData) error {
-    PrintDebug("Read configs for Job...")
-    database, err := sql.Open("sqlite3", "sentinel.db")
-    if err != nil {
-        return err
-    }
-    defer database.Close()
-
-
-
-    configData, err := readConfigData(database, jobData.Config)
-    if err != nil {
-        return err
-    }
-
-    switch {
-
-    case configData.Cmd != "" && configData.Task != "":
-        return errors.New("Both configData.Cmd and configData.Task are not empty")
-
-    case configData.Cmd != "":
-        //return runCmdAction(jobName, &jobData, configData.Cmd, database)
-
-    case configData.Task != "":
-        //return runTaskAction(jobName, &jobData, configData.Task, database)
-
-    default:
-        return errors.New("Neither configData.Cmd nor configData.Task are not empty")
-    }
-
-    return nil
-}
 
 
 func readConfigData(database *sql.DB, configKey string) (struct {
@@ -879,9 +844,9 @@ func readConfigData(database *sql.DB, configKey string) (struct {
 
     var configRecord db.Record
     for _, record := range config {
-        PrintDebug("Name:" + record.Name)
-        PrintDebug("Data:" + record.Data)
-        PrintDebug("Timestamp:" + record.Timestamp)
+        //PrintDebug("Name:" + record.Name)
+        //PrintDebug("Data:" + record.Data)
+        //PrintDebug("Timestamp:" + record.Timestamp)
         configRecord = record
     }
 
@@ -918,138 +883,6 @@ func readJobData(database *sql.DB, jobName string) (JobData, error) {
 }
 
 
-
-func runCmd_D2(database *sql.DB, jobName string, configKey string) error {
-    // Retrieve jobData from the database or other sources
-    var jobData JobData
-
-    // Read configData using the provided readConfigData function
-    configData, err := readConfigData(database, configKey)
-    if err != nil {
-        return err
-    }
-
-    now := time.Now().UTC()
-    PrintDebug("RUN THIS COMMAND: " + configData.Cmd)
-
-    jobData.Start = now.Format("2006-01-02 15:04:05")
-    updatedData, err := json.Marshal(jobData)
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("Lets Update Record...")
-    err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("Run Command...")
-    stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("We have output....")
-    PrintDebug(stdOut + " " + stdErr)
-
-    if exitCode == 1 {
-        stdOut = stdErr
-    }
-
-    jobData.Exit = fmt.Sprintf("%d", exitCode)
-    updatedData, err = json.Marshal(jobData)
-    if err != nil {
-        return err
-    }
-
-    if err = db.InsertOutput(database, "outputs", jobName, stdOut, exitCode); err != nil {
-        return err
-    }
-
-    PrintDebug("We are done....")
-    done := time.Now().UTC()
-    jobData.Done = done.Format("2006-01-02 15:04:05")
-    updatedData2, err := json.Marshal(jobData)
-    if err != nil {
-        return err
-    }
-
-    err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("db.UpdateRecord.2 " + jobName)
-
-    fmt.Println("Run " + jobName + " Done")
-    return nil
-}
-
-
-
-func runCmd_D1(database *sql.DB, jobName string, configData struct {
-    Cmd  string `json:"cmd,omitempty"`
-    Task string `json:"task,omitempty"`
-}, jobData *JobData) error {
-    now := time.Now().UTC()
-
-    PrintDebug("RUN THIS COMMAND: " + configData.Cmd)
-
-    jobData.Start = now.Format("2006-01-02 15:04:05")
-    updatedData, err := json.Marshal(jobData)
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("Lets Update Record...")
-    err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("Run Command...")
-
-    stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
-
-    PrintDebug("We have output....")
-    PrintDebug(stdOut + " " + stdErr)
-
-    if exitCode == 1 {
-        stdOut = stdErr
-    }
-
-    jobData.Exit = fmt.Sprintf("%d", exitCode)
-
-    updatedData, err = json.Marshal(jobData)
-    if err != nil {
-        return err
-    }
-
-    if err = db.InsertOutput(database, "outputs", jobName, stdOut, exitCode); err != nil {
-        return err
-    }
-
-    PrintDebug("We are done....")
-
-    done := time.Now().UTC()
-    jobData.Done = done.Format("2006-01-02 15:04:05")
-    updatedData2, err := json.Marshal(jobData)
-    if err != nil {
-        return err
-    }
-
-    err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("db.UpdateRecord.2 " + jobName)
-
-    fmt.Println("Run " + jobName + " Done")
-
-    return nil
-}
 
 
 
