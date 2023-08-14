@@ -74,7 +74,7 @@ func main() {
             delJob(os.Args[2])
 
         case "run-jobs":
-            runJobs()
+            runJobs_V1()
         case "run-job":
             runJobName_V1()
         case "list-outputs":
@@ -257,7 +257,7 @@ func sqlite3Version() string {
 }
 
 
-func runJobs() {
+func runJobs_V1() {
 
     PrintDebug("runJobs")
 
@@ -409,7 +409,32 @@ func runJobs() {
     }
 }
 
-/*
+
+func runJobName(name string) error {
+    PrintDebug("Job Name:" + name)
+
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        return err
+    }
+    defer database.Close()
+
+    jobRecord, jobData, err := getJobData(database, name)
+    if err != nil {
+        return err
+    }
+
+    PrintDebugf("jobRecord %v \n", jobRecord)
+    PrintDebugf("jobData %v \n", jobData)
+
+    err = runJob(name, jobData)
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
 func runJobName_V2(name string, force bool) error {
     PrintDebug("Job Name:" + name)
 
@@ -430,8 +455,8 @@ func runJobName_V2(name string, force bool) error {
         return runJob(name, jobData)
     }
 
+    /*
     PrintDebug("Run jobData Run logic...")
-
     switch {
     case jobData.Time != "":
         return processTimeJob(jobData)
@@ -442,10 +467,41 @@ func runJobName_V2(name string, force bool) error {
     default:
         PrintDebug("Skip job:" + jobData.Job)
     }
+    */
 
     return nil
 }
-*/
+
+
+func getJobData(database *sql.DB, name string) (db.Record, JobData, error) {
+//func getJobData(name string) (db.Record, JobData, error) {
+
+    // Lookup/get job data
+    jobs, err := db.FetchRecord(database, "jobs", name)
+    if err != nil {
+        return db.Record{}, JobData{}, err
+    }
+
+    var jobRecord db.Record
+    for _, record := range jobs {
+        PrintDebug("Name:" + record.Name)
+        PrintDebug("Data:" + record.Data)
+        PrintDebug("Timestamp:" + record.Timestamp)
+
+        jobRecord = record
+    }
+
+    //PrintDebug("Data.2:" + jobRecord.Data)
+
+    var jobData JobData
+    err = json.Unmarshal([]byte(jobRecord.Data), &jobData)
+    if err != nil {
+        return db.Record{}, JobData{}, fmt.Errorf("Error Unmarshal jobRecord.Data: %w", err)
+    }
+
+    return jobRecord, jobData, nil
+}
+
 
 
 
@@ -895,8 +951,6 @@ func runJob(jobName string, jobData JobData) error {
         //handleDefault()
         return errors.New("Neither configData.Cmd nor configData.Task are not empty")
     }
-
-
 
     return nil
 }
@@ -1432,7 +1486,7 @@ func runSentry() error {
             case <-jobChan:
                 return
             default:
-                runJobs()
+                runJobs_V1()
                 //time.Sleep(500 * time.Millisecond)
                 time.Sleep(time.Second) // Adjust the sleep duration as needed
             }
