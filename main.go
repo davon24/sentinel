@@ -1953,7 +1953,7 @@ func listVulns() {
     }
 
     // Identify the positions of the desired columns
-    var idIndex, nameIndex, dataIndex int
+    var idIndex, nameIndex, exitIndex, dataIndex int
     for i, col := range columnNames {
         if col == "Id" || col == "rowid" {
             idIndex = i
@@ -1964,16 +1964,23 @@ func listVulns() {
         if col == "Data" {
             dataIndex = i
         }
+        if col == "Exit" {
+            exitIndex = i
+        }
     }
 
     for _, row := range rows {
+
+        fmt.Println(row)
+
         rowName, ok := row[nameIndex].(string)
         if !ok {
             fmt.Println("Error converting name to string")
             continue
         }
 
-        if dataIndex >= 0 {
+        //if dataIndex >= 0 {
+
             dataStr, ok := row[dataIndex].(string)
             if !ok {
                 fmt.Println("Error converting data to string")
@@ -1986,9 +1993,15 @@ func listVulns() {
                 continue
             }
 
+            exitStatus, ok := row[exitIndex].(int64)
+            if !ok {
+                fmt.Println("Error converting exit to int")
+                continue
+            }
+
             lines := strings.Split(dataStr, "\n")
             var ports []string
-            var status string = "[OK]"
+            var status string = "[]"
             for i, line := range lines {
                 parts := strings.Fields(line)
                 if len(parts) > 0 && (strings.Contains(parts[0], "/tcp") || strings.Contains(parts[0], "/udp")) {
@@ -2005,13 +2018,24 @@ func listVulns() {
                             break
                         }
                     }
+
+                    if status != "[VULNERABLE]" {
+                        status = "[OK]"
+                    }
+
                     ports = append(ports, port)
                 }
             }
-            if len(ports) > 0 {
+            //if len(ports) > 0 {
+            //    fmt.Printf("%d %s %s {%s}\n", rowId, rowName, status, strings.Join(ports, " "))
+            //}
+
+            if status == "[]" {
+                fmt.Printf("%d %s %s {%s} (Failed Cmd Exit Status:%d)\n", rowId, rowName, status, strings.Join(ports, " "), exitStatus )
+            } else {
                 fmt.Printf("%d %s %s {%s}\n", rowId, rowName, status, strings.Join(ports, " "))
             }
-        }
+        
     }
 }
 
@@ -2317,9 +2341,16 @@ func uint32ToIP(ipUint32 uint32) net.IP {
 
 func runVulnScan(ip string) {
 
-    //get cmd from db, else
+    //if get cmd from db, else
+    //command := "nmap -Pn --script=vuln " + ip
 
-    command := "nmap -Pn --script=vuln " + ip
+    var command string
+    if cmd, exists := getConfigJSONCmd("vuln-scan"); exists {
+        command = cmd + " " + ip
+        PrintDebug("YES: special command " + command)
+    } else {
+        command = "nmap -Pn --script=vuln " + ip
+    }
 
     stdOut, stdErr, exitCode, err := tools.RunCommand(command)
     if err != nil {
@@ -2337,13 +2368,6 @@ func runVulnScan(ip string) {
     }
     defer database.Close()
 
-    //hash := blake2b.Sum256([]byte(stdOut))
-    //hashstr := hex.EncodeToString(hash[:])
-    //firstFive := hashstr[:5]
-
-    //name := ip + "-" + firstFive
-    //name := ip + "-" + hashstr
-
     currentTime := time.Now()
     timeStamp := currentTime.Format("2006-01-02T15:04:05")
 
@@ -2355,6 +2379,55 @@ func runVulnScan(ip string) {
     }
     fmt.Println("vuln added successfully!")
 }
+
+
+    //hash := blake2b.Sum256([]byte(stdOut))
+    //hashstr := hex.EncodeToString(hash[:])
+    //firstFive := hashstr[:5]
+    //name := ip + "-" + firstFive
+    //name := ip + "-" + hashstr
+
+
+
+func getConfigJSONCmd(configName string) (string, bool) {
+	// Open your SQLite database
+	database, err := sql.Open("sqlite3", "sentinel.db")
+	if err != nil {
+		fmt.Println("Error opening database:", err)
+		return "", false
+	}
+	defer database.Close()
+
+	// Prepare a query to get the specific configuration record based on the taskName
+	query := `SELECT data FROM configs WHERE name = ?`
+	stmt, err := database.Prepare(query)
+	if err != nil {
+		fmt.Println("Error preparing statement:", err)
+		return "", false
+	}
+	defer stmt.Close()
+
+	// Query the database
+	var data string
+	err = stmt.QueryRow(configName).Scan(&data)
+	if err != nil {
+		fmt.Println("Error querying database:", err)
+		return "", false
+	}
+
+	// Unmarshal the JSON data
+	var configData struct {
+		Cmd string `json:"cmd,omitempty"`
+	}
+	err = json.Unmarshal([]byte(data), &configData)
+	if err != nil {
+		fmt.Println("Error unmarshaling JSON:", err)
+		return "", false
+	}
+
+	return configData.Cmd, true
+}
+
 
 
 //EOF
