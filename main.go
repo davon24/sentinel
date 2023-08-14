@@ -2024,9 +2024,12 @@ func listVulns() {
             }
         }
 
-        if status == "[]" {
-            fmt.Printf("%d %s %s {%s} (Failed Cmd Exit_Status:%d)\n", rowId, rowName, status, strings.Join(ports, " "), exitStatus )
+        if exitStatus != 0 {
+            fmt.Printf("%d %s %s {%s} (Exit_Status:%d)\n", rowId, rowName, status, strings.Join(ports, " "), exitStatus )
         } else {
+            if status == "[]" {
+                status = "[OK]"
+            }
             fmt.Printf("%d %s %s {%s}\n", rowId, rowName, status, strings.Join(ports, " "))
         }
     
