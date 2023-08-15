@@ -423,17 +423,18 @@ func runJobName(name string) error {
     defer database.Close()
 
     if isRunnable(database, name) {
+        fmt.Println("runJob " + name)
         err = runJob(database, name)
         if err != nil {
             return err
         }
+    } else {
+        fmt.Println("Not runnable " + name)
     }
-    //else {
-    //    fmt.Println("Not runnable " + name)
-    //}
 
     return nil
 }
+
 
 func isRunnable(database *sql.DB, jobName string) bool {
     _, jobData, err := getJobData(database, jobName)
@@ -446,18 +447,17 @@ func isRunnable(database *sql.DB, jobName string) bool {
     }
 
     if jobData.Repeat != "" {
-        if jobData.Start == "" {
-            return true
-        }
-        if jobData.Done != "" {
-
-            if isRepeatTime(jobData) {
+        if isRepeatTime(jobData) {
+            if jobData.Start == "" {
                 return true
             }
-
+            if jobData.Done != "" {
+                return true
+            }
         }
     }
 
+    fmt.Println("isRunnable false")
     return false
 }
 
@@ -478,6 +478,7 @@ func isRepeatTime(jobData JobData) bool {
     case strings.HasSuffix(jobData.Repeat, "second"), strings.HasSuffix(jobData.Repeat, "sec"), strings.HasSuffix(jobData.Repeat, "s"):
         value, unit = parseInterval(jobData.Repeat, "s", "second")
     default:
+        fmt.Println("default switch case jobData.Repeat false")
         return false
     }
 
@@ -487,6 +488,7 @@ func isRepeatTime(jobData JobData) bool {
     // Parse the start time as a time.Time value
     startTime, err := time.Parse("2006-01-02 15:04:05", jobData.Start)
     if err != nil {
+        fmt.Println("startTime jobData.Start is false")
         return false
     }
 
