@@ -11,7 +11,7 @@ import (
     "runtime"
     "net"
     "syscall"
-    "errors"
+    //"errors"
     "io"
     "io/ioutil"
     "strconv"
@@ -35,7 +35,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🐕-1.0.4.T-2023-08-15-1"
+var version = "2.0.0.dev-🐕-1.0.4.T-2023-08-15-1a"
 
 func main() {
 
@@ -262,111 +262,6 @@ func sqlite3Version() string {
 }
 
 
-func runJobs_V1() {
-    PrintDebug("runJobs_V1")
-    // read jobs
-    database, err := sql.Open("sqlite3", "sentinel.db")
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer database.Close()
-
-    jobs, err := db.FetchRecordRows(database, "jobs")
-    if err != nil {
-        fmt.Println(err)
-    }
-
-    for _, job := range jobs {
-        PrintDebug(job.Name + " " + job.Data + " " + job.Timestamp)
-        var jobData JobData
-        err := json.Unmarshal([]byte(job.Data), &jobData)
-        if err != nil {
-            fmt.Println("Error parsing job.Data:", err)
-        }
-        PrintDebug("Run JOB: " + job.Name + " Start " + jobData.Start + " Repeat " + jobData.Repeat + " Time " + jobData.Time + " Done " + jobData.Done)
-        // Time || Repeat
-        switch {
-        case jobData.Time != "":
-            PrintDebug("Time job...")
-            if jobData.Start == "" {
-                PrintDebug("Run Time job...")
-                err := runJobV1(job.Name, jobData)
-                if err != nil {
-                    fmt.Println("Error running job.Data:", err)
-                }
-            }
-
-        case jobData.Repeat != "":
-            PrintDebug("Repeat job...")
-            if jobData.Start == "" {
-                PrintDebug("Run Repeat job...")
-                err := runJobV1(job.Name, jobData)
-                if err != nil {
-                    fmt.Println("Error running job.Data:", err)
-                }
-            } else {
-                PrintDebug("Repeat job Start exists, check if Done...")
-                if jobData.Done != "" { // done not empty, so done
-                    PrintDebug("OK to Repeat job Start Done is "+ jobData.Done)
-                    // get repeat time interval
-                    PrintDebug("Repeat this time interval: "+ jobData.Repeat)
-                    // Parse time strings into time.Time objects
-                    jobDone, err := time.Parse("2006-01-02 15:04:05", jobData.Done)
-                    if err != nil {
-                        fmt.Println("Error parsing time:", err)
-                    }
-                    // Calculate time difference
-                    //now := time.Now() //now: 2023-06-25 16:15:59.352279 -0700 PDT m=+0.001295211
-                    now := time.Now().UTC()
-                    elapsed := now.Sub(jobDone)
-                    PrintDebug("jobDone:"+ jobDone.String())
-                    PrintDebug("nowTime:"+ now.String())
-                    PrintDebug("Elapsed:"+ elapsed.String())
-                    // Parse Repeat value "1h", "5m", "30s", ...
-                    PrintDebug("Repeat Value:"+ jobData.Repeat)
-                    // Get the value and unit from the interval string
-                    var value int64
-                    var unit string
-                    switch {
-                    case strings.HasSuffix(jobData.Repeat, "hour"), strings.HasSuffix(jobData.Repeat, "hr"), strings.HasSuffix(jobData.Repeat, "h"):
-                        value, unit = parseInterval(jobData.Repeat, "h", "hour")
-                    case strings.HasSuffix(jobData.Repeat, "minute"), strings.HasSuffix(jobData.Repeat, "min"), strings.HasSuffix(jobData.Repeat, "m"):
-                        value, unit = parseInterval(jobData.Repeat, "min", "minute")
-                    case strings.HasSuffix(jobData.Repeat, "second"), strings.HasSuffix(jobData.Repeat, "sec"), strings.HasSuffix(jobData.Repeat, "s"):
-                        value, unit = parseInterval(jobData.Repeat, "s", "second")
-                    default:
-                        fmt.Println("Unknown interval string:", unit)
-                    } //end-switch-case jobData.Repeat
-
-                    // Calculate the new time by adding the parsed duration
-                    duration := calculateDuration(value, unit)
-                    // Parse the start time as a time.Time value
-                    //startTime, err := time.Parse(time.RFC3339, jobData.Start)
-                    startTime, err := time.Parse("2006-01-02 15:04:05", jobData.Start)
-                    if err != nil {
-                        fmt.Printf("Error parsing start time: %v\n", err)
-                    }
-                    // Calculate the next repeat time by adding the duration to the start time
-                    nextRepeatTime := startTime.Add(duration)
-                    PrintDebug("Next Repeat Time: "+ nextRepeatTime.String())
-                    // Compare nextRepeatTime with the current time
-                    if nextRepeatTime.Before(now) || nextRepeatTime.Equal(now) {
-                        //fmt.Println("Next repeat time has past or is equal to the current time.")
-                        PrintDebug("run-jobs Run Repeat past due job...")
-                        err := runJobV1(job.Name, jobData)
-                        if err != nil {
-                            fmt.Println("Error running job.Data:", err)
-                        }
-                    }
-                }
-            }
-        default:
-            PrintDebug("Skip job:"+ job.Name)
-        }
-    }
-}
-
-//DEV
 func runJobs() error {
 	database, err := sql.Open("sqlite3", "sentinel.db")
 	if err != nil {
@@ -485,90 +380,7 @@ func isRepeatTime(jobData JobData) bool {
 
 
 
-func nextRepeatTime_V1(jobData JobData) (bool, error) {
-
-    //jobDone, err := time.Parse("2006-01-02 15:04:05", jobData.Done)
-    //if err != nil {
-    //    return false, fmt.Errorf("Error parsing time: %w", err)
-    //}
-
-    now := time.Now().UTC()
-    //elapsed := now.Sub(jobDone)
-
-    // Get the value and unit from the interval string
-    var value int64
-    var unit string
-
-    switch {
-    case strings.HasSuffix(jobData.Repeat, "hour"), strings.HasSuffix(jobData.Repeat, "hr"), strings.HasSuffix(jobData.Repeat, "h"):
-        value, unit = parseInterval(jobData.Repeat, "h", "hour")
-    case strings.HasSuffix(jobData.Repeat, "minute"), strings.HasSuffix(jobData.Repeat, "min"), strings.HasSuffix(jobData.Repeat, "m"):
-        value, unit = parseInterval(jobData.Repeat, "min", "minute")
-    case strings.HasSuffix(jobData.Repeat, "second"), strings.HasSuffix(jobData.Repeat, "sec"), strings.HasSuffix(jobData.Repeat, "s"):
-        value, unit = parseInterval(jobData.Repeat, "s", "second")
-    default:
-        return false, fmt.Errorf("Unknown interval string: %s", unit)
-    }
-
-    // Calculate the new time by adding the parsed duration
-    duration := calculateDuration(value, unit)
-
-    // Parse the start time as a time.Time value
-    startTime, err := time.Parse("2006-01-02 15:04:05", jobData.Start)
-    if err != nil {
-        return false, fmt.Errorf("Error parsing start time: %w", err)
-    }
-
-    // Calculate the next repeat time by adding the duration to the start time
-    nextRepeatTime := startTime.Add(duration)
-
-    // Compare nextRepeatTime with the current time
-    return nextRepeatTime.Before(now) || nextRepeatTime.Equal(now), nil
-}
-
-
-
-
-func runJobName_V2(name string, force bool) error {
-    PrintDebug("Job Name:" + name)
-
-    database, err := sql.Open("sqlite3", "sentinel.db")
-    if err != nil {
-        return err
-    }
-    defer database.Close()
-
-    jobRecord, jobData, err := getJobData(database, name)
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("Data.2:" + jobRecord.Data)
-
-    if force {
-        return runJobV1(name, jobData)
-    }
-
-    /*
-    PrintDebug("Run jobData Run logic...")
-    switch {
-    case jobData.Time != "":
-        return processTimeJob(jobData)
-
-    case jobData.Repeat != "":
-        return processRepeatJob(jobData)
-
-    default:
-        PrintDebug("Skip job:" + jobData.Job)
-    }
-    */
-
-    return nil
-}
-
-
 func getJobData(database *sql.DB, name string) (db.Record, JobData, error) {
-//func getJobData(name string) (db.Record, JobData, error) {
 
     // Lookup/get job data
     jobs, err := db.FetchRecord(database, "jobs", name)
@@ -597,209 +409,7 @@ func getJobData(database *sql.DB, name string) (db.Record, JobData, error) {
 }
 
 
-
-
-//func runJobName(name string) error {
-func runJobName_V1() {
-
-    if len(os.Args) < 3 {
-        fmt.Println("Invalid arguments. Usage: run-job name [--force]")
-        os.Exit(1)
-    }
-
-    PrintDebug("Job Name:"+ os.Args[2])
-
-    // open db
-    database, dberr := sql.Open("sqlite3", "sentinel.db")
-    if dberr != nil {
-        fmt.Println(dberr)
-        os.Exit(1)
-    }
-    defer database.Close()
-
-    // lookup/get job data
-    job, joberr := db.FetchRecord(database, "jobs", os.Args[2])
-    if joberr != nil {
-        fmt.Println(joberr)
-        os.Exit(1)
-    }
-
-    //PrintDebug(job.String())
-
-    var jobRecord db.Record
-    for _, record := range job {
-            PrintDebug("Name:"+ record.Name)
-            PrintDebug("Data:"+ record.Data)
-            PrintDebug("Timestamp:"+ record.Timestamp)
-
-            jobRecord = record
-    }
-
-    PrintDebug("Data.2:"+ jobRecord.Data)
-
-
-    var jobData JobData
-
-    umerr := json.Unmarshal([]byte(jobRecord.Data), &jobData)
-    if umerr != nil {
-        fmt.Println("Error Unmarshal jobRecord.Data:", umerr)
-        os.Exit(1)
-    }
-
-    if len(os.Args) > 3 && os.Args[3] == "--force" {
-
-        err := runJobV1(os.Args[2], jobData)
-        if err != nil {
-            fmt.Println("Error running job.Data:", err)
-        }
-
-    } else {
-
-        PrintDebug("Run jobData Run logic...")
-
-
-        // Time || Repeat
-
-        switch {
-
-        case jobData.Time != "":
-
-            PrintDebug("Time job...")
-
-            if jobData.Start == "" {
-
-                PrintDebug("Run Time job...")
-
-                err := runJobV1(os.Args[2], jobData)
-                if err != nil {
-                    fmt.Println("Error running job.Data:", err)
-                    os.Exit(1)
-                }
-
-            } else {
-
-                fmt.Println("Finished Start:", jobData.Start, " Done:", jobData.Done)
-
-            }
-
-
-        case jobData.Repeat != "":
-
-            PrintDebug("Repeat job...")
-
-            if jobData.Start == "" {
-
-                PrintDebug("Run Repeat job...")
-
-                err := runJobV1(os.Args[2], jobData)
-                if err != nil {
-                    fmt.Println("Error running job.Data:", err)
-                    os.Exit(1)
-                }
-
-            } else {
-
-                PrintDebug("Repeat job Start exists, check if Done...")
-
-                if jobData.Done != "" { // done not empty, so done
-
-                    PrintDebug("OK to Repeat job Start is Done "+ jobData.Done)
-
-                    // get repeat time interval
-                    PrintDebug("Repeat this time interval: "+ jobData.Repeat)
-
-                    // Parse time strings into time.Time objects
-                    jobDone, err := time.Parse("2006-01-02 15:04:05", jobData.Done)
-                    if err != nil {
-                        fmt.Println("Error parsing time:", err)
-                        os.Exit(1)
-                    }
-
-
-                    // Calculate time difference
-                    //now := time.Now() //now: 2023-06-25 16:15:59.352279 -0700 PDT m=+0.001295211
-                    now := time.Now().UTC()
-                    elapsed := now.Sub(jobDone)
-
-                    PrintDebug("jobDone:"+ jobDone.String())
-                    PrintDebug("nowTime:"+ now.String())
-                    PrintDebug("Elapsed:"+ elapsed.String())
-
-                    // Parse Repeat value "1h", "5m", "30s", ...
-                    PrintDebug("Repeat Value:"+ jobData.Repeat)
-
-                    // Get the value and unit from the interval string
-                    var value int64
-                    var unit string
-
-                    switch {
-                    case strings.HasSuffix(jobData.Repeat, "hour"), strings.HasSuffix(jobData.Repeat, "hr"), strings.HasSuffix(jobData.Repeat, "h"):
-                        value, unit = parseInterval(jobData.Repeat, "h", "hour")
-                    case strings.HasSuffix(jobData.Repeat, "minute"), strings.HasSuffix(jobData.Repeat, "min"), strings.HasSuffix(jobData.Repeat, "m"):
-                        value, unit = parseInterval(jobData.Repeat, "min", "minute")
-                    case strings.HasSuffix(jobData.Repeat, "second"), strings.HasSuffix(jobData.Repeat, "sec"), strings.HasSuffix(jobData.Repeat, "s"):
-                        value, unit = parseInterval(jobData.Repeat, "s", "second")
-                    default:
-                        fmt.Println("Unknown interval string:", unit)
-                        os.Exit(1)
-                    } //end-switch-case jobData.Repeat
-
-                    // Calculate the new time by adding the parsed duration
-                    duration := calculateDuration(value, unit)
-
-
-                    // Parse the start time as a time.Time value
-                    //startTime, err := time.Parse(time.RFC3339, jobData.Start)
-                    startTime, err := time.Parse("2006-01-02 15:04:05", jobData.Start)
-                    if err != nil {
-                        fmt.Printf("Error parsing start time: %v\n", err)
-                        os.Exit(1)
-                    }
-
-                    // Calculate the next repeat time by adding the duration to the start time
-
-                    nextRepeatTime := startTime.Add(duration)
-                    PrintDebug("Next Repeat Time: "+ nextRepeatTime.String())
-
-                    // Calculate t-minus
-
-                    // calculate how many seconds util nextRepeatTime
-                    secondsUntilNextRepeat := int(nextRepeatTime.Sub(time.Now()).Seconds())
-                    //fmt.Println("Seconds until next repeat time:", secondsUntilNextRepeat)
-                    fmt.Println("Repeat t-minus:", secondsUntilNextRepeat)
-
-
-                    // Compare nextRepeatTime with the current time
-                    if nextRepeatTime.Before(now) || nextRepeatTime.Equal(now) {
-
-                        //fmt.Println("Next repeat time has past or is equal to the current time.")
-                        PrintDebug("Run Repeat past due job...")
-
-                        err := runJobV1(os.Args[2], jobData)
-                        if err != nil {
-                            fmt.Println("Error running job.Data:", err)
-                            os.Exit(1)
-                        }
-
-                    }
-
-                } //end-if jobData.Done != ""
-
-            } //end-if-else  jobData.Start == "" 
-
-        default:
-            PrintDebug("Skip job:"+ jobData.Job)
-
-        } //end-switch-case Time || Repeat
-
-    }
-
-}
-
-
 func parseInterval(intervalString, suffix, unit string) (int64, string) {
-
-	//if len(intervalString) < len(suffix) || intervalString[len(intervalString)-len(suffix):] != suffix {
 
     if len(intervalString) < len(suffix) || !strings.HasSuffix(intervalString, suffix) {
 		fmt.Printf("Invalid interval format: %s\n", intervalString)
@@ -853,67 +463,59 @@ func runJob(database *sql.DB, jobName string) error {
 
     // Start running the job
 
-                PrintDebug("RUN THIS COMMAND: "+ configData.Cmd)
+    PrintDebug("RUN THIS COMMAND: "+ configData.Cmd)
 
-                now := time.Now().UTC()
+    now := time.Now().UTC()
 
-                jobData.Start = now.Format("2006-01-02 15:04:05")
-                updatedData, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
+    jobData.Start = now.Format("2006-01-02 15:04:05")
+    updatedData, err := json.Marshal(jobData)
+    if err != nil {
+        return err
+    }
 
-                PrintDebug("Lets Update Record...")
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
-                if err != nil {
-                    return err
-                }
+    PrintDebug("Lets Update Record...")
+    err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
+    if err != nil {
+        return err
+    }
 
-                fmt.Print("Run Command "+ jobName +" ")
+    fmt.Print("Run Command "+ jobName +" ")
 
-                stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
+    stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
 
-                PrintDebug("We have output....")
-                PrintDebug(stdOut + " " + stdErr)
+    PrintDebug("We have output.... "+ stdOut +" "+ stdErr)
 
-                if exitCode == 1 {
-                    stdOut = stdErr
-                }
+    if exitCode == 1 {
+        stdOut = stdErr
+    }
 
-                jobData.Exit = fmt.Sprintf("%d", exitCode)
+    jobData.Exit = fmt.Sprintf("%d", exitCode)
+    updatedData, err = json.Marshal(jobData)
+    if err != nil {
+        return err
+    }
 
-                updatedData, err = json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
+    if err = db.InsertOutput(database, "outputs", jobName, stdOut, exitCode); err != nil {
+        return err
+    }
+    PrintDebug("We are done db.InsertOutput....")
 
-                if err = db.InsertOutput(database, "outputs", jobName, stdOut, exitCode); err != nil {
-                    return err
-                }
+    PrintDebug("Update Done")
+    done := time.Now().UTC()
+    jobData.Done = done.Format("2006-01-02 15:04:05")
+    updatedData, err = json.Marshal(jobData)
+    if err != nil {
+        return err
+    }
 
-                PrintDebug("We are done....")
+    err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
+    if err != nil {
+        return err
+    }
 
-                done := time.Now().UTC()
-                jobData.Done = done.Format("2006-01-02 15:04:05")
-                updatedData2, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("db.UpdateRecord.2 "+ jobName)
-
-                fmt.Println("Done")
-
-    // End of function
+    fmt.Println("Done")
     return nil
 }
-
-
 
 
 func readConfigData(database *sql.DB, configKey string) (struct {
@@ -969,224 +571,6 @@ func readJobData(database *sql.DB, jobName string) (JobData, error) {
 
     //PrintDebug("JOB: " + job.Name + " Start " + jobData.Start + " Repeat " + jobData.Repeat + " Time " + jobData.Time + " Done " + jobData.Done)
     return jobData, nil
-}
-
-
-
-
-
-func runJobV1(jobName string, jobData JobData) error {
-
-    // read configs for Job
-    PrintDebug("Read configs for Job... ")
-
-
-    database, err := sql.Open("sqlite3", "sentinel.db")
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("Fetch Job config "+ jobData.Config)
-    config, err := db.FetchRecord(database, "configs", jobData.Config)
-    if err != nil {
-        return err
-    }
-
-    var configRecord db.Record
-    for _, record := range config {
-            PrintDebug("Name:"+ record.Name)
-            PrintDebug("Data:"+ record.Data)
-            PrintDebug("Timestamp:"+ record.Timestamp)
-
-            configRecord = record
-    }
-
-    PrintDebug("Data.2:"+ configRecord.Data)
-
-    var configData struct {
-        Cmd  string `json:"cmd,omitempty"`
-        Task string `json:"task,omitempty"`
-    }
-
-    //err = json.Unmarshal([]byte(config.Data), &configData)
-    err = json.Unmarshal([]byte(configRecord.Data), &configData)
-    if err != nil {
-        return err
-    }
-
-    PrintDebug("Config cmd "+ configData.Cmd)
-
-    switch {
-    case configData.Cmd != "" && configData.Task != "":
-        // Both configData.Cmd and configData.Task are not empty
-        // Execute code for this case
-        //performAction(configData.Cmd, configData.Task)
-        return errors.New("Both configData.Cmd and configData.Task are not empty")
-
-    case configData.Cmd != "":
-        // Only configData.Cmd is not empty
-        // Execute code for this case
-        //performCmdAction(configData.Cmd)
-        /*
-        rerr := runCmd(jobData, configData)
-        if rerr != nil {
-            fmt.Println("Error:", rerr)
-        }
-        */
-
-
-                //configData.Cmd != ""
-
-                //now := time.Now()
-                now := time.Now().UTC()
-
-                PrintDebug("RUN THIS COMMAND: "+ configData.Cmd)
-
-                jobData.Start = now.Format("2006-01-02 15:04:05")
-                updatedData, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("Lets Update Record...")
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("Run Command...")
-
-                stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
-
-                PrintDebug("We have output....")
-                PrintDebug(stdOut + " " + stdErr)
-
-                //import "strconv"
-                //PrintDebug(stdOut + " " + stdErr + " " + strconv.Itoa(exitCode))
-
-                if exitCode == 1 {
-                    stdOut = stdErr
-                }
-
-                jobData.Exit = fmt.Sprintf("%d", exitCode)
-
-                updatedData, err = json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                //if err = db.SaveOutput(database, jobName, stdOut, exitCode); err != nil {
-                if err = db.InsertOutput(database, "outputs", jobName, stdOut, exitCode); err != nil {
-                    return err
-                }
-
-                PrintDebug("We are done....")
-
-                //done := time.Now()
-                done := time.Now().UTC()
-                jobData.Done = done.Format("2006-01-02 15:04:05")
-                updatedData2, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("db.UpdateRecord.2 "+ jobName)
-
-                fmt.Println("Run "+ jobName + " Done")
-                //end configData.Cmd
-
-    case configData.Task != "":
-        // Only configData.Task is not empty
-        // Execute code for this case
-        //performTaskAction(configData.Task)
-        fmt.Println("Run Task!", configData.Task , " configData.Task")
-        //err = runTask(configData.Task)
-        //if err != nil {
-        //    return err
-        //}
-
-                now := time.Now().UTC()
-
-                PrintDebug("RUN THIS TASK: "+ configData.Task)
-
-                jobData.Start = now.Format("2006-01-02 15:04:05")
-                updatedData, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("db.1 Update Record...")
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData))
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("Run Task...")
-
-                //var taskErr = "0"
-
-                err = runTask(configData.Task)
-                if err != nil {
-                    //return err
-                    //taskErr = fmt.Sprintf("%s", err)
-                    jobData.Error = fmt.Sprintf("%s", err)
-                    updatedData, err = json.Marshal(jobData)
-                    if err != nil {
-                        return err
-                    }
-                } else {
-                    //jobData.Exit = "0"
-                    jobData.Error = "0"
-                    updatedData, err = json.Marshal(jobData)
-                    if err != nil {
-                        return err
-                    }
-
-                }
-
-                PrintDebug("We are done Task....")
-
-                //import "strconv"
-                //PrintDebug(stdOut + " " + stdErr + " " + strconv.Itoa(exitCode))
-
-                //jobData.Exit = fmt.Sprintf("%d", exitCode)
-                //updatedData, err = json.Marshal(jobData)
-                //if err != nil {
-                //    return err
-                //}
-
-                PrintDebug("Now update done....")
-
-                //done := time.Now()
-                done := time.Now().UTC()
-                jobData.Done = done.Format("2006-01-02 15:04:05")
-                updatedData2, err := json.Marshal(jobData)
-                if err != nil {
-                    return err
-                }
-
-                PrintDebug("db.2 UpdateRecord "+ jobName)
-                err = db.UpdateRecord(database, "jobs", jobName, string(updatedData2))
-                if err != nil {
-                    return err
-                }
-
-                fmt.Println("Run "+ jobName + " Done")
-
-
-    default:
-        // Neither configData.Cmd nor configData.Task are not empty
-        // Execute code for this case or handle the default scenario
-        //handleDefault()
-        return errors.New("Neither configData.Cmd nor configData.Task are not empty")
-    }
-
-    return nil
 }
 
 
@@ -1349,7 +733,6 @@ func runRuleEngine(ruleData RuleData) error {
 }
 
 
-
 func runRuleName(rule string) error {
 
     fmt.Println("--RuleName:", rule)
@@ -1358,8 +741,6 @@ func runRuleName(rule string) error {
     //fmt.Println("Searching for:", ruleData.Contains)
 
     // get rule config
-
-
     ruleConfig := getRuleConfig(rule)
 
     fmt.Println("RuleRule:", ruleConfig.Rule)
@@ -1477,9 +858,6 @@ func getPromConfigs() string {
 }
 
 
-
-
-
 func getPromJobs() string {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
@@ -1547,35 +925,11 @@ func getPromOutputs() string {
     var result string
 
     for _, row := range rows {
-        //fmt.Printf("%d %s %s %s %s\n", row.Id, row.Mac, row.Ip, row.Data, row.Timestamp)
-        //result += fmt.Sprintf(`sentinel_config{name="%s",data="%s"} 1` + "\n", row.Name, row.Data)
-
-        //result += fmt.Sprintf(`sentinel_config{name="%s",%s} 1` + "\n", row.Name, row.Data)
-        //result += fmt.Sprintf(`sentinel_config{name="%s",task=%q} 1` + "\n", row.Name, row.Data)
-
-        /*
-        var subrlt string
-        // Access the values using the keys
-        for key, value := range data {
-            switch v := value.(type) {
-            case string:
-                subrlt += fmt.Sprintf(",%s=%q", key, v)
-            }
-            case int:
-                subrlt += fmt.Sprintf(`,%s="%q"`, key, v)
-        }
-        */
-
-        //result += fmt.Sprintf(`sentinel_job{name="%s"`+ subrlt +`} 1` + "\n", row.Name)
-        //result += fmt.Sprintf(`sentinel_output{name="%s", exit="%d"} 1` + "\n", row.Name, row.Exit)
-
-        //result += fmt.Sprintf(`sentinel_output{name="%s"} 1` + "\n", row.Name)
         result += fmt.Sprintf(`sentinel_output{name="%s"} %d` + "\n", row.Name, row.Exit)
     }
 
     return result
 }
-
 
 
 func writePromFile(filename string) error {
@@ -1599,6 +953,7 @@ func writePromFile(filename string) error {
 
     return nil
 }
+
 
 type ConfigData struct {
     Rule       string `json:"rule,omitempty"`
@@ -1722,9 +1077,7 @@ func runSentry() error {
                 return
             default:
                 runJobs()
-                //runJobs_V1()
-                //time.Sleep(500 * time.Millisecond)
-                time.Sleep(time.Second) // Adjust the sleep duration as needed
+                time.Sleep(1 * time.Second) // Adjust the sleep duration as needed
             }
         }
     }()
@@ -2314,187 +1667,165 @@ func listVulns() {
 }
 
 
-func listVuln(rowidStr string) {
+func listVuln(rowidStr string) error {
 
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: list-vuln id")
-        os.Exit(1)
+    if len(rowidStr) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: list-vuln rowid")
     }
-    //os.Args[2]
 
-    //rowidStr := os.Args[2]
+    // Convert row ID from string to integer
     rowid, err := strconv.Atoi(rowidStr)
     if err != nil {
-        fmt.Printf("Error converting rowid to integer: %v\n", err)
-        os.Exit(1)
-        //return
+        return fmt.Errorf("Error converting rowid to integer: %v", err)
     }
 
+    // Open database connection
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
     defer database.Close()
 
+    // Fetch row by ID
     columnNames, row, err := db.GetRowId(database, "vulns", rowid)
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
 
+    // Iterate over the row's values and print the "Data" column
     for i, value := range row {
-        //fmt.Println(columnNames[i], ":", value)
         if columnNames[i] == "Data" {
-            //fmt.Println(columnNames[i], ":", value)
             fmt.Println(value)
         }
     }
 
+    return nil
 }
 
-func listConfigs() {
+
+func listConfigs() error {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
     defer database.Close()
 
     configs, err := db.FetchRecordRows(database, "configs")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
 
     for _, config := range configs {
         fmt.Printf("%d %s %s %s\n", config.Id, config.Name, config.Data, config.Timestamp)
-        //fmt.Printf("%s %s %s\n", config.Name, config.Data, config.Timestamp)
     }
+
+    return nil
 }
 
 
-func listJobs() {
+func listJobs() error {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
     defer database.Close()
 
     jobs, err := db.FetchRecordRows(database, "jobs")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
 
     for _, job := range jobs {
         fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
-        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
 
+    return nil
 }
 
-func listJob(name string) {
+func listJob(name string) error {
 
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: list-job name")
-        os.Exit(1)
+    if len(name) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: list-job name")
     }
-    //os.Args[2]
-
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
     defer database.Close()
 
     jobs, err := db.FetchRecord(database, "jobs", name)
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
 
     for _, job := range jobs {
         fmt.Printf("%d %s %s %s\n", job.Id, job.Name, job.Data, job.Timestamp)
-        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
 
+    return nil
 }
 
 
-
-func listOutputs() {
+func listOutputs() error {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
     defer database.Close()
 
     records, err := db.FetchOutputs(database)
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
 
     for _, record := range records {
-        //fmt.Println(record.Name, "(", record.Id, ")", record.Exit, record.Timestamp)
-        //fmt.Println(record.Data)
         fmt.Printf("%s id:%d exit:%d time:%s\n",record.Name, record.Id, record.Exit, record.Timestamp)
     }
 
+    return nil
 }
 
-func listOutput(name string) {
 
-    if len(os.Args) != 3 {
-        fmt.Println("Invalid arguments. Usage: list-output name")
-        os.Exit(1)
+func listOutput(name string) error {
+
+    if len(name) == 0 {
+        return fmt.Errorf("Invalid arguments. Usage: list-output name")
     }
-    //os.Args[2]
-
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
     defer database.Close()
 
     records, err := db.FetchOutput(database, name)
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
 
     for _, record := range records {
-        //fmt.Printf("%d %s %s %s\n", record.Id, record.Name, record.Timestamp)
         fmt.Println(record.Data)
-        //fmt.Printf("%s %s %s\n", job.Name, job.Data, job.Timestamp)
     }
 
+    return nil
 }
 
 
-func listTables() {
+func listTables() error {
 
     database, err := sql.Open("sqlite3", "sentinel.db")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
     defer database.Close()
 
     tables, err := db.SQLStatement(database, "SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name;")
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return err
     }
 
     // Iterate over the rows returned by the SQL statement
@@ -2510,8 +1841,8 @@ func listTables() {
         }
     }
 
+    return nil
 }
-
 
 
 func createDb() error {
@@ -2752,7 +2083,6 @@ func getConfigJSONCmd(configName string) (string, bool) {
 
     return configData.Cmd, true
 }
-
 
 
 //EOF
