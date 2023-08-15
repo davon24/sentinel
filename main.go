@@ -35,7 +35,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🐕-1.0.4.r0"
+var version = "2.0.0.dev-🐕-1.0.4.r0D1"
 
 func main() {
 
@@ -422,21 +422,15 @@ func runJobName(name string) error {
     }
     defer database.Close()
 
-    //jobRecord, jobData, err := getJobData(database, name)
-    //if err != nil {
-    //    return err
-    //}
-
     if isRunnable(database, name) {
-
         err = runJob(database, name)
         if err != nil {
             return err
         }
-
-    } else {
-        fmt.Println("Not runnable " + name)
     }
+    //else {
+    //    fmt.Println("Not runnable " + name)
+    //}
 
     return nil
 }
@@ -456,22 +450,6 @@ func isRunnable(database *sql.DB, jobName string) bool {
             return true
         }
         if jobData.Done != "" {
-            //jobDone, err := time.Parse("2006-01-02 15:04:05", jobData.Done)
-            //if err != nil {
-            //    return false
-            //}
-            //now := time.Now().UTC()
-            //elapsed := now.Sub(jobDone)
-
-            // Implement logic for parsing and checking repeat interval
-
-            //nextTime, err := nextRepeatTime(jobData)
-            //if err != nil {
-            //    return false
-            //}
-            //if nextTime.Before(now) || nextTime.Equal(now) {
-            //    return true
-            //}
 
             if isRepeatTime(jobData) {
                 return true
@@ -485,13 +463,6 @@ func isRunnable(database *sql.DB, jobName string) bool {
 
 
 func isRepeatTime(jobData JobData) bool {
-
-    /*
-    jobDone, err := time.Parse("2006-01-02 15:04:05", jobData.Done)
-    if err != nil {
-        return false
-    }
-    */
 
     now := time.Now().UTC()
 
@@ -912,8 +883,7 @@ func runJob(database *sql.DB, jobName string) error {
                     return err
                 }
 
-                PrintDebug("Run Command...")
-                fmt.Println("Run "+ jobName +" ")
+                fmt.Print("Run Command "+ jobName +" ")
 
                 stdOut, stdErr, exitCode, err := tools.RunCommand(configData.Cmd)
 
