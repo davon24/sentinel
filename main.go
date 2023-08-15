@@ -422,22 +422,155 @@ func runJobName(name string) error {
     }
     defer database.Close()
 
-    jobRecord, jobData, err := getJobData(database, name)
-    if err != nil {
-        return err
-    }
+    //jobRecord, jobData, err := getJobData(database, name)
+    //if err != nil {
+    //    return err
+    //}
 
-    PrintfDebug("jobRecord %v \n", jobRecord)
-    PrintfDebug("jobData %v \n", jobData)
+    if isRunnable(database, name) {
 
-    //err = runJobV1(name, jobData)
-    err = runJob(database, name)
-    if err != nil {
-        return err
+        err = runJob(database, name)
+        if err != nil {
+            return err
+        }
+
+    } else {
+        fmt.Println("Not runnable " + name)
     }
 
     return nil
 }
+
+func isRunnable(database *sql.DB, jobName string) bool {
+    _, jobData, err := getJobData(database, jobName)
+    if err != nil {
+        return false
+    }
+
+    if jobData.Time != "" && jobData.Start == "" {
+        return true
+    }
+
+    if jobData.Repeat != "" {
+        if jobData.Start == "" {
+            return true
+        }
+        if jobData.Done != "" {
+            //jobDone, err := time.Parse("2006-01-02 15:04:05", jobData.Done)
+            //if err != nil {
+            //    return false
+            //}
+            //now := time.Now().UTC()
+            //elapsed := now.Sub(jobDone)
+
+            // Implement logic for parsing and checking repeat interval
+
+            //nextTime, err := nextRepeatTime(jobData)
+            //if err != nil {
+            //    return false
+            //}
+            //if nextTime.Before(now) || nextTime.Equal(now) {
+            //    return true
+            //}
+
+            if isRepeatTime(jobData) {
+                return true
+            }
+
+        }
+    }
+
+    return false
+}
+
+
+func isRepeatTime(jobData JobData) bool {
+
+    /*
+    jobDone, err := time.Parse("2006-01-02 15:04:05", jobData.Done)
+    if err != nil {
+        return false
+    }
+    */
+
+    now := time.Now().UTC()
+
+    // Get the value and unit from the interval string
+    var value int64
+    var unit string
+
+    switch {
+    case strings.HasSuffix(jobData.Repeat, "hour"), strings.HasSuffix(jobData.Repeat, "hr"), strings.HasSuffix(jobData.Repeat, "h"):
+        value, unit = parseInterval(jobData.Repeat, "h", "hour")
+    case strings.HasSuffix(jobData.Repeat, "minute"), strings.HasSuffix(jobData.Repeat, "min"), strings.HasSuffix(jobData.Repeat, "m"):
+        value, unit = parseInterval(jobData.Repeat, "min", "minute")
+    case strings.HasSuffix(jobData.Repeat, "second"), strings.HasSuffix(jobData.Repeat, "sec"), strings.HasSuffix(jobData.Repeat, "s"):
+        value, unit = parseInterval(jobData.Repeat, "s", "second")
+    default:
+        return false
+    }
+
+    // Calculate the new time by adding the parsed duration
+    duration := calculateDuration(value, unit)
+
+    // Parse the start time as a time.Time value
+    startTime, err := time.Parse("2006-01-02 15:04:05", jobData.Start)
+    if err != nil {
+        return false
+    }
+
+    // Calculate the next repeat time by adding the duration to the start time
+    nextRepeatTime := startTime.Add(duration)
+
+    // Compare nextRepeatTime with the current time
+    return nextRepeatTime.Before(now) || nextRepeatTime.Equal(now)
+}
+
+
+
+func nextRepeatTime_V1(jobData JobData) (bool, error) {
+
+    //jobDone, err := time.Parse("2006-01-02 15:04:05", jobData.Done)
+    //if err != nil {
+    //    return false, fmt.Errorf("Error parsing time: %w", err)
+    //}
+
+    now := time.Now().UTC()
+    //elapsed := now.Sub(jobDone)
+
+    // Get the value and unit from the interval string
+    var value int64
+    var unit string
+
+    switch {
+    case strings.HasSuffix(jobData.Repeat, "hour"), strings.HasSuffix(jobData.Repeat, "hr"), strings.HasSuffix(jobData.Repeat, "h"):
+        value, unit = parseInterval(jobData.Repeat, "h", "hour")
+    case strings.HasSuffix(jobData.Repeat, "minute"), strings.HasSuffix(jobData.Repeat, "min"), strings.HasSuffix(jobData.Repeat, "m"):
+        value, unit = parseInterval(jobData.Repeat, "min", "minute")
+    case strings.HasSuffix(jobData.Repeat, "second"), strings.HasSuffix(jobData.Repeat, "sec"), strings.HasSuffix(jobData.Repeat, "s"):
+        value, unit = parseInterval(jobData.Repeat, "s", "second")
+    default:
+        return false, fmt.Errorf("Unknown interval string: %s", unit)
+    }
+
+    // Calculate the new time by adding the parsed duration
+    duration := calculateDuration(value, unit)
+
+    // Parse the start time as a time.Time value
+    startTime, err := time.Parse("2006-01-02 15:04:05", jobData.Start)
+    if err != nil {
+        return false, fmt.Errorf("Error parsing start time: %w", err)
+    }
+
+    // Calculate the next repeat time by adding the duration to the start time
+    nextRepeatTime := startTime.Add(duration)
+
+    // Compare nextRepeatTime with the current time
+    return nextRepeatTime.Before(now) || nextRepeatTime.Equal(now), nil
+}
+
+
+
 
 func runJobName_V2(name string, force bool) error {
     PrintDebug("Job Name:" + name)
