@@ -74,10 +74,8 @@ func main() {
             delJob(os.Args[2])
 
         case "run-jobs":
-            //runJobs_V1()
             runJobs()
         case "run-job":
-            //runJobName_V1()
             runJobName(os.Args[2])
         case "list-outputs":
             listOutputs()
@@ -262,7 +260,147 @@ func sqlite3Version() string {
 }
 
 
-func runJobs() error {
+func runJobs() {
+    database, err := sql.Open("sqlite3", "sentinel.db")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    defer database.Close()
+
+    jobs, err := db.FetchRecordRows(database, "jobs")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+
+    for _, job := range jobs {
+        var jobData JobData
+        err := json.Unmarshal([]byte(job.Data), &jobData)
+        if err != nil {
+            fmt.Println("Error parsing job.Data:", err)
+            continue // Continue to next job if parsing failed
+        }
+        PrintDebug("Run JOB: " + job.Name + " Start " + jobData.Start + " Repeat " + jobData.Repeat + " Time " + jobData.Time + " Done " + jobData.Done)
+
+        go func(jobName string) {
+            if err := runJobName(jobName); err != nil {
+                fmt.Println("Error running job:", err) // Handle error accordingly
+            }
+        }(job.Name)
+    }
+}
+
+
+func runJobs_FOUR() {
+	database, err := sql.Open("sqlite3", "sentinel.db")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer database.Close()
+
+	jobs, err := db.FetchRecordRows(database, "jobs")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var wg sync.WaitGroup
+
+	for _, job := range jobs {
+		var jobData JobData
+		err := json.Unmarshal([]byte(job.Data), &jobData)
+		if err != nil {
+			fmt.Println("Error parsing job.Data:", err)
+			continue // Continue to next job if parsing failed
+		}
+		//PrintDebug("Run JOB: " + job.Name + " Start " + jobData.Start + " Repeat " + jobData.Repeat + " Time " + jobData.Time + " Done " + jobData.Done)
+
+		wg.Add(1)
+		go func(jobName string) {
+			defer wg.Done()
+
+			if err := runJobName(jobName); err != nil {
+				fmt.Println("Error running job:", err) // Handle error accordingly
+			}
+		}(job.Name)
+	}
+
+	wg.Wait() // Wait for all jobs to complete
+}
+
+
+func runJobs_THREE() error {
+	database, err := sql.Open("sqlite3", "sentinel.db")
+	if err != nil {
+		return err
+	}
+	defer database.Close()
+
+	jobs, err := db.FetchRecordRows(database, "jobs")
+	if err != nil {
+		return err
+	}
+
+	var wg sync.WaitGroup
+
+	for _, job := range jobs {
+		// ... other code ...
+
+		wg.Add(1)
+		go func(jobName string) {
+			defer wg.Done()
+			if err := runJobName(jobName); err != nil {
+				fmt.Println("Error running job:", err) // Handle error accordingly
+			}
+		}(job.Name)
+	}
+
+	wg.Wait() // Wait for all jobs to complete
+	return nil
+}
+
+
+func runJobs_TWO() error {
+	database, err := sql.Open("sqlite3", "sentinel.db")
+	if err != nil {
+		return err
+	}
+	defer database.Close()
+
+	jobs, err := db.FetchRecordRows(database, "jobs")
+	if err != nil {
+		return err
+	}
+
+	var wg sync.WaitGroup
+
+	for _, job := range jobs {
+		//PrintDebug(job.Name + " " + job.Data + " " + job.Timestamp)
+		var jobData JobData
+		err := json.Unmarshal([]byte(job.Data), &jobData)
+		if err != nil {
+			fmt.Println("Error parsing job.Data:", err)
+			continue // Continue to next job if parsing failed
+		}
+		//PrintDebug("Run JOB: " + job.Name + " Start " + jobData.Start + " Repeat " + jobData.Repeat + " Time " + jobData.Time + " Done " + jobData.Done)
+
+		wg.Add(1)
+		go func(name string) {
+			defer wg.Done()
+			if err := runJobName(name); err != nil {
+				fmt.Println("Error running job:", err) // Handle error accordingly
+			}
+		}(job.Name)
+	}
+
+	wg.Wait() // Wait for all jobs to complete
+	return nil
+}
+
+
+func runJobs_ONE() error {
 	database, err := sql.Open("sqlite3", "sentinel.db")
 	if err != nil {
 		return err
@@ -282,7 +420,7 @@ func runJobs() error {
 			fmt.Println("Error parsing job.Data:", err)
 			continue // Continue to next job if parsing failed
 		}
-		PrintDebug("Run JOB: " + job.Name + " Start " + jobData.Start + " Repeat " + jobData.Repeat + " Time " + jobData.Time + " Done " + jobData.Done)
+		//PrintDebug("Run JOB: " + job.Name + " Start " + jobData.Start + " Repeat " + jobData.Repeat + " Time " + jobData.Time + " Done " + jobData.Done)
 
 		if err := runJobName(job.Name); err != nil {
 			return err
@@ -316,21 +454,33 @@ func runJobName(name string) error {
 
 
 func isRunnable(database *sql.DB, jobName string) bool {
-    _, jobData, err := getJobData(database, jobName)
+
+    //_, jobData, err := getJobData(database, jobName)
+    _, jobData, rawMap, err := getJobData(database, jobName)
     if err != nil {
         return false
     }
 
-    if jobData.Time != "" && jobData.Start == "" {
-        return true
+    _, hasStart := rawMap["Start"]
+
+    if jobData.Time != "" {
+
+        if !hasStart {
+            if isRunTime(jobData) {
+                return true
+            }
+        }
     }
 
     if jobData.Repeat != "" {
+
         if isRepeatTime(jobData) {
-            if jobData.Start == "" {
+
+            if !hasStart {
                 return true
             }
-            if jobData.Done != "" {
+
+            if jobData.Start == "" && jobData.Done == "" {
                 return true
             }
         }
@@ -338,6 +488,22 @@ func isRunnable(database *sql.DB, jobName string) bool {
 
     PrintDebug("isRunnable false")
     return false
+}
+
+
+func isRunTime(jobData JobData) bool {
+    // Parse the job time as a time.Time value
+    jobTime, err := time.Parse("2006-01-02 15:04:05", jobData.Time)
+    if err != nil {
+        fmt.Println("Error parsing job time:", err)
+        return false
+    }
+
+    // Get the current time in UTC
+    now := time.Now().UTC()
+
+    // Compare the job time with the current time
+    return now.After(jobTime) || now.Equal(jobTime)
 }
 
 
@@ -379,8 +545,100 @@ func isRepeatTime(jobData JobData) bool {
 }
 
 
+func getJobData(database *sql.DB, name string) (db.Record, JobData, map[string]interface{}, error) {
+    // Lookup/get job data
+    jobs, err := db.FetchRecord(database, "jobs", name)
+    if err != nil {
+        return db.Record{}, JobData{}, nil, err
+    }
 
-func getJobData(database *sql.DB, name string) (db.Record, JobData, error) {
+    var jobRecord db.Record
+    for _, record := range jobs {
+        PrintDebug("Name:" + record.Name)
+        PrintDebug("Data:" + record.Data)
+        PrintDebug("Timestamp:" + record.Timestamp)
+
+        jobRecord = record
+    }
+
+    var jobData JobData
+    err = json.Unmarshal([]byte(jobRecord.Data), &jobData)
+    if err != nil {
+        return db.Record{}, JobData{}, nil, fmt.Errorf("Error Unmarshal jobRecord.Data to JobData: %w", err)
+    }
+
+    var rawMap map[string]interface{}
+    err = json.Unmarshal([]byte(jobRecord.Data), &rawMap)
+    if err != nil {
+        return db.Record{}, JobData{}, nil, fmt.Errorf("Error Unmarshal jobRecord.Data to rawMap: %w", err)
+    }
+
+    return jobRecord, jobData, rawMap, nil
+}
+
+
+
+func getJobDataStructMap(database *sql.DB, name string) (db.Record, JobData, map[string]interface{}, error) {
+    // Lookup/get job data
+    jobs, err := db.FetchRecord(database, "jobs", name)
+    if err != nil {
+        return db.Record{}, JobData{}, nil, err
+    }
+
+    var jobRecord db.Record
+    for _, record := range jobs {
+        //PrintDebug("Name:" + record.Name)
+        //PrintDebug("Data:" + record.Data)
+        //PrintDebug("Timestamp:" + record.Timestamp)
+
+        jobRecord = record
+    }
+
+    var jobData JobData
+    err = json.Unmarshal([]byte(jobRecord.Data), &jobData)
+    if err != nil {
+        return db.Record{}, JobData{}, nil, fmt.Errorf("Error Unmarshal jobRecord.Data to JobData: %w", err)
+    }
+
+    var rawMap map[string]interface{}
+    err = json.Unmarshal([]byte(jobRecord.Data), &rawMap)
+    if err != nil {
+        return db.Record{}, JobData{}, nil, fmt.Errorf("Error Unmarshal jobRecord.Data to rawMap: %w", err)
+    }
+
+    return jobRecord, jobData, rawMap, nil
+}
+
+
+
+func getJobDataMap(database *sql.DB, name string) (db.Record, map[string]interface{}, error) {
+
+    // Lookup/get job data
+    jobs, err := db.FetchRecord(database, "jobs", name)
+    if err != nil {
+        return db.Record{}, nil, err
+    }
+
+    var jobRecord db.Record
+    for _, record := range jobs {
+        PrintDebug("Name:" + record.Name)
+        PrintDebug("Data:" + record.Data)
+        PrintDebug("Timestamp:" + record.Timestamp)
+
+        jobRecord = record
+    }
+
+    var rawMap map[string]interface{}
+    err = json.Unmarshal([]byte(jobRecord.Data), &rawMap)
+    if err != nil {
+        return db.Record{}, nil, fmt.Errorf("Error Unmarshal jobRecord.Data: %w", err)
+    }
+
+    return jobRecord, rawMap, nil
+}
+
+
+func getJobData_V1(database *sql.DB, name string) (db.Record, JobData, error) {
 
     // Lookup/get job data
     jobs, err := db.FetchRecord(database, "jobs", name)
