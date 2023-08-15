@@ -35,7 +35,7 @@ import (
 
 )
 
-var version = "2.0.0.dev-🐕-1.0.4.r0D1"
+var version = "2.0.0.dev-🐕-1.0.4.T-2023-08-15-1"
 
 func main() {
 
@@ -74,7 +74,8 @@ func main() {
             delJob(os.Args[2])
 
         case "run-jobs":
-            runJobs_V1()
+            //runJobs_V1()
+            runJobs()
         case "run-job":
             //runJobName_V1()
             runJobName(os.Args[2])
@@ -363,6 +364,37 @@ func runJobs_V1() {
             PrintDebug("Skip job:"+ job.Name)
         }
     }
+}
+
+//DEV
+func runJobs() error {
+	database, err := sql.Open("sqlite3", "sentinel.db")
+	if err != nil {
+		return err
+	}
+	defer database.Close()
+
+	jobs, err := db.FetchRecordRows(database, "jobs")
+	if err != nil {
+		return err
+	}
+
+	for _, job := range jobs {
+		//PrintDebug(job.Name + " " + job.Data + " " + job.Timestamp)
+		var jobData JobData
+		err := json.Unmarshal([]byte(job.Data), &jobData)
+		if err != nil {
+			fmt.Println("Error parsing job.Data:", err)
+			continue // Continue to next job if parsing failed
+		}
+		PrintDebug("Run JOB: " + job.Name + " Start " + jobData.Start + " Repeat " + jobData.Repeat + " Time " + jobData.Time + " Done " + jobData.Done)
+
+		if err := runJobName(job.Name); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 
@@ -1653,6 +1685,7 @@ func runSentry() error {
             //fmt.Println("Start the Rules Engine " + ruleConf.Rule)
             fmt.Println("Start Rules Engine " + rule)
 
+            fmt.Println("this is a DEV no go by /* */")
             /*
             // Start the background process
             go func() {
@@ -1688,7 +1721,8 @@ func runSentry() error {
             case <-jobChan:
                 return
             default:
-                runJobs_V1()
+                runJobs()
+                //runJobs_V1()
                 //time.Sleep(500 * time.Millisecond)
                 time.Sleep(time.Second) // Adjust the sleep duration as needed
             }
@@ -2457,14 +2491,11 @@ func listTables() {
     }
     defer database.Close()
 
-    //tables, err := db.SQLStatement(database, "SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name;")
-    //tables, err := db.SQLStatement(database, "SELECT * FROM configs;")
     tables, err := db.SQLStatement(database, "SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name;")
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
-    //defer tables.Close()
 
     // Iterate over the rows returned by the SQL statement
     for _, rows := range tables {
